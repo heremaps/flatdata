@@ -1,0 +1,7 @@
+[package]
+name = "flatdata"
+version = "0.1.0"
+authors = ["boxdot <d@zerovolt.org>"]
+
+[dependencies]
+num = "*"
