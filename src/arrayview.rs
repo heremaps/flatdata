@@ -1,12 +1,12 @@
 use std::iter;
 use std::marker;
+use std::fmt;
 
 use archive::ArchiveType;
 use bytereader::StreamType;
 use storage::MemoryDescriptor;
 
-#[derive(Debug)]
-pub struct ArrayView<T: ArchiveType> {
+pub struct ArrayView<T> {
     data: StreamType,
     size: usize,
     _phantom: marker::PhantomData<T>,
@@ -55,5 +55,11 @@ impl<'a, T: ArchiveType> iter::Iterator for ArrayViewIter<'a, T> {
         } else {
             None
         }
+    }
+}
+
+impl<T> fmt::Debug for ArrayView<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ArrayView{{ data: {:?}, size: {} }}", self.data, self.size)
     }
 }

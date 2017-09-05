@@ -47,16 +47,23 @@ impl fmt::Debug for Vertex {
     }
 }
 
-pub struct Graph {
-    storage: Rc<RefCell<ResourceStorage>>,
-    signature: Option<MemoryDescriptor>,
-    // generared
-    vertices: Option<ArrayView<Vertex>>,
-    edges: Option<MemoryDescriptor>,
+pub struct Edge {
+    data: StreamType,
 }
 
-impl Graph {
-    const EDGES: &'static str = r#"namespace graph { /**
+impl Edge {
+    pub fn from_ref(&self) -> u32 {
+        read_bytes!(u32, self.data, 0, 16)
+    }
+
+    pub fn to_ref(&self) -> u32 {
+        read_bytes!(u32, self.data, 16, 16)
+    }
+}
+
+impl ArchiveElement for Edge {
+    const NAME: &'static str = "Edge";
+    const SCHEMA: &'static str = r#"namespace graph { /**
  * An edge connects two vertices by referencing their indexes.
  */
 struct Edge {
@@ -66,7 +73,33 @@ struct Edge {
 namespace graph { @explicit_reference( Edge.from_ref, vertices )
     @explicit_reference( Edge.to_ref, vertices )
     edges : vector< Edge >; }"#;
+}
 
+impl ArchiveType for Edge {
+    const SIZE_IN_BYTES: usize = 4;
+}
+
+impl convert::From<StreamType> for Edge {
+    fn from(data: StreamType) -> Edge {
+        Edge { data: data }
+    }
+}
+
+impl fmt::Debug for Edge {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Edge {{ from_ref: {}, to_ref: {} }}", self.from_ref(), self.to_ref())
+    }
+}
+
+pub struct Graph {
+    storage: Rc<RefCell<ResourceStorage>>,
+    signature: Option<MemoryDescriptor>,
+    // generared
+    vertices: Option<ArrayView<Vertex>>,
+    edges: Option<ArrayView<Edge>>,
+}
+
+impl Graph {
     fn read_resource<R>(
         storage: Rc<RefCell<ResourceStorage>>,
         name: &str,
@@ -83,7 +116,7 @@ namespace graph { @explicit_reference( Edge.from_ref, vertices )
         self.vertices.as_ref().unwrap()
     }
 
-    pub fn edges(&self) -> &MemoryDescriptor {
+    pub fn edges(&self) -> &ArrayView<Edge> {
         self.edges.as_ref().unwrap()
     }
 }
@@ -119,14 +152,14 @@ namespace graph { archive Graph {
 
 impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Self {
-        let mut signature = None;
+        let mut signature;
         {
             let mut res_storage = storage.borrow_mut();
             signature = res_storage.read(&signature_name(Self::NAME), Self::SCHEMA);
         }
         let vertices = Self::read_resource(storage.clone(), "vertices", Vertex::SCHEMA)
             .map(ArrayView::new);
-        let edges = Self::read_resource(storage.clone(), "edges", Self::EDGES);
+        let edges = Self::read_resource(storage.clone(), "edges", Edge::SCHEMA).map(ArrayView::new);
         Self {
             storage: storage,
             signature: signature,

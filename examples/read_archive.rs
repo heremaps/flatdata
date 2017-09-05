@@ -31,4 +31,8 @@ fn main() {
     for v in g.vertices().iter() {
         println!("{:?}", v);
     }
+
+    for e in g.edges().iter() {
+        println!("{:?}", e);
+    }
 }
