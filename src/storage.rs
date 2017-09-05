@@ -1,5 +1,5 @@
-use std::ptr;
 use std::mem;
+use std::ptr;
 use std::slice;
 use std::str;
 

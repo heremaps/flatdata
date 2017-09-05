@@ -1,9 +1,10 @@
+
+
+use memmap::{Mmap, Protection};
 use std::collections::BTreeMap;
 use std::path;
 
-use memmap::{Mmap, Protection};
-
-use storage::{ResourceStorage, MemoryDescriptor};
+use storage::{MemoryDescriptor, ResourceStorage};
 
 /// Stores opened memory mapped files
 struct MemoryMappedFileStorage {

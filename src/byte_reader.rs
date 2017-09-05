@@ -1,3 +1,5 @@
+pub type StreamType = *const u8;
+
 #[macro_export]
 macro_rules! read_bytes {
     ($T:tt, $data:expr, $offset:expr, $num_bits:expr) => {{

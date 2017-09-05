@@ -2,10 +2,13 @@ extern crate memmap;
 
 #[macro_use]
 mod byte_reader;
-pub mod storage;
-mod file_storage;
 mod archive;
+mod array_view;
+mod file_storage;
+pub mod storage;
 
-pub use storage::ResourceStorage;
+pub use archive::*;
+pub use array_view::ArrayView;
+pub use byte_reader::StreamType;
 pub use file_storage::FileResourceStorage;
-pub use archive::Archive;
+pub use storage::ResourceStorage;
