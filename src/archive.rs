@@ -1,4 +1,4 @@
-use byte_reader::StreamType;
+use bytereader::StreamType;
 use std::cell::RefCell;
 use std::convert;
 use std::rc::Rc;

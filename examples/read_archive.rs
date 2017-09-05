@@ -7,7 +7,6 @@ use std::path;
 use std::process;
 use std::rc::Rc;
 
-use flatdata::ResourceStorage;
 use flatdata::Archive;
 
 mod graph;
@@ -26,9 +25,10 @@ fn main() {
     let storage =
         Rc::new(RefCell::new(flatdata::FileResourceStorage::new(path::PathBuf::from(path))));
     let g = graph::Graph::open(storage);
+    println!("is_open = {}", g.is_open());
     println!("{:?}", g);
 
-    for idx in 0..g.vertices().size() {
-        println!("{:?}", g.vertices().index(idx));
+    for v in g.vertices().iter() {
+        println!("{:?}", v);
     }
 }

@@ -1,9 +1,8 @@
-
+use std::iter;
+use std::marker;
 
 use archive::ArchiveType;
-use byte_reader::StreamType;
-use std::marker;
-use std::mem;
+use bytereader::StreamType;
 use storage::MemoryDescriptor;
 
 #[derive(Debug)]
@@ -31,5 +30,30 @@ where
 
     pub fn index(&self, idx: usize) -> T {
         T::from(unsafe { self.data.offset((idx * T::SIZE_IN_BYTES) as isize) })
+    }
+
+    pub fn iter(&self) -> ArrayViewIter<T> {
+        ArrayViewIter {
+            view: self,
+            next_pos: 0,
+        }
+    }
+}
+
+pub struct ArrayViewIter<'a, T: 'a + ArchiveType> {
+    view: &'a ArrayView<T>,
+    next_pos: usize,
+}
+
+impl<'a, T: ArchiveType> iter::Iterator for ArrayViewIter<'a, T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.next_pos < self.view.size() {
+            let element = self.view.index(self.next_pos);
+            self.next_pos += 1;
+            Some(element)
+        } else {
+            None
+        }
     }
 }

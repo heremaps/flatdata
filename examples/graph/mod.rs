@@ -1,14 +1,9 @@
-
-
-use flatdata::{Archive, ArchiveElement, ArchiveType};
-use flatdata::ArrayView;
-use flatdata::ResourceStorage;
-use flatdata::StreamType;
-use flatdata::storage::MemoryDescriptor;
 use std::cell::RefCell;
 use std::convert;
 use std::fmt;
 use std::rc::Rc;
+
+use flatdata::*;
 
 pub struct Vertex {
     data: StreamType,
@@ -61,7 +56,7 @@ pub struct Graph {
 }
 
 impl Graph {
-    const Graph__edges__schema__: &'static str = r#"namespace graph { /**
+    const EDGES: &'static str = r#"namespace graph { /**
  * An edge connects two vertices by referencing their indexes.
  */
 struct Edge {
@@ -124,15 +119,14 @@ namespace graph { archive Graph {
 
 impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Self {
-        let signature = None;
+        let mut signature = None;
         {
             let mut res_storage = storage.borrow_mut();
-            let signature = res_storage.read(&signature_name(Self::NAME), Self::SCHEMA);
+            signature = res_storage.read(&signature_name(Self::NAME), Self::SCHEMA);
         }
-        let is_loaded = signature.is_some();
         let vertices = Self::read_resource(storage.clone(), "vertices", Vertex::SCHEMA)
             .map(ArrayView::new);
-        let edges = Self::read_resource(storage.clone(), "edges", Self::Graph__edges__schema__);
+        let edges = Self::read_resource(storage.clone(), "edges", Self::EDGES);
         Self {
             storage: storage,
             signature: signature,
