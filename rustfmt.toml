@@ -1,0 +1,4 @@
+array_horizontal_layout_threshold = 1000
+fn_call_width = 100
+reorder_imported_names = true
+reorder_imports = true
