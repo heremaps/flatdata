@@ -1,0 +1,21 @@
+namespace graph { /**
+ * A vertex is point in a plane.
+ */
+struct Vertex {
+    x : u32 : 16;
+    y : u32 : 16;
+} }
+namespace graph { /**
+ * An edge connects two vertices by referencing their indexes.
+ */
+struct Edge {
+    from_ref : u32 : 16;
+    to_ref : u32 : 16;
+} }
+namespace graph { archive Graph {
+    vertices : vector< Vertex >;
+
+    @explicit_reference( Edge.from_ref, vertices )
+    @explicit_reference( Edge.to_ref, vertices )
+    edges : vector< Edge >;
+} }
