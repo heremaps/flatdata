@@ -92,7 +92,8 @@ impl fmt::Debug for Edge {
 }
 
 pub struct Graph {
-    storage: Rc<RefCell<ResourceStorage>>,
+    /// Holds memory mapped files alive.
+    _storage: Rc<RefCell<ResourceStorage>>,
     signature: Option<MemoryDescriptor>,
     // generared
     vertices: Option<ArrayView<Vertex>>,
@@ -152,7 +153,7 @@ namespace graph { archive Graph {
 
 impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Self {
-        let mut signature;
+        let signature;
         {
             let mut res_storage = storage.borrow_mut();
             signature = res_storage.read(&signature_name(Self::NAME), Self::SCHEMA);
@@ -161,7 +162,7 @@ impl Archive for Graph {
             .map(ArrayView::new);
         let edges = Self::read_resource(storage.clone(), "edges", Edge::SCHEMA).map(ArrayView::new);
         Self {
-            storage: storage,
+            _storage: storage,
             signature: signature,
             vertices: vertices,
             edges: edges,

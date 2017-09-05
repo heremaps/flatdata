@@ -28,6 +28,8 @@ where
         self.size
     }
 
+    // Note: It is not possible to use std::ops::Index here, since Index::index has to return a ref,
+    // however we need to return a value.
     pub fn index(&self, idx: usize) -> T {
         T::from(unsafe { self.data.offset((idx * T::SIZE_IN_BYTES) as isize) })
     }
