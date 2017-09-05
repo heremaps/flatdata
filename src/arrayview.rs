@@ -40,6 +40,12 @@ where
     }
 }
 
+impl<T> fmt::Debug for ArrayView<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ArrayView{{ data: {:?}, size: {} }}", self.data, self.size)
+    }
+}
+
 pub struct ArrayViewIter<'a, T: 'a + ArchiveType> {
     view: &'a ArrayView<T>,
     next_pos: usize,
@@ -58,8 +64,8 @@ impl<'a, T: ArchiveType> iter::Iterator for ArrayViewIter<'a, T> {
     }
 }
 
-impl<T> fmt::Debug for ArrayView<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ArrayView{{ data: {:?}, size: {} }}", self.data, self.size)
+impl<'a, T: ArchiveType> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
+    fn len(&self) -> usize {
+        self.view.size()
     }
 }
