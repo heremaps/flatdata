@@ -2,27 +2,19 @@ use std::ptr;
 use std::mem;
 use std::slice;
 use std::str;
-use std::convert;
 
 type SizeType = u64;
 const PADDING_SIZE: usize = 8;
 
-/// Hierarchical Resource Storage.
+/// Hierarchical Resource Storage
 ///
 /// Manages and returns resources corresponding to their keys. Keys can be slash-separated('/').
 /// Manages schema for each resource and checks it on query.
 /// Resource storage is expected to provide read-write access to resources
 pub trait ResourceStorage {
-    fn read<T>(&self, resource_name: &str, schema: &str) -> Option<T>
-    where
-        T: convert::From<MemoryDescriptor>,
-    {
+    fn read(&mut self, resource_name: &str, schema: &str) -> Option<MemoryDescriptor> {
         let data = self.read_and_check_schema(resource_name, schema);
-        if !data.is_valid() {
-            None
-        } else {
-            Some(T::from(data))
-        }
+        if !data.is_valid() { None } else { Some(data) }
     }
 
     // fn write<T>(resource_name: &str, schema:&str, data: T);
@@ -30,14 +22,14 @@ pub trait ResourceStorage {
     // fn create_multi_vector<Index, Args>(resource_name: &str, schema: &str) -> MultiVector<Index, Args>;
 
     // virtual
-    fn read_resource(&self, resource_name: &str) -> MemoryDescriptor;
+    fn read_resource(&mut self, resource_name: &str) -> MemoryDescriptor;
 
     //
     // Impl Helper
     //
 
     fn read_and_check_schema(
-        &self,
+        &mut self,
         resource_name: &str,
         expected_schema: &str,
     ) -> MemoryDescriptor {
@@ -79,7 +71,8 @@ pub trait ResourceStorage {
 }
 
 /// Describes a chunk of memory
-struct MemoryDescriptor {
+#[derive(Debug)]
+pub struct MemoryDescriptor {
     ptr: *const u8,
     size: usize,
 }
