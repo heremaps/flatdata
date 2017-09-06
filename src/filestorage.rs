@@ -1,12 +1,11 @@
-
-
-use memmap::{Mmap, Protection};
 use std::collections::BTreeMap;
 use std::path;
 
+use memmap::{Mmap, Protection};
+
 use storage::{MemoryDescriptor, ResourceStorage};
 
-/// Stores opened memory mapped files
+/// Storage of data in memory mapped files
 struct MemoryMappedFileStorage {
     maps: BTreeMap<String, Mmap>,
 }

@@ -1,7 +1,7 @@
 use std::mem;
+use std::str;
 use std::ptr;
 use std::slice;
-use std::str;
 
 type SizeType = u64;
 const PADDING_SIZE: usize = 8;
