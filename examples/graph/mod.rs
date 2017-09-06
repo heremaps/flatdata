@@ -5,65 +5,26 @@ use std::rc::Rc;
 
 use flatdata::*;
 
-pub struct Vertex {
-    data: StreamType,
-}
-
-impl Vertex {
-    pub fn x(&self) -> u32 {
-        read_bytes!(u32, self.data, 0, 16)
-    }
-
-    pub fn y(&self) -> u32 {
-        read_bytes!(u32, self.data, 16, 16)
-    }
-}
-
-impl ArchiveElement for Vertex {
-    const NAME: &'static str = "Vertex";
-    const SCHEMA: &'static str = r#"namespace graph { /**
+define_resource_type!(
+    Vertex,
+    "Vertex",
+    r#"namespace graph { /**
  * A vertex is point in a plane.
  */
 struct Vertex {
     x : u32 : 16;
     y : u32 : 16;
 } }
-namespace graph { vertices : vector< Vertex >; }"#;
-}
+namespace graph { vertices : vector< Vertex >; }"#,
+    4,
+    (x, u32, 0, 16),
+    (y, u32, 16, 16)
+);
 
-impl ArchiveType for Vertex {
-    const SIZE_IN_BYTES: usize = 4;
-}
-
-impl convert::From<StreamType> for Vertex {
-    fn from(data: StreamType) -> Vertex {
-        Vertex { data: data }
-    }
-}
-
-impl fmt::Debug for Vertex {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Vertex {{ x: {}, y: {} }}", self.x(), self.y())
-    }
-}
-
-pub struct Edge {
-    data: StreamType,
-}
-
-impl Edge {
-    pub fn from_ref(&self) -> u32 {
-        read_bytes!(u32, self.data, 0, 16)
-    }
-
-    pub fn to_ref(&self) -> u32 {
-        read_bytes!(u32, self.data, 16, 16)
-    }
-}
-
-impl ArchiveElement for Edge {
-    const NAME: &'static str = "Edge";
-    const SCHEMA: &'static str = r#"namespace graph { /**
+define_resource_type!(
+    Edge,
+    "Edge",
+    r#"namespace graph { /**
  * An edge connects two vertices by referencing their indexes.
  */
 struct Edge {
@@ -72,24 +33,11 @@ struct Edge {
 } }
 namespace graph { @explicit_reference( Edge.from_ref, vertices )
     @explicit_reference( Edge.to_ref, vertices )
-    edges : vector< Edge >; }"#;
-}
-
-impl ArchiveType for Edge {
-    const SIZE_IN_BYTES: usize = 4;
-}
-
-impl convert::From<StreamType> for Edge {
-    fn from(data: StreamType) -> Edge {
-        Edge { data: data }
-    }
-}
-
-impl fmt::Debug for Edge {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Edge {{ from_ref: {}, to_ref: {} }}", self.from_ref(), self.to_ref())
-    }
-}
+    edges : vector< Edge >; }"#,
+    4,
+    (from_ref, u32, 0, 16),
+    (to_ref, u32, 16, 16)
+);
 
 pub struct Graph {
     /// Holds memory mapped files alive.

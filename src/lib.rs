@@ -2,6 +2,7 @@ extern crate memmap;
 
 #[macro_use]
 mod bytereader;
+#[macro_use]
 mod archive;
 mod arrayview;
 mod filestorage;
