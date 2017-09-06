@@ -142,12 +142,22 @@ struct Edge {
     from_ref : u32 : 16;
     to_ref : u32 : 16;
 } }
+namespace graph { struct EdgeWeight {
+    value: u32 : 16;
+} }
+namespace graph { struct EdgeAttribute {
+    is_bidirectional : u8 : 1;
+    multiplicity : u8 : 7;
+} }
+namespace _builtin.multivector { struct IndexType32 { value : u64 : 32; } }
 namespace graph { archive Graph {
     vertices : vector< Vertex >;
 
     @explicit_reference( Edge.from_ref, vertices )
     @explicit_reference( Edge.to_ref, vertices )
     edges : vector< Edge >;
+
+    edge_attributes: multivector< 32, EdgeWeight, EdgeAttribute >;
 } }"#;
 }
 
