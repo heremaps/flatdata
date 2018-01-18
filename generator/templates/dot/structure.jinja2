@@ -1,0 +1,19 @@
+{% import "dot/styles.jinja2" as styles %}
+
+{% macro render(resource, tree, struct) %}
+{{ resource.path_with() + struct.path_with() }} [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="{{ styles.color_font_generic }}">
+    <tr>
+        <td bgcolor="{{ styles.color_structure_header_bg }}">
+            <b><font color="{{ styles.color_structure_header_fg }}">{{ struct.name }}</font></b>
+        </td>
+    </tr>
+    {% for field in struct.fields %}
+    <tr>
+        <td bgcolor="{{ styles.color_structure_member_bg }}" port="port_{{ resource.path_with() + field.path_with() }}">
+            <b><font color="{{ styles.color_structure_member_fg }}">{{ field.name }}</font></b>:<font color="{{ styles.color_structure_member_type_fg }}">{{ field.type.name }}</font>:<font color="{{ styles.color_structure_member_width_fg }}">{{ field.type.width }}</font>
+        </td>
+    </tr>
+    {% endfor %}
+</table>>];
+{% endmacro %}

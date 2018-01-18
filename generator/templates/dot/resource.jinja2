@@ -1,0 +1,28 @@
+{% import "dot/styles.jinja2" as styles %}
+{% import "dot/structure.jinja2" as structure %}
+
+{%- macro enter(tree, resource) %}
+{% if not tree.is_bound_implicitly(resource) %}
+subgraph cluster_{{ resource.path_with() }}
+{
+    label=<<b>{{ resource.name }}</b><br/><i>{{ resource.__class__.__name__ }}{% if resource.optional %}<br/>optional{% endif %}</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="{{ styles.color_resource_bg }}";
+
+{# invisible node for cases with no types #}
+{% if not resource.referenced_structures %}
+{{ resource.path_with() }} [style=invisible, fixedsize="true", width="0", height="0", label=""];
+{% endif %}
+
+{% for ref in resource.referenced_structures %}
+{{ structure.render(resource, tree, ref.node)  }}
+{% endfor %}
+{% endif %}
+{%- endmacro %}
+
+{%- macro exit(tree, resource) %}
+{% if not tree.is_bound_implicitly(resource) %}
+}
+{% endif %}
+{%- endmacro %}

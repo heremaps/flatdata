@@ -1,0 +1,13 @@
+{% import "dot/render.jinja2" as render %}
+{% import "dot/references.jinja2" as refs %}
+{% import "dot/styles.jinja2" as styles %}
+
+digraph FlatdataDot
+{
+    graph [splines=true, compound=false, rankdir=LR, rank=same, style=filled, fontsize="16", fontname="Courier New", penwidth=1, fontcolor="{{ styles.color_font_generic }}"]
+    node [shape=none, margin=none, fontsize=9, fontname="Courier New"];
+    edge [style=solid, arrowsize=0.5, color="{{ styles.color_explicit_reference_fg }}", arrowtail="dot", dir="both"]
+
+{{ render.render_tree(tree) }}
+{{ refs.render_explicit_references(tree, nodes) }}
+}

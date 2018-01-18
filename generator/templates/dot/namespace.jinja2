@@ -1,0 +1,14 @@
+{% import "dot/styles.jinja2" as styles %}
+
+{%- macro enter(tree, namespace) %}
+subgraph cluster_{{ namespace.path_with() }}
+{
+    penwidth=0;
+    fontcolor="{{ styles.color_font_generic }}";
+    fillcolor="{{ styles.color_namespace_bg }}";
+    label=<<b>{{ namespace.name }}</b>>
+{%- endmacro %}
+
+{%- macro exit(tree, namespace) %}
+}
+{% endmacro %}

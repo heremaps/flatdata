@@ -1,0 +1,28 @@
+{%- macro _render_edge(tree, origin, destination, ref) %}
+    {% set dest_dot = destination.path_with()
+                if destination.referenced_structures|length == 0
+                else destination.path_with() + destination.referenced_structures[0].node.path_with() %}
+
+    {% set origin_dot = origin.path_with() + ref.structure.node.path_with() %}
+    {% set origin_port = 'port_' + origin.path_with() + ref.field.node.path_with() %}
+
+    {{ origin_dot }}:{{ origin_port }} -> {{ dest_dot }} [lhead=cluster_{{ destination.path_with() }}];
+{%- endmacro %}
+
+{%- macro _render_explicit_reference(tree, ref, resource) %}
+    {% for origin in tree.binding_resources_or_self(resource) %}
+        {% for destination in tree.binding_resources_or_self(ref.destination.node) %}
+            {{ _render_edge(tree, origin, destination, ref) }}
+        {% endfor %}
+    {% endfor %}
+{%- endmacro  %}
+
+{%- macro render_explicit_references(tree, nodes) %}
+{% for node in nodes if node|is_archive %}
+    {% for resource in node.resources %}
+        {% for ref in resource.explicit_references %}
+            {{ _render_explicit_reference(tree, ref, resource) }}
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
+{%- endmacro  %}

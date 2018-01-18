@@ -1,0 +1,104 @@
+namespace test_structures {
+
+struct SimpleStruct {
+    a : u32 : 32;
+    b : u32 : 32;
+}
+
+struct OtherSimpleStruct {
+    a : u32 : 32;
+    b : u32 : 32;
+}
+
+struct BitPackedStruct {
+    a : bool : 1;
+    b : u32 : 32;
+    c : u32 : 7;
+}
+
+struct SignedStruct {
+    a : i16 : 5;
+    b : u32 : 32;
+    c : i32 : 7;
+    d : u32 : 32;
+}
+
+struct AStruct {
+    value : u64 : 8;
+}
+
+struct BStruct {
+    value : u64 : 16;
+}
+
+struct CStruct {
+    value : u64 : 32;
+}
+
+struct TestIndexType48 {
+    value : u64 : 48;
+}
+
+struct TestIndexType32 {
+    value : u64 : 48;
+}
+
+archive SimpleResources {
+    object_resource: AStruct;
+    vector_resource: vector< AStruct >;
+    multivector_resource: multivector< 33, AStruct >;
+    raw_data_resource: raw_data;
+    @optional
+    optional_resource: raw_data;
+}
+
+archive OnlyOptional {
+    @optional
+    optional_resource: raw_data;
+}
+
+archive InnerArchive {
+    inner : AStruct;
+}
+
+archive OuterArchive {
+    outer1: AStruct;
+    outer2: AStruct;
+    inner: archive InnerArchive;
+}
+
+archive OutermostArchive {
+    outermost: AStruct;
+    outer: archive OuterArchive;
+}
+
+archive OuterWithOptional {
+    outer: AStruct;
+
+    @optional
+    archive_resource: archive InnerArchive;
+}
+
+} // namespace test_structures
+
+namespace test_structures.backward_compatibility {
+
+archive TestInstance {
+    instance_resource: .test_structures.SignedStruct;
+}
+
+archive TestVector {
+    vector_resource: vector< .test_structures.SignedStruct >;
+}
+
+archive TestMultivector {
+    multivector_resource: multivector< 33,
+                              .test_structures.SimpleStruct,
+                              .test_structures.SignedStruct >;
+}
+
+archive TestRawData {
+    raw_data_resource : raw_data;
+}
+
+} // namespace backward_compatibility

@@ -1,0 +1,9 @@
+{%- macro declaration(node) %}
+enum : {{ node.type|cpp_base_type}}
+{
+{% if node.doc %}
+    {{- node.doc|cpp_doc }}
+{% endif %}
+    {{ node.name }} = {{ node.value }}
+};
+{%- endmacro %}

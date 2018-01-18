@@ -1,0 +1,37 @@
+{% import "dot/archive.jinja2" as archive %}
+{% import "dot/namespace.jinja2" as namespace %}
+{% import "dot/resource.jinja2" as resource %}
+
+{%- macro _enter_node(tree, node) -%}
+{% if node|is_namespace %}
+{{ namespace.enter(tree, node) }}
+{% elif node|is_archive %}
+{{ archive.enter(tree, node) }}
+{% elif node|is_resource %}
+{{ resource.enter(tree, node) }}
+{% endif %}
+{%- endmacro -%}
+
+{%- macro _exit_node(tree, node) -%}
+{% if node|is_namespace %}
+{{ namespace.exit(tree, node) }}
+{% elif node|is_archive %}
+{{ archive.exit(tree, node) }}
+{% elif node|is_resource %}
+{{ resource.exit(tree, node) }}
+{% endif %}
+{%- endmacro -%}
+
+{% macro _render_node_recursive(tree, node) %}
+{{ _enter_node(tree, node) }}
+
+{%- for node in node.children -%}
+{{- _render_node_recursive(tree, node) -}}
+{%- endfor -%}
+{{- _exit_node(tree, node) -}}
+{%- endmacro -%}
+
+{% macro render_tree(tree) %}
+{{- _render_node_recursive(tree, tree.root) -}}
+{% endmacro %}
+

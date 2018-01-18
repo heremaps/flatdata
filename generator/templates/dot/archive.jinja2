@@ -1,0 +1,15 @@
+{% import "dot/styles.jinja2" as styles %}
+
+{%- macro enter(tree, archive) %}
+subgraph cluster_{{ archive.path_with() }}
+{
+    penwidth=1;
+    color="{{ styles.color_archive_border }}";
+    fillcolor="{{ styles.color_archive_bg }}";
+    label=<<b>{{ archive.name }}</b>>
+
+{%- endmacro %}
+
+{%- macro exit(tree, archive) %}
+    }
+{%- endmacro %}

@@ -1,0 +1,50 @@
+{%- macro reader_type(r) -%}
+    {%- set type_params = r.referenced_structures|to_type_params -%}
+
+    {%- if r|is_instance -%}
+        {{ type_params }}
+    {%- elif r|is_vector -%}
+        flatdata::ArrayView< {{ type_params }} >
+    {%- elif r|is_multivector -%}
+        flatdata::MultiArrayView< {{ type_params }} >
+    {%- elif r|is_raw_data -%}
+        flatdata::MemoryDescriptor
+    {%- elif r|is_archive_resource -%}
+        {{ r.target.node.path_with("::") }}
+    {%- else -%}
+        {% raise "Unsupported resource type" %}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro writer_type(r) -%}
+    {%- set type_params = r.referenced_structures|to_type_params -%}
+
+    {%- if r|is_instance -%}
+        {{ type_params }}
+    {%- elif r|is_vector -%}
+        flatdata::ExternalVector< {{ type_params }} >
+    {%- elif r|is_multivector -%}
+        flatdata::MultiVector< {{ type_params }} >
+    {%- elif r|is_raw_data -%}
+        flatdata::MemoryDescriptor
+    {%- elif r|is_archive_resource -%}
+        {{ r.target.node.path_with("::") }}Builder
+    {%- else -%}
+        {% raise "Unsupported resource type" %}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro incremental_write_call(r) -%}
+    {%- set type_params = r.referenced_structures|to_type_params -%}
+
+    {%- if r|is_vector -%}
+        create_external_vector< {{ type_params }} >
+    {%- elif r|is_multivector -%}
+        create_multi_vector< {{ type_params }} >
+    {%- elif r|is_archive_resource -%}
+        create_archive_builder< {{ writer_type(r) }}>
+    {%- else -%}
+        {% raise "Unsupported resource type" %}
+    {%- endif -%}
+{%- endmacro -%}
+
