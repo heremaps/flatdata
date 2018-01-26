@@ -1,4 +1,4 @@
-find_package(GTest CONFIG QUIET)
+find_package(GTest QUIET)
 find_package(Threads)
 if(NOT GTest_FOUND)
     set(USE_VENDOR_GTEST ON)
