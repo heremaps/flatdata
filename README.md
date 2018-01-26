@@ -72,7 +72,7 @@ int main() {
 }
 ```
 
-For more examples cf. the [examples](blob/master/examples) directory.
+For more examples cf. the [examples](examples) directory.
 
 ## Library Layout
 
