@@ -1,4 +1,4 @@
-# flatdata
+# flatdata [![Build Status](https://travis-ci.org/heremaps/flatdata.svg?branch=master)](https://travis-ci.org/heremaps/flatdata)
 
 Flatdata is a library providing data structures for convenient creation, storage and access of
 packed memory-mappable structures with minimal overhead possible.
@@ -83,7 +83,7 @@ Library is organized as follows:
    * `flatdata-cpp` includes C++ library sources. Client application needs to include and
                       link against this library.
    * `flatdata-py` includes python library sources. Client application needs to have this
-                     folder in PYTHON_PATH
+                     folder in PYTHON_PATH.
    * `tools` contains tools to work with flatdata archives.
        * `tools/inspect_flatdata.py` provides interactive python interpreter loaded with a specified
            archive.
