@@ -38,7 +38,7 @@ doxygen_add_docs(
     COMMENT "Generate doxygen output for flatdata-cpp"
 )
 
-add_custom_target(docs ALL DEPENDS flatdata_cpp_docs)
+add_custom_target(docs DEPENDS flatdata_cpp_docs)
 
 add_custom_command(TARGET docs
     PRE_BUILD
