@@ -1,10 +1,6 @@
-#
-
-all: fmt vet test bench
+all: fmt vet lint test bench
 deps:
 		echo "Install dependencies..."
-		go get -u github.com/golang/lint/golint
-		go get -u github.com/golang/dep/cmd/dep
 		dep ensure
 fmt:
 		echo "Run go fmt..."

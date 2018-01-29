@@ -4,8 +4,6 @@ clean:
 		find . -maxdepth 1 -type f -name "*_generated.go" -delete
 deps:
 		echo "Install dependencies..."
-		go get -u github.com/golang/lint/golint
-		go get -u github.com/golang/dep/cmd/dep
 		dep ensure
 fmt:
 		echo "Run go fmt..."
