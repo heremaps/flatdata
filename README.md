@@ -1,11 +1,32 @@
 # flatdata [![Build Status](https://travis-ci.org/heremaps/flatdata.svg?branch=master)](https://travis-ci.org/heremaps/flatdata)
 
-Flatdata is a library providing data structures for convenient creation, storage and access of
-packed memory-mappable structures with minimal overhead possible.
-Structures may contain bitfields which will be serialized in a platform-independent manner.
-Library consists of code generator for multiple target languages and target language libraries.
+Flatdata is a library providing data structures for convenient creation, storage and access of packed memory-mappable structures with minimal overhead. Library consists of schema language, code generator for C++ and Python, and target language libraries.
 
-## Build
+* [Why Flatdata](#why-flatdata)
+* [Building Flatdata](#building-flatdata)
+* [Using Flatdata](#using-flatdata)
+* [Library Layout](#library-layout)
+* [License](#license)
+
+## Why `flatdata`?
+
+Flatdata helps creating efficient datasets:
+
+* Zero overhead random access.
+* Support for bit and byte packing.
+* Structuring data using a schema definition.
+* Optimized for large read-only datasets.
+* Portable with supports multiple languages.
+
+Flatdata doesn't provide:
+
+* Backwards compatible schema evolution.
+* Support for mutable datasets.
+* Portable floating point serialization.
+
+For more details read [why flatdata](docs/why-flatdata.md).
+
+## Building `flatdata`
 
 The C++ part of the library depends on Boost. The schema generator and the Python part of the
 library require Python 3.
@@ -17,7 +38,7 @@ make
 make test  # optional
 ```
 
-## How to use
+## Using `flatdata`
 
 Define a flatdata archive, let's say `locations.flatdata`:
 ```cpp
