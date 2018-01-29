@@ -1,0 +1,11 @@
+namespace xyz{
+    struct T {
+        f0 : u8 : 3;
+    }
+    archive A {
+        vector_resource : vector< T >;
+        raw_data_resource : raw_data;
+        multivector_resource : multivector< 32, T >;
+        instance_resource : T;
+    }
+}

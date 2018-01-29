@@ -10,6 +10,7 @@ from generator.tree.nodes.trivial.namespace import Namespace
 
 from .generators.CppGenerator import CppGenerator
 from .generators.DotGenerator import DotGenerator
+from .generators.GoGenerator import GoGenerator
 from .generators.PythonGenerator import PythonGenerator
 
 
@@ -25,7 +26,8 @@ class Engine(object):
     _GENERATORS = {
         "cpp": CppGenerator,
         "py": PythonGenerator,
-        "dot": DotGenerator
+        "dot": DotGenerator,
+        "go": GoGenerator
     }
 
     @classmethod

@@ -3,3 +3,8 @@ __pycache__
 build
 venv*
 **/.vscode/**
+**/.idea/**
+**/*_generated.go
+**/coverage.out
+**/flatdata-fuzz.zip
+**/corpus/**
