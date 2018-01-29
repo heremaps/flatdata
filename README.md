@@ -12,17 +12,17 @@ Flatdata is a library providing data structures for convenient creation, storage
 
 Flatdata helps creating efficient datasets:
 
-* Zero overhead random access.
-* Support for bit and byte packing.
-* Structuring data using a schema definition.
-* Optimized for large read-only datasets.
-* Portable with supports multiple languages.
+* Zero overhead random access
+* Support for bit and byte packing
+* Structuring data using a schema definition
+* Optimized for large read-only datasets
+* Portable with support for multiple languages
 
 Flatdata doesn't provide:
 
-* Backwards compatible schema evolution.
-* Support for mutable datasets.
-* Portable floating point serialization.
+* Backwards compatible schema evolution
+* Support for mutable datasets
+* Portable floating point serialization
 
 For more details read [why flatdata](docs/why-flatdata.md).
 
