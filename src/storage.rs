@@ -62,7 +62,7 @@ pub trait ResourceStorage {
         let stored_schema_slice: &[u8] =
             unsafe { slice::from_raw_parts(schema.data(), schema.size_in_bytes()) };
         let stored_schema =
-            str::from_utf8(stored_schema_slice).map_err(|e| ResourceStorageError::Utf8Error(e))?;
+            str::from_utf8(stored_schema_slice).map_err(ResourceStorageError::Utf8Error)?;
         if stored_schema != expected_schema {
             return Err(ResourceStorageError::WrongSignature);
         }

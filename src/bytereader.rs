@@ -4,26 +4,26 @@ pub type StreamType = *const u8;
 macro_rules! read_bytes {
     ($T:tt, $data:expr, $offset:expr, $num_bits:expr) => {{
         let bytes: *const u8 = $data;
-        assert!(bytes != ::std::ptr::null(), "Reading uninitialized structure");
+        assert!(!bytes.is_null(), "Reading uninitialized structure");
         let mut reader: *const u8 = unsafe { bytes.offset($offset / 8) };
         let mut bits_left = $num_bits;
         let local_offset = $offset % 8;
         let mut result: u64 = 0;
         if local_offset != 0 && bits_left <= 8 - local_offset {
             // read first unaligned byte and return, since there is no more data to read
-            result = unsafe { *reader as u64 };
+            result = unsafe { u64::from(*reader) };
             result >>= local_offset;
             result &= (1 << bits_left) - 1;
         } else {
             // read first unaligned byte
             if local_offset != 0 {
-                result = unsafe { *reader as u64 };
+                result = unsafe { u64::from(*reader) };
                 result >>= local_offset;
                 bits_left -= 8 - local_offset;
                 reader = unsafe { reader.offset(1) };
             }
             while 8 <= bits_left {
-                let mut temp: u64 = unsafe { *reader as u64 };
+                let mut temp = unsafe { u64::from(*reader) };
                 temp <<= $num_bits - bits_left;
                 result |= temp;
 
@@ -32,7 +32,7 @@ macro_rules! read_bytes {
             }
             // read last unaligned byte
             if bits_left != 0 {
-                let mut temp: u64 = unsafe { *reader as u64 };
+                let mut temp = unsafe { u64::from(*reader) };
                 temp &= (1 << bits_left) - 1;
                 temp <<= $num_bits - bits_left;
                 result |= temp;

@@ -49,15 +49,14 @@ pub struct Graph {
 
 impl Graph {
     fn read_resource<R>(
-        storage: Rc<RefCell<ResourceStorage>>,
+        storage: &mut ResourceStorage,
         name: &str,
         schema: &str,
     ) -> Result<R, ResourceStorageError>
     where
         R: From<MemoryDescriptor>,
     {
-        let mut res_storage = storage.borrow_mut();
-        res_storage.read(name, schema).map(R::from)
+        storage.read(name, schema).map(R::from)
     }
 
     pub fn vertices(&self) -> &ArrayView<Vertex> {
@@ -110,18 +109,20 @@ namespace graph { archive Graph {
 
 impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ArchiveError> {
+        let vertices;
+        let edges;
         {
-            let mut res_storage = storage.borrow_mut();
+            let res_storage = &mut *storage.borrow_mut();
             res_storage
                 .read(&signature_name(Self::NAME), Self::SCHEMA)
-                .map_err(|e| ArchiveError::WrongSignature(e))?;
+                .map_err(ArchiveError::WrongSignature)?;
+            vertices = Self::read_resource(res_storage, "vertices", Vertex::SCHEMA)
+                .map(|mem| ArrayView::new(&mem))
+                .map_err(|e| ArchiveError::MandatoryResourceError("vertices", e))?;
+            edges = Self::read_resource(res_storage, "edges", Edge::SCHEMA)
+                .map(|mem| ArrayView::new(&mem))
+                .map_err(|e| ArchiveError::MandatoryResourceError("edges", e))?;
         }
-        let vertices = Self::read_resource(storage.clone(), "vertices", Vertex::SCHEMA)
-            .map(ArrayView::new)
-            .map_err(|e| ArchiveError::MandatoryResourceError("vertices", e))?;
-        let edges = Self::read_resource(storage.clone(), "edges", Edge::SCHEMA)
-            .map(ArrayView::new)
-            .map_err(|e| ArchiveError::MandatoryResourceError("edges", e))?;
         Ok(Self {
             _storage: storage,
             vertices: vertices,

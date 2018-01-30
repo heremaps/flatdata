@@ -13,9 +13,9 @@ struct MemoryMappedFileStorage {
 
 impl MemoryMappedFileStorage {
     pub fn new() -> Self {
-        return Self {
+        Self {
             maps: BTreeMap::new(),
-        };
+        }
     }
 
     pub fn read(&mut self, path: &str) -> MemoryDescriptor {

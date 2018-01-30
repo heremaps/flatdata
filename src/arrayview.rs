@@ -16,7 +16,7 @@ impl<T> ArrayView<T>
 where
     T: ArchiveType,
 {
-    pub fn new(mem_descr: MemoryDescriptor) -> Self {
+    pub fn new(mem_descr: &MemoryDescriptor) -> Self {
         ArrayView {
             data: mem_descr.data(),
             size: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
