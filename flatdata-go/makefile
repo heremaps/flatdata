@@ -2,7 +2,7 @@ GODIR=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go
 
 all: check test bench
 
-run-ci: deps check test bench
+run-ci: deps all
 
 setup-ci:
 		@echo "Setup for CI..."

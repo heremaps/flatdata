@@ -1,21 +1,30 @@
-all: clean fmt vet lint test
-clean:
-		echo "Cleanup..."
-		find . -maxdepth 1 -type f -name "*_generated.go" -delete
+GODIR=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go-backward-compatibility
+
+all: clean check test
+
+run-ci: deps all
+
+setup-ci:
+		@echo "Setup for CI..."
+		mkdir -p $(GODIR)
+		cp -R . $(GODIR)
+
 deps:
-		echo "Install dependencies..."
+		@echo "Install dependencies..."
 		dep ensure
-fmt:
-		echo "Run go fmt..."
+
+clean:
+		@echo "Cleanup..."
+		find . -maxdepth 1 -type f -name "*_generated.go" -delete
+
+check:
+		@echo "Run checks..."
 		go fmt $$(go list ./... | grep -v /vendor/)
-vet:
-		echo "Run go vet..."
 		go vet $$(go list ./... | grep -v /vendor/)
-lint:
-		echo "Run go lint..."
 		golint -set_exit_status $$(go list ./... | grep -v /vendor/)
+
 test:
-		echo "Run tests..."
+		@echo "Run tests..."
 		$$GOPATH/src/github.com/heremaps/flatdata/generator/app.py -g go \
 		-s test_backward_compatibility.schema \
 		-O test_backward_compatibility_generated.go
