@@ -14,12 +14,17 @@ import (
 )
 
 const (
-	flatdataMinSize                = 16
-	ErrorInvalidResource           = "invalid flatdata resource"
-	ErrorCantAccessResource        = "can't open flatdata resource"
+	flatdataMinSize = 16
+	// ErrorInvalidResource returns in case of size of resource is smaller than minimal
+	ErrorInvalidResource = "invalid flatdata resource"
+	// ErrorCantAccessResource returns if resource wasn't been memory-mapped
+	ErrorCantAccessResource = "can't open flatdata resource"
+	// ErrorCantOpenSchemaForResource returns if schema for resource wasn't open
 	ErrorCantOpenSchemaForResource = "can't open schema for resource"
-	ErrorSchemaEmpty               = "schema for resource is empty"
-	ErrorSchemaDidntMatch          = "schemas didn't match"
+	// ErrorSchemaEmpty returns in case when schema is empty
+	ErrorSchemaEmpty = "schema for resource is empty"
+	// ErrorSchemaDidntMatch returns if provided schema is not equal to schema in generated sources
+	ErrorSchemaDidntMatch = "schemas didn't match"
 )
 
 // ResourceProvider represents abstraction for getting resource handle
