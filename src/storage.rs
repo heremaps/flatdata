@@ -3,6 +3,8 @@ use std::str;
 use std::ptr;
 use std::slice;
 
+use error::ResourceStorageError;
+
 type SizeType = u64;
 const PADDING_SIZE: usize = 8;
 
@@ -12,9 +14,12 @@ const PADDING_SIZE: usize = 8;
 /// Manages schema for each resource and checks it on query.
 /// Resource storage is expected to provide read-write access to resources
 pub trait ResourceStorage {
-    fn read(&mut self, resource_name: &str, schema: &str) -> Option<MemoryDescriptor> {
-        let data = self.read_and_check_schema(resource_name, schema);
-        if !data.is_valid() { None } else { Some(data) }
+    fn read(
+        &mut self,
+        resource_name: &str,
+        schema: &str,
+    ) -> Result<MemoryDescriptor, ResourceStorageError> {
+        self.read_and_check_schema(resource_name, schema)
     }
 
     // fn write<T>(resource_name: &str, schema:&str, data: T);
@@ -32,41 +37,40 @@ pub trait ResourceStorage {
         &mut self,
         resource_name: &str,
         expected_schema: &str,
-    ) -> MemoryDescriptor {
+    ) -> Result<MemoryDescriptor, ResourceStorageError> {
         let data = self.read_resource(resource_name);
         if !data.is_valid() {
-            return MemoryDescriptor::default();
+            return Err(ResourceStorageError::MissingResource(resource_name.into()));
         }
 
-        let schema = self.read_resource(&format!("{}.schema", resource_name));
+        let schema_name = format!("{}.schema", resource_name);
+        let schema = self.read_resource(&schema_name);
         if !schema.is_valid() {
-            return MemoryDescriptor::default();
+            return Err(ResourceStorageError::MissingSchema(schema_name));
         }
 
         if data.size_in_bytes() < mem::size_of::<SizeType>() + PADDING_SIZE {
-            return MemoryDescriptor::default();
+            return Err(ResourceStorageError::UnexpectedDataSize);
         }
 
         let size = read_bytes!(SizeType, data.data()) as usize;
         if size + mem::size_of::<SizeType>() + PADDING_SIZE != data.size_in_bytes() {
-            return MemoryDescriptor::default();
+            return Err(ResourceStorageError::UnexpectedDataSize);
         }
 
-        // Note: len is size in bytes since we constructing u8 slice.
+        // Note: len is size in bytes since we are constructing u8 slice.
         let stored_schema_slice: &[u8] =
             unsafe { slice::from_raw_parts(schema.data(), schema.size_in_bytes()) };
-        let stored_schema = match str::from_utf8(stored_schema_slice) {
-            Ok(s) => s,
-            Err(_) => return MemoryDescriptor::default(),
-        };
+        let stored_schema =
+            str::from_utf8(stored_schema_slice).map_err(|e| ResourceStorageError::Utf8Error(e))?;
         if stored_schema != expected_schema {
-            return MemoryDescriptor::default();
+            return Err(ResourceStorageError::WrongSignature);
         }
 
-        MemoryDescriptor::new(
+        Ok(MemoryDescriptor::new(
             unsafe { data.data().offset(mem::size_of::<SizeType>() as isize) },
             size,
-        )
+        ))
     }
 }
 
@@ -95,7 +99,7 @@ impl MemoryDescriptor {
     }
 
     pub fn is_valid(&self) -> bool {
-        self.ptr != ptr::null()
+        !self.ptr.is_null()
     }
 
     pub fn describe(&self) -> String {

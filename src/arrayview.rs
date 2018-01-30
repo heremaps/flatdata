@@ -44,7 +44,11 @@ where
 
 impl<T> fmt::Debug for ArrayView<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "ArrayView{{ data: {:?}, size: {} }}", self.data, self.size)
+        write!(
+            f,
+            "ArrayView{{ data: {:?}, size: {} }}",
+            self.data, self.size
+        )
     }
 }
 

@@ -40,10 +40,9 @@ impl ResourceStorage for MemoryResourceStorage {
             let stream = self.storage.streams.get(&resource_path);
             match stream {
                 Some(stream) => {
-                    self.storage.resources.insert(
-                        resource_path.clone(),
-                        stream.clone(),
-                    );
+                    self.storage
+                        .resources
+                        .insert(resource_path.clone(), stream.clone());
                 }
                 None => {
                     return MemoryDescriptor::default();

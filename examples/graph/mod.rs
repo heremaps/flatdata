@@ -42,10 +42,9 @@ namespace graph { @explicit_reference( Edge.from_ref, vertices )
 pub struct Graph {
     /// Holds memory mapped files alive.
     _storage: Rc<RefCell<ResourceStorage>>,
-    signature: Option<MemoryDescriptor>,
-    // generared
-    vertices: Option<ArrayView<Vertex>>,
-    edges: Option<ArrayView<Edge>>,
+    // generated
+    vertices: ArrayView<Vertex>,
+    edges: ArrayView<Edge>,
 }
 
 impl Graph {
@@ -53,7 +52,7 @@ impl Graph {
         storage: Rc<RefCell<ResourceStorage>>,
         name: &str,
         schema: &str,
-    ) -> Option<R>
+    ) -> Result<R, ResourceStorageError>
     where
         R: From<MemoryDescriptor>,
     {
@@ -62,11 +61,11 @@ impl Graph {
     }
 
     pub fn vertices(&self) -> &ArrayView<Vertex> {
-        self.vertices.as_ref().unwrap()
+        &self.vertices
     }
 
     pub fn edges(&self) -> &ArrayView<Edge> {
-        self.edges.as_ref().unwrap()
+        &self.edges
     }
 }
 
@@ -110,34 +109,41 @@ namespace graph { archive Graph {
 }
 
 impl Archive for Graph {
-    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Self {
-        let signature;
+    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ArchiveError> {
         {
             let mut res_storage = storage.borrow_mut();
-            signature = res_storage.read(&signature_name(Self::NAME), Self::SCHEMA);
+            res_storage
+                .read(&signature_name(Self::NAME), Self::SCHEMA)
+                .map_err(|e| ArchiveError::WrongSignature(e))?;
         }
         let vertices = Self::read_resource(storage.clone(), "vertices", Vertex::SCHEMA)
-            .map(ArrayView::new);
-        let edges = Self::read_resource(storage.clone(), "edges", Edge::SCHEMA).map(ArrayView::new);
-        Self {
+            .map(ArrayView::new)
+            .map_err(|e| ArchiveError::MandatoryResourceError("vertices", e))?;
+        let edges = Self::read_resource(storage.clone(), "edges", Edge::SCHEMA)
+            .map(ArrayView::new)
+            .map_err(|e| ArchiveError::MandatoryResourceError("edges", e))?;
+        Ok(Self {
             _storage: storage,
-            signature: signature,
             vertices: vertices,
             edges: edges,
-        }
+        })
     }
 
-    fn is_open(&self) -> bool {
-        self.signature.is_some() && self.vertices.is_some() && self.edges.is_some()
+    fn name(&self) -> &str {
+        Self::NAME
     }
 
-    fn describe(&self) -> String {
-        String::from("TODO")
+    fn schema(&self) -> &str {
+        Self::SCHEMA
     }
 }
 
 impl fmt::Debug for Graph {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Graph {{ vertices: {:?}, edges: {:?} }}", self.vertices, self.edges)
+        write!(
+            f,
+            "Graph {{ vertices: {:?}, edges: {:?} }}",
+            self.vertices, self.edges
+        )
     }
 }

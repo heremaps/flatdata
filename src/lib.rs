@@ -5,11 +5,13 @@ mod bytereader;
 #[macro_use]
 mod archive;
 mod arrayview;
+mod error;
 mod filestorage;
 mod memstorage;
 mod storage;
 
 pub use archive::*;
+pub use error::*;
 pub use arrayview::ArrayView;
 pub use bytereader::StreamType;
 pub use filestorage::FileResourceStorage;
