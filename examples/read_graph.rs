@@ -12,10 +12,9 @@ use flatdata::Archive;
 mod graph;
 
 fn main() {
-    let mut args = env::args();
-    let prog_name = args.next().unwrap();
+    let mut args = env::args().skip(1);
     let path = args.next().unwrap_or_else(|| {
-        eprintln!("Usage: {} <flatdata_archive>", prog_name);
+        eprintln!("Usage: read_graph <flatdata_archive>");
         process::exit(1);
     });
 
