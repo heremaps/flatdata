@@ -1,19 +1,28 @@
-all: fmt vet lint test bench
+GODIR=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go
+
+all: check test bench
+
+run-ci: deps check test bench
+
+setup-ci:
+		@echo "Setup for CI..."
+		mkdir -p $(GODIR)
+		cp -R . $(GODIR)
+
 deps:
-		echo "Install dependencies..."
+		@echo "Install dependencies..."
 		dep ensure
-fmt:
-		echo "Run go fmt..."
+
+check:
+		@echo "Run checks..."
 		go fmt $$(go list ./... | grep -v /vendor/)
-vet:
-		echo "Run go vet..."
 		go vet $$(go list ./... | grep -v /vendor/)
-lint:
-		echo "Run go lint..."
 		golint -set_exit_status $$(go list ./... | grep -v /vendor/)
+
 test:
-		echo "Run tests..."
+		@echo "Run tests..."
 		go test -v -race $$(go list ./... | grep -v /vendor/) -coverprofile=coverage.out
+
 bench:
-		echo "Run benchmarks..."
+		@echo "Run benchmarks..."
 		go test -bench=.
