@@ -20,6 +20,7 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+ignored = ["github.com/heremaps/flatdata/flatdata-go"]
 
 [[constraint]]
   name = "github.com/stretchr/testify"

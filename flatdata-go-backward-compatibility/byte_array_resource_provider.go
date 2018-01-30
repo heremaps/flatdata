@@ -6,8 +6,9 @@ See the LICENSE file in the root of this project for license details.
 package backwardcompatibility
 
 import (
+	"errors"
+
 	"github.com/heremaps/flatdata/flatdata-go"
-	"github.com/pkg/errors"
 )
 
 type byteArrayResourceProvider struct {
