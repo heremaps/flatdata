@@ -1,7 +1,8 @@
 use std::collections::BTreeMap;
 use std::path;
+use std::fs::File;
 
-use memmap::{Mmap, Protection};
+use memmap::Mmap;
 
 use storage::{MemoryDescriptor, ResourceStorage};
 
@@ -19,16 +20,24 @@ impl MemoryMappedFileStorage {
 
     pub fn read(&mut self, path: &str) -> MemoryDescriptor {
         if let Some(mapping) = self.maps.get(path) {
-            return MemoryDescriptor::new(mapping.ptr(), mapping.len());
+            return MemoryDescriptor::new(mapping.as_ptr(), mapping.len());
         }
 
-        let file_mmap = match Mmap::open_path(path, Protection::Read) {
-            Ok(mmap) => mmap,
+        let file = match File::open(path) {
+            Ok(file) => file,
             Err(_) => return MemoryDescriptor::default(),
         };
 
-        let mem_descr = MemoryDescriptor::new(file_mmap.ptr(), file_mmap.len());
+        let file_mmap = unsafe {
+            match Mmap::map(&file) {
+                Ok(mmap) => mmap,
+                Err(_) => return MemoryDescriptor::default(),
+            }
+        };
+
+        let mem_descr = MemoryDescriptor::new(file_mmap.as_ptr(), file_mmap.len());
         self.maps.insert(path.into(), file_mmap);
+
         mem_descr
     }
 }
