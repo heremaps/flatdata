@@ -2,8 +2,7 @@
 Common library for flatdata Go implementation
 
 ### Requirements
-Library requires Go version 1.9 and higher.     
-It may support lower Go versions, but it doesn't tested with them and there are no guarantees!
+Library requires Go 1.9 and higher.
 
 ### Dependencies
 Use [**dep**](https://github.com/golang/dep) to properly add `flatdata-go` to your project.    
