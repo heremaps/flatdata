@@ -21,7 +21,7 @@ check:
 
 test:
 		@echo "Run tests..."
-		go test -v -race $$(go list ./... | grep -v /vendor/) -coverprofile=coverage.out
+		go test -v $$(go list ./... | grep -v /vendor/)
 
 bench:
 		@echo "Run benchmarks..."

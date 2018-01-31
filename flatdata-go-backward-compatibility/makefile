@@ -1,4 +1,5 @@
-GODIR=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go-backward-compatibility
+GOBASE=$$GOPATH/src/github.com/heremaps/flatdata
+GOBACK=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go-backward-compatibility
 
 all: clean check test
 
@@ -6,8 +7,9 @@ run-ci: deps all
 
 setup-ci:
 		@echo "Setup for CI..."
-		mkdir -p $(GODIR)
-		cp -R . $(GODIR)
+		mkdir -p $(GOBACK)
+		cp -R . $(GOBACK)
+		cp -R /src/generator $(GOBASE)
 
 deps:
 		@echo "Install dependencies..."
@@ -28,4 +30,4 @@ test:
 		$$GOPATH/src/github.com/heremaps/flatdata/generator/app.py -g go \
 		-s test_backward_compatibility.schema \
 		-O test_backward_compatibility_generated.go
-		go test -v -race $$(go list ./... | grep -v /vendor/)
+		go test -v $$(go list ./... | grep -v /vendor/)
