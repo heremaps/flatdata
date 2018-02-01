@@ -1,9 +1,0 @@
-namespace fib {
-    struct Number {
-        value : u64 : 64;
-    }
-
-    archive Fibonacci {
-        numbers: vector< Number >;
-    }
-}
