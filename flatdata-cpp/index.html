@@ -1,0 +1,994 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Flatdata C++ Libraries &#8212; flatdata 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Flatdata Python Libraries" href="../flatdata-py/index.html" />
+    <link rel="prev" title="Building archives" href="../building-archives.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="flatdata-c-libraries">
+<h1>Flatdata C++ Libraries<a class="headerlink" href="#flatdata-c-libraries" title="Permalink to this headline">¶</a></h1>
+<dl class="type">
+<dt>
+<em class="property">namespace </em><code class="descclassname"></code><code class="descname">flatdata</code><br /></dt>
+<dd><p>Copyright (c) 2017 HERE Europe B.V. See the LICENSE file in the root of this project for license details. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+void <code class="descname">copy_struct</code><span class="sig-paren">(</span>T <em>destination</em>, <em class="property">typename</em> T::AccessorType <em>source</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Utility function to copy the underlying data of a flatdata structure.</p>
+<p>Note: flatdata structures are handles to memory, in particular their copy operator just copies the handle, and not the data. In the situation when the underlying data should be copied, this function can be used. </p>
+</dd></dl>
+
+</div>
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descname">Archive</code><br /></dt>
+<dd><em>#include &lt;Archive.h&gt;</em><p>Base class for BRF archive. Implements functionality common for all archives. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <code class="descname">~Archive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Archive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd><p>Construct an uninitialized archive. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">Archive</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv28flatdata" title="flatdata">flatdata</a>::<a class="reference internal" href="#_CPPv2N8flatdata15ResourceStorageE" title="flatdata::ResourceStorage">ResourceStorage</a>&gt; <em>storage</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Construct archive with a given storage. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">operator bool</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Returns true if archive is correctly loaded. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Returns true if archive is correctly loaded. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="descname">describe</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Returns text description of the archive and its resources’ state. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <em class="property">const</em> char *<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<br /></dt>
+<dd><p>Returns archive name. Is implemented by the concrete archive instances. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <em class="property">const</em> char *<code class="descname">schema</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<br /></dt>
+<dd><p>Returns archive schema. Is implemented by the concrete archive instances. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descname">ArchiveBuilder</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <code class="descname">~ArchiveBuilder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">ArchiveBuilder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd><p>Construct an uninitialized archive. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">ArchiveBuilder</code><span class="sig-paren">(</span>std::shared_ptr&lt;<a class="reference internal" href="#_CPPv28flatdata" title="flatdata">flatdata</a>::<a class="reference internal" href="#_CPPv2N8flatdata15ResourceStorageE" title="flatdata::ResourceStorage">ResourceStorage</a>&gt; <em>storage</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>ArchiveBuilder. </p>
+<p><dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">storage</span></code>: </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <em class="property">const</em> char *<code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<br /></dt>
+<dd><p>Returns archive name. Is implemented by the concrete archive instances. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <em class="property">const</em> char *<code class="descname">schema</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<br /></dt>
+<dd><p>Returns archive schema. Is implemented by the concrete archive instances. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">is_open</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Returns true if archive is correctly loaded. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">operator bool</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Returns true if archive is correctly loaded. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">template </em>&lt;typename <em>T</em>&gt;</dt>
+<dt>
+<em class="property">class </em><code class="descname">ArrayView</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ConstValueType</code> = <em class="property">typename</em> T::AccessorType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ConstStreamType</code> = <em class="property">typename</em> T::AccessorType::StreamType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">const_iterator</code> = ArrayViewIterator&lt;T&gt;<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="descname">ArrayView</code><span class="sig-paren">(</span>ConstStreamType <em>data_begin</em> = nullptr, ConstStreamType <em>data_end</em> = nullptr<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+ConstValueType <code class="descname">operator[]</code><span class="sig-paren">(</span>size_t <em>i</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+const_iterator <code class="descname">begin</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+const_iterator <code class="descname">end</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+ConstStreamType <code class="descname">data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata9ArrayViewE" title="flatdata::ArrayView">ArrayView</a> <code class="descname">slice</code><span class="sig-paren">(</span>size_t <em>pos</em>, size_t <em>length</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata9ArrayViewE" title="flatdata::ArrayView">ArrayView</a> <code class="descname">slice_before</code><span class="sig-paren">(</span>size_t <em>pos</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata9ArrayViewE" title="flatdata::ArrayView">ArrayView</a> <code class="descname">slice_after</code><span class="sig-paren">(</span>size_t <em>pos</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">operator bool</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size_in_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="descname">describe</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">template </em>&lt;typename <em>T</em>&gt;</dt>
+<dt>
+<em class="property">class </em><code class="descname">ExternalVector</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ValueType</code> = <em class="property">typename</em> T::MutatorType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ConstValueType</code> = <em class="property">typename</em> T::AccessorType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">StreamType</code> = <em class="property">typename</em> T::MutatorType::StreamType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ConstStreamType</code> = <em class="property">typename</em> T::AccessorType::StreamType<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="descname">ExternalVector</code><span class="sig-paren">(</span>std::unique_ptr&lt;ResourceHandle&gt; <em>impl</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata14ExternalVectorE" title="flatdata::ExternalVector">ExternalVector</a>&lt;T&gt;::ValueType <code class="descname">grow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd><p>Add new element to the array. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>might flush existing elements to disk </dd>
+<dt><strong>Return</strong></dt>
+<dd>element mutator </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descname">FileResourceStorage</code><br /></dt>
+<dd><p>Inherits from flatdata::ResourceStorage</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+std::unique_ptr&lt;<a class="reference internal" href="#_CPPv2N8flatdata15ResourceStorageE" title="flatdata::ResourceStorage">ResourceStorage</a>&gt; <code class="descname">directory</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">exists</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+std::unique_ptr&lt;<a class="reference internal" href="#_CPPv2N8flatdata19FileResourceStorageE" title="flatdata::FileResourceStorage">FileResourceStorage</a>&gt; <code class="descname">create</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>path</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Open archive at a given path. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>FileArchive or nullptr on error </dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">struct </em><code class="descname">Hash</code><br /></dt>
+<dd><em>#include &lt;Hash.h&gt;</em><p>Hash function for a flatdata structure.</p>
+<p>Example:</p>
+<p>std::unordered_set&lt; flatdata::SomeStruct, flatdata::Hash &gt; set; std::unordered_map&lt; flatdata::SomeStruct, uint32_t, flatdata::Hash &gt; map; </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+size_t <code class="descname">operator()</code><span class="sig-paren">(</span><em class="property">const</em> T &amp;<em>value</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">struct </em><code class="descname">MemoryDescriptor</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="descname">MemoryDescriptor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">MemoryDescriptor</code><span class="sig-paren">(</span><em class="property">const</em> uint8_t *<em>ptr</em>, size_t <em>size</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">MemoryDescriptor</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>ptr</em>, size_t <em>size</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">operator bool</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="descname">describe</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">const</em> uint8_t *<code class="descname">data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">const</em> char *<code class="descname">char_ptr</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size_in_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descname">MemoryMappedFileStorage</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata16MemoryDescriptorE" title="flatdata::MemoryDescriptor">MemoryDescriptor</a> <code class="descname">read</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>path</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descname">MemoryResourceStorage</code><br /></dt>
+<dd><p>Inherits from flatdata::ResourceStorage</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+bool <code class="descname">exists</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::unique_ptr&lt;<a class="reference internal" href="#_CPPv2N8flatdata15ResourceStorageE" title="flatdata::ResourceStorage">ResourceStorage</a>&gt; <code class="descname">directory</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="descname">hexdump</code><span class="sig-paren">(</span>bool <em>dump_schemas</em> = false<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="descname">bindump</code><span class="sig-paren">(</span>bool <em>dump_schemas</em> = false<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata16MemoryDescriptorE" title="flatdata::MemoryDescriptor">MemoryDescriptor</a> <code class="descname">read_resource</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="descname">assign_value</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em>, <a class="reference internal" href="#_CPPv2N8flatdata16MemoryDescriptorE" title="flatdata::MemoryDescriptor">MemoryDescriptor</a> <em>value</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="descname">assign_value</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em>, <em class="property">const</em> char *<em>value</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt>
+std::unique_ptr&lt;<a class="reference internal" href="#_CPPv2N8flatdata21MemoryResourceStorageE" title="flatdata::MemoryResourceStorage">MemoryResourceStorage</a>&gt; <code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> IndexType, typename… <em>Args</em>&gt;</dt>
+<dt>
+<em class="property">class </em><code class="descname">MultiArrayView</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">StreamType</code> = <em class="property">const</em> unsigned char *<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="descname">MultiArrayView</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">MultiArrayView</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N8flatdata9ArrayViewE" title="flatdata::ArrayView">ArrayView</a>&lt;IndexType&gt; <em>index</em>, StreamType <em>data_begin</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename… <em>AcceptedArgs</em>, <em class="property">typename</em> F, typename = enable_if_t&lt; !has_args_list&lt; F &gt;::value &gt;, typename = enable_if_t&lt; internal::ExplicitForEachAssert&lt; F,                                                               AcceptedArgsList&lt; AcceptedArgs… &gt;,                                                               Args… &gt;::value &gt;&gt;</dt>
+<dt>
+void <code class="descname">for_each</code><span class="sig-paren">(</span>uint64_t <em>index</em>, F &amp;&amp;<em>callback</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Iterate through objects of specified types of the item specified by <code class="docutils literal"><span class="pre">index</span></code>.</p>
+<p>Usage example: MultiArrayView&lt;A, B, C&gt; view = …; view.for_each&lt;A, B&gt;( index ).call( callback ); // callback must be callable with types A and B</p>
+<p>If the callback should be called with every type in the container, there is a shortcut method: view.for_each( index ).call( callback ); // callback must be callable with all types of the container, i.e. A, B and C</p>
+<p>It is also possible partiatially to overload a function and not to specify all accepted types explicitely. For that use flatdata::make_overload. It stores the information, which types are accepted by the callback in the callback’s type: view.for_each( index ).call( make_overload( [](A) { … }, [](B) { … }, ); // callback will be called for objects of types A and B</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Proxy object that calls a given function. In particular, the given function must be callable for each type in AcceptedArgs. </dd>
+<dt><strong>Template Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">AcceptedArgs...</span></code>: Types of objects, for which the callback should be called </li>
+</ul>
+</dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">index</span></code>: Index of the item </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;typename… <em>AcceptedArgs</em>, <em class="property">typename</em> F, typename = enable_if_t&lt; !has_args_list&lt; F &gt;::value &gt;, typename = enable_if_t&lt; !internal::ExplicitForEachAssert&lt; F,                                                                AcceptedArgsList&lt; AcceptedArgs… &gt;,                                                                Args… &gt;::value &gt;&gt;</dt>
+<dt>
+std::false_type <code class="descname">for_each</code><span class="sig-paren">(</span>uint64_t, F&amp;&amp;<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Show static assert of failed explicit check </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> F, typename = enable_if_t&lt; has_args_list&lt; F &gt;::value &gt;, typename = enable_if_t&lt; internal::ImplicitForEachAssert&lt; F, Args… &gt;::value &gt;&gt;</dt>
+<dt>
+void <code class="descname">for_each</code><span class="sig-paren">(</span>uint64_t <em>index</em>, F &amp;&amp;<em>callback</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Implicit version of <code class="docutils literal"><span class="pre">for_each</span></code> to use with lambda’s constructed by flatdata::make_overload. </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> F, typename = enable_if_t&lt; has_args_list&lt; F &gt;::value &gt;, typename = enable_if_t&lt; !internal::ImplicitForEachAssert&lt; F, Args… &gt;::value &gt;&gt;</dt>
+<dt>
+std::false_type <code class="descname">for_each</code><span class="sig-paren">(</span>uint64_t, F&amp;&amp;<span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd><p>Show static assert of failed implicit check </p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+std::string <code class="descname">describe</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">operator bool</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> ElementType&gt;</dt>
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata14MultiArrayView8IteratorE" title="flatdata::MultiArrayView::Iterator">Iterator</a>&lt;ElementType&gt; <code class="descname">iterator</code><span class="sig-paren">(</span>uint64_t <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> ElementType&gt;</dt>
+<dt>
+<code class="descname">MultiArrayView&lt; IndexType, Args... &gt;::TEMPLATE_WORKAROUND Iterator&lt; ElementType &gt; flatdata::MultiArrayView::iterator(uint64_t index) const</code></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="class">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> ElementType&gt;</dt>
+<dt>
+<em class="property">class </em><code class="descname">Iterator</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+template&lt;&gt;<br /><code class="descname">Iterator</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br /><code class="descname">Iterator</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2IEN8flatdata14MultiArrayViewI9IndexType4ArgsE10StreamTypeE" title="flatdata::MultiArrayView&lt;IndexType, Args&gt;::StreamType">StreamType</a> <em>data_current</em>, <a class="reference internal" href="#_CPPv2IEN8flatdata14MultiArrayViewI9IndexType4ArgsE10StreamTypeE" title="flatdata::MultiArrayView&lt;IndexType, Args&gt;::StreamType">StreamType</a> <em>data_end</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br />bool <code class="descname">valid</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br />ElementType <code class="descname">operator*</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br />void <code class="descname">operator++</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+template&lt;&gt;<br />void <code class="descname">operator++</code><span class="sig-paren">(</span>int<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> IndexType, typename… <em>Args</em>&gt;</dt>
+<dt>
+<em class="property">class </em><code class="descname">MultiVector</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">View</code> = <a class="reference internal" href="#_CPPv2N8flatdata14MultiArrayViewE" title="flatdata::MultiArrayView">MultiArrayView</a>&lt;IndexType, Args...&gt;<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="descname">MultiVector</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv2N8flatdata14ExternalVectorE" title="flatdata::ExternalVector">ExternalVector</a>&lt;IndexType&gt; <em>index</em>, std::unique_ptr&lt;ResourceHandle&gt; <em>data_handle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+T::MutatorType <code class="descname">add_to_current_item</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="descname">next_item</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+bool <code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">class </em><code class="descname">ResourceStorage</code><br /></dt>
+<dd><em>#include &lt;ResourceStorage.h&gt;</em><p>Hierarchical Resource Storage. </p>
+<p>Manages and returns resources corresponding to their keys. Keys can be slash-separated(‘/’). Manages schema for each resource and checks it on query. Resource storage is expected to provide read-write access to resources </p>
+<p>Inherits from noncopyable</p>
+<p>Subclassed by flatdata::FileResourceStorage, flatdata::MemoryResourceStorage</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<em class="property">virtual</em> <code class="descname">~ResourceStorage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+boost::optional&lt;T&gt; <code class="descname">read</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>resource_name</em>, <em class="property">const</em> char *<em>schema</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Read resource. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>resource or empty object in case resource schema doesn’t match one provided. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">key</span></code>: resource key. </li>
+<li><code class="docutils literal"><span class="pre">schema</span></code>: expected resource schema. </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+bool <code class="descname">write</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>resource_name</em>, <em class="property">const</em> char *<em>schema</em>, T <em>data</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Write resource. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>true if operation is successful, false - otherwise </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal"><span class="pre">data</span></code>: resource data. </li>
+<li><code class="docutils literal"><span class="pre">key</span></code>: resource key. </li>
+<li><code class="docutils literal"><span class="pre">schema</span></code>: resource schema to store. </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata14ExternalVectorE" title="flatdata::ExternalVector">ExternalVector</a>&lt;T&gt; <code class="descname">create_external_vector</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>resource_name</em>, <em class="property">const</em> char *<em>schema</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Creates managed external vector, allowing to conserve memory usage by flushing data to the resource storage from time to time, in case it is not memory-based. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>growable array or nullptr on error </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> IndexType, typename… <em>Args</em>&gt;</dt>
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata11MultiVectorE" title="flatdata::MultiVector">MultiVector</a>&lt;IndexType, Args...&gt; <code class="descname">create_multi_vector</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>resource_name</em>, <em class="property">const</em> char *<em>schema</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Creates managed multi-vector, allowing to conserve memory usage by flushing data to the resource storage from time to time, in case it is not memory-based. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>MultiVector or nullptr on error </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata16MemoryDescriptorE" title="flatdata::MemoryDescriptor">MemoryDescriptor</a> <code class="descname">read_schema</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Provides memory descriptor for a resource schema associated with the given key. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>memory descriptor associated with the key or nullptr on error </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">virtual</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv2N8flatdata15ResourceStorageE" title="flatdata::ResourceStorage">ResourceStorage</a>&gt; <code class="descname">directory</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span> = 0<br /></dt>
+<dd><p>Get a directory by given key. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>ResourceStorage corresponding to the directory or nullptr on error </dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">virtual</em> bool <code class="descname">exists</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>key</em><span class="sig-paren">)</span> = 0<br /></dt>
+<dd><p>Check if resource exists. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> T&gt;</dt>
+<dt>
+<em class="property">class </em><code class="descname">Vector</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ValueType</code> = <em class="property">typename</em> T::MutatorType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ConstValueType</code> = <em class="property">typename</em> T::AccessorType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">StreamType</code> = <em class="property">typename</em> T::MutatorType::StreamType<br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt>
+template&lt;&gt;<br /><em class="property">using </em><code class="descname">ConstStreamType</code> = <em class="property">typename</em> T::AccessorType::StreamType<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt>
+<code class="descname">Vector</code><span class="sig-paren">(</span>size_t <em>size</em> = 0<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ConstValueType <code class="descname">operator[]</code><span class="sig-paren">(</span>size_t <em>i</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ValueType <code class="descname">operator[]</code><span class="sig-paren">(</span>size_t <em>i</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ConstValueType <code class="descname">front</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ValueType <code class="descname">front</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ConstValueType <code class="descname">back</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ValueType <code class="descname">back</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size_in_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+size_t <code class="descname">size</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ConstStreamType <code class="descname">data</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::StreamType <code class="descname">data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="descname">resize</code><span class="sig-paren">(</span>size_t <em>size</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="descname">reserve</code><span class="sig-paren">(</span>size_t <em>size</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<a class="reference internal" href="#_CPPv2N8flatdata6VectorE" title="flatdata::Vector">Vector</a>&lt;T&gt;::ValueType <code class="descname">grow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+void <code class="descname">pop_back</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<code class="descname">operator ArrayView&lt;ConstValueType&gt;</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="type">
+<dt>
+<em class="property">namespace </em><code class="descname">helpers</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> Map&gt;</dt>
+<dt>
+bool <code class="descname">prefix_exists</code><span class="sig-paren">(</span><em class="property">const</em> Map &amp;<em>m</em>, <em class="property">const</em> std::string &amp;<em>prefix</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<em class="property">template </em>&lt;<em class="property">typename</em> CharSerializer&gt;</dt>
+<dt>
+void <code class="descname">dump_resource</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>key</em>, <em class="property">const</em> std::string &amp;<em>contents</em>, size_t <em>line_size</em>, CharSerializer &amp;&amp;<em>serializer</em>, size_t <em>element_width</em>, std::ostream &amp;<em>out</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../why-flatdata.html">Why <code class="docutils literal"><span class="pre">flatdata</span></code>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library-layout.html">Flatdata Library Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schema-language.html">Schema Language</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../building-archives.html">Building archives</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Flatdata C++ Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flatdata-py/index.html">Flatdata Python Libraries</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-documentation/generator-architecture.html">Generator Architecture</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../building-archives.html" title="previous chapter">Building archives</a></li>
+      <li>Next: <a href="../flatdata-py/index.html" title="next chapter">Flatdata Python Libraries</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, HERE Technologies.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

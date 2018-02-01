@@ -1,0 +1,288 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>flatdata.resources &#8212; flatdata 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for flatdata.resources</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd"> Copyright (c) 2017 HERE Europe B.V.</span>
+<span class="sd"> See the LICENSE file in the root of this project for license details.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">.data_access</span> <span class="k">import</span> <span class="n">read_value</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="k">import</span> <span class="n">CorruptResourceError</span>
+
+<span class="n">SIZE_OFFSET_IN_BITS</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="n">SIZE_OFFSET_IN_BYTES</span> <span class="o">=</span> <span class="n">SIZE_OFFSET_IN_BITS</span> <span class="o">//</span> <span class="mi">8</span>
+<span class="n">SIZE_PADDING_IN_BYTES</span> <span class="o">=</span> <span class="mi">8</span>
+
+
+<div class="viewcode-block" id="ResourceBase"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.ResourceBase">[docs]</a><span class="k">class</span> <span class="nc">ResourceBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mem</span><span class="p">,</span> <span class="n">element_type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">mem</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">SIZE_OFFSET_IN_BYTES</span> <span class="o">+</span> <span class="n">SIZE_PADDING_IN_BYTES</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">CorruptResourceError</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mem</span> <span class="o">=</span> <span class="n">mem</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span> <span class="o">=</span> <span class="n">element_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_element_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">element_type</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_type_size_in_bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span><span class="o">.</span><span class="n">_SIZE_IN_BYTES</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span> <span class="ow">is</span> <span class="ow">not</span> \
+                                                                        <span class="kc">None</span> <span class="k">else</span> <span class="mi">1</span><span class="p">;</span>
+
+<div class="viewcode-block" id="ResourceBase.size_in_bytes"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.ResourceBase.size_in_bytes">[docs]</a>    <span class="k">def</span> <span class="nf">size_in_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_item_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SIZE_OFFSET_IN_BYTES</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span><span class="o">.</span><span class="n">_SIZE_IN_BYTES</span> <span class="o">*</span> <span class="n">index</span><span class="p">;</span>
+
+    <span class="k">def</span> <span class="nf">_get_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_offset</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type_size_in_bytes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">offset</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_repr_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;container_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+            <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+            <span class="s2">&quot;size_in_bytes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">size_in_bytes</span><span class="p">(),</span>
+            <span class="s2">&quot;element_types&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">_repr_attributes</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_types</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_repr_attributes</span><span class="p">(),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResourceBase.open"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.ResourceBase.open">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initializer</span><span class="p">,</span> <span class="n">is_optional</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_optional</span><span class="p">),</span> <span class="n">initializer</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_is_archive</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Necessary to distinguish between archive and normal resources in a reliable manner.</span>
+<span class="sd">        isinstance fails to do the check with current module structure.</span>
+<span class="sd">        https://stackoverflow.com/questions/38514730/isinstance-returns-false-when-the-fully-qualified-object-class-differs-from-th</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<span class="k">class</span> <span class="nc">_VectorSlice</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">sequence</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_slice</span> <span class="o">=</span> <span class="n">s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span> <span class="o">=</span> <span class="n">sequence</span>
+
+    <span class="k">def</span> <span class="nf">to_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span>
+                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">member</span> <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="o">.</span><span class="n">_element_type</span><span class="o">.</span><span class="n">_FIELD_KEYS</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_slice</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">))):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sequence</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">name</span><span class="p">)]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_data_frame</span><span class="p">()</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="Vector"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.Vector">[docs]</a><span class="k">class</span> <span class="nc">Vector</span><span class="p">(</span><span class="n">ResourceBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mem</span><span class="p">,</span> <span class="n">element_type</span><span class="p">):</span>
+        <span class="n">ResourceBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mem</span><span class="p">,</span> <span class="n">element_type</span><span class="p">)</span>
+        <span class="n">size_in_bytes</span> <span class="o">=</span> <span class="n">read_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SIZE_OFFSET_IN_BITS</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">size</span><span class="p">,</span> <span class="n">rem</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">size_in_bytes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type_size_in_bytes</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">rem</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Malformed vector&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_size</span> <span class="o">=</span> <span class="n">size</span>
+
+<div class="viewcode-block" id="Vector.to_data_frame"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.Vector.to_data_frame">[docs]</a>    <span class="k">def</span> <span class="nf">to_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">[:]</span><span class="o">.</span><span class="n">to_data_frame</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="nb">slice</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_VectorSlice</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;Vector access out of bounds&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_item</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_item</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">name</span><span class="p">)]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span></div>
+
+
+<div class="viewcode-block" id="Multivector"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.Multivector">[docs]</a><span class="k">class</span> <span class="nc">Multivector</span><span class="p">(</span><span class="n">ResourceBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_mem</span><span class="p">,</span> <span class="n">mem</span><span class="p">,</span> <span class="n">index_type</span><span class="p">,</span> <span class="o">*</span><span class="n">element_types</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="n">Vector</span><span class="p">(</span><span class="n">index_mem</span><span class="p">,</span> <span class="n">index_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mem</span> <span class="o">=</span> <span class="n">mem</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_element_types</span> <span class="o">=</span> <span class="n">element_types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index_type</span> <span class="o">=</span> <span class="n">index_type</span>
+
+<div class="viewcode-block" id="Multivector.open"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.Multivector.open">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">storage</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">initializer</span><span class="p">,</span> <span class="n">is_optional</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_index&quot;</span><span class="p">,</span> <span class="n">is_optional</span><span class="p">),</span>
+                   <span class="n">storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">is_optional</span><span class="p">),</span>
+                   <span class="o">*</span><span class="n">initializer</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_bucket_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">)</span> <span class="o">-</span> <span class="n">SIZE_PADDING_IN_BYTES</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">SIZE_OFFSET_IN_BYTES</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bucket_offset</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">next_offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bucket_offset</span><span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">elements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">offset</span> <span class="o">&lt;</span> <span class="n">next_offset</span><span class="p">:</span>
+            <span class="n">type_index</span> <span class="o">=</span> <span class="n">read_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">,</span> <span class="n">offset</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">element_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_types</span><span class="p">[</span><span class="n">type_index</span><span class="p">]</span>
+            <span class="n">element</span> <span class="o">=</span> <span class="n">element_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="n">element_type</span><span class="o">.</span><span class="n">_SIZE_IN_BYTES</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">offset</span><span class="p">)</span>
+            <span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="n">element_type</span><span class="o">.</span><span class="n">_SIZE_IN_BYTES</span>
+        <span class="k">return</span> <span class="n">elements</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repr_attributes</span><span class="p">()</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">index_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index_type</span><span class="o">.</span><span class="n">_repr_attributes</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RawData"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.RawData">[docs]</a><span class="k">class</span> <span class="nc">RawData</span><span class="p">(</span><span class="n">ResourceBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">read_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">SIZE_OFFSET_IN_BITS</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="nb">slice</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">SIZE_OFFSET_IN_BYTES</span><span class="p">,</span>
+                                   <span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">stop</span> <span class="o">+</span> <span class="n">SIZE_OFFSET_IN_BYTES</span><span class="p">)</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                                   <span class="n">item</span><span class="o">.</span><span class="n">step</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">[</span><span class="n">item</span> <span class="o">+</span> <span class="n">SIZE_OFFSET_IN_BYTES</span><span class="p">:</span><span class="n">item</span> <span class="o">+</span> <span class="n">SIZE_OFFSET_IN_BYTES</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Instance"><a class="viewcode-back" href="../../flatdata-py/flatdata.html#flatdata.resources.Instance">[docs]</a><span class="k">class</span> <span class="nc">Instance</span><span class="p">(</span><span class="n">ResourceBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_offset</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mem</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_element_type</span><span class="o">.</span><span class="n">_SIZE_IN_BYTES</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+                               <span class="n">offset</span><span class="p">),</span>
+            <span class="n">name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">1</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.svg" alt="Logo"/>
+            </a></p>
+<h3><a href="../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../why-flatdata.html">Why <code class="docutils literal"><span class="pre">flatdata</span></code>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../library-layout.html">Flatdata Library Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema-language.html">Schema Language</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../building-archives.html">Building archives</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../flatdata-cpp/index.html">Flatdata C++ Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../flatdata-py/index.html">Flatdata Python Libraries</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../developer-documentation/generator-architecture.html">Generator Architecture</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, HERE Technologies.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

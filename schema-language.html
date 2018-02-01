@@ -1,0 +1,313 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Schema Language &#8212; flatdata 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Building archives" href="building-archives.html" />
+    <link rel="prev" title="Flatdata Library Layout" href="library-layout.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="schema-language">
+<h1>Schema Language<a class="headerlink" href="#schema-language" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="basic-types">
+<h2>Basic Types<a class="headerlink" href="#basic-types" title="Permalink to this headline">¶</a></h2>
+<p>Flatdata supports following basic types:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">bool</span></code> - boolean data type</li>
+<li><code class="docutils literal"><span class="pre">i8</span></code> - signed 8-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">u8</span></code> - unsigned 8-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">i16</span></code> - signed 16-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">u16</span></code> - unsigned 16-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">i32</span></code> - signed 32-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">u32</span></code> - unsigned 32-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">i64</span></code> - signed 64-bit wide type</li>
+<li><code class="docutils literal"><span class="pre">u64</span></code> - unsigned 64-bit wide type</li>
+</ul>
+</div>
+<div class="section" id="structures">
+<h2>Structures<a class="headerlink" href="#structures" title="Permalink to this headline">¶</a></h2>
+<p>Flatdata structure definition syntax resembles known alternatives,
+albeit with notable differences:</p>
+<ul class="simple">
+<li><em>Backward compatibility:</em> flatdata format does not have backward
+compatibility support built in. It is not meant to be used directly
+in communication protocols, there are libraries which are well-known
+and well-suited for that purpose. Flatdata is a create-once
+read-extensively storage library.</li>
+<li><em>Bit fields:</em> Unlike with some other formats, bitfields are supported
+natively in a platform- independent fashion.</li>
+</ul>
+<p>Each structure is defined as follows:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="o">&lt;</span><span class="n">Name</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="o">&lt;</span><span class="n">field</span><span class="o">&gt;</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">width</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Structure</span> <span class="p">{</span>
+    <span class="nl">field1</span> <span class="p">:</span> <span class="nl">u32</span> <span class="p">:</span> <span class="mi">29</span><span class="p">;</span>
+    <span class="nl">field2</span> <span class="p">:</span> <span class="nl">u8</span> <span class="p">:</span> <span class="mi">2</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Every structure field specifies target language type to represent the
+field and its target size in bits. Flatdata takes care of packing and
+aligning the structures correctly as well as accessing them efficiently.</p>
+</div>
+<div class="section" id="archives">
+<h2>Archives<a class="headerlink" href="#archives" title="Permalink to this headline">¶</a></h2>
+<p>Flatdata archive is the entry point to the data. Archives are the
+smallest data units which can be opened or written to disk. An archive’s
+schema is saved along with the data and is checked when the archive is
+opened. If schema does not match expectations, archive can not be
+opened.</p>
+<p>Archives are defined as follows:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">archive</span> <span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="o">&lt;</span><span class="n">resource</span><span class="o">&gt;</span> <span class="o">:</span> <span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="p">;</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">archive</span> <span class="n">ExampleArchive</span> <span class="p">{</span>
+    <span class="nl">single_structure</span> <span class="p">:</span> <span class="n">StructureType</span><span class="p">;</span>
+    <span class="nl">vector_of_stuff</span> <span class="p">:</span> <span class="n">vector</span><span class="o">&lt;</span> <span class="n">StructureType</span> <span class="o">&gt;</span><span class="p">;</span>
+    <span class="nl">what_an_archive_without_a_map</span> <span class="p">:</span> <span class="n">multivector</span><span class="o">&lt;</span> <span class="mi">40</span><span class="p">,</span> <span class="n">StructureA</span><span class="p">,</span> <span class="n">StructureB</span><span class="p">,</span> <span class="n">StructureC</span> <span class="o">&gt;</span><span class="p">;</span>
+    <span class="nl">strings_forever</span> <span class="p">:</span> <span class="n">raw_data</span><span class="p">;</span>
+    <span class="nl">lets_get_some_structure</span> <span class="p">:</span> <span class="n">archive</span> <span class="n">OtherArchive</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="resources">
+<h2>Resources<a class="headerlink" href="#resources" title="Permalink to this headline">¶</a></h2>
+<p>Archive resources can be one of following types:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">T</span></code> - a single structure of given type</li>
+<li><code class="docutils literal"><span class="pre">vector&lt;</span> <span class="pre">T</span> <span class="pre">&gt;</span></code> - a vector of structures of a given type.</li>
+<li><code class="docutils literal"><span class="pre">multivector&lt;</span> <span class="pre">IndexSize,</span> <span class="pre">T1,</span> <span class="pre">T2,</span> <span class="pre">...</span> <span class="pre">&gt;</span></code> - a heterogenuous
+associative container for storing multiple properties for a single
+entity. Allows efficient storage of the data whose properties are
+sparsily assigned to each item. Think of it as a multimap of
+variants.</li>
+<li><code class="docutils literal"><span class="pre">raw_data</span></code> - Uninterpreted raw data. Useful for storing arrays of
+non-numeric data like strings referenced from structures.</li>
+<li><code class="docutils literal"><span class="pre">archive</span> <span class="pre">ArchiveName</span></code> - Archive resource. Archive resources allow
+to structure large archives better, while also acting as a namespace
+and grouping optionality semantics. Referenced archive type has to be
+defined.</li>
+</ul>
+</div>
+<div class="section" id="comments">
+<h2>Comments<a class="headerlink" href="#comments" title="Permalink to this headline">¶</a></h2>
+<p>Flatdata schema supports C++-style comments. Comments located before
+structures/archives or their members will be available in generated
+code. Example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="c1">/// A single secret. Might be important</span>
+<span class="k">struct</span> <span class="n">Secret</span> <span class="p">{</span> <span class="nl">importance</span> <span class="p">:</span> <span class="nl">u64</span> <span class="p">:</span> <span class="mi">64</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * Very important archive</span>
+<span class="cm"> */</span>
+<span class="n">archive</span> <span class="n">TheBookOfSecrets</span> <span class="p">{</span>
+    <span class="c1">// More important secret</span>
+    <span class="nl">secret1</span> <span class="p">:</span> <span class="n">Secret</span><span class="p">;</span>
+    <span class="c1">// Less important secret</span>
+    <span class="nl">secret2</span> <span class="p">:</span> <span class="n">Secret</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="decorations">
+<h2>Decorations<a class="headerlink" href="#decorations" title="Permalink to this headline">¶</a></h2>
+<p>Decorations declare additional properties of entities they are applied
+to. Decorations supported at the moment are described below. Note that
+not all target languages provide full support for all decorations. For
+example, <code class="docutils literal"><span class="pre">dot</span></code> generator uses decorations to group archive resources
+and create reference edges, while other generators mostly support only
+<code class="docutils literal"><span class="pre">&#64;optional</span></code>.</p>
+<p>Nonetheless, decorations are first-class citizens of schema and thus are
+validated as well during archive opening.</p>
+<div class="section" id="optional">
+<h3>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">&#64;optional</span></code> can be applied to resources. If resource is optional and
+missing, archive can still be opened successfully. Resource of any type
+can be optional. Example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span>archive Archive {
+    @optional
+    resource: vector&lt; SomeStructure &gt;;
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="explicit-reference">
+<h3>Explicit Reference<a class="headerlink" href="#explicit-reference" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal"><span class="pre">&#64;explicit_reference</span></code> declares an explicit reference of one resource’s
+property to another resource. This is a very common type of referencing
+in flatdata and can be seen as a “Foreign Key”, with the exception that
+consistency of the key is not enforced.</p>
+<p>It is possible to define explicit reference with its target in a
+different archive, as long as it is defined.</p>
+<p>Example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span>struct Person {
+    name : u64 : 64;
+    first_child : u64 : 64;
+}
+
+archive Archive {
+    @explicit_reference( Person.name, names )
+    @explicit_reference( Person.first_child, children )
+    people: vector&lt; Person &gt;
+
+    children: vector&lt; Child &gt;
+
+    names: raw_data
+}
+</pre></div>
+</div>
+</div>
+<div class="section" id="bound-implicitly">
+<h3>Bound Implicitly<a class="headerlink" href="#bound-implicitly" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes it is useful to split structures’ fields into multiple
+resources (for example, to promote data locality in case binary search
+is done extensively on a particular field). <code class="docutils literal"><span class="pre">&#64;bound_implicitly</span></code>
+declares that such resources are grouped implicitly and therefore
+represent a single entity. The decoration also gives entity a name</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span>@bound_implicitly( transactions: keys, transaction_data )
+archive Archive {
+    keys: vector&lt; Key &gt;
+    transaction_data : vector&lt; Transaction &gt;
+}
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="entity-referencing">
+<h2>Entity Referencing<a class="headerlink" href="#entity-referencing" title="Permalink to this headline">¶</a></h2>
+<p>Resources and decorations can reference other entities declared in the
+schema. Types can be specified either with fully-qualified path or with
+local path, for example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span></span><span class="n">namespace</span> <span class="n">N</span> <span class="p">{</span>
+    <span class="k">struct</span> <span class="n">T</span> <span class="p">{</span>
+        <span class="p">...</span>
+    <span class="p">}</span>
+
+    <span class="n">archive</span> <span class="n">Archive</span> <span class="p">{</span>
+        <span class="c1">// Local path</span>
+        <span class="nl">resource</span><span class="p">:</span> <span class="n">vector</span><span class="o">&lt;</span> <span class="n">T</span> <span class="o">&gt;</span>
+        <span class="c1">// Fully-qualified path</span>
+        <span class="nl">another_resource</span><span class="p">:</span> <span class="n">vector</span><span class="o">&lt;</span> <span class="p">.</span><span class="n">N</span><span class="p">.</span><span class="n">T</span> <span class="o">&gt;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Local paths must be available in the current namespace. If not, error
+will be reported.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.svg" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="why-flatdata.html">Why <code class="docutils literal"><span class="pre">flatdata</span></code>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library-layout.html">Flatdata Library Layout</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Schema Language</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-types">Basic Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#structures">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#archives">Archives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resources">Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#comments">Comments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#decorations">Decorations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#entity-referencing">Entity Referencing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="building-archives.html">Building archives</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flatdata-cpp/index.html">Flatdata C++ Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flatdata-py/index.html">Flatdata Python Libraries</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developer-documentation/generator-architecture.html">Generator Architecture</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="library-layout.html" title="previous chapter">Flatdata Library Layout</a></li>
+      <li>Next: <a href="building-archives.html" title="next chapter">Building archives</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, HERE Technologies.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,185 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Generator Architecture &#8212; flatdata 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="flatdata package" href="../flatdata-py/flatdata.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="generator-architecture">
+<h1>Generator Architecture<a class="headerlink" href="#generator-architecture" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="stages">
+<h2>Stages<a class="headerlink" href="#stages" title="Permalink to this headline">¶</a></h2>
+<p>Flatdata generator works in several stages which are clearly separated
+from one another and can be extended/tested in isolation. These are:</p>
+<ol class="arabic simple">
+<li><em>Parse the source schema</em> file using <code class="docutils literal"><span class="pre">pyparsing</span></code> library. Grammar
+for the schema is defined in <code class="docutils literal"><span class="pre">grammar.py</span></code></li>
+<li><em>Construct a node tree</em> out of <code class="docutils literal"><span class="pre">pyparsing.ParseResults</span></code>. Node tree
+contains entities for every construct of flatdata grammar organized
+in hierarchical order allowing non-tree references between nodes.
+Most prominent node types are:<ul>
+<li><code class="docutils literal"><span class="pre">Namespace</span></code> - Nesting namespaces in the tree is allowed.</li>
+<li><code class="docutils literal"><span class="pre">Structure</span></code> - Structures are grouping together a set of fields.</li>
+<li><code class="docutils literal"><span class="pre">Archive</span></code> - Archives are grouping together resources and are
+referencing structures or other archives (see <code class="docutils literal"><span class="pre">Reference</span></code>)</li>
+<li><code class="docutils literal"><span class="pre">ResourceBase</span></code> - All resources derive from <code class="docutils literal"><span class="pre">ResourceBase</span></code></li>
+<li><code class="docutils literal"><span class="pre">Reference</span></code> - All references between flatdata entities are
+modelled with <code class="docutils literal"><span class="pre">Reference</span></code> nodes. All references participate in
+name resolution. There are two type of references:<ul>
+<li><code class="docutils literal"><span class="pre">RuntimeReference</span></code> - model explicit references and bound
+resources. Model relations of the schema that show themselves
+at runtime.</li>
+<li><code class="docutils literal"><span class="pre">TypeReference</span></code> - model type dependencies. Are used during
+topological sorting at later stage. Are used as well at for
+schema resolution.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><em>Augment the tree</em> with structures and references that are not
+directly corresponding to <code class="docutils literal"><span class="pre">pyparsing.ParseResults</span></code> or needed to
+implement advanced features. Among these:<ul>
+<li><em>Add builtin structures</em> if any of the resources require them. For
+example, <code class="docutils literal"><span class="pre">multivector&lt;</span> <span class="pre">N,</span> <span class="pre">...</span> <span class="pre">&gt;</span></code> requires
+<code class="docutils literal"><span class="pre">_builtin.multivector.IndexTypeN</span></code> to be available.</li>
+<li><em>Add constant references</em> to all archives so that constants are
+available for schema resolution.</li>
+</ul>
+</li>
+<li><em>Resolve references</em> iterates through all references and tries to
+find a node they refer to, either in:<ul>
+<li>Parent scopes until (inclusive) innermost parent namespace.</li>
+<li>Root node if path is fully qualified.</li>
+</ul>
+</li>
+<li><em>Perform topological sorting</em> to detect cycles in between entities
+and to determine the order of serialization for targets that depend
+on one.</li>
+<li><em>Generate the source code</em> using nodes in topological order <em>and/or</em>
+the tree (depending on the generator architecture - recursive descent
+or iterative).</li>
+</ol>
+</div>
+<div class="section" id="node-tree">
+<h2>Node Tree<a class="headerlink" href="#node-tree" title="Permalink to this headline">¶</a></h2>
+<p>Every node of the tree consists of its name, properties (metadata) and
+holds references to its children. Eveny node is reachable via certain
+path which is a dot-joint concatenation of the names of its parents.
+Node tree enforces several properties of the flatdata schema:</p>
+<ul class="simple">
+<li><em>No conflicting declarations</em>: No two nodes with the same path are
+allowed.</li>
+<li><em>All references are correct</em>: All reference nodes are resolvable.</li>
+<li><em>No cyclyc dependencies among resources</em>: All <code class="docutils literal"><span class="pre">TypeReference</span></code>
+participate in topological sorting of the DAG formed by the tree
+edges and edges between source and target of a <code class="docutils literal"><span class="pre">TypeReference</span></code></li>
+</ul>
+<div class="section" id="references">
+<h3>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h3>
+<p>Reference names are mangled so they are not ambiguous with other paths
+components. For example reference to type <code class="docutils literal"><span class="pre">T</span></code> would have name <code class="docutils literal"><span class="pre">&#64;T</span></code>,
+and similarly reference to <code class="docutils literal"><span class="pre">.foo.bar.T</span></code> would change to
+<code class="docutils literal"><span class="pre">&#64;&#64;foo&#64;bar&#64;T</span></code>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../why-flatdata.html">Why <code class="docutils literal"><span class="pre">flatdata</span></code>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library-layout.html">Flatdata Library Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schema-language.html">Schema Language</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../building-archives.html">Building archives</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../flatdata-cpp/index.html">Flatdata C++ Libraries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flatdata-py/index.html">Flatdata Python Libraries</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Generator Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stages">Stages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#node-tree">Node Tree</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../flatdata-py/flatdata.html" title="previous chapter">flatdata package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, HERE Technologies.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

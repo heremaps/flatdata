@@ -1,0 +1,352 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>flatdata package &#8212; flatdata 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Generator Architecture" href="../developer-documentation/generator-architecture.html" />
+    <link rel="prev" title="flatdata-py" href="modules.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="flatdata-package">
+<h1>flatdata package<a class="headerlink" href="#flatdata-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-flatdata.archive">
+<span id="submodules"></span><h2>Submodules<a class="headerlink" href="#module-flatdata.archive" title="Permalink to this headline">¶</a></h2>
+<p>Copyright (c) 2017 HERE Europe B.V.
+See the LICENSE file in the root of this project for license details.</p>
+<dl class="class">
+<dt id="flatdata.archive.Archive">
+<em class="property">class </em><code class="descclassname">flatdata.archive.</code><code class="descname">Archive</code><span class="sig-paren">(</span><em>resource_storage</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Archive class. Entry point to Flatdata.
+Provides access to flatdata resources and verifies archive/resource schemas on opening.</p>
+<dl class="classmethod">
+<dt id="flatdata.archive.Archive.name">
+<em class="property">classmethod </em><code class="descname">name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="flatdata.archive.Archive.open">
+<em class="property">classmethod </em><code class="descname">open</code><span class="sig-paren">(</span><em>storage</em>, <em>name</em>, <em>initializer</em>, <em>is_optional=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="flatdata.archive.Archive.resource_schema">
+<em class="property">classmethod </em><code class="descname">resource_schema</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive.resource_schema"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive.resource_schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="flatdata.archive.Archive.schema">
+<em class="property">classmethod </em><code class="descname">schema</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive.schema"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="flatdata.archive.Archive.size_in_bytes">
+<code class="descname">size_in_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive.size_in_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive.size_in_bytes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="flatdata.archive.Archive.to_data_frame">
+<code class="descname">to_data_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/archive.html#Archive.to_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.archive.Archive.to_data_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="flatdata.archive.ResourceSignature">
+<em class="property">class </em><code class="descclassname">flatdata.archive.</code><code class="descname">ResourceSignature</code><span class="sig-paren">(</span><em>container</em>, <em>initializer</em>, <em>schema</em>, <em>is_optional</em><span class="sig-paren">)</span><a class="headerlink" href="#flatdata.archive.ResourceSignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="flatdata.archive.ResourceSignature.container">
+<code class="descname">container</code><a class="headerlink" href="#flatdata.archive.ResourceSignature.container" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="flatdata.archive.ResourceSignature.initializer">
+<code class="descname">initializer</code><a class="headerlink" href="#flatdata.archive.ResourceSignature.initializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="flatdata.archive.ResourceSignature.is_optional">
+<code class="descname">is_optional</code><a class="headerlink" href="#flatdata.archive.ResourceSignature.is_optional" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 3</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="flatdata.archive.ResourceSignature.schema">
+<code class="descname">schema</code><a class="headerlink" href="#flatdata.archive.ResourceSignature.schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-flatdata.data_access"></span><p>Copyright (c) 2017 HERE Europe B.V.
+See the LICENSE file in the root of this project for license details.</p>
+<dl class="function">
+<dt id="flatdata.data_access.read_value">
+<code class="descclassname">flatdata.data_access.</code><code class="descname">read_value</code><span class="sig-paren">(</span><em>data</em>, <em>offset_bits</em>, <em>num_bits</em>, <em>is_signed</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/data_access.html#read_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.data_access.read_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads numeric value from a stream of bytes, at the given bit-offset, with given length.
+:param data: Array of bytes
+:param offset_bits: Offset of the value in bits
+:param num_bits: Number of bits in the value
+:param is_signed: Interpret the value as a signed numeric value or unsigned.</p>
+</dd></dl>
+
+<span class="target" id="module-flatdata.errors"></span><p>Copyright (c) 2017 HERE Europe B.V.
+See the LICENSE file in the root of this project for license details.</p>
+<dl class="exception">
+<dt id="flatdata.errors.CorruptArchiveError">
+<em class="property">exception </em><code class="descclassname">flatdata.errors.</code><code class="descname">CorruptArchiveError</code><a class="reference internal" href="../_modules/flatdata/errors.html#CorruptArchiveError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.errors.CorruptArchiveError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">RuntimeError</span></code></p>
+<p>Corrupt archive error: missing resource files or schemas, incorrect archive signature etc.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="flatdata.errors.CorruptResourceError">
+<em class="property">exception </em><code class="descclassname">flatdata.errors.</code><code class="descname">CorruptResourceError</code><a class="reference internal" href="../_modules/flatdata/errors.html#CorruptResourceError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.errors.CorruptResourceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flatdata.errors.CorruptArchiveError" title="flatdata.errors.CorruptArchiveError"><code class="xref py py-class docutils literal"><span class="pre">flatdata.errors.CorruptArchiveError</span></code></a></p>
+<p>Resource is corrupt and cannot be opened.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="flatdata.errors.MissingResourceError">
+<em class="property">exception </em><code class="descclassname">flatdata.errors.</code><code class="descname">MissingResourceError</code><span class="sig-paren">(</span><em>key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/errors.html#MissingResourceError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.errors.MissingResourceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">KeyError</span></code>, <a class="reference internal" href="#flatdata.errors.CorruptArchiveError" title="flatdata.errors.CorruptArchiveError"><code class="xref py py-class docutils literal"><span class="pre">flatdata.errors.CorruptArchiveError</span></code></a></p>
+<p>Resource or schema is missing.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="flatdata.errors.SchemaMismatchError">
+<em class="property">exception </em><code class="descclassname">flatdata.errors.</code><code class="descname">SchemaMismatchError</code><span class="sig-paren">(</span><em>name</em>, <em>expected_schema</em>, <em>actual_schema</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/errors.html#SchemaMismatchError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.errors.SchemaMismatchError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">RuntimeError</span></code></p>
+<p>Schema mismatch: archive does not match software expectations.</p>
+</dd></dl>
+
+<span class="target" id="module-flatdata.file_resource_storage"></span><p>Copyright (c) 2017 HERE Europe B.V.
+See the LICENSE file in the root of this project for license details.</p>
+<dl class="class">
+<dt id="flatdata.file_resource_storage.FileResourceStorage">
+<em class="property">class </em><code class="descclassname">flatdata.file_resource_storage.</code><code class="descname">FileResourceStorage</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/file_resource_storage.html#FileResourceStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.file_resource_storage.FileResourceStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Resource storage based on memory-mapped files.</p>
+<dl class="method">
+<dt id="flatdata.file_resource_storage.FileResourceStorage.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>key</em>, <em>is_optional=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/file_resource_storage.html#FileResourceStorage.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.file_resource_storage.FileResourceStorage.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="flatdata.file_resource_storage.FileResourceStorage.memory_map">
+<em class="property">static </em><code class="descname">memory_map</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/file_resource_storage.html#FileResourceStorage.memory_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.file_resource_storage.FileResourceStorage.memory_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memory maps given file. Introduced to be able to swap mmap implementations.
+:param filename:
+:return: file-like object for memory mapped file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-flatdata.resources"></span><p>Copyright (c) 2017 HERE Europe B.V.
+See the LICENSE file in the root of this project for license details.</p>
+<dl class="class">
+<dt id="flatdata.resources.Instance">
+<em class="property">class </em><code class="descclassname">flatdata.resources.</code><code class="descname">Instance</code><span class="sig-paren">(</span><em>mem</em>, <em>element_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#Instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.Instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flatdata.resources.ResourceBase" title="flatdata.resources.ResourceBase"><code class="xref py py-class docutils literal"><span class="pre">flatdata.resources.ResourceBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="flatdata.resources.Multivector">
+<em class="property">class </em><code class="descclassname">flatdata.resources.</code><code class="descname">Multivector</code><span class="sig-paren">(</span><em>index_mem</em>, <em>mem</em>, <em>index_type</em>, <em>*element_types</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#Multivector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.Multivector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flatdata.resources.ResourceBase" title="flatdata.resources.ResourceBase"><code class="xref py py-class docutils literal"><span class="pre">flatdata.resources.ResourceBase</span></code></a></p>
+<dl class="classmethod">
+<dt id="flatdata.resources.Multivector.open">
+<em class="property">classmethod </em><code class="descname">open</code><span class="sig-paren">(</span><em>storage</em>, <em>name</em>, <em>initializer</em>, <em>is_optional=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#Multivector.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.Multivector.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="flatdata.resources.RawData">
+<em class="property">class </em><code class="descclassname">flatdata.resources.</code><code class="descname">RawData</code><span class="sig-paren">(</span><em>mem</em>, <em>element_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#RawData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.RawData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flatdata.resources.ResourceBase" title="flatdata.resources.ResourceBase"><code class="xref py py-class docutils literal"><span class="pre">flatdata.resources.ResourceBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="flatdata.resources.ResourceBase">
+<em class="property">class </em><code class="descclassname">flatdata.resources.</code><code class="descname">ResourceBase</code><span class="sig-paren">(</span><em>mem</em>, <em>element_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#ResourceBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.ResourceBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="classmethod">
+<dt id="flatdata.resources.ResourceBase.open">
+<em class="property">classmethod </em><code class="descname">open</code><span class="sig-paren">(</span><em>storage</em>, <em>name</em>, <em>initializer</em>, <em>is_optional=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#ResourceBase.open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.ResourceBase.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="flatdata.resources.ResourceBase.size_in_bytes">
+<code class="descname">size_in_bytes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#ResourceBase.size_in_bytes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.ResourceBase.size_in_bytes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="flatdata.resources.Vector">
+<em class="property">class </em><code class="descclassname">flatdata.resources.</code><code class="descname">Vector</code><span class="sig-paren">(</span><em>mem</em>, <em>element_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#Vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.Vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#flatdata.resources.ResourceBase" title="flatdata.resources.ResourceBase"><code class="xref py py-class docutils literal"><span class="pre">flatdata.resources.ResourceBase</span></code></a></p>
+<dl class="method">
+<dt id="flatdata.resources.Vector.to_data_frame">
+<code class="descname">to_data_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/resources.html#Vector.to_data_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.resources.Vector.to_data_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-flatdata.structure"></span><dl class="class">
+<dt id="flatdata.structure.FieldSignature">
+<em class="property">class </em><code class="descclassname">flatdata.structure.</code><code class="descname">FieldSignature</code><span class="sig-paren">(</span><em>offset</em>, <em>width</em>, <em>is_signed</em><span class="sig-paren">)</span><a class="headerlink" href="#flatdata.structure.FieldSignature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="flatdata.structure.FieldSignature.is_signed">
+<code class="descname">is_signed</code><a class="headerlink" href="#flatdata.structure.FieldSignature.is_signed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="flatdata.structure.FieldSignature.offset">
+<code class="descname">offset</code><a class="headerlink" href="#flatdata.structure.FieldSignature.offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="flatdata.structure.FieldSignature.width">
+<code class="descname">width</code><a class="headerlink" href="#flatdata.structure.FieldSignature.width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="flatdata.structure.Structure">
+<em class="property">class </em><code class="descclassname">flatdata.structure.</code><code class="descname">Structure</code><span class="sig-paren">(</span><em>mem</em>, <em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/structure.html#Structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.structure.Structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="flatdata.structure.Structure.as_dict">
+<code class="descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/structure.html#Structure.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.structure.Structure.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="flatdata.structure.Structure.as_list">
+<code class="descname">as_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/structure.html#Structure.as_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.structure.Structure.as_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="flatdata.structure.Structure.schema">
+<code class="descname">schema</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/flatdata/structure.html#Structure.schema"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#flatdata.structure.Structure.schema" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-flatdata">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-flatdata" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+            </a></p>
+<h3><a href="../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start.html">Quick Start Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../why-flatdata.html">Why <code class="docutils literal"><span class="pre">flatdata</span></code>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../library-layout.html">Flatdata Library Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../schema-language.html">Schema Language</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../building-archives.html">Building archives</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../flatdata-cpp/index.html">Flatdata C++ Libraries</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Flatdata Python Libraries</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">flatdata-py</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer-documentation/generator-architecture.html">Generator Architecture</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Flatdata Python Libraries</a><ul>
+  <li><a href="modules.html">flatdata-py</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">flatdata-py</a></li>
+      <li>Next: <a href="../developer-documentation/generator-architecture.html" title="next chapter">Generator Architecture</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, HERE Technologies.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
