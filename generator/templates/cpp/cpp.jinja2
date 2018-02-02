@@ -1,4 +1,5 @@
 {% import "cpp/constant.jinja2" as constant %}
+{% import "cpp/enumeration.jinja2" as enumeration %}
 {% import "cpp/structure.jinja2" as structure %}
 {% import "cpp/archive.jinja2" as archive %}
 {% import "cpp/namespace.jinja2" as namespace %}
@@ -12,9 +13,10 @@
 
 {% for node in nodes %}
 {{ namespace.opening(node) }}
-
     {%- if node|is_structure %}
         {{- structure.declaration(node) }}
+    {%- elif node|is_enumeration %}
+        {{- enumeration.declaration(node) }}
     {%- elif node|is_archive %}
         {{- archive.declaration(node) }}
     {%- elif node|is_constant %}
@@ -32,6 +34,8 @@
 {{ namespace.opening(node) }}
     {%- if node|is_structure %}
         {{- structure.definition(node, tree) }}
+    {%- elif node|is_enumeration %}
+        {{- enumeration.definition(node, tree) }}
     {%- elif node|is_archive %}
         {{- archive.definition(node, tree) }}
     {%- endif %}

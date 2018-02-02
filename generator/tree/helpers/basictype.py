@@ -15,6 +15,10 @@ class BasicType(object):
         "i64": 64
     }
 
+    @staticmethod
+    def is_basic_type(name):
+        return name in grammar.BASIC_TYPES
+
     def __init__(self, name, width=None):
         assert name in grammar.BASIC_TYPES
         self._name = name

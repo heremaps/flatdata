@@ -1,6 +1,5 @@
 from .node import Node
 
-
 class Reference(Node):
     """
     References depict:
@@ -64,12 +63,6 @@ class FieldReference(RuntimeReference):
 
 
 class TypeReference(Reference):
-    """
-    Runtime References depict:
-    - Explicit references
-
-    Runtime References are excluded from cycle resolution
-    """
     pass
 
 
@@ -87,3 +80,17 @@ class ArchiveReference(TypeReference):
 
 class ConstantReference(TypeReference):
     pass
+
+class EnumerationReference(TypeReference):
+    """
+    IntegralTypeReference depict:
+    - Field Type -> Enumeration
+    """
+    def __init__(self, name, width=None):
+        super(Reference, self).__init__(name=Reference._referencify(name))
+        self._width = width
+
+    @property
+    def width(self):
+        return self._width
+    
