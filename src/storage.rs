@@ -1,7 +1,8 @@
+use std::io;
 use std::mem;
-use std::str;
 use std::ptr;
 use std::slice;
+use std::str;
 
 use error::ResourceStorageError;
 
@@ -27,7 +28,7 @@ pub trait ResourceStorage {
     // fn create_multi_vector<Index, Args>(resource_name: &str, schema: &str) -> MultiVector<Index, Args>;
 
     // virtual
-    fn read_resource(&mut self, resource_name: &str) -> MemoryDescriptor;
+    fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
 
     //
     // Impl Helper
@@ -38,16 +39,12 @@ pub trait ResourceStorage {
         resource_name: &str,
         expected_schema: &str,
     ) -> Result<MemoryDescriptor, ResourceStorageError> {
-        let data = self.read_resource(resource_name);
-        if !data.is_valid() {
-            return Err(ResourceStorageError::MissingResource(resource_name.into()));
-        }
+        let data = self.read_resource(resource_name)
+            .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
 
         let schema_name = format!("{}.schema", resource_name);
-        let schema = self.read_resource(&schema_name);
-        if !schema.is_valid() {
-            return Err(ResourceStorageError::MissingSchema(schema_name));
-        }
+        let schema = self.read_resource(&schema_name)
+            .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
 
         if data.size_in_bytes() < mem::size_of::<SizeType>() + PADDING_SIZE {
             return Err(ResourceStorageError::UnexpectedDataSize);
@@ -96,10 +93,6 @@ impl MemoryDescriptor {
             ptr: ptr,
             size: size,
         }
-    }
-
-    pub fn is_valid(&self) -> bool {
-        !self.ptr.is_null()
     }
 
     pub fn describe(&self) -> String {

@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::path;
+use std::io;
 
 use storage::{MemoryDescriptor, ResourceStorage};
 
@@ -34,7 +35,7 @@ impl MemoryResourceStorage {
 }
 
 impl ResourceStorage for MemoryResourceStorage {
-    fn read_resource(&mut self, resource_name: &str) -> MemoryDescriptor {
+    fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error> {
         let resource_path = self.path.join(resource_name);
         if !self.storage.resources.contains_key(&resource_path) {
             let stream = self.storage.streams.get(&resource_path);
@@ -45,11 +46,14 @@ impl ResourceStorage for MemoryResourceStorage {
                         .insert(resource_path.clone(), stream.clone());
                 }
                 None => {
-                    return MemoryDescriptor::default();
+                    return Err(io::Error::new(
+                        io::ErrorKind::NotFound,
+                        String::from(resource_path.to_str().unwrap_or(resource_name)),
+                    ));
                 }
             }
         }
         let data: &[u8] = &self.storage.resources[&resource_path];
-        MemoryDescriptor::new(&data[0], data.len())
+        Ok(MemoryDescriptor::new(&data[0], data.len()))
     }
 }

@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::path;
 use std::fs::File;
+use std::io;
 
 use memmap::Mmap;
 
@@ -18,27 +19,19 @@ impl MemoryMappedFileStorage {
         }
     }
 
-    pub fn read(&mut self, path: &str) -> MemoryDescriptor {
+    pub fn read(&mut self, path: &str) -> Result<MemoryDescriptor, io::Error> {
         if let Some(mapping) = self.maps.get(path) {
-            return MemoryDescriptor::new(mapping.as_ptr(), mapping.len());
+            return Ok(MemoryDescriptor::new(mapping.as_ptr(), mapping.len()));
         }
 
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(_) => return MemoryDescriptor::default(),
-        };
+        let file = File::open(path)?;
 
-        let file_mmap = unsafe {
-            match Mmap::map(&file) {
-                Ok(mmap) => mmap,
-                Err(_) => return MemoryDescriptor::default(),
-            }
-        };
+        let file_mmap = unsafe { Mmap::map(&file)? };
 
         let mem_descr = MemoryDescriptor::new(file_mmap.as_ptr(), file_mmap.len());
         self.maps.insert(path.into(), file_mmap);
 
-        mem_descr
+        Ok(mem_descr)
     }
 }
 
@@ -62,15 +55,21 @@ impl FileResourceStorage {
 }
 
 impl ResourceStorage for FileResourceStorage {
-    fn read_resource(&mut self, resource_name: &str) -> MemoryDescriptor {
+    fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error> {
         let resource_path = self.path.join(resource_name);
         if !resource_path.exists() {
-            return MemoryDescriptor::default();
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                String::from(resource_path.to_str().unwrap_or(resource_name)),
+            ));
         }
 
         match resource_path.to_str() {
             Some(p) => self.storage.read(p),
-            None => MemoryDescriptor::default(),
+            None => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                String::from(resource_path.to_str().unwrap_or(resource_name)),
+            )),
         }
     }
 }

@@ -1,14 +1,21 @@
 use std::error;
 use std::fmt;
 use std::str::Utf8Error;
+use std::io;
 
 #[derive(Debug)]
 pub enum ResourceStorageError {
-    MissingResource(String),
+    Io(io::Error, String),
     MissingSchema(String),
     UnexpectedDataSize,
     Utf8Error(Utf8Error),
     WrongSignature,
+}
+
+impl ResourceStorageError {
+    pub fn from_io_error(err: io::Error, resource_name: String) -> Self {
+        ResourceStorageError::Io(err, resource_name)
+    }
 }
 
 impl fmt::Display for ResourceStorageError {
@@ -20,8 +27,8 @@ impl fmt::Display for ResourceStorageError {
 impl error::Error for ResourceStorageError {
     fn description(&self) -> &str {
         match *self {
-            ResourceStorageError::MissingResource(_) => "resource is missing",
-            ResourceStorageError::MissingSchema(_) => "schema of the resource is missing",
+            ResourceStorageError::Io(_, _) => "resource io error",
+            ResourceStorageError::MissingSchema(_) => "schema of resource is missing",
             ResourceStorageError::UnexpectedDataSize => "resource has unexpected size",
             ResourceStorageError::Utf8Error(_) => "utf8 error in schema",
             ResourceStorageError::WrongSignature => "schema is not matching expected schema",
