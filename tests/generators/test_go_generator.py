@@ -31,7 +31,8 @@ import (
 )
 
 const (
-    flatdataSizeInBits uint = 64
+    flatdataOffsetSizeInBits uint = 64
+    flatdataPaddingSizeInBits uint = 64
 )""")
 
 
@@ -53,21 +54,28 @@ def test_structures_are_declared_correctly():
         """type S struct {
     internal flatdata.ResourceHandle
 	position int
+	multivector bool
 }""",
         """func (v *S) GetF0() uint8 {
-    sSizeInBits  := uint(18)
-    sF0Size         := uint(3)
-    sF0Offset       := uint(0)
-    sF0IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(sSizeInBits*uint(v.position))+sF0Offset, sF0Size, sF0IsSigned)
+    elementSize := uint(3)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint8(b)
 }""",
         """func (v *S) GetF1() uint16 {
-    sSizeInBits  := uint(18)
-    sF1Size         := uint(15)
-    sF1Offset       := uint(3)
-    sF1IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(sSizeInBits*uint(v.position))+sF1Offset, sF1Size, sF1IsSigned)
+    elementSize := uint(15)
+    elementOffset := uint(3)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint16(b)
 }""",
         """func (v *S) ToString() string {"""
@@ -89,14 +97,18 @@ def test_archives_are_declared_correctly():
         """type S struct {
     internal flatdata.ResourceHandle
 	position int
+    multivector bool
 }
 
 func (v *S) GetF0() uint8 {
-    sSizeInBits  := uint(3)
-    sF0Size         := uint(3)
-    sF0Offset       := uint(0)
-    sF0IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(sSizeInBits*uint(v.position))+sF0Offset, sF0Size, sF0IsSigned)
+    elementSize := uint(3)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint8(b)
 }""",
         """func (v *S) ToString() string {""",
@@ -183,14 +195,18 @@ def test_vector_resource_is_declared_correctly():
         """type T struct {
     internal flatdata.ResourceHandle
 	position int
+    multivector bool
 }
 
 func (v *T) GetF0() uint8 {
-    tSizeInBits  := uint(3)
-    tF0Size         := uint(3)
-    tF0Offset       := uint(0)
-    tF0IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(tSizeInBits*uint(v.position))+tF0Offset, tF0Size, tF0IsSigned)
+    elementSize := uint(3)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(tSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint8(b)
 }""",
         """func (v *T) ToString() string {""",
@@ -298,40 +314,52 @@ def test_multi_vector_resource_is_declared_correctly():
         """type IndexType33 struct {
     internal flatdata.ResourceHandle
 	position int
+    multivector bool
 }
 
 func (v *IndexType33) GetValue() uint64 {
-    indexType33SizeInBits  := uint(33)
-    indexType33ValueSize         := uint(33)
-    indexType33ValueOffset       := uint(0)
-    indexType33ValueIsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(indexType33SizeInBits*uint(v.position))+indexType33ValueOffset, indexType33ValueSize, indexType33ValueIsSigned)
+    elementSize := uint(33)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(indexType33SizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint64(b)
 }""",
         """type U struct {
     internal flatdata.ResourceHandle
 	position int
+    multivector bool
 }
 
 func (v *U) GetF0() uint8 {
-    uSizeInBits  := uint(3)
-    uF0Size         := uint(3)
-    uF0Offset       := uint(0)
-    uF0IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(uSizeInBits*uint(v.position))+uF0Offset, uF0Size, uF0IsSigned)
+    elementSize := uint(3)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(uSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint8(b)
 }""",
         """type T struct {
     internal flatdata.ResourceHandle
 	position int
+    multivector bool
 }
 
 func (v *T) GetF0() uint8 {
-    tSizeInBits  := uint(3)
-    tF0Size         := uint(3)
-    tF0Offset       := uint(0)
-    tF0IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(tSizeInBits*uint(v.position))+tF0Offset, tF0Size, tF0IsSigned)
+    elementSize := uint(3)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(tSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint8(b)
 }""",
         """type AMultivectorResourceVector struct {
@@ -399,7 +427,10 @@ func (v *AMultivectorResourceMultivector) GetSizeInBytes() int {
 }
 
 func (v *AMultivectorResourceMultivector) getBucketOffset(i int) int {
-	return int(v.index.Get(i).GetValue()) + int(flatdataSizeInBits / 8)
+	if i == v.index.GetSize() {
+		return v.internal.Len() - int(flatdataPaddingSizeInBits/8)
+	} 
+	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBits/8)
 }
 
 func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
@@ -419,10 +450,12 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 		switch element := abstractElement.(type) {
 		case *T:
 			element.position = offset
+            element.multivector = true
 			result = append(result, element)
 			temp = tSizeInBytes
 		case *U:
 			element.position = offset
+            element.multivector = true
 			result = append(result, element)
 			temp = uSizeInBytes
 		default:
@@ -592,23 +625,30 @@ def test_structures_are_defined_correctly():
         """type S struct {
     internal flatdata.ResourceHandle
 	position int
+	multivector bool
 }
 
 func (v *S) GetF0() uint8 {
-    sSizeInBits  := uint(20)
-    sF0Size         := uint(7)
-    sF0Offset       := uint(0)
-    sF0IsSigned     := false
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(sSizeInBits*uint(v.position))+sF0Offset, sF0Size, sF0IsSigned)
+    elementSize := uint(7)
+    elementOffset := uint(0)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
+    }
     return uint8(b)
 }
 
 func (v *S) GetF1() int16 {
-    sSizeInBits  := uint(20)
-    sF1Size         := uint(13)
-    sF1Offset       := uint(7)
-    sF1IsSigned     := true
-    b := flatdata.Read(v.internal, flatdataSizeInBits+(sSizeInBits*uint(v.position))+sF1Offset, sF1Size, sF1IsSigned)
+    elementSize := uint(13)
+    elementOffset := uint(7)
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, true)
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, true)
+    }
     return int16(b)
 }"""
     ]

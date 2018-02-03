@@ -20,7 +20,8 @@ import (
 )
 
 const (
-    flatdataSizeInBits uint = 64
+    flatdataOffsetSizeInBits uint = 64
+    flatdataPaddingSizeInBits uint = 64
 {% for node in nodes %}
     {% if node|is_structure %}
     {{ node.name|to_go_case(false) }}SizeInBytes = {{ node.size_in_bytes }}
@@ -35,6 +36,7 @@ const (
 type {{ struct.name|to_go_case }} struct {
     internal flatdata.ResourceHandle
 	position int
+    multivector bool
 }
 
 {% for field in struct.fields %}
@@ -42,10 +44,14 @@ func (v *{{ struct.name|to_go_case }}) Get{{ field.name|to_go_case }}() {{ field
     {% if field.doc %}
         {{ field|to_go_doc|indent(8) }}
     {% endif %}
-    {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Size         := uint({{ field.type.width }})
-    {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Offset       := uint({{ field.offset }})
-    {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}IsSigned     := {{ field.type.is_signed|lower }}
-    b := flatdata.Read(v.internal, flatdataSizeInBits+({{ struct.name|to_go_case(false) }}SizeInBytes*8*uint(v.position))+{{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Offset, {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Size, {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}IsSigned)
+    elementSize := uint({{ field.type.width }})
+    elementOffset := uint({{ field.offset }})
+    var b int
+    if v.multivector {
+        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, {{ field.type.is_signed|lower }})
+    } else {
+        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+({{ struct.name|to_go_case(false) }}SizeInBytes*8*uint(v.position))+elementOffset, elementSize, {{ field.type.is_signed|lower }})
+    }
 {% if field.type.name|is_bool %}
     return b == 1
 {% else %}
@@ -370,9 +376,9 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) getBucketOffset(i int) int {
     if i == v.index.GetSize() {
-		return v.internal.Len() - int(flatdataSizeInBits/8)
+		return v.internal.Len() - int(flatdataPaddingSizeInBits/8)
 	} 
-	return int(v.index.Get(i).GetValue()) + int(flatdataSizeInBits / 8)
+	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBits/8)
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Get(i int) []interface{} {
@@ -394,6 +400,7 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 		{% if loop.index0 >= 1%}
 		case *{{ entry|to_go_case }}:
 			element.position = offset
+            element.multivector = true
 			result = append(result, element)
 			temp = {{ entry|to_go_case(false) }}SizeInBytes
 		{% endif %}
