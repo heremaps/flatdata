@@ -39,14 +39,13 @@ type {{ struct.name|to_go_case }} struct {
 
 {% for field in struct.fields %}
 func (v *{{ struct.name|to_go_case }}) Get{{ field.name|to_go_case }}() {{ field.type.name|type_mapping_with_bool }} {
-    {{ struct.name|to_go_case(false) }}SizeInBits  := uint({{ struct.size_in_bits }})
     {% if field.doc %}
         {{ field|to_go_doc|indent(8) }}
     {% endif %}
     {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Size         := uint({{ field.type.width }})
     {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Offset       := uint({{ field.offset }})
     {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}IsSigned     := {{ field.type.is_signed|lower }}
-    b := flatdata.Read(v.internal, flatdataSizeInBits+({{ struct.name|to_go_case(false) }}SizeInBits*uint(v.position))+{{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Offset, {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Size, {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}IsSigned)
+    b := flatdata.Read(v.internal, flatdataSizeInBits+({{ struct.name|to_go_case(false) }}SizeInBytes*8*uint(v.position))+{{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Offset, {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}Size, {{ struct.name|to_go_case(false) }}{{ field.name|to_go_case }}IsSigned)
 {% if field.type.name|is_bool %}
     return b == 1
 {% else %}
@@ -370,6 +369,9 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) getBucketOffset(i int) int {
+    if i == v.index.GetSize() {
+		return v.internal.Len() - int(flatdataSizeInBits/8)
+	} 
 	return int(v.index.Get(i).GetValue()) + int(flatdataSizeInBits / 8)
 }
 
