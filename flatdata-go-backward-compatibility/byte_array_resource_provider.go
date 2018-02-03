@@ -16,15 +16,15 @@ type byteArrayResourceProvider struct {
 
 func (v *byteArrayResourceProvider) GetHandle(name string) (flatdata.ResourceHandle, string, error) {
 	switch name {
-	case "resource_vector":
+	case "resource_b":
 		return &byteArrayHandle{Array: getVectorPayload()}, getVectorSchema(), nil
-	case "resource_multivector":
+	case "resource_c":
 		return &byteArrayHandle{Array: getMultivectorResourcePayload()}, getMultivectorSchema(), nil
-	case "resource_multivector_index":
+	case "resource_c_index":
 		return &byteArrayHandle{Array: getMultivectorIndexPayload()}, getMultivectorSchema(), nil
-	case "resource_rawdata":
+	case "resource_d":
 		return &byteArrayHandle{Array: getRawDataPayload()}, getRawDataSchema(), nil
-	case "resource_instance":
+	case "resource_a":
 		return &byteArrayHandle{Array: getInstanceDataPayload()}, getInstanceSchema(), nil
 	default:
 		return &byteArrayHandle{Array: []byte("")}, "", errors.New(flatdata.ErrorCantAccessResource)

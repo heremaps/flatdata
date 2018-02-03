@@ -26,7 +26,7 @@ func getVectorSchema() string {
         c : i32 : 7;
         d : u32 : 32;
     } }
-namespace backwardcompatibility { resource_vector: vector< SignedStruct >; }`
+namespace backwardcompatibility { resource_b: vector< SignedStruct >; }`
 }
 
 func getMultivectorResourcePayload() []byte {
@@ -64,7 +64,7 @@ namespace backwardcompatibility { struct SignedStruct {
         d : u32 : 32;
     } }
 namespace _builtin.multivector { struct IndexType33 { value : u64 : 33; } }
-namespace backwardcompatibility { resource_multivector: multivector< 33, SimpleStruct, SignedStruct >; }`
+namespace backwardcompatibility { resource_c: multivector< 33, SimpleStruct, SignedStruct >; }`
 }
 
 func getRawDataPayload() []byte {
@@ -76,7 +76,7 @@ func getRawDataPayload() []byte {
 }
 
 func getRawDataSchema() string {
-	return "namespace backwardcompatibility { resource_rawdata: raw_data; }"
+	return "namespace backwardcompatibility { resource_d: raw_data; }"
 }
 
 func getInstanceDataPayload() []byte {
@@ -95,5 +95,5 @@ func getInstanceSchema() string {
         c : i32 : 7;
         d : u32 : 32;
     } }
-namespace backwardcompatibility { resource_instance: SignedStruct; }`
+namespace backwardcompatibility { resource_a: SignedStruct; }`
 }

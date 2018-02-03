@@ -9,10 +9,10 @@ namespace backwardcompatibility {
         c : i32 : 7;
         d : u32 : 32;
     }
-    archive Archive {
-        resource_instance: SignedStruct;
-        resource_vector: vector< SignedStruct >;
-        resource_multivector: multivector< 33, SimpleStruct, SignedStruct >;
-        resource_rawdata: raw_data;
+    archive BackwardCompatibilityTest {
+        resource_a: SignedStruct;
+        resource_b: vector< SignedStruct >;
+        resource_c: multivector< 33, SimpleStruct, SignedStruct >;
+        resource_d: raw_data;
     }
 }
