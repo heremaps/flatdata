@@ -73,13 +73,15 @@ Archive resources can be one of following types:
    * `T` - a single structure of given type
    * `vector< T >` - a vector of structures of a given type.
    * `multivector< IndexSize, T1, T2, ... >` - a heterogenuous associative container for storing
-       multiple properties for a single entity. Allows efficient storage of the data whose
-       properties are sparsily assigned to each item. Think of it as a multimap of variants.
-   * `raw_data` - Uninterpreted raw data. Useful for storing arrays of non-numeric data like strings
-       referenced from structures.
+      multiple properties for a single entity. Allows efficient storage of the data whose
+      properties are sparsily assigned to each item. Think of it as a multimap of variants.
+      `IndexSize` is the number of bits that is used for indexing the entities. An index is
+      addressing the start of the offset of a variant.
+   * `raw_data` - Uninterpreted raw data. Useful for storing arrays of non-numeric data like
+      strings referenced from structures.
    * `archive ArchiveName` - Archive resource. Archive resources allow to structure large archives
-       better, while also acting as a namespace and grouping optionality semantics. Referenced archive
-       type has to be defined.
+      better, while also acting as a namespace and grouping optionality semantics. Referenced
+      archive type has to be defined.
 
 ## Comments
 
