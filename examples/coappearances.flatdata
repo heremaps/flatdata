@@ -25,7 +25,7 @@
 namespace coappearances {
 
 struct Character {
-    name_ref: u32 : 16;
+    name_ref: u32 : 32;
 }
 
 struct Coappearance {

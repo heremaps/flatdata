@@ -84,8 +84,6 @@ convert_characters( const picojson::object& characters,
         const auto& data = kv.second.get< picojson::object >( );
 
         auto character = vertices.grow( );
-        vertices_data.next_item( );
-
         character.name_ref = strings.size( );
         strings += data.at( "name" ).get< std::string >( ) + '\0';
 
@@ -127,6 +125,8 @@ convert_characters( const picojson::object& characters,
                     = characters_index.at( convert_id( to_refs[ 1 ].get< std::string >( ) ) );
             }
         }
+
+        vertices_data.next_item( );
     }
 
     vertices.close( );
@@ -207,9 +207,60 @@ void
 read( const char* archive_path )
 {
     auto storage = flatdata::FileResourceStorage::create( archive_path );
-    auto graph = graph::Graph::open( std::move( storage ) );
+    auto graph = co::Graph::open( std::move( storage ) );
 
-    throw std::runtime_error( "not implemented" );
+    const char* strings = graph.strings( ).char_ptr( );
+
+    std::cout << "Characters:" << std::endl;
+    auto vertices = graph.vertices( );
+    for ( uint32_t vertex_ref = 0; vertex_ref < vertices.size( ); ++vertex_ref )
+    {
+        auto vertex = vertices[ vertex_ref ];
+        std::cout << strings + vertex.name_ref;
+        auto visitor = flatdata::make_overload(
+            [strings]( co::Nickname nickname ) {
+                std::cout << " (" << strings + nickname.ref << ")";
+            },
+            [strings]( co::Description desciption ) {
+                std::cout << ": Description: " << strings + desciption.ref;
+            },
+            [strings, vertices]( co::UnaryRelation relation ) {
+                std::cout << ": Relation(kind=" << strings + relation.kind_ref
+                          << ", to=" << strings + vertices[ relation.to_ref ].name_ref << ")";
+            },
+            [strings, vertices]( co::BinaryRelation relation ) {
+                std::cout << ": Relation(kind=" << strings + relation.kind_ref
+                          << ", to=" << strings + vertices[ relation.to_a_ref ].name_ref
+                          << ", to=" << strings + vertices[ relation.to_b_ref ].name_ref << ")";
+            } );
+        graph.vertices_data( ).for_each( vertex_ref, visitor );
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    std::cout << "Edges: " << std::endl;
+    auto edges = graph.edges( );
+    // Skip the last edge since it is a sentinel
+    for ( uint32_t edge_ref = 0; edge_ref + 1 < edges.size( ); ++edge_ref )
+    {
+        auto edge = edges[ edge_ref ];
+        std::cout << strings + vertices[ edge.a_ref ].name_ref << " meets "
+                  << strings + vertices[ edge.b_ref ].name_ref << " " << edge.count
+                  << " time(s) in chapters ";
+        // The end of the chapters assigned to this edge is the first chapter from the next edge.
+        // This is a typical trick when storing ranges. That's why a sentinel was added to edges.
+        uint32_t next_edge_ref = edge_ref + 1;
+        uint32_t chapters_begin = edge.first_chapter_ref;
+        uint32_t chapters_size = edges[ next_edge_ref ].first_chapter_ref - chapters_begin;
+        auto chapters = graph.chapters( ).slice( chapters_begin, chapters_size );
+        for ( size_t chapter_ref = 0; chapter_ref < chapters.size( ); ++chapter_ref )
+        {
+            auto chapter = graph.chapters( )[ chapter_ref ];
+            std::cout << chapter.major.as< uint32_t >( ) << "." << chapter.minor.as< uint32_t >( )
+                      << ( chapter_ref + 1 < chapters.size( ) ? ", " : "." );
+        }
+        std::cout << std::endl;
+    }
 }
 
 static const char* USAGE = 1 + R"_(
@@ -235,7 +286,7 @@ main( int argc, char const* argv[] )
         }
         else if ( verb == "read" && argc == 3 )
         {
-            return read( argv[ 2 ] );
+            read( argv[ 2 ] );
         }
         else
         {
