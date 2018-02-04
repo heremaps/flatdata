@@ -1,0 +1,85 @@
+/**
+ * JSON Schema:
+ * {
+ *     "characters": {
+ *         "character_id": {             // two capital letters
+ *             "name": "String",
+ *             "nickname": "String",     // optional
+ *             "description": "String",  // optional
+ *             "relation": {             // optional
+ *                 "kind": "String",
+ *                 "to": "character_id or array of two character_ids"
+ *         }
+ *     },
+ *     "coappearances": [
+ *         {
+ *            "a": "character_id",
+ *            "b": "character_id",
+ *            "chapters": [
+ *                "#.##", ...             // # is a digit
+ *            ]
+ *         }
+ *     ]
+ * }
+ */
+namespace coappearances {
+
+struct Character {
+    name_ref: u32 : 16;
+}
+
+struct Coappearance {
+    a_ref : u32 : 16;
+    b_ref : u32 : 16;
+    count : u32 : 16;
+    first_chapter_ref: u32 : 16;
+}
+
+struct Nickname {
+    ref: u32 : 32;
+}
+
+struct Description {
+    ref: u32 : 32;
+}
+
+struct UnaryRelation {
+    kind_ref: u32 : 32;
+    to_ref: u32 : 16;
+}
+
+struct BinaryRelation {
+    kind_ref: u32 : 32;
+    to_a_ref: u32 : 16;
+    to_b_ref: u32 : 16;
+}
+
+struct Chapter {
+    major: u8 : 4;
+    minor: u8 : 7;
+}
+
+// @bound_implicitly( characters: vertices, vertices_data )
+archive Graph {
+    @explicit_reference( Character.name_ref, strings )
+    vertices : vector< Character >;
+
+    @explicit_reference( Coappearance.a_ref, vertices )
+    @explicit_reference( Coappearance.b_ref, vertices )
+    @explicit_reference( Coappearance.first_chapter_ref, chapters )
+    edges : vector< Coappearance >;
+
+    @explicit_reference( Nickname.ref, strings )
+    @explicit_reference( Description.ref, strings )
+    @explicit_reference( UnaryRelation.kind_ref, strings )
+    @explicit_reference( UnaryRelation.to_ref, vertices )
+    @explicit_reference( BinaryRelation.kind_ref, strings )
+    @explicit_reference( BinaryRelation.to_a_ref, vertices )
+    @explicit_reference( BinaryRelation.to_b_ref, vertices )
+    vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >;
+
+    chapters : vector< Chapter >;
+
+    strings: raw_data;
+}
+} // namespace graph
