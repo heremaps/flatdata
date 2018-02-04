@@ -24,8 +24,13 @@
  */
 namespace coappearances {
 
+struct Meta {
+    title_ref : u32 : 32;
+    author_ref : u32 : 32;
+}
+
 struct Character {
-    name_ref: u32 : 32;
+    name_ref : u32 : 32;
 }
 
 struct Coappearance {
@@ -61,6 +66,8 @@ struct Chapter {
 
 // @bound_implicitly( characters: vertices, vertices_data )
 archive Graph {
+    meta : Meta;
+
     @explicit_reference( Character.name_ref, strings )
     vertices : vector< Character >;
 

@@ -13,6 +13,20 @@
 
 namespace co = coappearances;
 
+void
+convert_meta( const picojson::object& obj, co::GraphBuilder builder, std::string& strings )
+{
+    // Since flatdata's mutators are not holding any data, we are creating a vector with a single
+    // element for holding the data.
+    flatdata::Vector< co::Meta > data( 1 );
+    auto meta = data[ 0 ];
+    meta.title_ref = strings.size( );
+    strings += obj.at( "title" ).get< std::string >( ) + '\0';
+    meta.author_ref = strings.size( );
+    strings += obj.at( "author" ).get< std::string >( ) + '\0';
+    builder.set_meta( meta );
+}
+
 uint16_t
 convert_id( const std::string& id )
 {
@@ -72,11 +86,11 @@ convert_chapter( const std::string& s )
 void
 convert_characters( const picojson::object& characters,
                     const CharactersIndex& characters_index,
-                    co::GraphBuilder builder )
+                    co::GraphBuilder builder,
+                    std::string& strings )
 {
     auto vertices = builder.start_vertices( );
     auto vertices_data = builder.start_vertices_data( );
-    std::string strings;  // list of zero-terminated strings
 
     for ( const auto& kv : characters )
     {
@@ -131,7 +145,6 @@ convert_characters( const picojson::object& characters,
 
     vertices.close( );
     vertices_data.close( );
-    builder.set_strings( {strings.data( ), strings.size( )} );
 }
 
 void
@@ -195,12 +208,18 @@ convert( const char* json_path, const char* archive_path )
     auto storage = flatdata::FileResourceStorage::create( archive_path );
     auto builder = co::GraphBuilder::open( std::move( storage ) );
 
+    // container holding a list of zero-terminated strings
+    std::string strings;
+
     // convert and serialize
+    const auto& meta = root.at( "meta" ).get< picojson::object >( );
+    convert_meta( meta, builder, strings );
     const auto& characters = root.at( "characters" ).get< picojson::object >( );
     const auto& characters_index = build_characters_index( characters );
-    convert_characters( characters, characters_index, builder );
+    convert_characters( characters, characters_index, builder, strings );
     const auto& coappearances = root.at( "coappearances" ).get< picojson::array >( );
     convert_coappearances( coappearances, characters_index, builder );
+    builder.set_strings( {strings.data( ), strings.size( )} );
 }
 
 void
@@ -210,6 +229,11 @@ read( const char* archive_path )
     auto graph = co::Graph::open( std::move( storage ) );
 
     const char* strings = graph.strings( ).char_ptr( );
+
+    std::cout << "Meta:" << std::endl
+              << "  Title: " << strings + graph.meta( ).title_ref << std::endl
+              << "  Author: " << strings + graph.meta( ).author_ref << std::endl
+              << std::endl;
 
     std::cout << "Characters:" << std::endl;
     auto vertices = graph.vertices( );

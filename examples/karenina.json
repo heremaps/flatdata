@@ -1,4 +1,8 @@
 {
+    "meta": {
+        "title": "Anna Karenina",
+        "author": "Leo Tolstoy"
+    },
     "characters": {
         "AA": {"name": "Annushka", "relation": {"kind": "maid", "to": "AN"}},
         "AG": {"name": "Agafea Mihalovna", "relation": {"kind": "housekeeper", "to": "LE"}},
