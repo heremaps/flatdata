@@ -136,7 +136,7 @@ namespace ns{
     @bound_implicitly( b: A0.v0, A0.v1 )
     archive A0 {
         v0 : vector< S1 >;
-        v1 : vector< S1 >;
+        v1 : multivector< 14, S1 >;
     }
 
     const u32 C = 0xFFFFFFF;
@@ -168,11 +168,12 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A0': Archive,
         '.ns.A0.@@ns@C': ConstantReference,
         '.ns.A0.b': BoundResource,
-        '.ns.A0.b.@@ns@A0@v0': VectorReference,
-        '.ns.A0.b.@@ns@A0@v1': VectorReference,
+        '.ns.A0.b.@@ns@A0@v0': ResourceReference,
+        '.ns.A0.b.@@ns@A0@v1': ResourceReference,
         '.ns.A0.v0': Vector,
         '.ns.A0.v0.@@ns@S1': StructureReference,
-        '.ns.A0.v1': Vector,
+        '.ns.A0.v1': Multivector,
+        '.ns.A0.v1.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A0.v1.@@ns@S1': StructureReference,
         '.ns.A1': Archive,
         '.ns.A1.@@ns@C': ConstantReference,
