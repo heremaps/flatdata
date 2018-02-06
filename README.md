@@ -95,6 +95,8 @@ int main() {
 
 For more examples cf. the [examples](examples) directory.
 
+*Note: Until the release APIs are expected to be undergoing (potentially breaking) changes. Binary data layout is stable, though*
+
 ## Library Layout
 
 Library is organized as follows:
