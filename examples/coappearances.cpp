@@ -251,7 +251,7 @@ read( const char* archive_path )
     }
     std::cout << std::endl;
 
-    std::cout << "Edges: " << std::endl;
+    std::cout << "Coappearances: " << std::endl;
     auto edges = graph.edges( );
     // Skip the last edge since it is a sentinel
     for ( uint32_t edge_ref = 0; edge_ref + 1 < edges.size( ); ++edge_ref )

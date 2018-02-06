@@ -1,4 +1,13 @@
 /**
+ * This schema represents an undirected graph of coappearances.
+ *
+ * Vertices are characters in a book. Two vertices are connected by an edge if they appear in the
+ * same scene. Edges are counted with multiplicities, i.e. if the same two characters appear
+ * several times in different scenes at the same time, a single edge is stored with a corresponding
+ * multiplicity how many times it happened. Vertices may have addional data: a nickname, a
+ * description or a relation to one or two other characters. Edges additionally store the number of
+ * coappearances and also the chapters in which the characters meet.
+ *
  * JSON Schema:
  * {
  *     "characters": {
@@ -8,13 +17,14 @@
  *             "description": "String",  // optional
  *             "relation": {             // optional
  *                 "kind": "String",
- *                 "to": "character_id or array of two character_ids"
+ *                 "to": "character_id or array of two character_id's"  // references another
+ *                                                                      // character
  *         }
  *     },
  *     "coappearances": [
  *         {
- *            "a": "character_id",
- *            "b": "character_id",
+ *            "a": "character_id",        // references another character
+ *            "b": "character_id",        // references another character
  *            "chapters": [
  *                "#.##", ...             // # is a digit
  *            ]
@@ -24,15 +34,28 @@
  */
 namespace coappearances {
 
+/**
+ * Meta information about the book.
+ */
 struct Meta {
     title_ref : u32 : 32;
     author_ref : u32 : 32;
 }
 
+/**
+ * A character.
+ */
 struct Character {
     name_ref : u32 : 32;
 }
 
+/**
+ * An appearance of two characters in the same scene.
+ *
+ * count - multiplicity of the coappearance.
+ * first_chapter_ref - a reference to the first chapter in which characters appear. How to get the
+ * full range of chapters is described in `coappearances.cpp:read`.
+ */
 struct Coappearance {
     a_ref : u32 : 16;
     b_ref : u32 : 16;
@@ -40,25 +63,40 @@ struct Coappearance {
     first_chapter_ref: u32 : 16;
 }
 
+/**
+ * A nickname or an alternative name of a character.
+ */
 struct Nickname {
     ref: u32 : 32;
 }
 
+/**
+ * A description of a character.
+ */
 struct Description {
     ref: u32 : 32;
 }
 
+/**
+ * A relation of a character to another one.
+ */
 struct UnaryRelation {
     kind_ref: u32 : 32;
     to_ref: u32 : 16;
 }
 
+/**
+ * A relation of a character to two other characters.
+ */
 struct BinaryRelation {
     kind_ref: u32 : 32;
     to_a_ref: u32 : 16;
     to_b_ref: u32 : 16;
 }
 
+/**
+ * A chapter in the book.
+ */
 struct Chapter {
     major: u8 : 4;
     minor: u8 : 7;
@@ -66,6 +104,8 @@ struct Chapter {
 
 // @bound_implicitly( characters: vertices, vertices_data )
 archive Graph {
+    @explicit_reference( Meta.title_ref, strings )
+    @explicit_reference( Meta.author_ref, strings )
     meta : Meta;
 
     @explicit_reference( Character.name_ref, strings )
@@ -87,6 +127,7 @@ archive Graph {
 
     chapters : vector< Chapter >;
 
+    // All strings contained in the data separated by `\0`.
     strings: raw_data;
 }
 } // namespace graph
