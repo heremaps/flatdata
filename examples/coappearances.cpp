@@ -27,14 +27,8 @@ convert_meta( const picojson::object& obj, co::GraphBuilder builder, std::string
     builder.set_meta( meta );
 }
 
-uint16_t
-convert_id( const std::string& id )
-{
-    assert( id.size( ) == 2 );
-    return ( static_cast< uint8_t >( id[ 0 ] ) << 8 ) + static_cast< uint8_t >( id[ 1 ] );
-}
-
-using CharactersIndex = std::map< uint16_t /* id */, uint16_t /* ref */ >;
+using CharactersIndex
+    = std::map< std::string /* character id */, uint16_t /* position in Graph::vertices */ >;
 
 CharactersIndex
 build_characters_index( const picojson::object& characters )
@@ -48,7 +42,7 @@ build_characters_index( const picojson::object& characters )
     uint16_t ref = 0;
     for ( const auto& kv : characters )
     {
-        uint16_t id = convert_id( kv.first );
+        auto id = kv.first;
         if ( index.count( id ) )
         {
             throw std::runtime_error( std::string( "Duplicate index " ) + kv.first );
@@ -123,8 +117,7 @@ convert_characters( const picojson::object& characters,
                 auto rel = vertices_data.add_to_current_item< co::UnaryRelation >( );
                 rel.kind_ref = strings.size( );
                 strings += relation.at( "kind" ).get< std::string >( ) + '\0';
-                rel.to_ref = characters_index.at(
-                    convert_id( relation.at( "to" ).get< std::string >( ) ) );
+                rel.to_ref = characters_index.at( relation.at( "to" ).get< std::string >( ) );
             }
             else
             {
@@ -133,10 +126,8 @@ convert_characters( const picojson::object& characters,
                 strings += relation.at( "kind" ).get< std::string >( ) + '\0';
                 auto to_refs = relation.at( "to" ).get< picojson::array >( );
                 assert( to_refs.size( ) == 2 );
-                rel.to_a_ref
-                    = characters_index.at( convert_id( to_refs[ 0 ].get< std::string >( ) ) );
-                rel.to_a_ref
-                    = characters_index.at( convert_id( to_refs[ 1 ].get< std::string >( ) ) );
+                rel.to_a_ref = characters_index.at( to_refs[ 0 ].get< std::string >( ) );
+                rel.to_a_ref = characters_index.at( to_refs[ 1 ].get< std::string >( ) );
             }
         }
 
@@ -159,10 +150,8 @@ convert_coappearances( const picojson::array& coappearances,
         const auto& data = object.get< picojson::object >( );
 
         auto coappearance = edges.grow( );
-        coappearance.a_ref
-            = characters_index.at( convert_id( data.at( "a" ).get< std::string >( ) ) );
-        coappearance.b_ref
-            = characters_index.at( convert_id( data.at( "b" ).get< std::string >( ) ) );
+        coappearance.a_ref = characters_index.at( data.at( "a" ).get< std::string >( ) );
+        coappearance.b_ref = characters_index.at( data.at( "b" ).get< std::string >( ) );
         const auto& data_chapters = data.at( "chapters" ).get< picojson::array >( );
         coappearance.count = data_chapters.size( );
         coappearance.first_chapter_ref = chapters.size( );
