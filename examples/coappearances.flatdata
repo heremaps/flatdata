@@ -102,7 +102,6 @@ struct Chapter {
     minor: u8 : 7;
 }
 
-// @bound_implicitly( characters: vertices, vertices_data )
 archive Graph {
     @explicit_reference( Meta.title_ref, strings )
     @explicit_reference( Meta.author_ref, strings )
