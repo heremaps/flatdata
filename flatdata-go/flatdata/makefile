@@ -1,13 +1,8 @@
-GODIR=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go
+.PHONY: all run-ci check test bench
 
 all: check test bench
 
 run-ci: deps all
-
-setup-ci:
-		@echo "Setup for CI..."
-		mkdir -p $(GODIR)
-		cp -R . $(GODIR)
 
 deps:
 		@echo "Install dependencies..."

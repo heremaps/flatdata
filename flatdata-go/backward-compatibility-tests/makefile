@@ -1,15 +1,8 @@
-GOBASE=$$GOPATH/src/github.com/heremaps/flatdata
-GOBACK=$$GOPATH/src/github.com/heremaps/flatdata/flatdata-go-backward-compatibility
+.PHONY: all run-ci clean check test
 
 all: clean check test
 
-run-ci: deps all
-
-setup-ci:
-		@echo "Setup for CI..."
-		mkdir -p $(GOBACK)
-		cp -R . $(GOBACK)
-		cp -R /src/generator $(GOBASE)
+run-ci: deps check test
 
 deps:
 		@echo "Install dependencies..."
@@ -27,7 +20,4 @@ check:
 
 test:
 		@echo "Run tests..."
-		$$GOPATH/src/github.com/heremaps/flatdata/generator/app.py -g go \
-		-s test_backward_compatibility.schema \
-		-O test_backward_compatibility_generated.go
 		go test -v $$(go list ./... | grep -v /vendor/)

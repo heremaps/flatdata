@@ -8,7 +8,7 @@ package backwardcompatibility
 import (
 	"errors"
 
-	"github.com/heremaps/flatdata/flatdata-go"
+	"github.com/heremaps/flatdata/flatdata-go/flatdata"
 )
 
 type byteArrayResourceProvider struct {

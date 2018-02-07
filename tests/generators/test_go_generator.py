@@ -27,7 +27,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/heremaps/flatdata/flatdata-go"
+	"github.com/heremaps/flatdata/flatdata-go/flatdata"
 )
 
 const (
