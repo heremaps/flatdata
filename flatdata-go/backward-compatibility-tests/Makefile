@@ -1,5 +1,4 @@
 .PHONY: all run-ci clean check test
-
 all: clean check test
 
 run-ci: deps check test
@@ -16,7 +15,7 @@ check:
 		@echo "Run checks..."
 		go fmt $$(go list ./... | grep -v /vendor/)
 		go vet $$(go list ./... | grep -v /vendor/)
-		golint -set_exit_status $$(go list ./... | grep -v /vendor/)
+		golint $$(go list ./... | grep -v /vendor/) | grep -v _generated.go; test $$? -eq 1
 
 test:
 		@echo "Run tests..."

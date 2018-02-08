@@ -1,5 +1,4 @@
 .PHONY: all run-ci check test bench
-
 all: check test bench
 
 run-ci: deps all
