@@ -1,4 +1,4 @@
-# flatdata-rs
+# flatdata-rs [![Build Status](https://travis-ci.org/boxdot/flatdata-rs.svg?branch=master)](https://travis-ci.org/boxdot/flatdata-rs)
 
 Implementation of [heremaps/flatdata](https://github.com/heremaps/flatdata) in Rust.
 
