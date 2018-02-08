@@ -1,6 +1,6 @@
 use std::io;
-use std::mem;
 use std::ptr;
+use std::mem;
 use std::slice;
 use std::str;
 

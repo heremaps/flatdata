@@ -7,7 +7,7 @@ Implementation of [heremaps/flatdata](https://github.com/heremaps/flatdata) in R
 Reader:
 
 * [x] File resource storage
-* [ ] Memory resource storage
+* [x] Memory resource storage
 * [x] Struct reader
 * [x] ArrayView
 * [ ] MultiArrayView
