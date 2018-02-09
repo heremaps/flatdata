@@ -18,8 +18,8 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('/Users/imagovrn/projects/flatdata/docs/../flatdata-py'))
-sys.path.insert(0, os.path.abspath('/Users/imagovrn/projects/flatdata/docs/..'))
+sys.path.insert(0, os.path.abspath('/src/docs/../flatdata-py'))
+sys.path.insert(0, os.path.abspath('/src/docs/..'))
 
 # -- General configuration ------------------------------------------------
 
@@ -136,7 +136,7 @@ html_theme = 'alabaster'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "/Users/imagovrn/projects/flatdata/docs/../docs/src/logo.svg"
+html_logo = "/src/docs/../docs/src/logo.svg"
 
 # The name of an image file (relative to this directory) to use as a favicon of
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -300,7 +300,7 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 breathe_projects = {
-    "flatdata-cpp": "/Users/imagovrn/projects/flatdata/build/docs/_doxygen/flatdata-cpp/xml"
+    "flatdata-cpp": "/build/docs/_doxygen/flatdata-cpp/xml"
 }
 
 breathe_default_members = ('members',)
