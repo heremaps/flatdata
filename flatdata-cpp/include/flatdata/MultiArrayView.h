@@ -55,18 +55,18 @@ public:
      *
      * Usage example:
      *   MultiArrayView<A, B, C> view = ...;
-     *   view.for_each<A, B>( index ).call( callback );
+     *   view.for_each<A, B>( index, callback );
      *   // callback must be callable with types A and B
      *
      * If the callback should be called with every type in the container, there is a shortcut
-     * method:
-     *   view.for_each( index ).call( callback );
+     * method (note that template arguments are not specified):
+     *   view.for_each( index, callback );
      *   // callback must be callable with all types of the container, i.e. A, B and C
      *
-     * It is also possible partiatially to overload a function and not to specify all accepted types
-     * explicitely. For that use flatdata::make_overload. It stores the information, which types are
+     * It is also possible to overload a function partially and not to specify all accepted types
+     * explicitly. For that use flatdata::make_overload. It stores the information, which types are
      * accepted by the callback in the callback's type:
-     *   view.for_each( index ).call( make_overload(
+     *   view.for_each( index, make_overload(
      *       [](A) { ... },
      *       [](B) { ... },
      *   );
