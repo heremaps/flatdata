@@ -7,3 +7,4 @@ cmake ../src \
     -DCMAKE_CXX_FLAGS="-Wall -pedantic -Wextra"
 make
 make test
+make docs
