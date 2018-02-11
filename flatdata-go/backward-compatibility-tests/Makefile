@@ -1,5 +1,6 @@
 .PHONY: all run-ci clean check test
-all: clean check test
+
+all: clean check generate test
 
 run-ci: deps check test
 
@@ -16,6 +17,11 @@ check:
 		go fmt $$(go list ./... | grep -v /vendor/)
 		go vet $$(go list ./... | grep -v /vendor/)
 		golint $$(go list ./... | grep -v /vendor/) | grep -v _generated.go; test $$? -eq 1
+
+generate:
+		$$GOPATH/src/github.com/heremaps/flatdata/generator/app.py -v -g go \
+            -s test_backward_compatibility.schema \
+            -O test_backward_compatibility_generated.go
 
 test:
 		@echo "Run tests..."
