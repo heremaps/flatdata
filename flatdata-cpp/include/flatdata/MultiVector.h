@@ -29,7 +29,6 @@ namespace flatdata
  *        fill_data_b( b );
  *        auto d = list.add< C >( );
  *        fill_data_c( c );
- *        vector.next_item( );
  *    }
  *    if ( !vector.close( ) )
  *    {
