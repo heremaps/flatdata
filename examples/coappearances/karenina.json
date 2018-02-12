@@ -1,7 +1,7 @@
 {
     "meta": {
-        "title": "Anna Karenina",
-        "author": "Leo Tolstoy"
+        "title": "Anna Karenina (Анна Каренина)",
+        "author": "Leo Tolstoy (Лев Николаевич Толстой)"
     },
     "characters": {
         "AA": {"name": "Annushka", "relation": {"kind": "maid", "to": "AN"}},

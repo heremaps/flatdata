@@ -225,8 +225,8 @@ read( const char* archive_path )
               << "  Author: " << strings + graph.meta( ).author_ref << std::endl
               << std::endl;
 
-    std::cout << "Characters:" << std::endl;
     auto vertices = graph.vertices( );
+    std::cout << "Characters (" << vertices.size( ) << "):" << std::endl;
     for ( uint32_t vertex_ref = 0; vertex_ref < vertices.size( ); ++vertex_ref )
     {
         auto vertex = vertices[ vertex_ref ];
@@ -252,8 +252,8 @@ read( const char* archive_path )
     }
     std::cout << std::endl;
 
-    std::cout << "Coappearances: " << std::endl;
     auto edges = graph.edges( );
+    std::cout << "Coappearances (" << edges.size( ) << "):" << std::endl;
     // Skip the last edge since it is a sentinel
     for ( uint32_t edge_ref = 0; edge_ref + 1 < edges.size( ); ++edge_ref )
     {
