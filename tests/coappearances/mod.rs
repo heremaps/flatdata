@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::convert;
 use std::fmt;
 use std::rc::Rc;
+use std::slice;
 
 use flatdata::*;
 
@@ -81,6 +82,14 @@ namespace coappearances { chapters : vector< Chapter >; }"#,
     (minor, u8, 4, 7)
 );
 
+struct Strings;
+
+impl Strings {
+    const SCHEMA: &'static str =
+        r#"namespace coappearances { // All strings contained in the data separated by `\0`.
+    strings: raw_data; }"#;
+}
+
 pub struct Graph {
     /// Holds memory mapped files alive.
     _storage: Rc<RefCell<ResourceStorage>>,
@@ -90,7 +99,7 @@ pub struct Graph {
     edges: ArrayView<Coappearance>,
     // TODO: vertices_data
     chapters: ArrayView<Chapter>,
-    // TODO: strings
+    strings: MemoryDescriptor,
 }
 
 impl Graph {
@@ -123,7 +132,9 @@ impl Graph {
         &self.chapters
     }
 
-    // TODO: add string
+    pub fn strings(&self) -> &[u8] {
+        unsafe { slice::from_raw_parts(self.strings.data(), self.strings.size_in_bytes()) }
+    }
 }
 
 fn signature_name(archive_name: &str) -> String {
@@ -230,7 +241,7 @@ impl Archive for Graph {
         let edges;
         // let vertices_data;  // TODO
         let chapters;
-        // let strings;  // TODO
+        let strings;
         {
             let res_storage = &mut *storage.borrow_mut();
             res_storage.read(&signature_name(Self::NAME), Self::SCHEMA)?;
@@ -243,7 +254,7 @@ impl Archive for Graph {
             // TODO: read vertices_data
             chapters = Self::read_resource(res_storage, "chapters", Chapter::SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
-            // TODO: read strings
+            strings = Self::read_resource(res_storage, "strings", Strings::SCHEMA)?;
         }
         Ok(Self {
             _storage: storage,
@@ -252,7 +263,7 @@ impl Archive for Graph {
             // TODO vertices_data,
             chapters: chapters,
             edges: edges,
-            // TODO: strings,
+            strings: strings,
         })
     }
 

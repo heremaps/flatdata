@@ -11,7 +11,7 @@ Reader:
 * [x] Struct reader
 * [x] ArrayView
 * [ ] MultiArrayView
-* [ ] Raw data view
+* [x] Raw data view
 * [ ] Subarchives
 
 Writer:
