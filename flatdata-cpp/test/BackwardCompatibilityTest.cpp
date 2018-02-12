@@ -137,12 +137,13 @@ std::array< uint8_t, 66 > expected_multivector_data
        "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
        "\x00\x00\x00\x00\x00\x00\x00\x00"};            // Padding
 
-std::array< uint8_t, 37 > expected_multivector_index
-    = {"\x14\x00\x00\x00\x00\x00\x00\x00"    // Index size in bytes
+std::array< uint8_t, 42 > expected_multivector_index
+    = {"\x19\x00\x00\x00\x00\x00\x00\x00"    // Index size in bytes
        "\x00\x00\x00\x00\x00"                // Data pointer 1
        "\x14\x00\x00\x00\x00"                // Data pointer 2
        "\x14\x00\x00\x00\x00"                // Data pointer 3
        "\x28\x00\x00\x00\x00"                // Data pointer 4
+       "\x31\x00\x00\x00\x00"                // Sentinel (end of data 4)
        "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
 
 std::array< uint8_t, 22 > expected_raw_data_binary
@@ -225,16 +226,17 @@ TEST( BackwardCompatibilityTest, writing_multivector_resources_layout )
     EXPECT_TRUE( builder.is_open( ) );
 
     auto mv = builder.start_multivector_resource( );
-    fill_signed_struct( mv.add_to_current_item< SignedStruct >( ) );
-    fill_simple_struct( mv.add_to_current_item< SimpleStruct >( ) );
+    auto list = mv.grow( );
+    fill_signed_struct( list.add< SignedStruct >( ) );
+    fill_simple_struct( list.add< SimpleStruct >( ) );
 
-    mv.next_item( );
-    mv.next_item( );
-    fill_simple_struct( mv.add_to_current_item< SimpleStruct >( ) );
-    fill_signed_struct( mv.add_to_current_item< SignedStruct >( ) );
+    mv.grow( ); // no data
+    list = mv.grow( );
+    fill_simple_struct( list.add< SimpleStruct >( ) );
+    fill_signed_struct( list.add< SignedStruct >( ) );
 
-    mv.next_item( );
-    fill_simple_struct( mv.add_to_current_item< SimpleStruct >( ) );
+    list = mv.grow( );
+    fill_simple_struct( list.add< SimpleStruct >( ) );
 
     mv.close( );
 
@@ -266,14 +268,17 @@ TEST( BackwardCompatibilityTest, reading_multivector_resources_layout )
     ASSERT_TRUE( archive.is_open( ) ) << archive.describe( );
 
     auto mv = archive.multivector_resource( );
+    size_t number_of_expected_structs = 0;
     mv.for_each( 0, make_overload(
                         [&]( SimpleStruct s )
                         {
                             check_simple_struct( s );
+                            number_of_expected_structs++;
                         },
                         [&]( SignedStruct s )
                         {
                             check_signed_struct( s );
+                            number_of_expected_structs++;
                         } ) );
 
     mv.for_each( 1, make_overload(
@@ -290,21 +295,25 @@ TEST( BackwardCompatibilityTest, reading_multivector_resources_layout )
                         [&]( SimpleStruct s )
                         {
                             check_simple_struct( s );
+                            number_of_expected_structs++;
                         },
                         [&]( SignedStruct s )
                         {
                             check_signed_struct( s );
+                            number_of_expected_structs++;
                         } ) );
 
     mv.for_each( 3, make_overload(
                         [&]( SimpleStruct s )
                         {
                             check_simple_struct( s );
+                            number_of_expected_structs++;
                         },
                         [&]( SignedStruct )
                         {
                             FAIL( );
                         } ) );
+    EXPECT_EQ( 5u, number_of_expected_structs ) << "Found less data than expected";
 }
 
 TEST( BackwardCompatibilityTest, writing_raw_data_resources_layout )
