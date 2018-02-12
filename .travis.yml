@@ -5,7 +5,7 @@ services:
   - docker
 
 before_install:
-  - docker pull boxdot/flatdata-dev
+  - docker pull boxdot/flatdata-dev:15
 
 env:
   - C_COMPILER=clang CXX_COMPILER=clang++
