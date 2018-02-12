@@ -6,6 +6,24 @@ use std::rc::Rc;
 use flatdata::*;
 
 define_resource_type!(
+    Meta,
+    "Meta",
+    r#"namespace coappearances { /**
+ * Meta information about the book.
+ */
+struct Meta {
+    title_ref : u32 : 32;
+    author_ref : u32 : 32;
+} }
+namespace coappearances { @explicit_reference( Meta.title_ref, strings )
+    @explicit_reference( Meta.author_ref, strings )
+    meta : Meta; }"#,
+    8,
+    (title_ref, u32, 0, 32),
+    (author_ref, u32, 32, 32)
+);
+
+define_resource_type!(
     Character,
     "Character",
     r#"namespace coappearances { /**
@@ -51,6 +69,7 @@ pub struct Graph {
     /// Holds memory mapped files alive.
     _storage: Rc<RefCell<ResourceStorage>>,
     // generated
+    meta: Meta,
     vertices: ArrayView<Character>,
     edges: ArrayView<Coappearance>,
 }
@@ -65,6 +84,10 @@ impl Graph {
         R: From<MemoryDescriptor>,
     {
         storage.read(name, schema).map(R::from)
+    }
+
+    pub fn meta(&self) -> &Meta {
+        &self.meta
     }
 
     pub fn vertices(&self) -> &ArrayView<Character> {
@@ -175,11 +198,14 @@ archive Graph {
 
 impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError> {
+        let meta: Meta;
         let vertices;
         let edges;
         {
             let res_storage = &mut *storage.borrow_mut();
             res_storage.read(&signature_name(Self::NAME), Self::SCHEMA)?;
+            meta = Self::read_resource(res_storage, "meta", Meta::SCHEMA)
+                .map(|mem: MemoryDescriptor| Meta::from(mem.data()))?;
             vertices = Self::read_resource(res_storage, "vertices", Character::SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
             edges = Self::read_resource(res_storage, "edges", Coappearance::SCHEMA)
@@ -187,6 +213,7 @@ impl Archive for Graph {
         }
         Ok(Self {
             _storage: storage,
+            meta: meta,
             vertices: vertices,
             edges: edges,
         })
