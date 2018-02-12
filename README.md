@@ -40,6 +40,8 @@ make test  # optional
 
 ## Using `flatdata`
 
+*Note: Until the release APIs are expected to be undergoing (potentially breaking) changes. Binary data layout is stable, though.*
+
 Define a flatdata archive, let's say `locations.flatdata`:
 ```cpp
 namespace loc {
@@ -94,8 +96,6 @@ int main() {
 ```
 
 For more examples cf. the [examples](examples) directory.
-
-*Note: Until the release APIs are expected to be undergoing (potentially breaking) changes. Binary data layout is stable, though*
 
 ## Library Layout
 
