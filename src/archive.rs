@@ -33,7 +33,7 @@ pub trait Archive: ArchiveElement {
 #[macro_export]
 macro_rules! intersperse {
     ($head:expr) => {$head};
-    ($head:expr, $($tail:expr),+) => (concat!($head, ", ", $($tail),*));
+    ($head:expr, $($tail:expr),+) => (concat!($head, ", ", intersperse!($($tail),*)));
 }
 
 #[macro_export]
