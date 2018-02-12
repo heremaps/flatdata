@@ -1,0 +1,17 @@
+namespace coappearances { /**
+ * An appearance of two characters in the same scene.
+ *
+ * count - multiplicity of the coappearance.
+ * first_chapter_ref - a reference to the first chapter in which characters appear. How to get the
+ * full range of chapters is described in `coappearances.cpp:read`.
+ */
+struct Coappearance {
+    a_ref : u32 : 16;
+    b_ref : u32 : 16;
+    count : u32 : 16;
+    first_chapter_ref: u32 : 16;
+} }
+namespace coappearances { @explicit_reference( Coappearance.a_ref, vertices )
+    @explicit_reference( Coappearance.b_ref, vertices )
+    @explicit_reference( Coappearance.first_chapter_ref, chapters )
+    edges : vector< Coappearance >; }

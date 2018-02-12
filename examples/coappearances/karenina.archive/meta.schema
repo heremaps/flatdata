@@ -1,0 +1,10 @@
+namespace coappearances { /**
+ * Meta information about the book.
+ */
+struct Meta {
+    title_ref : u32 : 32;
+    author_ref : u32 : 32;
+} }
+namespace coappearances { @explicit_reference( Meta.title_ref, strings )
+    @explicit_reference( Meta.author_ref, strings )
+    meta : Meta; }

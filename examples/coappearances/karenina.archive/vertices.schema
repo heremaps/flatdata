@@ -1,0 +1,8 @@
+namespace coappearances { /**
+ * A character.
+ */
+struct Character {
+    name_ref : u32 : 32;
+} }
+namespace coappearances { @explicit_reference( Character.name_ref, strings )
+    vertices : vector< Character >; }

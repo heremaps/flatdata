@@ -1,0 +1,36 @@
+namespace coappearances { /**
+ * A nickname or an alternative name of a character.
+ */
+struct Nickname {
+    ref: u32 : 32;
+} }
+namespace coappearances { /**
+ * A description of a character.
+ */
+struct Description {
+    ref: u32 : 32;
+} }
+namespace coappearances { /**
+ * A relation of a character to another one.
+ */
+struct UnaryRelation {
+    kind_ref: u32 : 32;
+    to_ref: u32 : 16;
+} }
+namespace coappearances { /**
+ * A relation of a character to two other characters.
+ */
+struct BinaryRelation {
+    kind_ref: u32 : 32;
+    to_a_ref: u32 : 16;
+    to_b_ref: u32 : 16;
+} }
+namespace _builtin.multivector { struct IndexType32 { value : u64 : 32; } }
+namespace coappearances { @explicit_reference( Nickname.ref, strings )
+    @explicit_reference( Description.ref, strings )
+    @explicit_reference( UnaryRelation.kind_ref, strings )
+    @explicit_reference( UnaryRelation.to_ref, vertices )
+    @explicit_reference( BinaryRelation.kind_ref, strings )
+    @explicit_reference( BinaryRelation.to_a_ref, vertices )
+    @explicit_reference( BinaryRelation.to_b_ref, vertices )
+    vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >; }
