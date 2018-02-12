@@ -19,10 +19,8 @@ namespace co = coappearances;
 void
 convert_meta( const picojson::object& obj, co::GraphBuilder builder, std::string& strings )
 {
-    // Since flatdata's mutators are not holding any data, we are creating a vector with a single
-    // element for holding the data.
-    flatdata::Vector< co::Meta > data( 1 );
-    auto meta = data[ 0 ];
+    flatdata::Struct< co::Meta > data;
+    auto meta = *data;
     meta.title_ref = strings.size( );
     strings += obj.at( "title" ).get< std::string >( ) + '\0';
     meta.author_ref = strings.size( );
@@ -95,19 +93,21 @@ convert_characters( const picojson::object& characters,
         const auto& data = kv.second.get< picojson::object >( );
 
         auto character = vertices.grow( );
+        auto character_data = vertices_data.grow( );
+
         character.name_ref = strings.size( );
         strings += data.at( "name" ).get< std::string >( ) + '\0';
 
         if ( data.count( "nickname" ) )
         {
-            auto nickname = vertices_data.add_to_current_item< co::Nickname >( );
+            auto nickname = character_data.add< co::Nickname >( );
             nickname.ref = strings.size( );
             strings += data.at( "nickname" ).get< std::string >( ) + '\0';
         }
 
         if ( data.count( "description" ) )
         {
-            auto description = vertices_data.add_to_current_item< co::Description >( );
+            auto description = character_data.add< co::Description >( );
             description.ref = strings.size( );
             strings += data.at( "description" ).get< std::string >( ) + '\0';
         }
@@ -117,14 +117,14 @@ convert_characters( const picojson::object& characters,
             const auto& relation = data.at( "relation" ).get< picojson::object >( );
             if ( relation.at( "to" ).is< std::string >( ) )
             {
-                auto rel = vertices_data.add_to_current_item< co::UnaryRelation >( );
+                auto rel = character_data.add< co::UnaryRelation >( );
                 rel.kind_ref = strings.size( );
                 strings += relation.at( "kind" ).get< std::string >( ) + '\0';
                 rel.to_ref = characters_index.at( relation.at( "to" ).get< std::string >( ) );
             }
             else
             {
-                auto rel = vertices_data.add_to_current_item< co::BinaryRelation >( );
+                auto rel = character_data.add< co::BinaryRelation >( );
                 rel.kind_ref = strings.size( );
                 strings += relation.at( "kind" ).get< std::string >( ) + '\0';
                 auto to_refs = relation.at( "to" ).get< picojson::array >( );
@@ -133,8 +133,6 @@ convert_characters( const picojson::object& characters,
                 rel.to_a_ref = characters_index.at( to_refs[ 1 ].get< std::string >( ) );
             }
         }
-
-        vertices_data.next_item( );
     }
 
     vertices.close( );
