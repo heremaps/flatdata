@@ -65,6 +65,22 @@ namespace coappearances { @explicit_reference( Coappearance.a_ref, vertices )
     (first_chapter_ref, u32, 48, 16)
 );
 
+define_resource_type!(
+    Chapter,
+    "Chapter",
+    r#"namespace coappearances { /**
+ * A chapter in the book.
+ */
+struct Chapter {
+    major: u8 : 4;
+    minor: u8 : 7;
+} }
+namespace coappearances { chapters : vector< Chapter >; }"#,
+    2,
+    (major, u8, 0, 4),
+    (minor, u8, 4, 7)
+);
+
 pub struct Graph {
     /// Holds memory mapped files alive.
     _storage: Rc<RefCell<ResourceStorage>>,
@@ -72,6 +88,9 @@ pub struct Graph {
     meta: Meta,
     vertices: ArrayView<Character>,
     edges: ArrayView<Coappearance>,
+    // TODO: vertices_data
+    chapters: ArrayView<Chapter>,
+    // TODO: strings
 }
 
 impl Graph {
@@ -97,6 +116,14 @@ impl Graph {
     pub fn edges(&self) -> &ArrayView<Coappearance> {
         &self.edges
     }
+
+    // TODO: add vertices_data
+
+    pub fn chapters(&self) -> &ArrayView<Chapter> {
+        &self.chapters
+    }
+
+    // TODO: add string
 }
 
 fn signature_name(archive_name: &str) -> String {
@@ -198,9 +225,12 @@ archive Graph {
 
 impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError> {
-        let meta: Meta;
+        let meta;
         let vertices;
         let edges;
+        // let vertices_data;  // TODO
+        let chapters;
+        // let strings;  // TODO
         {
             let res_storage = &mut *storage.borrow_mut();
             res_storage.read(&signature_name(Self::NAME), Self::SCHEMA)?;
@@ -210,12 +240,19 @@ impl Archive for Graph {
                 .map(|mem| ArrayView::new(&mem))?;
             edges = Self::read_resource(res_storage, "edges", Coappearance::SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
+            // TODO: read vertices_data
+            chapters = Self::read_resource(res_storage, "chapters", Chapter::SCHEMA)
+                .map(|mem| ArrayView::new(&mem))?;
+            // TODO: read strings
         }
         Ok(Self {
             _storage: storage,
             meta: meta,
             vertices: vertices,
+            // TODO vertices_data,
+            chapters: chapters,
             edges: edges,
+            // TODO: strings,
         })
     }
 
