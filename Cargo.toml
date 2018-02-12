@@ -10,4 +10,5 @@ categories = ["encoding"]
 readme = "README.md"
 
 [dependencies]
+diff = "0.1"
 memmap = "0.6"

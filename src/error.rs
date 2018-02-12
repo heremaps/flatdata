@@ -9,7 +9,7 @@ pub enum ResourceStorageError {
     MissingSchema(String),
     UnexpectedDataSize,
     Utf8Error(Utf8Error),
-    WrongSignature,
+    WrongSignature { resource_name: String, diff: String },
 }
 
 impl ResourceStorageError {
@@ -31,28 +31,7 @@ impl error::Error for ResourceStorageError {
             ResourceStorageError::MissingSchema(_) => "schema of resource is missing",
             ResourceStorageError::UnexpectedDataSize => "resource has unexpected size",
             ResourceStorageError::Utf8Error(_) => "utf8 error in schema",
-            ResourceStorageError::WrongSignature => "schema is not matching expected schema",
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ArchiveError {
-    WrongSignature(ResourceStorageError),
-    MandatoryResourceError(&'static str, ResourceStorageError),
-}
-
-impl fmt::Display for ArchiveError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        write!(f, "{:?}", self)
-    }
-}
-
-impl error::Error for ArchiveError {
-    fn description(&self) -> &str {
-        match *self {
-            ArchiveError::WrongSignature(_) => "archive has wrong signature",
-            ArchiveError::MandatoryResourceError(_, _) => "mandatory resource error",
+            ResourceStorageError::WrongSignature { .. } => "schema is not matching expected schema",
         }
     }
 }

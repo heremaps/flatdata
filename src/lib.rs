@@ -1,3 +1,4 @@
+extern crate diff;
 extern crate memmap;
 
 #[macro_use]

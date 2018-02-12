@@ -4,7 +4,7 @@ use std::convert;
 use std::rc::Rc;
 
 use storage::ResourceStorage;
-use error::ArchiveError;
+use error::ResourceStorageError;
 
 /// Element in archive, which can be a struct or a (sub)archive itself.
 pub trait ArchiveElement {
@@ -19,7 +19,7 @@ pub trait ArchiveType: ArchiveElement + convert::From<StreamType> {
 
 /// An archive.
 pub trait Archive: ArchiveElement {
-    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ArchiveError>
+    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>
     where
         Self: Sized;
     fn name(&self) -> &str;

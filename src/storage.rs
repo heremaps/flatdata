@@ -6,6 +6,19 @@ use std::str;
 
 use error::ResourceStorageError;
 
+fn diff(left: &str, right: &str) -> String {
+    use diff;
+    diff::lines(left, right)
+        .into_iter()
+        .map(|l| match l {
+            diff::Result::Left(l) => format!("-{}", l),
+            diff::Result::Both(l, _) => format!(" {}", l),
+            diff::Result::Right(r) => format!("+{}", r),
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 type SizeType = u64;
 const PADDING_SIZE: usize = 8;
 
@@ -61,7 +74,10 @@ pub trait ResourceStorage {
         let stored_schema =
             str::from_utf8(stored_schema_slice).map_err(ResourceStorageError::Utf8Error)?;
         if stored_schema != expected_schema {
-            return Err(ResourceStorageError::WrongSignature);
+            return Err(ResourceStorageError::WrongSignature {
+                resource_name: resource_name.into(),
+                diff: diff(stored_schema, expected_schema),
+            });
         }
 
         Ok(MemoryDescriptor::new(
