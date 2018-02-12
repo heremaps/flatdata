@@ -97,11 +97,12 @@ namespace backward_compatibility {
     )
 
     multivector_resource_index = (
-        b"\x14\x00\x00\x00\x00\x00\x00\x00"  # Index size in bytes
+        b"\x19\x00\x00\x00\x00\x00\x00\x00"  # Index size in bytes
         b"\x00\x00\x00\x00\x00"  # Data pointer 1
         b"\x14\x00\x00\x00\x00"  # Data pointer 2
         b"\x14\x00\x00\x00\x00"  # Data pointer 3
         b"\x28\x00\x00\x00\x00"  # Data pointer 4
+        b"\x31\x00\x00\x00\x00"  # Sentinel (end of data 4)
         b"\x00\x00\x00\x00\x00\x00\x00\x00"  # Padding
     )
 
@@ -116,7 +117,7 @@ namespace backward_compatibility {
     }
 
     archive = module.backward_compatibility_Archive(DictResourceStorage(valid_data))
-    eq_(4, len(archive.resource))
+    eq_(5, len(archive.resource))
 
     eq_(2, len(archive.resource[0]))
     assert_is_instance(archive.resource[0][0], module.backward_compatibility_SignedStruct)
