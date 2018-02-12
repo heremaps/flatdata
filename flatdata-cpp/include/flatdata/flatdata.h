@@ -10,8 +10,8 @@
  * Please refer to README.md in the root of the library for more information on the usage.
  */
 
-#include "ArchiveBuilder.h"
 #include "Archive.h"
+#include "ArchiveBuilder.h"
 #include "ArrayView.h"
 #include "Copy.h"
 #include "ExternalVector.h"
@@ -22,4 +22,5 @@
 #include "MultiArrayView.h"
 #include "MultiVector.h"
 #include "ResourceStorage.h"
+#include "Struct.h"
 #include "Vector.h"

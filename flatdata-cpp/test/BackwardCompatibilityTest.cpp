@@ -162,9 +162,9 @@ TEST( BackwardCompatibilityTest, writing_instance_resources_layout )
     auto builder = TestInstanceBuilder::open( storage );
     EXPECT_TRUE( builder.is_open( ) );
 
-    Vector< SignedStruct > v( 1 );
-    fill_signed_struct( v[ 0 ] );
-    builder.set_instance_resource( v[ 0 ] );
+    Struct< SignedStruct > v;
+    fill_signed_struct( *v );
+    builder.set_instance_resource( *v );
 
     ASSERT_STREQ( tbi::TestInstance__instance_resource__schema__,
                   storage->read_resource( "instance_resource.schema" ).char_ptr( ) );
