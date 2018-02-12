@@ -32,8 +32,14 @@ fn read_and_validate_coappearances() {
     // usually undesirable for huge data.
     let strings = str::from_utf8(g.strings()).expect("invalid utf8 string");
 
-    assert_eq!(substring(strings, g.meta().title_ref()), "Anna Karenina");
-    assert_eq!(substring(strings, g.meta().author_ref()), "Leo Tolstoy");
+    assert_eq!(
+        substring(strings, g.meta().title_ref()),
+        "Anna Karenina (Анна Каренина)"
+    );
+    assert_eq!(
+        substring(strings, g.meta().author_ref()),
+        "Leo Tolstoy (Лев Николаевич Толстой)"
+    );
 
     let num_chapters = g.edges().iter().map(|e| e.count() as usize).sum();
     assert_eq!(g.chapters().size(), num_chapters);
