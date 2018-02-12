@@ -17,6 +17,15 @@ pub trait ArchiveType: ArchiveElement + convert::From<StreamType> {
     const SIZE_IN_BYTES: usize;
 }
 
+/// A type in archive used as index of a multivector.
+pub trait IndexType: ArchiveType {
+    fn value(&self) -> usize;
+}
+
+pub trait VariadicArchiveType: ArchiveElement + convert::From<(u8, StreamType)> {
+    fn size_in_bytes(&self) -> usize;
+}
+
 /// An archive.
 pub trait Archive: ArchiveElement {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>

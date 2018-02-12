@@ -9,12 +9,14 @@ mod arrayview;
 mod error;
 mod filestorage;
 mod memstorage;
+mod multiarrayview;
 mod storage;
 
 pub use archive::*;
-pub use error::*;
 pub use arrayview::ArrayView;
 pub use bytereader::StreamType;
+pub use error::*;
 pub use filestorage::FileResourceStorage;
 pub use memstorage::MemoryResourceStorage;
+pub use multiarrayview::MultiArrayView;
 pub use storage::{MemoryDescriptor, ResourceStorage};

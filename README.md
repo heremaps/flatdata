@@ -29,6 +29,12 @@ Generator:
 
 * [ ] `flatdata`'s schema to Rust generator
 
+Misc:
+
+* [ ] Derive eq comparsion for all types.
+* [ ] Rename `size` of all containers into `len`.
+* [ ] Rename `index` of containers to `at`.
+
 ## Example
 
 The folder [example](example) contains a simple graph representation (vertices and edges) described in `flatdata` together with the serialized data. It also contains a Rust module which implements the schema. Usually, this code would be generated automatically by `flatdata`'s generator. For now, we use it as a proof of concept to develop readers and writers, and also to manually define a desired layout we would generate automatically.

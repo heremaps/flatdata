@@ -1,10 +1,10 @@
-use std::iter;
-use std::marker;
-use std::fmt;
-
 use archive::ArchiveType;
 use bytereader::StreamType;
 use storage::MemoryDescriptor;
+
+use std::iter;
+use std::marker;
+use std::fmt;
 
 pub struct ArrayView<T> {
     data: StreamType,
@@ -17,7 +17,7 @@ where
     T: ArchiveType,
 {
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
-        ArrayView {
+        Self {
             data: mem_descr.data(),
             size: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
             _phantom: marker::PhantomData,
@@ -28,8 +28,8 @@ where
         self.size
     }
 
-    // Note: It is not possible to use std::ops::Index here, since Index::index has to return a ref,
-    // however we need to return a value.
+    // Note: It is not possible to use std::ops::Index here, since Index::index has to return a
+    // ref, however we need to return a value.
     pub fn index(&self, idx: usize) -> T {
         T::from(unsafe { self.data.offset((idx * T::SIZE_IN_BYTES) as isize) })
     }

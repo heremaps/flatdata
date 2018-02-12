@@ -22,6 +22,7 @@ fn read_and_validate_coappearances() {
         path::PathBuf::from("tests/coappearances/karenina.archive"),
     )));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
+    println!("{:?}", g);
 
     let vertices = g.vertices();
     let edges = g.edges();
@@ -85,4 +86,46 @@ fn read_and_validate_coappearances() {
     // Note: Last element in edges is not an edge but a sentinel which allows us to calculate the
     // range of chapter.
     validate_chapters(edges.size() - 2, vec!["7.25"]);
+
+    let vertices_data = g.vertices_data();
+    assert_eq!(vertices_data.size(), vertices.size());
+
+    let data: Vec<_> = vertices_data.index(0).collect();
+    assert_eq!(data.len(), 1);
+    match data[0] {
+        coappearances::VerticesData::UnaryRelation(ref data) => {
+            assert_eq!(substring(strings, data.kind_ref()), "maid");
+            assert_eq!(
+                substring(strings, vertices.index(data.to_ref() as usize).name_ref()),
+                "Anna Arkadyevna Karenina"
+            );
+        }
+        _ => assert!(false),
+    };
+
+    let data: Vec<_> = vertices_data.index(1).collect();
+    assert_eq!(data.len(), 1);
+    match data[0] {
+        coappearances::VerticesData::UnaryRelation(ref data) => {
+            assert_eq!(substring(strings, data.kind_ref()), "housekeeper");
+            assert_eq!(
+                substring(strings, vertices.index(data.to_ref() as usize).name_ref()),
+                "Konstantin Dmitrievitch Levin"
+            );
+        }
+        _ => assert!(false),
+    };
+
+    let data: Vec<_> = vertices_data.index(vertices_data.size() - 1).collect();
+    assert_eq!(data.len(), 1);
+    match data[0] {
+        coappearances::VerticesData::UnaryRelation(ref data) => {
+            assert_eq!(substring(strings, data.kind_ref()), "gambling friend");
+            assert_eq!(
+                substring(strings, vertices.index(data.to_ref() as usize).name_ref()),
+                "Count Alexey Kirillovitch Vronsky"
+            );
+        }
+        _ => assert!(false),
+    };
 }
