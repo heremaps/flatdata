@@ -85,10 +85,10 @@ TEST( GeneratedArchiveTest, multivectors_can_be_created_incrementally )
 
     EXPECT_TRUE( builder.is_open( ) );
     auto resource = builder.start_multivector_resource( );
-    resource.add_to_current_item< AStruct >( ).value = 17;
-    resource.next_item( );
-    resource.add_to_current_item< AStruct >( ).value = 42;
-    resource.next_item( );
+    auto list = resource.grow( );
+    list.add< AStruct >( ).value = 17;
+    list = resource.grow( );
+    list.add< AStruct >( ).value = 42;
     resource.close( );
 
     auto archive = SimpleResources::open( storage );
@@ -169,8 +169,8 @@ TEST( GeneratedArchiveTest, describe_outputs_resources_as_expected )
         builder.set_raw_data_resource( flatdata::MemoryDescriptor( "raw_data", 8 ) );
 
         auto mv = builder.start_multivector_resource( );
-        mv.add_to_current_item< AStruct >( ).value = 17;
-        mv.next_item( );
+        auto list = mv.grow( );
+        list.add< AStruct >( ).value = 17;
         mv.close( );
     }
 
