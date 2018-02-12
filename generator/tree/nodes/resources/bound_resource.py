@@ -1,5 +1,5 @@
 from .base import ResourceBase
-from generator.tree.nodes.references import VectorReference
+from generator.tree.nodes.references import ResourceReference
 
 
 class BoundResource(ResourceBase):
@@ -15,9 +15,9 @@ class BoundResource(ResourceBase):
                              own_schema=own_schema)
 
     def _create_references(self):
-        return [VectorReference(name=r) for r in self._resources]
+        return [ResourceReference(name=r) for r in self._resources]
 
     @property
     def referenced_structures(self):
-        return [s for r in self.children_like(VectorReference) for s in
+        return [s for r in self.children_like(ResourceReference) for s in
                 r.node.referenced_structures]
