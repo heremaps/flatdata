@@ -25,7 +25,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/heremaps/flatdata/flatdata-go/flatdata"
 )
