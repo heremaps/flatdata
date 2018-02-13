@@ -1,0 +1,104 @@
+{% macro generate(tree, archive, resource) %}
+{{ resource|to_go_doc }}    
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector struct {
+    internal flatdata.ResourceHandle
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) Get(i int) *{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %} {
+	return &{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}{
+		internal: v.internal,
+		position: i,
+	}
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetSize() int {
+	size := make([]byte, 8)
+	_, err := v.internal.ReadAt(size, 0)
+	if err != nil {
+		return 0
+	}
+	intSize := binary.LittleEndian.Uint64(size)
+	return int(intSize) / {% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case(false) }}{% else %}{{ resource|to_initializer(tree)|to_go_case(false) }}{% endif %}SizeInBytes
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetSlice(start, end, step int) []*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %} {
+	var result []*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}
+	
+    for start <= end {
+		result = append(result, &{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}{
+			internal: v.internal,
+			position: start,
+		})
+		start += step
+	}
+	return result
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) Close() {
+    v.internal.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetSizeInBytes() int {
+    return v.internal.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString("{")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"container_type\": \"Vector\",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"size\": ")
+    buffer.WriteString(strconv.Itoa(v.GetSize()))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"size_in_bytes\": ")
+    buffer.WriteString(strconv.Itoa(v.GetSizeInBytes()))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"element_types\": [")
+    buffer.WriteString("\n")
+    buffer.WriteString("    {")
+    buffer.WriteString("\n")
+    buffer.WriteString("        \"name\": \"")
+    buffer.WriteString("{{ resource.referenced_structures[0].node.name|to_go_case }}")
+    buffer.WriteString("\",")
+    buffer.WriteString("\n")
+    buffer.WriteString("        \"attributes\": [")
+    buffer.WriteString("\n")
+    {% for field in resource.referenced_structures[0].node.fields %}
+    buffer.WriteString("            {")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"name\": \"")
+    buffer.WriteString("{{ field.name }}")
+    buffer.WriteString("\"")
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"offset\": ")
+    buffer.WriteString(strconv.Itoa({{ field.offset }}))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"width\": ")
+    buffer.WriteString(strconv.Itoa({{ field.type.width }}))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"is_signed\": ")
+    buffer.WriteString("{{ field.type.is_signed|lower }}")
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("            },")
+    buffer.WriteString("\n")
+    {% endfor %}
+    buffer.WriteString("        ]")
+    buffer.WriteString("\n")
+    buffer.WriteString("    }")
+    buffer.WriteString("\n")
+    buffer.WriteString("]")
+    buffer.WriteString("\n")
+    buffer.WriteString("}")
+	return buffer.String()
+}
+{% endmacro %}

@@ -93,49 +93,6 @@ def test_structures_are_declared_correctly():
 
 def test_archives_are_declared_correctly():
     expected_lines = [
-        """sSizeInBytes = 1""",
-        """type S struct {
-    internal flatdata.ResourceHandle
-	position int
-    multivector bool
-}
-
-func (v *S) GetF0() uint8 {
-    elementSize := uint(3)
-    elementOffset := uint(0)
-    var b int
-    if v.multivector {
-        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
-    } else {
-        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
-    }
-    return uint8(b)
-}""",
-        """func (v *S) ToString() string {""",
-        """type AR0Instance struct {
-    internal flatdata.ResourceHandle
-    IsOptional bool
-    IsOpen bool
-}
-
-func (v *AR0Instance) Get() *S {
-	return &S{
-	    internal: v.internal,
-	}
-}
-
-func (v *AR0Instance) GetSize() int {
-	return 1
-}
-
-func (v *AR0Instance) Close() {
-    v.internal.Close()
-    v.IsOpen = false
-}
-
-func (v *AR0Instance) GetSizeInBytes() int {
-    return v.internal.Len()
-}""",
         """type AArchive struct {
     IsOptional bool
     IsOpen bool
@@ -181,35 +138,18 @@ func (v *AArchive) GetSizeInBytes() int {
     generate_and_assert_in("""
     namespace n{
     struct S {
-        f0 : u8 : 3;
+            f0 : u8 : 3;
+            f1 : u16 : 15;
     }
     archive A {
         r0 : S;
     }
-    }""", GoGenerator, *expected_lines)
+    }
+    """, GoGenerator, *expected_lines)
 
 
 def test_vector_resource_is_declared_correctly():
     expected_lines = [
-        """tSizeInBytes = 1""",
-        """type T struct {
-    internal flatdata.ResourceHandle
-	position int
-    multivector bool
-}
-
-func (v *T) GetF0() uint8 {
-    elementSize := uint(3)
-    elementOffset := uint(0)
-    var b int
-    if v.multivector {
-        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
-    } else {
-        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(tSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
-    }
-    return uint8(b)
-}""",
-        """func (v *T) ToString() string {""",
         """type AVectorResourceVector struct {
     internal flatdata.ResourceHandle
     IsOptional bool
@@ -252,47 +192,7 @@ func (v *AVectorResourceVector) Close() {
 
 func (v *AVectorResourceVector) GetSizeInBytes() int {
     return v.internal.Len()
-}""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    VectorResourceVector *AVectorResourceVector
-}
-
-func (v *AArchive) Close() {
-    if v.VectorResourceVector.IsOpen {
-        v.VectorResourceVector.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.VectorResourceVector.IsOpen {
-        size += v.VectorResourceVector.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
-    v := &AArchive{}
-    // Initialize resources
-	vectorResourceIsOpen := true
-	vectorResourceHandle, schema, err := resource.GetHandle("vector_resource")
-	if err != nil {
-        log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        vectorResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}""",
-        """// Add resources to archive
-    v.VectorResourceVector = &AVectorResourceVector{
-        internal: vectorResourceHandle,
-        IsOptional: false,
-        IsOpen: vectorResourceIsOpen,
-    }
-	return v, nil
-}"""
+}""" 
     ]
 
     generate_and_assert_in("""
@@ -308,9 +208,7 @@ func (v *AArchive) GetSizeInBytes() int {
 
 def test_multi_vector_resource_is_declared_correctly():
     expected_lines = [
-        """indexType33SizeInBytes = 5
-    uSizeInBytes = 1
-    tSizeInBytes = 1""",
+        """indexType33SizeInBytes = 5""",
         """type IndexType33 struct {
     internal flatdata.ResourceHandle
 	position int
@@ -327,40 +225,6 @@ func (v *IndexType33) GetValue() uint64 {
         b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(indexType33SizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
     }
     return uint64(b)
-}""",
-        """type U struct {
-    internal flatdata.ResourceHandle
-	position int
-    multivector bool
-}
-
-func (v *U) GetF0() uint8 {
-    elementSize := uint(3)
-    elementOffset := uint(0)
-    var b int
-    if v.multivector {
-        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
-    } else {
-        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(uSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
-    }
-    return uint8(b)
-}""",
-        """type T struct {
-    internal flatdata.ResourceHandle
-	position int
-    multivector bool
-}
-
-func (v *T) GetF0() uint8 {
-    elementSize := uint(3)
-    elementOffset := uint(0)
-    var b int
-    if v.multivector {
-        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
-    } else {
-        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(tSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
-    }
-    return uint8(b)
 }""",
         """type AMultivectorResourceVector struct {
     internal flatdata.ResourceHandle
@@ -466,59 +330,6 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 	}
 	
 	return result
-}""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    MultivectorResourceMultivector *AMultivectorResourceMultivector
-}
-
-func (v *AArchive) Close() {
-    if v.MultivectorResourceMultivector.IsOpen {
-        v.MultivectorResourceMultivector.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.MultivectorResourceMultivector.IsOpen {
-        size += v.MultivectorResourceMultivector.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
-    v := &AArchive{}
-    // Initialize resources
-	multivectorResourceIsOpen := true
-	multivectorResourceHandle, schema, err := resource.GetHandle("multivector_resource")
-	if err != nil {
-        log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        multivectorResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}
-	multivectorResourceIndexHandle, _, err := resource.GetHandle("multivector_resource_index")
-	if err != nil {
-	    log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        multivectorResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}""",
-        """v.MultivectorResourceMultivector = &AMultivectorResourceMultivector{
-        internal: multivectorResourceHandle,
-        index: &AMultivectorResourceVector{internal: multivectorResourceIndexHandle},
-        types: map[int]interface{}{
-            0: &T{internal: multivectorResourceHandle},
-            1: &U{internal: multivectorResourceHandle},
-        },
-        IsOptional: false,
-        IsOpen: multivectorResourceIsOpen,
-    }
-	return v, nil
 }"""
     ]
 
@@ -569,45 +380,6 @@ func (v *ARawDataResourceRawData) Close() {
 
 func (v *ARawDataResourceRawData) GetSizeInBytes() int {
     return v.internal.Len()
-}""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    RawDataResourceRawData *ARawDataResourceRawData
-}
-
-func (v *AArchive) Close() {
-    if v.RawDataResourceRawData.IsOpen {
-        v.RawDataResourceRawData.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.RawDataResourceRawData.IsOpen {
-        size += v.RawDataResourceRawData.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
-    v := &AArchive{}
-    // Initialize resources
-	rawDataResourceIsOpen := true
-	rawDataResourceHandle, schema, err := resource.GetHandle("raw_data_resource")
-	if err != nil {
-        log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        rawDataResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}""",
-        """v.RawDataResourceRawData = &ARawDataResourceRawData{
-        internal: rawDataResourceHandle,
-        IsOptional: false,
-        IsOpen: rawDataResourceIsOpen,
-    }
-	return v, nil
 }"""
     ]
 
@@ -619,51 +391,7 @@ func (v *AArchive) GetSizeInBytes() int {
     }""", GoGenerator, *expected_lines)
 
 
-def test_structures_are_defined_correctly():
-    expected_lines = [
-        """sSizeInBytes = 3""",
-        """type S struct {
-    internal flatdata.ResourceHandle
-	position int
-	multivector bool
-}
-
-func (v *S) GetF0() uint8 {
-    elementSize := uint(7)
-    elementOffset := uint(0)
-    var b int
-    if v.multivector {
-        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, false)
-    } else {
-        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, false)
-    }
-    return uint8(b)
-}
-
-func (v *S) GetF1() int16 {
-    elementSize := uint(13)
-    elementOffset := uint(7)
-    var b int
-    if v.multivector {
-        b = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSize, true)
-    } else {
-        b = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSize, true)
-    }
-    return int16(b)
-}"""
-    ]
-
-    generate_and_assert_in("""
-    namespace n{
-    struct S {
-        f0 : u8 : 7;
-        f1 : i16 : 13;
-    }
-    }
-    """, GoGenerator, *expected_lines)
-
-
-def test_archives_are_defined_correctly():
+def test_optional_resource_is_declared_correctly():
     expected_lines = [
         """type ARawDataResourceRawData struct {
     internal flatdata.ResourceHandle
@@ -697,26 +425,7 @@ func (v *ARawDataResourceRawData) Close() {
 func (v *ARawDataResourceRawData) GetSizeInBytes() int {
     return v.internal.Len()
 }""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    RawDataResourceRawData *ARawDataResourceRawData
-}
-
-func (v *AArchive) Close() {
-    if v.RawDataResourceRawData.IsOpen {
-        v.RawDataResourceRawData.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.RawDataResourceRawData.IsOpen {
-        size += v.RawDataResourceRawData.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
+    """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
     v := &AArchive{}
     // Initialize resources
 	rawDataResourceIsOpen := true
@@ -729,279 +438,24 @@ func (v *AArchive) GetSizeInBytes() int {
 		    return v, err
 		}
 	}""",
-        """// Add resources to archive
-    v.RawDataResourceRawData = &ARawDataResourceRawData{
+        """v.RawDataResourceRawData = &ARawDataResourceRawData{
         internal: rawDataResourceHandle,
-        IsOptional: false,
+        IsOptional: true,
         IsOpen: rawDataResourceIsOpen,
-    }
-	return v, nil
-}"""
+    }"""
     ]
 
     generate_and_assert_in("""
     namespace n{
     archive A {
+        @optional
         raw_data_resource : raw_data;
     }
     }
     """, GoGenerator, *expected_lines)
-
-
-def test_optional_resource_is_declared_correctly():
-    expected_lines = [
-        """type ARawDataResourceRawData struct {
-    internal flatdata.ResourceHandle
-    IsOptional bool
-    IsOpen bool
-}
-
-func (v *ARawDataResourceRawData) GetValue() []byte {
-	data := make([]byte, v.GetSize())
-	_, err := v.internal.ReadAt(data, 8)
-	if err != nil {
-		return make([]byte, 0)
-	}
-	return data
-}
-
-func (v *ARawDataResourceRawData) GetSize() int {
-	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
-	if err != nil {
-		return 0
-	}
-	return int(binary.LittleEndian.Uint64(size))
-}
-
-func (v *ARawDataResourceRawData) Close() {
-    v.internal.Close()
-    v.IsOpen = false
-}
-
-func (v *ARawDataResourceRawData) GetSizeInBytes() int {
-    return v.internal.Len()
-}""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    RawDataResourceRawData *ARawDataResourceRawData
-}
-
-func (v *AArchive) Close() {
-    if v.RawDataResourceRawData.IsOpen {
-        v.RawDataResourceRawData.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.RawDataResourceRawData.IsOpen {
-        size += v.RawDataResourceRawData.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
-    v := &AArchive{}
-    // Initialize resources
-	rawDataResourceIsOpen := true
-	rawDataResourceHandle, schema, err := resource.GetHandle("raw_data_resource")
-	if err != nil {
-        log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        rawDataResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}""",
-        """v.RawDataResourceRawData = &ARawDataResourceRawData{
-        internal: rawDataResourceHandle,
-        IsOptional: true,
-        IsOpen: rawDataResourceIsOpen,
-    }
-	return v, nil
-}"""
-    ]
-
-    generate_and_assert_in("""
-    namespace n{
-    archive A {
-        @optional
-        raw_data_resource : raw_data;
-    }
-    }""", GoGenerator, *expected_lines)
-
-
-def test_optional_resource_is_declared_correctly():
-    expected_lines = [
-        """type ARawDataResourceRawData struct {
-    internal flatdata.ResourceHandle
-    IsOptional bool
-    IsOpen bool
-}
-
-func (v *ARawDataResourceRawData) GetValue() []byte {
-	data := make([]byte, v.GetSize())
-	_, err := v.internal.ReadAt(data, 8)
-	if err != nil {
-		return make([]byte, 0)
-	}
-	return data
-}
-
-func (v *ARawDataResourceRawData) GetSize() int {
-	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
-	if err != nil {
-		return 0
-	}
-	return int(binary.LittleEndian.Uint64(size))
-}
-
-func (v *ARawDataResourceRawData) Close() {
-    v.internal.Close()
-    v.IsOpen = false
-}
-
-func (v *ARawDataResourceRawData) GetSizeInBytes() int {
-    return v.internal.Len()
-}""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    RawDataResourceRawData *ARawDataResourceRawData
-}
-
-func (v *AArchive) Close() {
-    if v.RawDataResourceRawData.IsOpen {
-        v.RawDataResourceRawData.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.RawDataResourceRawData.IsOpen {
-        size += v.RawDataResourceRawData.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
-    v := &AArchive{}
-    // Initialize resources
-	rawDataResourceIsOpen := true
-	rawDataResourceHandle, schema, err := resource.GetHandle("raw_data_resource")
-	if err != nil {
-        log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        rawDataResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}""",
-        """v.RawDataResourceRawData = &ARawDataResourceRawData{
-        internal: rawDataResourceHandle,
-        IsOptional: true,
-        IsOpen: rawDataResourceIsOpen,
-    }
-	return v, nil
-}"""
-    ]
-
-    generate_and_assert_in("""
-    namespace n{
-    archive A {
-        @optional
-        raw_data_resource : raw_data;
-    }
-    }""", GoGenerator, *expected_lines)
-
-
-def test_optional_resource_is_declared_correctly():
-    expected_lines = [
-        """type ARawDataResourceRawData struct {
-    internal flatdata.ResourceHandle
-    IsOptional bool
-    IsOpen bool
-}
-
-func (v *ARawDataResourceRawData) GetValue() []byte {
-	data := make([]byte, v.GetSize())
-	_, err := v.internal.ReadAt(data, 8)
-	if err != nil {
-		return make([]byte, 0)
-	}
-	return data
-}
-
-func (v *ARawDataResourceRawData) GetSize() int {
-	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
-	if err != nil {
-		return 0
-	}
-	return int(binary.LittleEndian.Uint64(size))
-}
-
-func (v *ARawDataResourceRawData) Close() {
-    v.internal.Close()
-    v.IsOpen = false
-}
-
-func (v *ARawDataResourceRawData) GetSizeInBytes() int {
-    return v.internal.Len()
-}""",
-        """type AArchive struct {
-    IsOptional bool
-    IsOpen bool
-    RawDataResourceRawData *ARawDataResourceRawData
-}
-
-func (v *AArchive) Close() {
-    if v.RawDataResourceRawData.IsOpen {
-        v.RawDataResourceRawData.Close()
-    }
-}
-
-func (v *AArchive) GetSizeInBytes() int {
-    var size int
-    if v.RawDataResourceRawData.IsOpen {
-        size += v.RawDataResourceRawData.GetSizeInBytes()
-    }
-    return size
-}""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
-    v := &AArchive{}
-    // Initialize resources
-	rawDataResourceIsOpen := true
-	rawDataResourceHandle, schema, err := resource.GetHandle("raw_data_resource")
-	if err != nil {
-        log.Println(err)
-	    if err.Error() == flatdata.ErrorCantAccessResource {
-	        rawDataResourceIsOpen = false
-	    } else {
-		    return v, err
-		}
-	}""",
-        """v.RawDataResourceRawData = &ARawDataResourceRawData{
-        internal: rawDataResourceHandle,
-        IsOptional: true,
-        IsOpen: rawDataResourceIsOpen,
-    }
-	return v, nil
-}"""
-    ]
-
-    generate_and_assert_in("""
-    namespace n{
-    archive A {
-        @optional
-        raw_data_resource : raw_data;
-    }
-    }""", GoGenerator, *expected_lines)
 
 
 def test_check_schema_validation_generation():
-    # TODO: How to properly put a whole code fragment?
     expected_lines = [
         "if vectorResourceIsOpen {",
         "vectorResourceSchema := ",
@@ -1057,3 +511,29 @@ def test_import_added_for_archive_resource():
         archive_resource : archive A;
     }
 }""", GoGenerator, "\"path/filepath\"")
+
+
+def test_comments_added_to_generated_sources():
+    expected_lines = [
+        "// // Simple comment",
+        "// /** Builtin type to for MultiVector index */",
+        """// /* Complex comment
+         // * Multiline
+         // */"""
+    ]
+
+    generate_and_assert_in("""namespace xyz{
+        // Simple comment
+        struct A {
+            f0 : u8 : 3;
+        }
+        /* Complex comment
+         * Multiline
+         */
+        struct B {
+            f0 : u8 : 3;
+        }
+        archive Test {
+            multivector_resource : multivector< 32, A >;
+        }
+    }""", GoGenerator, *expected_lines)

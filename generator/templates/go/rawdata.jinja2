@@ -1,0 +1,54 @@
+{% macro generate(tree, archive, resource) %}
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData struct {
+    internal flatdata.ResourceHandle
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetValue() []byte {
+	data := make([]byte, v.GetSize())
+	_, err := v.internal.ReadAt(data, 8)
+	if err != nil {
+		return make([]byte, 0)
+	}
+	return data
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetSize() int {
+	size := make([]byte, 8)
+	_, err := v.internal.ReadAt(size, 0)
+	if err != nil {
+		return 0
+	}
+	return int(binary.LittleEndian.Uint64(size))
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) Close() {
+    v.internal.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetSizeInBytes() int {
+    return v.internal.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString("{")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"container_type\": \"RawData\",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"size\": ")
+    buffer.WriteString(strconv.Itoa(v.GetSize()))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"size_in_bytes\": ")
+    buffer.WriteString(strconv.Itoa(v.GetSizeInBytes()))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"element_types\": []")
+    buffer.WriteString("\n")
+    buffer.WriteString("}")
+	return buffer.String()
+}
+{% endmacro %}

@@ -1,0 +1,162 @@
+{% import "go/vector.jinja2" as go_vector %}
+{% macro generate(tree, archive, resource) %}
+{{ go_vector.generate(tree, archive, resource) }}
+
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector struct {
+    internal flatdata.ResourceHandle
+    index      *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector
+	types      map[int]interface{}
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Close() {
+    v.internal.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) GetSize() int {
+	return v.index.GetSize()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) GetSizeInBytes() int {
+    return v.internal.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) getBucketOffset(i int) int {
+    if i == v.index.GetSize() {
+		return v.internal.Len() - int(flatdataPaddingSizeInBits/8)
+	} 
+	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBits/8)
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Get(i int) []interface{} {
+    offset := v.getBucketOffset(i)
+	nextOffset := v.getBucketOffset(i + 1)
+	var result []interface{}
+
+	for offset < nextOffset {
+	    elementType := flatdata.Read(v.internal, uint(offset*8), 8, false)
+		offset++
+		abstractElement, ok := v.types[elementType]
+		if !ok {
+			//TODO: How to process case, then type of element is not found?
+			log.Println("Can't get type of element")
+		}
+		temp := 0
+		switch element := abstractElement.(type) {
+		{% for entry in resource|get_types_for_multivector(tree) %}
+		{% if loop.index0 >= 1%}
+		case *{{ entry|to_go_case }}:
+			element.position = offset
+            element.multivector = true
+			result = append(result, element)
+			temp = {{ entry|to_go_case(false) }}SizeInBytes
+		{% endif %}
+		{% endfor %}
+		default:
+			//TODO: How to react in case if it's impossible to cast?
+			log.Println("Can't cast element. Type is unknown...")
+		}
+		offset += temp
+	}
+	
+	return result
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString("{")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"container_type\": \"Vector\",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"size\": ")
+    buffer.WriteString(strconv.Itoa(v.GetSize()))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"size_in_bytes\": ")
+    buffer.WriteString(strconv.Itoa(v.GetSizeInBytes()))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("\"element_types\": [")
+    buffer.WriteString("\n")
+    {% for struct in resource.referenced_structures %}
+    {% if loop.index0 >= 1 %}
+    buffer.WriteString("    {")
+    buffer.WriteString("\n")
+    buffer.WriteString("        \"name\": \"")
+    buffer.WriteString("{{ resource.referenced_structures[loop.index0].node.name|to_go_case }}")
+    buffer.WriteString("\",")
+    buffer.WriteString("\n")
+    buffer.WriteString("        \"attributes\": [")
+    buffer.WriteString("\n")
+    {% for field in resource.referenced_structures[loop.index0].node.fields %}
+    buffer.WriteString("            {")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"name\": \"")
+    buffer.WriteString("{{ field.name }}")
+    buffer.WriteString("\"")
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"offset\": ")
+    buffer.WriteString(strconv.Itoa({{ field.offset }}))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"width\": ")
+    buffer.WriteString(strconv.Itoa({{ field.type.width }}))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"is_signed\": ")
+    buffer.WriteString("{{ field.type.is_signed|lower }}")
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("            },")
+    buffer.WriteString("\n")
+    {% endfor %}
+    buffer.WriteString("        ]")
+    buffer.WriteString("\n")
+    buffer.WriteString("    },")
+    buffer.WriteString("\n")
+    {% endif %}
+    {% endfor %}
+    buffer.WriteString("],")
+    buffer.WriteString("\n")
+    buffer.WriteString("    \"index_type\": {")
+    buffer.WriteString("\n")
+    buffer.WriteString("        \"name\": \"")
+    buffer.WriteString("{{ resource.referenced_structures[0].node.name|to_go_case }}")
+    buffer.WriteString("\",")
+    buffer.WriteString("\n")
+    buffer.WriteString("        \"attributes\": [")
+    buffer.WriteString("\n")
+    {% for field in resource.referenced_structures[0].node.fields %}
+    buffer.WriteString("            {")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"name\": \"")
+    buffer.WriteString("{{ field.name }}")
+    buffer.WriteString("\"")
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"offset\": ")
+    buffer.WriteString(strconv.Itoa({{ field.offset }}))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"width\": ")
+    buffer.WriteString(strconv.Itoa({{ field.type.width }}))
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("                \"is_signed\": ")
+    buffer.WriteString("{{ field.type.is_signed|lower }}")
+    buffer.WriteString(",")
+    buffer.WriteString("\n")
+    buffer.WriteString("            }")
+    buffer.WriteString("\n")
+    {% endfor %}
+    buffer.WriteString("        ]")
+    buffer.WriteString("\n")
+    buffer.WriteString("    }")
+    buffer.WriteString("\n")
+    buffer.WriteString("}")
+	return buffer.String()
+}
+{% endmacro %}

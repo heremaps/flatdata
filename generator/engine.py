@@ -25,9 +25,9 @@ class Engine(object):
 
     _GENERATORS = {
         "cpp": CppGenerator,
-        "py": PythonGenerator,
         "dot": DotGenerator,
-        "go": GoGenerator
+        "go": GoGenerator,
+        "py": PythonGenerator
     }
 
     @classmethod

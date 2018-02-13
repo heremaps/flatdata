@@ -25,7 +25,7 @@ class GoGenerator(BaseGenerator):
 
         def to_go_doc(value):
             lines = value.doc.splitlines()
-            return '\n'.join("// " + s for s in lines if len(s) != 0)
+            return '\n'.join(["// " + s for s in lines if len(s) != 0])
 
         def type_mapping(t, struct):
             if is_bool(t):
