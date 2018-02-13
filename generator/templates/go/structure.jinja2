@@ -30,42 +30,16 @@ func (v *{{ struct.name|to_go_case }}) Get{{ field.name|to_go_case }}() {{ field
     
 func (v *{{ struct.name|to_go_case }}) ToString() string {
     buffer := bytes.Buffer{}
-    buffer.WriteString("{")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"")
-    buffer.WriteString("name")
-    buffer.WriteString("\"")
-    buffer.WriteString(": ")
-    buffer.WriteString("{{ struct.name }}")
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"")
-    buffer.WriteString("position")
-    buffer.WriteString("\"")
-    buffer.WriteString(": ")
-    buffer.WriteString(strconv.Itoa(int(v.position)))
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"attributes\": {")
-    buffer.WriteString("\n")
+    buffer.WriteString(fmt.Sprintf(`{"name": "{{ struct.name }}", "position": %d, "attributes": {`, v.position))
     if v.internal != nil {
 	    {% for field in struct.fields %}
-        buffer.WriteString("    \"")
-        buffer.WriteString("{{ field.name }}")
-        buffer.WriteString("\"")
-        buffer.WriteString(": ")
-        {% if field.type.name|is_bool %}
-        buffer.WriteString(strconv.FormatBool(v.Get{{ field.name|to_go_case }}()))
-        {% else %}
-        buffer.WriteString(strconv.Itoa(int(v.Get{{ field.name|to_go_case }}())))
-        {% endif %}
+        buffer.WriteString(fmt.Sprintf(`"{{ field.name }}": %v`, {% if field.type.name|is_bool %}v.Get{{ field.name|to_go_case }}(){% else %}v.Get{{ field.name|to_go_case }}(){% endif %}))
+        {% if loop.length != loop.index %}
         buffer.WriteString(",")
-        buffer.WriteString("\n")
+        {% endif %}
 	    {% endfor %}
 	}
-    buffer.WriteString("}")
-    buffer.WriteString("\n")
-    buffer.WriteString("}")
+    buffer.WriteString("}}")
 	return buffer.String()
 }
 {% endmacro %}

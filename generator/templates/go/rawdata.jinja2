@@ -33,22 +33,6 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) Get
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) ToString() string {
-    buffer := bytes.Buffer{}
-    buffer.WriteString("{")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"container_type\": \"RawData\",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"size\": ")
-    buffer.WriteString(strconv.Itoa(v.GetSize()))
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"size_in_bytes\": ")
-    buffer.WriteString(strconv.Itoa(v.GetSizeInBytes()))
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"element_types\": []")
-    buffer.WriteString("\n")
-    buffer.WriteString("}")
-	return buffer.String()
+    return fmt.Sprintf(`{"container_type": "RawData", "size": %d, "size_in_bytes": %d, "element_types": []}`, v.GetSize(), v.GetSizeInBytes())
 }
 {% endmacro %}

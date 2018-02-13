@@ -73,46 +73,24 @@ func (v *{{ archive.name|to_go_case }}Archive) GetSizeInBytes() int {
 
 func (v *{{ archive.name|to_go_case }}Archive) ToString() string {
     buffer := bytes.Buffer{}
-    buffer.WriteString("{")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"name\": \"")
-    buffer.WriteString("{{ archive.name|to_go_case }}")
-    buffer.WriteString("\"")
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"container_type\": \"Archive\",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"size_in_bytes\": \"")
-    buffer.WriteString(strconv.Itoa(v.GetSizeInBytes()))
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
-    buffer.WriteString("\"resources\": [")
+    buffer.WriteString(fmt.Sprintf(`{"name": "{{ archive.name|to_go_case }}", "container_type": "Archive", "size_in_bytes": %d, "resources": [`, v.GetSizeInBytes()))
     {% for resource in archive.resources if not resource|is_bound_resource %}
     {% if resource|is_vector %}
     buffer.WriteString(v.{{ resource.name|to_go_case }}Vector.ToString())
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
     {% elif resource|is_archive_resource %}
     buffer.WriteString(v.{{ resource.name|to_go_case }}Archive.ToString())
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
     {% elif resource|is_raw_data %}
     buffer.WriteString(v.{{ resource.name|to_go_case }}RawData.ToString())
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
     {% elif resource|is_multivector %}
     buffer.WriteString(v.{{ resource.name|to_go_case }}Multivector.ToString())
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
     {% elif resource|is_instance %}
     buffer.WriteString(v.{{ resource.name|to_go_case }}Instance.ToString())
-    buffer.WriteString(",")
-    buffer.WriteString("\n")
     {% endif %}
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %}      
     {% endfor %}
-    buffer.WriteString("]")
-    buffer.WriteString("\n")
-    buffer.WriteString("}")
+    buffer.WriteString("]}")
 	return buffer.String()
 }
 
