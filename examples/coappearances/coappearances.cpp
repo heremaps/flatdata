@@ -130,7 +130,7 @@ convert_characters( const picojson::object& characters,
                 auto to_refs = relation.at( "to" ).get< picojson::array >( );
                 assert( to_refs.size( ) == 2 );
                 rel.to_a_ref = characters_index.at( to_refs[ 0 ].get< std::string >( ) );
-                rel.to_a_ref = characters_index.at( to_refs[ 1 ].get< std::string >( ) );
+                rel.to_b_ref = characters_index.at( to_refs[ 1 ].get< std::string >( ) );
             }
         }
     }
