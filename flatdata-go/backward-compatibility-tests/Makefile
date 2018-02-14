@@ -1,8 +1,8 @@
-.PHONY: all run-ci clean check test
+.PHONY: all run-ci clean lint test deps generate
 
-all: clean check generate test
+all: clean lint generate test
 
-run-ci: deps check test
+run-ci: deps lint test
 
 deps:
 		@echo "Install dependencies..."
@@ -12,8 +12,8 @@ clean:
 		@echo "Cleanup..."
 		find . -maxdepth 1 -type f -name "*_generated.go" -delete
 
-check:
-		@echo "Run checks..."
+lint:
+		@echo "Run linters..."
 		go fmt $$(go list ./... | grep -v /vendor/)
 		go vet $$(go list ./... | grep -v /vendor/)
 		golint $$(go list ./... | grep -v /vendor/) | grep -v _generated.go; test $$? -eq 1

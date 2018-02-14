@@ -1,5 +1,6 @@
-.PHONY: all run-ci check test bench
-all: check test bench
+.PHONY: all run-ci lint test bench deps
+
+all: lint test bench
 
 run-ci: deps all
 
@@ -7,8 +8,8 @@ deps:
 		@echo "Install dependencies..."
 		dep ensure
 
-check:
-		@echo "Run checks..."
+lint:
+		@echo "Run linters..."
 		go fmt $$(go list ./... | grep -v /vendor/)
 		go vet $$(go list ./... | grep -v /vendor/)
 		golint -set_exit_status $$(go list ./... | grep -v /vendor/)
