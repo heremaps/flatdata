@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	flatdataMinSize = 16
+	flatdataResourcePaddingBytes = 8
+	flatdataSizeOffsetBytes = 8
 	// ErrorInvalidResource returns in case of size of resource is smaller than minimal
 	ErrorInvalidResource = "invalid flatdata resource"
 	// ErrorCantAccessResource returns if resource wasn't been memory-mapped
@@ -52,7 +53,7 @@ func (r *FileResourceProvider) GetHandle(name string) (ResourceHandle, string, e
 	if err != nil {
 		return nil, "", errors.New(ErrorCantAccessResource)
 	}
-	if handle.Len() < flatdataMinSize {
+	if handle.Len() < (flatdataResourcePaddingBytes + flatdataSizeOffsetBytes) {
 		return nil, "", errors.New(ErrorInvalidResource)
 	}
 
