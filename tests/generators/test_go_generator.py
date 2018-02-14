@@ -8,7 +8,7 @@ from generator.generators.GoGenerator import GoGenerator
 from .assertions import *
 
 
-def test_base_generation():
+def test_imports_and_constants_generation():
     generate_and_assert_in("""namespace xyz{
         
 }
