@@ -7,7 +7,7 @@ use std::fmt;
 use std::iter;
 use std::marker;
 
-/// Ts is a type describing the variadic types of the MultiArrayView.
+/// Ts is a type describing the variadic types of the `MultiArrayView`.
 pub struct MultiArrayView<Idx, Ts> {
     index: ArrayView<Idx>,
     data: StreamType,

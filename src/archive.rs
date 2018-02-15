@@ -17,10 +17,10 @@ pub trait IndexType: ArchiveType {
     fn value(&self) -> usize;
 }
 
-/// Index specifying a variadic type of MultiArrayView.
+/// Index specifying a variadic type of `MultiArrayView`.
 pub type TypeIndex = u8;
 
-/// A type used as element of MultiArrayView.
+/// A type used as element of `MultiArrayView`.
 pub trait VariadicArchiveType: convert::From<(TypeIndex, StreamType)> {
     fn size_in_bytes(&self) -> usize;
 }
@@ -33,8 +33,6 @@ pub trait Archive: fmt::Debug {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>
     where
         Self: Sized;
-    fn name(&self) -> &str;
-    fn schema(&self) -> &str;
 }
 
 //
@@ -129,6 +127,133 @@ macro_rules! define_variadic_archive_type {
                 match *self {
                     $($name::$type(_) => $type::SIZE_IN_BYTES),+
                 }
+            }
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! define_archive {
+    ($name:ident, $archive_schema:expr;
+        $(($struct_resource:ident, $struct_type:tt, $struct_schema:expr)),*;
+        $(($raw_data_resource:ident, $raw_data_schema:expr)),*;
+        $(($vector_resource:ident, $element_type:tt, $element_schema:expr)),*;
+        $(($multivector_resource:ident, $variadic_type:tt, $variadic_type_schema:expr,
+            $multivector_resource_index:ident, $index_type:path, $index_schema:expr)),*
+    ) => {
+
+        // #[derive(Debug, Clone)]
+        pub struct $name {
+            _storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>
+            $(,$struct_resource: $struct_type)*
+            $(,$raw_data_resource: ::flatdata::MemoryDescriptor)*
+            $(,$vector_resource: ::flatdata::ArrayView<$element_type>)*
+            $(,$multivector_resource: ::flatdata::MultiArrayView<$index_type, $variadic_type>)*
+        }
+
+        impl $name {
+            fn read_resource<R>(
+                storage: &mut ResourceStorage,
+                name: &str,
+                schema: &str,
+            ) -> Result<R, ResourceStorageError>
+            where
+                R: From<MemoryDescriptor>,
+            {
+                storage.read(name, schema).map(R::from)
+            }
+
+            $(pub fn $struct_resource(&self) -> &$struct_type {
+                &self.$struct_resource
+            })*
+
+            $(pub fn $raw_data_resource(&self) -> &[u8] {
+                unsafe {
+                    ::std::slice::from_raw_parts(
+                        self.$raw_data_resource.data(),
+                        self.$raw_data_resource.size_in_bytes())
+                }
+            })*
+
+            // TODO: It should be ArrayView annotated with a life-time and not a ref to an
+            // ArrayView.
+            $(pub fn $vector_resource(&self) -> &::flatdata::ArrayView<$element_type> {
+                &self.$vector_resource
+            })*
+
+            // TODO: It should be MultiArrayView annotated with a life-time and not a ref to an
+            // MultiArrayView.
+            $(pub fn $multivector_resource(&self)
+                    -> &::flatdata::MultiArrayView<$index_type, $variadic_type> {
+                &self.$multivector_resource
+            })*
+
+            fn signature_name(archive_name: &str) -> String {
+                format!("{}.archive", archive_name)
+            }
+        }
+
+        impl Archive for $name {
+            const NAME: &'static str = stringify!($name);
+            const SCHEMA: &'static str = $archive_schema;
+
+            fn open(storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>)
+                -> ::std::result::Result<Self, ::flatdata::ResourceStorageError>
+            {
+                $(let $struct_resource;)*
+                $(let $raw_data_resource;)*
+                $(let $vector_resource;)*
+                $(let $multivector_resource;)*
+                {
+                    let res_storage = &mut *storage.borrow_mut();
+                    res_storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+
+                    $($struct_resource = Self::read_resource(
+                        res_storage,
+                        stringify!($struct_resource),
+                        $struct_schema
+                    ).map(|mem: ::flatdata::MemoryDescriptor| $struct_type::from(mem.data()))?;
+                    )*
+
+                    $($raw_data_resource = Self::read_resource(
+                        res_storage,
+                        stringify!($raw_data_resource),
+                        $raw_data_schema)?;
+                    )*
+
+                    $($vector_resource = Self::read_resource(
+                        res_storage,
+                        stringify!($vector_resource),
+                        $element_schema
+                    ).map(|mem| ::flatdata::ArrayView::new(&mem))?;
+                    )*
+
+                    $(let $multivector_resource_index = Self::read_resource(
+                        res_storage,
+                        stringify!($multivector_resource_index),
+                        $index_schema
+                    ).map(|mem| ::flatdata::ArrayView::new(&mem))?;
+                    $multivector_resource = Self::read_resource(
+                        res_storage,
+                        stringify!($multivector_resource),
+                        $variadic_type_schema
+                    ).map(|mem| ::flatdata::MultiArrayView::new(
+                        $multivector_resource_index, &mem))?;
+                    )*
+                }
+                Ok(Self {
+                    _storage: storage
+                    $(,$struct_resource: $struct_resource)*
+                    $(,$raw_data_resource: $raw_data_resource)*
+                    $(,$vector_resource: $vector_resource)*
+                    $(,$multivector_resource: $multivector_resource)*
+                })
+            }
+        }
+
+        impl fmt::Debug for Graph {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, "Graph")
             }
         }
     }
