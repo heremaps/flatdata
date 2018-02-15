@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::convert;
 use std::fmt;
 use std::rc::Rc;
 use std::slice;
@@ -17,9 +16,7 @@ namespace coappearances { @explicit_reference( Meta.title_ref, strings )
     @explicit_reference( Meta.author_ref, strings )
     meta : Meta; }"#;
 
-define_archive_type!(Meta, 8, (title_ref, u32, 0, 32), (author_ref, u32, 32, 32));
-
-const CHARACTER_SCHEMA: &'static str = r#"namespace coappearances { /**
+const VERTICES_SCHEMA: &'static str = r#"namespace coappearances { /**
  * A character.
  */
 struct Character {
@@ -30,7 +27,7 @@ namespace coappearances { @explicit_reference( Character.name_ref, strings )
 
 define_archive_type!(Character, 4, (name_ref, u32, 0, 32));
 
-const COAPPEARANCE_SCHEMA: &'static str = r#"namespace coappearances { /**
+const EDGES_SCHEMA: &'static str = r#"namespace coappearances { /**
  * An appearance of two characters in the same scene.
  *
  * count - multiplicity of the coappearance.
@@ -48,16 +45,7 @@ namespace coappearances { @explicit_reference( Coappearance.a_ref, vertices )
     @explicit_reference( Coappearance.first_chapter_ref, chapters )
     edges : vector< Coappearance >; }"#;
 
-define_archive_type!(
-    Coappearance,
-    8,
-    (a_ref, u32, 0, 16),
-    (b_ref, u32, 16, 16),
-    (count, u32, 32, 16),
-    (first_chapter_ref, u32, 48, 16)
-);
-
-const CHAPTER_SCHEMA: &'static str = r#"namespace coappearances { /**
+const CHAPTERS_SCHEMA: &'static str = r#"namespace coappearances { /**
  * A chapter in the book.
  */
 struct Chapter {
@@ -65,34 +53,6 @@ struct Chapter {
     minor: u8 : 7;
 } }
 namespace coappearances { chapters : vector< Chapter >; }"#;
-
-define_archive_type!(Chapter, 2, (major, u8, 0, 4), (minor, u8, 4, 7));
-
-// TODO: Resolve ref clashing with keywords of Rust.
-define_archive_type!(Nickname, 4, (ref_, u32, 0, 32));
-define_archive_type!(Description, 4, (ref_, u32, 0, 32));
-
-define_archive_type!(
-    UnaryRelation,
-    6,
-    (kind_ref, u32, 0, 32),
-    (to_ref, u32, 32, 16)
-);
-
-define_archive_type!(
-    BinaryRelation,
-    8,
-    (kind_ref, u32, 0, 32),
-    (to_a_ref, u32, 32, 16),
-    (to_b_ref, u32, 48, 16)
-);
-
-pub enum VerticesData {
-    Nickname(Nickname),
-    Description(Description),
-    UnaryRelation(UnaryRelation),
-    BinaryRelation(BinaryRelation),
-}
 
 const VERTICESDATA_SCHEMA: &'static str = r#"namespace coappearances { /**
  * A nickname or an alternative name of a character.
@@ -131,40 +91,6 @@ namespace coappearances { @explicit_reference( Nickname.ref, strings )
     @explicit_reference( BinaryRelation.to_b_ref, vertices )
     vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >; }"#;
 
-impl VariadicArchiveType for VerticesData {
-    fn size_in_bytes(&self) -> usize {
-        match *self {
-            VerticesData::Nickname(_) => Nickname::SIZE_IN_BYTES,
-            VerticesData::Description(_) => Description::SIZE_IN_BYTES,
-            VerticesData::UnaryRelation(_) => UnaryRelation::SIZE_IN_BYTES,
-            VerticesData::BinaryRelation(_) => BinaryRelation::SIZE_IN_BYTES,
-        }
-    }
-}
-
-impl convert::From<(u8, StreamType)> for VerticesData {
-    fn from((type_index, data): (u8, StreamType)) -> VerticesData {
-        match type_index {
-            0 => VerticesData::Nickname(Nickname::from(data)),
-            1 => VerticesData::Description(Description::from(data)),
-            2 => VerticesData::UnaryRelation(UnaryRelation::from(data)),
-            3 => VerticesData::BinaryRelation(BinaryRelation::from(data)),
-            _ => panic!("invalid type index"),
-        }
-    }
-}
-
-impl fmt::Debug for VerticesData {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            VerticesData::Nickname(ref inner) => write!(f, "{:?}", inner),
-            VerticesData::Description(ref inner) => write!(f, "{:?}", inner),
-            VerticesData::UnaryRelation(ref inner) => write!(f, "{:?}", inner),
-            VerticesData::BinaryRelation(ref inner) => write!(f, "{:?}", inner),
-        }
-    }
-}
-
 const VERTICES_DATA_INDEX_SCHEMA: &'static str = r#"index(namespace coappearances { /**
  * A nickname or an alternative name of a character.
  */
@@ -202,18 +128,46 @@ namespace coappearances { @explicit_reference( Nickname.ref, strings )
     @explicit_reference( BinaryRelation.to_b_ref, vertices )
     vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >; })"#;
 
-// TODO: Do not expose this type.
-define_archive_type!(IndexType32, 4, (value, u64, 0, 32));
-
-impl IndexType for IndexType32 {
-    fn value(&self) -> usize {
-        self.value() as usize
-    }
-}
-
 const STRINGS_SCHEMA: &'static str =
     r#"namespace coappearances { // All strings contained in the data separated by `\0`.
     strings: raw_data; }"#;
+
+define_archive_type!(Meta, 8, (title_ref, u32, 0, 32), (author_ref, u32, 32, 32));
+
+define_archive_type!(
+    Coappearance,
+    8,
+    (a_ref, u32, 0, 16),
+    (b_ref, u32, 16, 16),
+    (count, u32, 32, 16),
+    (first_chapter_ref, u32, 48, 16)
+);
+
+define_archive_type!(Chapter, 2, (major, u8, 0, 4), (minor, u8, 4, 7));
+
+// TODO: Resolve ref clashing with keywords of Rust.
+define_archive_type!(Nickname, 4, (ref_, u32, 0, 32));
+define_archive_type!(Description, 4, (ref_, u32, 0, 32));
+
+define_archive_type!(
+    UnaryRelation,
+    6,
+    (kind_ref, u32, 0, 32),
+    (to_ref, u32, 32, 16)
+);
+
+define_archive_type!(
+    BinaryRelation,
+    8,
+    (kind_ref, u32, 0, 32),
+    (to_a_ref, u32, 32, 16),
+    (to_b_ref, u32, 48, 16)
+);
+
+define_variadic_archive_type!(VerticesData, IndexType32, 0 => Nickname, 1 => Description,
+    2 => UnaryRelation, 3 => BinaryRelation);
+
+define_index_type!(IndexType32, 4, 32);
 
 pub struct Graph {
     /// Holds memory mapped files alive.
@@ -222,7 +176,7 @@ pub struct Graph {
     meta: Meta,
     vertices: ArrayView<Character>,
     edges: ArrayView<Coappearance>,
-    vertices_data: MultiArrayView<IndexType32, VerticesData>,
+    vertices_data: MultiArrayView<internal::IndexType32, VerticesData>,
     chapters: ArrayView<Chapter>,
     strings: MemoryDescriptor,
 }
@@ -251,7 +205,7 @@ impl Graph {
         &self.edges
     }
 
-    pub fn vertices_data(&self) -> &MultiArrayView<IndexType32, VerticesData> {
+    pub fn vertices_data(&self) -> &MultiArrayView<internal::IndexType32, VerticesData> {
         &self.vertices_data
     }
 
@@ -372,9 +326,9 @@ archive Graph {
             res_storage.read(&signature_name(Self::NAME), Self::SCHEMA)?;
             meta = Self::read_resource(res_storage, "meta", META_SCHEMA)
                 .map(|mem: MemoryDescriptor| Meta::from(mem.data()))?;
-            vertices = Self::read_resource(res_storage, "vertices", CHARACTER_SCHEMA)
+            vertices = Self::read_resource(res_storage, "vertices", VERTICES_SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
-            edges = Self::read_resource(res_storage, "edges", COAPPEARANCE_SCHEMA)
+            edges = Self::read_resource(res_storage, "edges", EDGES_SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
             let vertices_data_index = Self::read_resource(
                 res_storage,
@@ -383,7 +337,7 @@ archive Graph {
             ).map(|mem| ArrayView::new(&mem))?;
             vertices_data = Self::read_resource(res_storage, "vertices_data", VERTICESDATA_SCHEMA)
                 .map(|mem| MultiArrayView::new(vertices_data_index, &mem))?;
-            chapters = Self::read_resource(res_storage, "chapters", CHAPTER_SCHEMA)
+            chapters = Self::read_resource(res_storage, "chapters", CHAPTERS_SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
             strings = Self::read_resource(res_storage, "strings", STRINGS_SCHEMA)?;
         }
