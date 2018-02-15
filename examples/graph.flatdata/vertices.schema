@@ -1,8 +1,0 @@
-namespace graph { /**
- * A vertex is point in a plane.
- */
-struct Vertex {
-    x : u32 : 16;
-    y : u32 : 16;
-} }
-namespace graph { vertices : vector< Vertex >; }

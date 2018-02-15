@@ -10,7 +10,7 @@ Reader:
 * [x] Memory resource storage
 * [x] Struct reader
 * [x] ArrayView
-* [ ] MultiArrayView
+* [x] MultiArrayView
 * [x] Raw data view
 * [ ] Subarchives
 
@@ -37,12 +37,12 @@ Misc:
 
 ## Example
 
-The folder [example](example) contains a simple graph representation (vertices and edges) described in `flatdata` together with the serialized data. It also contains a Rust module which implements the schema. Usually, this code would be generated automatically by `flatdata`'s generator. For now, we use it as a proof of concept to develop readers and writers, and also to manually define a desired layout we would generate automatically.
+The folder [tests/coappearances](tests/coappearances) contains a graph of character coappearances in Tolstoi's Anna Karenina described in `flatdata` together with the serialized data. The example is from the original [flatdata repository](https://github.com/heremaps/flatdata). It also contains a Rust module which implements the schema. Usually, this code would be generated automatically by `flatdata`'s generator. For now, we use it as a proof of concept to develop readers and writers, and also to manually define a desired layout we would generate automatically.
 
-A reader example can be built and run as follows:
+The tests reads all types of different data and checks that it was deserialized correctly. It can be also considered as a reader example. Run it as follows:
 
 ```shell
-cargo run --example read_graph -- examples/graph.flatdata
+cargo test
 ```
 
 ## License

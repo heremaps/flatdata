@@ -2,18 +2,13 @@ use bytereader::StreamType;
 use std::cell::RefCell;
 use std::convert;
 use std::rc::Rc;
+use std::fmt;
 
 use storage::ResourceStorage;
 use error::ResourceStorageError;
 
-/// Element in archive, which can be a struct or a (sub)archive itself.
-pub trait ArchiveElement {
-    const NAME: &'static str;
-    const SCHEMA: &'static str;
-}
-
 /// A type in archive.
-pub trait ArchiveType: ArchiveElement + convert::From<StreamType> {
+pub trait ArchiveType: convert::From<StreamType> + fmt::Debug {
     const SIZE_IN_BYTES: usize;
 }
 
@@ -22,12 +17,15 @@ pub trait IndexType: ArchiveType {
     fn value(&self) -> usize;
 }
 
-pub trait VariadicArchiveType: ArchiveElement + convert::From<(u8, StreamType)> {
+pub trait VariadicArchiveType: convert::From<(u8, StreamType)> {
     fn size_in_bytes(&self) -> usize;
 }
 
 /// An archive.
-pub trait Archive: ArchiveElement {
+pub trait Archive: fmt::Debug {
+    const NAME: &'static str;
+    const SCHEMA: &'static str;
+
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>
     where
         Self: Sized;
@@ -46,8 +44,8 @@ macro_rules! intersperse {
 }
 
 #[macro_export]
-macro_rules! define_resource_type {
-    ($name:ident, $name_str:expr, $schema_str:expr, $size_in_bytes:expr
+macro_rules! define_archive_type {
+    ($name:ident, $size_in_bytes:expr
         $(,($field:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
         pub struct $name {
@@ -58,11 +56,6 @@ macro_rules! define_resource_type {
             $(pub fn $field(&self) -> $type {
                 read_bytes!($type, self.data, $offset, $bit_size)
             })*
-        }
-
-        impl ArchiveElement for $name {
-            const NAME: &'static str = $name_str;
-            const SCHEMA: &'static str = $schema_str;
         }
 
         impl ArchiveType for $name {

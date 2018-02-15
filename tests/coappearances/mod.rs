@@ -6,12 +6,7 @@ use std::slice;
 
 use flatdata::*;
 
-// TODO: SCHEMA should be embedded into resource and not resource type.
-
-define_resource_type!(
-    Meta,
-    "Meta",
-    r#"namespace coappearances { /**
+const META_SCHEMA: &'static str = r#"namespace coappearances { /**
  * Meta information about the book.
  */
 struct Meta {
@@ -20,31 +15,22 @@ struct Meta {
 } }
 namespace coappearances { @explicit_reference( Meta.title_ref, strings )
     @explicit_reference( Meta.author_ref, strings )
-    meta : Meta; }"#,
-    8,
-    (title_ref, u32, 0, 32),
-    (author_ref, u32, 32, 32)
-);
+    meta : Meta; }"#;
 
-define_resource_type!(
-    Character,
-    "Character",
-    r#"namespace coappearances { /**
+define_archive_type!(Meta, 8, (title_ref, u32, 0, 32), (author_ref, u32, 32, 32));
+
+const CHARACTER_SCHEMA: &'static str = r#"namespace coappearances { /**
  * A character.
  */
 struct Character {
     name_ref : u32 : 32;
 } }
 namespace coappearances { @explicit_reference( Character.name_ref, strings )
-    vertices : vector< Character >; }"#,
-    4,
-    (name_ref, u32, 0, 32)
-);
+    vertices : vector< Character >; }"#;
 
-define_resource_type!(
-    Coappearance,
-    "Coappearance",
-    r#"namespace coappearances { /**
+define_archive_type!(Character, 4, (name_ref, u32, 0, 32));
+
+const COAPPEARANCE_SCHEMA: &'static str = r#"namespace coappearances { /**
  * An appearance of two characters in the same scene.
  *
  * count - multiplicity of the coappearance.
@@ -60,7 +46,10 @@ struct Coappearance {
 namespace coappearances { @explicit_reference( Coappearance.a_ref, vertices )
     @explicit_reference( Coappearance.b_ref, vertices )
     @explicit_reference( Coappearance.first_chapter_ref, chapters )
-    edges : vector< Coappearance >; }"#,
+    edges : vector< Coappearance >; }"#;
+
+define_archive_type!(
+    Coappearance,
     8,
     (a_ref, u32, 0, 16),
     (b_ref, u32, 16, 16),
@@ -68,39 +57,30 @@ namespace coappearances { @explicit_reference( Coappearance.a_ref, vertices )
     (first_chapter_ref, u32, 48, 16)
 );
 
-define_resource_type!(
-    Chapter,
-    "Chapter",
-    r#"namespace coappearances { /**
+const CHAPTER_SCHEMA: &'static str = r#"namespace coappearances { /**
  * A chapter in the book.
  */
 struct Chapter {
     major: u8 : 4;
     minor: u8 : 7;
 } }
-namespace coappearances { chapters : vector< Chapter >; }"#,
-    2,
-    (major, u8, 0, 4),
-    (minor, u8, 4, 7)
-);
+namespace coappearances { chapters : vector< Chapter >; }"#;
+
+define_archive_type!(Chapter, 2, (major, u8, 0, 4), (minor, u8, 4, 7));
 
 // TODO: Resolve ref clashing with keywords of Rust.
-define_resource_type!(Nickname, "Nickname", "", 4, (ref_, u32, 0, 32));
-define_resource_type!(Description, "Description", "", 4, (ref_, u32, 0, 32));
+define_archive_type!(Nickname, 4, (ref_, u32, 0, 32));
+define_archive_type!(Description, 4, (ref_, u32, 0, 32));
 
-define_resource_type!(
+define_archive_type!(
     UnaryRelation,
-    "UnaryRelation",
-    "",
     6,
     (kind_ref, u32, 0, 32),
     (to_ref, u32, 32, 16)
 );
 
-define_resource_type!(
+define_archive_type!(
     BinaryRelation,
-    "BinaryRelation",
-    "",
     8,
     (kind_ref, u32, 0, 32),
     (to_a_ref, u32, 32, 16),
@@ -114,11 +94,7 @@ pub enum VerticesData {
     BinaryRelation(BinaryRelation),
 }
 
-// TODO: Come up with a better name or namespace to avoid clashes.
-// TODO: Generate by macro!
-impl ArchiveElement for VerticesData {
-    const NAME: &'static str = "builtin::VerticesData";
-    const SCHEMA: &'static str = r#"namespace coappearances { /**
+const VERTICESDATA_SCHEMA: &'static str = r#"namespace coappearances { /**
  * A nickname or an alternative name of a character.
  */
 struct Nickname {
@@ -154,7 +130,6 @@ namespace coappearances { @explicit_reference( Nickname.ref, strings )
     @explicit_reference( BinaryRelation.to_a_ref, vertices )
     @explicit_reference( BinaryRelation.to_b_ref, vertices )
     vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >; }"#;
-}
 
 impl VariadicArchiveType for VerticesData {
     fn size_in_bytes(&self) -> usize {
@@ -190,11 +165,7 @@ impl fmt::Debug for VerticesData {
     }
 }
 
-// TODO: Do not expose this type.
-define_resource_type!(
-    IndexType32,
-    "IndexType32",
-    r#"index(namespace coappearances { /**
+const VERTICES_DATA_INDEX_SCHEMA: &'static str = r#"index(namespace coappearances { /**
  * A nickname or an alternative name of a character.
  */
 struct Nickname {
@@ -229,10 +200,10 @@ namespace coappearances { @explicit_reference( Nickname.ref, strings )
     @explicit_reference( BinaryRelation.kind_ref, strings )
     @explicit_reference( BinaryRelation.to_a_ref, vertices )
     @explicit_reference( BinaryRelation.to_b_ref, vertices )
-    vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >; })"#,
-    4,
-    (value, u64, 0, 32)
-);
+    vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >; })"#;
+
+// TODO: Do not expose this type.
+define_archive_type!(IndexType32, 4, (value, u64, 0, 32));
 
 impl IndexType for IndexType32 {
     fn value(&self) -> usize {
@@ -240,13 +211,9 @@ impl IndexType for IndexType32 {
     }
 }
 
-struct Strings;
-
-impl Strings {
-    const SCHEMA: &'static str =
-        r#"namespace coappearances { // All strings contained in the data separated by `\0`.
+const STRINGS_SCHEMA: &'static str =
+    r#"namespace coappearances { // All strings contained in the data separated by `\0`.
     strings: raw_data; }"#;
-}
 
 pub struct Graph {
     /// Holds memory mapped files alive.
@@ -301,7 +268,7 @@ fn signature_name(archive_name: &str) -> String {
     format!("{}.archive", archive_name)
 }
 
-impl ArchiveElement for Graph {
+impl Archive for Graph {
     const NAME: &'static str = "Graph";
     const SCHEMA: &'static str = r#"namespace coappearances { /**
  * Meta information about the book.
@@ -392,9 +359,7 @@ archive Graph {
     // All strings contained in the data separated by `\0`.
     strings: raw_data;
 } }"#;
-}
 
-impl Archive for Graph {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError> {
         let meta;
         let vertices;
@@ -405,20 +370,22 @@ impl Archive for Graph {
         {
             let res_storage = &mut *storage.borrow_mut();
             res_storage.read(&signature_name(Self::NAME), Self::SCHEMA)?;
-            meta = Self::read_resource(res_storage, "meta", Meta::SCHEMA)
+            meta = Self::read_resource(res_storage, "meta", META_SCHEMA)
                 .map(|mem: MemoryDescriptor| Meta::from(mem.data()))?;
-            vertices = Self::read_resource(res_storage, "vertices", Character::SCHEMA)
+            vertices = Self::read_resource(res_storage, "vertices", CHARACTER_SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
-            edges = Self::read_resource(res_storage, "edges", Coappearance::SCHEMA)
+            edges = Self::read_resource(res_storage, "edges", COAPPEARANCE_SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
-            let vertices_data_index =
-                Self::read_resource(res_storage, "vertices_data_index", IndexType32::SCHEMA)
-                    .map(|mem| ArrayView::new(&mem))?;
-            vertices_data = Self::read_resource(res_storage, "vertices_data", VerticesData::SCHEMA)
+            let vertices_data_index = Self::read_resource(
+                res_storage,
+                "vertices_data_index",
+                VERTICES_DATA_INDEX_SCHEMA,
+            ).map(|mem| ArrayView::new(&mem))?;
+            vertices_data = Self::read_resource(res_storage, "vertices_data", VERTICESDATA_SCHEMA)
                 .map(|mem| MultiArrayView::new(vertices_data_index, &mem))?;
-            chapters = Self::read_resource(res_storage, "chapters", Chapter::SCHEMA)
+            chapters = Self::read_resource(res_storage, "chapters", CHAPTER_SCHEMA)
                 .map(|mem| ArrayView::new(&mem))?;
-            strings = Self::read_resource(res_storage, "strings", Strings::SCHEMA)?;
+            strings = Self::read_resource(res_storage, "strings", STRINGS_SCHEMA)?;
         }
         Ok(Self {
             _storage: storage,
