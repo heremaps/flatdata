@@ -1,5 +1,6 @@
 pub type StreamType = *const u8;
 
+// TODO: Refactor according to the new version in C++ implementation.
 #[macro_export]
 macro_rules! read_bytes {
     ($T:tt, $data:expr, $offset:expr, $num_bits:expr) => {{

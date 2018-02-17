@@ -1,10 +1,11 @@
 use std::io;
-use std::ptr;
 use std::mem;
+use std::ptr;
 use std::slice;
 use std::str;
 
 use error::ResourceStorageError;
+use memory::{SizeType, PADDING_SIZE};
 
 fn diff(left: &str, right: &str) -> String {
     use diff;
@@ -18,9 +19,6 @@ fn diff(left: &str, right: &str) -> String {
         .collect::<Vec<_>>()
         .join("\n")
 }
-
-type SizeType = u64;
-const PADDING_SIZE: usize = 8;
 
 /// Hierarchical Resource Storage
 ///

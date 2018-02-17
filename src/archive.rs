@@ -1,4 +1,5 @@
-use bytereader::StreamType;
+use bytereader;
+use bytewriter;
 use std::cell::RefCell;
 use std::convert;
 use std::rc::Rc;
@@ -7,8 +8,11 @@ use std::fmt;
 use storage::ResourceStorage;
 use error::ResourceStorageError;
 
+// TODO: Annotate all traits with lifetimes to bind them to the owning containers.
+
 /// A type in archive.
-pub trait Struct: convert::From<StreamType> + fmt::Debug + Clone + PartialEq {
+pub trait Struct
+    : convert::From<bytereader::StreamType> + fmt::Debug + Clone + PartialEq {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
@@ -25,7 +29,8 @@ pub type TypeIndex = u8;
 
 /// A type used as element of `MultiArrayView`.
 pub trait VariadicStruct
-    : convert::From<(TypeIndex, StreamType)> + fmt::Debug + Clone + PartialEq {
+    : convert::From<(TypeIndex, bytereader::StreamType)> + fmt::Debug + Clone + PartialEq
+    {
     fn size_in_bytes(&self) -> usize;
 }
 
@@ -34,9 +39,11 @@ pub trait Archive: fmt::Debug + Clone {
     const NAME: &'static str;
     const SCHEMA: &'static str;
 
-    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>
-    where
-        Self: Sized;
+    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
+}
+
+pub trait MutStruct<'a>: convert::From<&'a mut bytewriter::StreamType> {
+    type ConstStruct: Struct;
 }
 
 //
@@ -56,7 +63,7 @@ macro_rules! define_struct {
     {
         #[derive(Clone)]
         pub struct $name {
-            data: ::flatdata::StreamType,
+            data: ::flatdata::bytereader::StreamType,
         }
 
         impl $name {
@@ -65,8 +72,8 @@ macro_rules! define_struct {
             })*
         }
 
-        impl ::std::convert::From<::flatdata::StreamType> for $name {
-            fn from(data: ::flatdata::StreamType) -> Self {
+        impl ::std::convert::From<::flatdata::bytereader::StreamType> for $name {
+            fn from(data: ::flatdata::bytereader::StreamType) -> Self {
                 Self { data: data }
             }
         }
@@ -117,8 +124,10 @@ macro_rules! define_variadic_struct {
             $($type($type),)*
         }
 
-        impl ::std::convert::From<(::flatdata::TypeIndex, ::flatdata::StreamType)> for $name {
-            fn from((type_index, data): (::flatdata::TypeIndex, ::flatdata::StreamType)) -> Self {
+        impl ::std::convert::From<(
+            ::flatdata::TypeIndex, ::flatdata::bytereader::StreamType)> for $name {
+            fn from((type_index, data):
+                (::flatdata::TypeIndex, ::flatdata::bytereader::StreamType)) -> Self {
                 match type_index {
                     $($type_index => $name::$type($type::from(data))),+,
                     _ => panic!(
