@@ -2,7 +2,7 @@ pub type StreamType = u8;
 
 #[macro_export]
 macro_rules! masked {
-    ($value:expr, $num_bits:expr) => ($value & (1u64 << $num_bits - 1));
+    ($value:expr, $num_bits:expr) => ($value & ((1u64 << $num_bits) - 1));
 }
 
 #[macro_export]
@@ -16,7 +16,7 @@ macro_rules! num_bytes {
     )
 }
 
-/// T - integer type of the value to write
+/// T - integer type of the value to write (signed or unsigned)
 /// value - value to write
 /// data - slice for writing to
 /// offset - offset in bits in the slice, where the value should be written.
@@ -27,7 +27,7 @@ macro_rules! write_bytes {
         let destination = &mut $data[$offset / 8] as *mut u8;
         let bit_offset = $offset % 8;
 
-        let mut value_to_store = u64::from($value);
+        let mut value_to_store = $value as u64;
         if <$T as helper::Int>::IS_SIGNED {
             value_to_store = masked!(value_to_store, $num_bits);
         }
@@ -1174,5 +1174,47 @@ mod test {
         test_writer(1, 0, 2, &vec![1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         test_writer(1, 0, 1, &vec![1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         test_writer(u64::max_value(), 7, 64, &vec![128, 255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0]);
+    }
+
+    fn test_reader_unsigned(value: i64, offset: usize, num_bits: usize, expected: &[u8]) {
+        let mut buffer = vec![0u8; expected.len()];
+        write_bytes!(i64; value, &mut buffer[..], offset, num_bits);
+        assert_eq!(buffer, expected);
+    }
+
+    #[test]
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    fn byte_writer_signed_test() {
+        test_reader_unsigned(-1, 3, 16, &vec![0xf8, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-2, 3, 16, &vec![0xf0, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-4, 3, 16, &vec![0xe0, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-8, 3, 16, &vec![0xc0, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-16, 3, 16, &vec![0x80, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-32, 3, 16, &vec![0, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-64, 3, 16, &vec![0, 0xfe, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-128, 3, 16, &vec![0, 0xfc, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-256, 3, 16, &vec![0, 0xf8, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-512, 3, 16, &vec![0, 0xf0, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-1024, 3, 16, &vec![0, 0xe0, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-2048, 3, 16, &vec![0, 0xc0, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-4096, 3, 16, &vec![0, 0x80, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-8192, 3, 16, &vec![0, 0, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(-16384, 3, 16, &vec![0, 0, 0x06, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(1, 3, 16, &vec![0x08, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(2, 3, 16, &vec![0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(4, 3, 16, &vec![0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(8, 3, 16, &vec![0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(16, 3, 16, &vec![0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(32, 3, 16, &vec![0, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(64, 3, 16, &vec![0, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(128, 3, 16, &vec![0, 0x04, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(256, 3, 16, &vec![0, 0x08, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(512, 3, 16, &vec![0, 0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(1024, 3, 16, &vec![0, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(2048, 3, 16, &vec![0, 0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(4096, 3, 16, &vec![0, 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(8192, 3, 16, &vec![0, 0, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(16384, 3, 16, &vec![0, 0, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_reader_unsigned(0, 3, 2, &vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
 }
