@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 project(flatdata)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake OPTIONAL RESULT_VARIABLE USE_CONAN)
@@ -22,4 +22,4 @@ enable_testing()
 add_subdirectory(flatdata-cpp)
 add_subdirectory(tests)
 add_subdirectory(examples)
-add_subdirectory(tools)
+add_subdirectory(docs)

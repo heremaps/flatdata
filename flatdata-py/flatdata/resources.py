@@ -133,8 +133,6 @@ class Multivector(ResourceBase):
         return len(self._index)
 
     def _bucket_offset(self, index):
-        if index == len(self._index):
-            return len(self._mem) - SIZE_PADDING_IN_BYTES
         return self._index[index].value + SIZE_OFFSET_IN_BYTES
 
     def __getitem__(self, index):

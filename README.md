@@ -24,7 +24,7 @@ Flatdata doesn't provide:
 * Support for mutable datasets
 * Portable floating point serialization
 
-For more details read [why flatdata](docs/why-flatdata.md).
+For more details read [why flatdata](docs/src/why-flatdata.rst).
 
 ## Building `flatdata`
 
@@ -39,6 +39,8 @@ make test  # optional
 ```
 
 ## Using `flatdata`
+
+*Note: Until the release APIs are expected to be undergoing (potentially breaking) changes. Binary data layout is stable, though.*
 
 Define a flatdata archive, let's say `locations.flatdata`:
 ```cpp
@@ -118,7 +120,7 @@ At the moment following languages are supported:
    * *Dot*. Used to generate diagrams of the schema. Normally, it is up to date.
        Use `dot` generator.
 
-For more details cf. the [reference section](docs/reference.md).
+For more details see the [documentation](docs/src/index.rst).
 
 ## License
 

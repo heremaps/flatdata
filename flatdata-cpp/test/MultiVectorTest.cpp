@@ -17,27 +17,27 @@ static auto create_storage_with_3_items = []( )
     auto vector = storage->create_multi_vector< TestIndexType48, AStruct, BStructMutator, CStruct >(
         "data", "foo" );
     {
-        auto a1 = vector.add_to_current_item< AStruct >( );
+        auto list = vector.grow( );
+        auto a1 = list.add< AStruct >( );
         a1.value = 7;
-        auto a2 = vector.add_to_current_item< AStructMutator >( );
+        auto a2 = list.add< AStructMutator >( );
         a2.value = 8;
-        auto c1 = vector.add_to_current_item< CStruct >( );
+        auto c1 = list.add< CStruct >( );
         c1.value = 1230000;
-        auto b = vector.add_to_current_item< BStruct >( );
+        auto b = list.add< BStruct >( );
         b.value = 1000;
-        auto c2 = vector.add_to_current_item< CStruct >( );
+        auto c2 = list.add< CStruct >( );
         c2.value = 1000000;
-        vector.next_item( );
     }
     {
-        auto c = vector.add_to_current_item< CStruct >( );
+        auto list = vector.grow( );
+        auto c = list.add< CStruct >( );
         c.value = 1000000;
-        vector.next_item( );
     }
     {
-        auto a = vector.add_to_current_item< AStructMutator >( );
+        auto list = vector.grow( );
+        auto a = list.add< AStructMutator >( );
         a.value = 8;
-        vector.next_item( );
     }
     vector.close( );
     return storage;
@@ -49,6 +49,33 @@ static auto create_view_with_3_items = []( )
 
     auto view
         = *storage->read< MultiArrayView< TestIndexType48, AStructMutator, BStruct, CStruct > >(
+            "data", "foo" );
+    return std::make_pair( std::move( storage ), std::move( view ) );
+};
+
+static const size_t NUM_ITEMS_TO_CAUSE_FLUSH
+    = 32 * 1024 * 1024 / 4 + 1024;  // enough to flush, and them some
+
+static auto create_storage_with_enough_items_to_flush = []( )
+{
+    auto storage = MemoryResourceStorage::create( );
+    auto vector = storage->create_multi_vector< TestIndexType48, AStruct, BStruct, CStruct >(
+        "data", "foo" );
+    for ( size_t i = 0; i < NUM_ITEMS_TO_CAUSE_FLUSH; i++ )
+    {
+        auto list = vector.grow( );
+        list.add< CStruct >( ).value = i;
+    }
+    vector.close( );
+    return storage;
+};
+
+static auto create_view_with_enough_items_to_flush = []( )
+{
+    auto storage = create_storage_with_enough_items_to_flush( );
+
+    auto view
+        = *storage->read< MultiArrayView< TestIndexType48, AStruct, BStruct, CStruct > >(
             "data", "foo" );
     return std::make_pair( std::move( storage ), std::move( view ) );
 };
@@ -249,6 +276,20 @@ TEST( MultiVectorTest, IterateOneTypeElementsRandomlyPlaced )
 
     ASSERT_TRUE( has_c1 );
     ASSERT_TRUE( has_c2 );
+}
+
+TEST( MultiVectorTest, FlushingWhileBuilding )
+{
+    auto view = create_view_with_enough_items_to_flush( );
+
+    for ( size_t i = 0; i < NUM_ITEMS_TO_CAUSE_FLUSH; i++ )
+    {
+        auto iter = view.second.iterator< CStruct >( i );
+        ASSERT_TRUE( iter.valid( ) ) << "Expected CStruct at index " << i;
+        ASSERT_EQ( i, ( *iter ).value ) << "Wrong data at index " << i;
+        iter++;
+        ASSERT_FALSE( iter.valid( ) ) << "Expected at most one CStruct at index  " << i;
+    }
 }
 
 TEST( MultiVectorTest, StaticTest )
