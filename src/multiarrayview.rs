@@ -42,15 +42,22 @@ where
         // last index element is a sentinel
         self.index.len() - 1
     }
+
+    pub fn iter(&self) -> MultiArrayViewIter<Idx, Ts> {
+        MultiArrayViewIter {
+            view: self,
+            next_pos: 0,
+        }
+    }
 }
 
-pub struct MultiArrayViewItemIter<Ts> {
+pub struct MultiArrayViewItemIter<'a, Ts: 'a> {
     data: StreamType,
     end: StreamType,
-    _phantom: marker::PhantomData<Ts>,
+    _phantom: marker::PhantomData<&'a Ts>,
 }
 
-impl<Ts: VariadicStruct> iter::Iterator for MultiArrayViewItemIter<Ts> {
+impl<'a, Ts: 'a + VariadicStruct> iter::Iterator for MultiArrayViewItemIter<'a, Ts> {
     type Item = Ts;
     fn next(&mut self) -> Option<Self::Item> {
         if self.data < self.end {
@@ -80,5 +87,33 @@ where
             self.data,
             self.len()
         )
+    }
+}
+
+pub struct MultiArrayViewIter<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> {
+    view: &'a MultiArrayView<Idx, Ts>,
+    next_pos: usize,
+}
+
+impl<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> iter::Iterator
+    for MultiArrayViewIter<'a, Idx, Ts>
+{
+    type Item = MultiArrayViewItemIter<'a, Ts>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.next_pos < self.view.len() {
+            let element = self.view.at(self.next_pos);
+            self.next_pos += 1;
+            Some(element)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> iter::ExactSizeIterator
+    for MultiArrayViewIter<'a, Idx, Ts>
+{
+    fn len(&self) -> usize {
+        self.view.len()
     }
 }
