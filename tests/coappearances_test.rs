@@ -8,7 +8,7 @@ use std::str;
 
 use flatdata::Archive;
 
-mod coappearances;
+pub mod coappearances;
 
 fn substring(strings: &str, start: u32) -> &str {
     let start = start as usize;

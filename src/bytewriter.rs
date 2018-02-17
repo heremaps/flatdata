@@ -2,7 +2,13 @@ pub type StreamType = u8;
 
 #[macro_export]
 macro_rules! masked {
-    ($value:expr, $num_bits:expr) => ($value & ((1u64 << $num_bits) - 1));
+    ($value:expr, $num_bits:expr) => (
+        if $num_bits < 64 {
+            $value & ((1u64 << $num_bits) - 1)
+        } else {
+            $value
+        }
+    );
 }
 
 #[macro_export]
@@ -24,11 +30,13 @@ macro_rules! num_bytes {
 #[macro_export]
 macro_rules! write_bytes {
     ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{
+        assert!($num_bits <= 64, "num_bits cannot be > 64");
+
         let destination = &mut $data[$offset / 8] as *mut u8;
         let bit_offset = $offset % 8;
 
         let mut value_to_store = $value as u64;
-        if <$T as helper::Int>::IS_SIGNED {
+        if <$T as $crate::helper::Int>::IS_SIGNED {
             value_to_store = masked!(value_to_store, $num_bits);
         }
         let mut value_mask = masked!(u64::max_value(), $num_bits);
@@ -74,7 +82,7 @@ macro_rules! write_bytes {
         }
     }};
     ($T:tt; $value:expr, $data:expr, $offset:expr) => (
-        write_bytes!($T, $value, $data, $offset, ::std::mem::size_of::<$T>() * 8));
+        write_bytes!($T; $value, $data, $offset, ::std::mem::size_of::<$T>() * 8));
     ($T:tt; $value:expr, $data:expr) => (
         write_bytes!($T, $value, $data, 0, ::std::mem::size_of::<$T>() * 8)
     );
@@ -82,8 +90,6 @@ macro_rules! write_bytes {
 
 #[cfg(test)]
 mod test {
-    use super::super::helper;
-
     fn test_writer(value: u64, offset: usize, num_bits: usize, expected: &[u8]) {
         let mut buffer = vec![0u8; expected.len()];
         write_bytes!(u64; value, &mut buffer[..], offset, num_bits);

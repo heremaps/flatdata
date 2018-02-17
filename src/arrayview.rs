@@ -13,9 +13,9 @@ pub struct ArrayView<T> {
     _phantom: marker::PhantomData<T>,
 }
 
-impl<T> ArrayView<T>
+impl<'a, T> ArrayView<T>
 where
-    T: Struct,
+    T: Struct<'a>,
 {
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
         Self {
@@ -35,7 +35,7 @@ where
         T::from(unsafe { self.data.offset((idx * T::SIZE_IN_BYTES) as isize) })
     }
 
-    pub fn iter(&self) -> ArrayViewIter<T> {
+    pub fn iter(&'a self) -> ArrayViewIter<T> {
         ArrayViewIter {
             view: self,
             next_pos: 0,
@@ -53,12 +53,12 @@ impl<T> fmt::Debug for ArrayView<T> {
     }
 }
 
-pub struct ArrayViewIter<'a, T: 'a + Struct> {
+pub struct ArrayViewIter<'a, T: 'a + Struct<'a>> {
     view: &'a ArrayView<T>,
     next_pos: usize,
 }
 
-impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
+impl<'a, T: Struct<'a>> iter::Iterator for ArrayViewIter<'a, T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.next_pos < self.view.len() {
@@ -71,7 +71,7 @@ impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
     }
 }
 
-impl<'a, T: Struct> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
+impl<'a, T: Struct<'a>> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
     fn len(&self) -> usize {
         self.view.len()
     }

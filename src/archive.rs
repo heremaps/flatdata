@@ -11,16 +11,19 @@ use error::ResourceStorageError;
 // TODO: Annotate all traits with lifetimes to bind them to the owning containers.
 
 /// A type in archive.
-pub trait Struct
+pub trait Struct<'a>
     : convert::From<bytereader::StreamType> + fmt::Debug + Clone + PartialEq {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
+
+    /// Corresponding type which allows to set data.
+    type Mutator: MutStruct<'a>;
 }
 
 /// A type in archive used as index of a multivector.
-pub trait Index: Struct {
+pub trait Index<'a>: Struct<'a> {
     fn value(&self) -> usize;
 }
 
@@ -42,9 +45,7 @@ pub trait Archive: fmt::Debug + Clone {
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
 }
 
-pub trait MutStruct<'a>: convert::From<&'a mut bytewriter::StreamType> {
-    type ConstStruct: Struct;
-}
+pub trait MutStruct<'a>: convert::From<&'a mut [bytewriter::StreamType]> {}
 
 //
 // Generator macros
@@ -58,12 +59,12 @@ macro_rules! intersperse {
 
 #[macro_export]
 macro_rules! define_struct {
-    ($name:ident, $schema:expr, $size_in_bytes:expr
-        $(,($field:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
+    ($name:ident, $mut_name:ident, $schema:expr, $size_in_bytes:expr
+        $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
         #[derive(Clone)]
         pub struct $name {
-            data: ::flatdata::bytereader::StreamType,
+            data: $crate::bytereader::StreamType,
         }
 
         impl $name {
@@ -72,8 +73,8 @@ macro_rules! define_struct {
             })*
         }
 
-        impl ::std::convert::From<::flatdata::bytereader::StreamType> for $name {
-            fn from(data: ::flatdata::bytereader::StreamType) -> Self {
+        impl ::std::convert::From<$crate::bytereader::StreamType> for $name {
+            fn from(data: $crate::bytereader::StreamType) -> Self {
                 Self { data: data }
             }
         }
@@ -93,20 +94,49 @@ macro_rules! define_struct {
             }
         }
 
-        impl ::flatdata::Struct for $name {
+        impl<'a> $crate::Struct<'a> for $name {
             const SCHEMA: &'static str = $schema;
             const SIZE_IN_BYTES: usize = $size_in_bytes;
+            type Mutator = $mut_name<'a>;
+        }
+
+        // mutator type
+
+        pub struct $mut_name<'a> {
+            data: &'a mut [$crate::bytewriter::StreamType],
+        }
+
+        impl<'a> $mut_name<'a> {
+            $(pub fn $field(&self) -> $type {
+                read_bytes!($type, &self.data[0], $offset, $bit_size)
+            })*
+
+            $(pub fn $field_setter(&mut self, value: $type) {
+                write_bytes!($type; value, self.data, $offset, $bit_size)
+            })*
+        }
+
+        impl<'a> $crate::MutStruct<'a> for $mut_name<'a> {}
+
+        impl<'a> ::std::convert::From<&'a mut [$crate::bytewriter::StreamType]>
+            for $mut_name<'a>
+        {
+            fn from(data: &'a mut [$crate::bytewriter::StreamType]) -> Self {
+                Self { data: data }
+            }
         }
     }
 }
 
 #[macro_export]
 macro_rules! define_index {
-    ($name:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
+    ($name:ident, $mut_name:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
         mod internal {
-            define_struct!($name, $schema, $size_in_bytes, (value, u64, 0, $size_in_bits));
+            define_struct!(
+                $name, $mut_name, $schema, $size_in_bytes,
+                (value, set_value, u64, 0, $size_in_bits));
 
-            impl ::flatdata::Index for $name {
+            impl<'a> $crate::Index<'a> for $name {
                fn value(&self) -> usize {
                     self.value() as usize
                 }
@@ -125,9 +155,9 @@ macro_rules! define_variadic_struct {
         }
 
         impl ::std::convert::From<(
-            ::flatdata::TypeIndex, ::flatdata::bytereader::StreamType)> for $name {
+            $crate::TypeIndex, $crate::bytereader::StreamType)> for $name {
             fn from((type_index, data):
-                (::flatdata::TypeIndex, ::flatdata::bytereader::StreamType)) -> Self {
+                ($crate::TypeIndex, $crate::bytereader::StreamType)) -> Self {
                 match type_index {
                     $($type_index => $name::$type($type::from(data))),+,
                     _ => panic!(
@@ -144,7 +174,7 @@ macro_rules! define_variadic_struct {
             }
         }
 
-        impl ::flatdata::VariadicStruct for $name {
+        impl $crate::VariadicStruct for $name {
             fn size_in_bytes(&self) -> usize {
                 match *self {
                     $($name::$type(_) => $type::SIZE_IN_BYTES),+
@@ -166,21 +196,21 @@ macro_rules! define_archive {
 
         #[derive(Clone)]
         pub struct $name {
-            _storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>
+            _storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>
             $(,$struct_resource: $struct_type)*
-            $(,$vector_resource: ::flatdata::ArrayView<$element_type>)*
-            $(,$multivector_resource: ::flatdata::MultiArrayView<$index_type, $variadic_type>)*
-            $(,$raw_data_resource: ::flatdata::MemoryDescriptor)*
+            $(,$vector_resource: $crate::ArrayView<$element_type>)*
+            $(,$multivector_resource: $crate::MultiArrayView<$index_type, $variadic_type>)*
+            $(,$raw_data_resource: $crate::MemoryDescriptor)*
         }
 
         impl $name {
             fn read_resource<R>(
-                storage: &mut ::flatdata::ResourceStorage,
+                storage: &mut $crate::ResourceStorage,
                 name: &str,
                 schema: &str,
-            ) -> Result<R, ::flatdata::ResourceStorageError>
+            ) -> Result<R, $crate::ResourceStorageError>
             where
-                R: From<::flatdata::MemoryDescriptor>,
+                R: From<$crate::MemoryDescriptor>,
             {
                 storage.read(name, schema).map(R::from)
             }
@@ -191,14 +221,14 @@ macro_rules! define_archive {
 
             // TODO: It should be ArrayView annotated with a life-time and not a ref to an
             // ArrayView.
-            $(pub fn $vector_resource(&self) -> &::flatdata::ArrayView<$element_type> {
+            $(pub fn $vector_resource(&self) -> &$crate::ArrayView<$element_type> {
                 &self.$vector_resource
             })*
 
             // TODO: It should be MultiArrayView annotated with a life-time and not a ref to an
             // MultiArrayView.
             $(pub fn $multivector_resource(&self)
-                    -> &::flatdata::MultiArrayView<$index_type, $variadic_type> {
+                    -> &$crate::MultiArrayView<$index_type, $variadic_type> {
                 &self.$multivector_resource
             })*
 
@@ -235,12 +265,12 @@ macro_rules! define_archive {
             }
         }
 
-        impl ::flatdata::Archive for $name {
+        impl $crate::Archive for $name {
             const NAME: &'static str = stringify!($name);
             const SCHEMA: &'static str = $archive_schema;
 
-            fn open(storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>)
-                -> ::std::result::Result<Self, ::flatdata::ResourceStorageError>
+            fn open(storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>)
+                -> ::std::result::Result<Self, $crate::ResourceStorageError>
             {
                 $(let $struct_resource;)*
                 $(let $vector_resource;)*
@@ -254,26 +284,26 @@ macro_rules! define_archive {
                         res_storage,
                         stringify!($struct_resource),
                         $struct_schema
-                    ).map(|mem: ::flatdata::MemoryDescriptor| $struct_type::from(mem.data()))?;
+                    ).map(|mem: $crate::MemoryDescriptor| $struct_type::from(mem.data()))?;
                     )*
 
                     $($vector_resource = Self::read_resource(
                         res_storage,
                         stringify!($vector_resource),
                         $element_schema
-                    ).map(|mem| ::flatdata::ArrayView::new(&mem))?;
+                    ).map(|mem| $crate::ArrayView::new(&mem))?;
                     )*
 
                     $(let $multivector_resource_index = Self::read_resource(
                         res_storage,
                         stringify!($multivector_resource_index),
                         $index_schema
-                    ).map(|mem| ::flatdata::ArrayView::new(&mem))?;
+                    ).map(|mem| $crate::ArrayView::new(&mem))?;
                     $multivector_resource = Self::read_resource(
                         res_storage,
                         stringify!($multivector_resource),
                         $variadic_type_schema
-                    ).map(|mem| ::flatdata::MultiArrayView::new(
+                    ).map(|mem| $crate::MultiArrayView::new(
                         $multivector_resource_index, &mem))?;
                     )*
 

@@ -234,66 +234,75 @@ archive Graph {
 
 define_struct!(
     Character,
+    MutCharacter,
     ::coappearances::schema::structs::CHARACTER,
     4,
-    (name_ref, u32, 0, 32)
+    (name_ref, set_name_ref, u32, 0, 32)
 );
 
 define_struct!(
     Meta,
+    MutMeta,
     ::coappearances::schema::structs::META,
     8,
-    (title_ref, u32, 0, 32),
-    (author_ref, u32, 32, 32)
+    (title_ref, set_title_ref, u32, 0, 32),
+    (author_ref, set_author_ref, u32, 32, 32)
 );
 
 define_struct!(
     Coappearance,
+    MutCoappearance,
     ::coappearances::schema::structs::COAPPEARANCE,
     8,
-    (a_ref, u32, 0, 16),
-    (b_ref, u32, 16, 16),
-    (count, u32, 32, 16),
-    (first_chapter_ref, u32, 48, 16)
+    (a_ref, set_a_ref, u32, 0, 16),
+    (b_ref, set_b_ref, u32, 16, 16),
+    (count, set_count, u32, 32, 16),
+    (first_chapter_ref, set_first_chapter_ref, u32, 48, 16)
 );
 
 define_struct!(
     Chapter,
+    MutChapter,
     ::coappearances::schema::structs::CHAPTER,
     2,
-    (major, u8, 0, 4),
-    (minor, u8, 4, 7)
+    (major, set_major, u8, 0, 4),
+    (minor, set_minor, u8, 4, 7)
 );
 
 // TODO: Resolve ref clashing with keywords of Rust.
 define_struct!(
     Nickname,
+    MutNickname,
     ::coappearances::schema::structs::NICKNAME,
     4,
-    (ref_, u32, 0, 32)
+    (ref_, set_ref_, u32, 0, 32)
 );
+
 define_struct!(
     Description,
+    MutDescription,
     ::coappearances::schema::structs::DESCRIPTION,
     4,
-    (ref_, u32, 0, 32)
+    (ref_, set_ref_, u32, 0, 32)
 );
 
 define_struct!(
     UnaryRelation,
+    MutUnaryRelation,
     ::coappearances::schema::structs::UNARYRELATION,
     6,
-    (kind_ref, u32, 0, 32),
-    (to_ref, u32, 32, 16)
+    (kind_ref, set_kind_ref, u32, 0, 32),
+    (to_ref, set_to_ref, u32, 32, 16)
 );
 
 define_struct!(
     BinaryRelation,
+    MutBinaryRelation,
     ::coappearances::schema::structs::BINARYRELATION,
     8,
-    (kind_ref, u32, 0, 32),
-    (to_a_ref, u32, 32, 16),
-    (to_b_ref, u32, 48, 16)
+    (kind_ref, set_kind_ref, u32, 0, 32),
+    (to_a_ref, set_to_a_ref, u32, 32, 16),
+    (to_b_ref, set_to_b_ref, u32, 48, 16)
 );
 
 define_variadic_struct!(VerticesData, IndexType32,
@@ -304,6 +313,7 @@ define_variadic_struct!(VerticesData, IndexType32,
 
 define_index!(
     IndexType32,
+    MutIndexType32,
     ::coappearances::schema::structs::INDEXTYPE32,
     4,
     32

@@ -15,9 +15,9 @@ pub struct MultiArrayView<Idx, Ts> {
     _phantom: marker::PhantomData<Ts>,
 }
 
-impl<Idx, Ts> MultiArrayView<Idx, Ts>
+impl<'a, Idx, Ts> MultiArrayView<Idx, Ts>
 where
-    Idx: Index,
+    Idx: Index<'a>,
     Ts: VariadicStruct,
 {
     pub fn new(index: ArrayView<Idx>, data_mem_descr: &MemoryDescriptor) -> Self {
@@ -43,7 +43,7 @@ where
         self.index.len() - 1
     }
 
-    pub fn iter(&self) -> MultiArrayViewIter<Idx, Ts> {
+    pub fn iter(&'a self) -> MultiArrayViewIter<Idx, Ts> {
         MultiArrayViewIter {
             view: self,
             next_pos: 0,
@@ -75,9 +75,9 @@ impl<'a, Ts: 'a + VariadicStruct> iter::Iterator for MultiArrayViewItemIter<'a, 
     }
 }
 
-impl<Idx, Ts> fmt::Debug for MultiArrayView<Idx, Ts>
+impl<'a, Idx, Ts> fmt::Debug for MultiArrayView<Idx, Ts>
 where
-    Idx: Index,
+    Idx: Index<'a>,
     Ts: VariadicStruct,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -90,12 +90,12 @@ where
     }
 }
 
-pub struct MultiArrayViewIter<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> {
+pub struct MultiArrayViewIter<'a, Idx: 'a + Index<'a>, Ts: 'a + VariadicStruct> {
     view: &'a MultiArrayView<Idx, Ts>,
     next_pos: usize,
 }
 
-impl<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> iter::Iterator
+impl<'a, Idx: Index<'a>, Ts: 'a + VariadicStruct> iter::Iterator
     for MultiArrayViewIter<'a, Idx, Ts>
 {
     type Item = MultiArrayViewItemIter<'a, Ts>;
@@ -110,7 +110,7 @@ impl<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> iter::Iterator
     }
 }
 
-impl<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> iter::ExactSizeIterator
+impl<'a, Idx: Index<'a>, Ts: VariadicStruct> iter::ExactSizeIterator
     for MultiArrayViewIter<'a, Idx, Ts>
 {
     fn len(&self) -> usize {

@@ -26,6 +26,8 @@ fn diff(left: &str, right: &str) -> String {
 /// Manages schema for each resource and checks it on query.
 /// Resource storage is expected to provide read-write access to resources
 pub trait ResourceStorage {
+    // read interface
+
     fn read(
         &mut self,
         resource_name: &str,
@@ -34,11 +36,20 @@ pub trait ResourceStorage {
         self.read_and_check_schema(resource_name, schema)
     }
 
-    // fn write<T>(resource_name: &str, schema:&str, data: T);
+    // fn write<T: convert::Into<MemoryDescriptor>>(
+    //     &mut self,
+    //     resource_name: &str,
+    //     schema: &str,
+    //     data: T,
+    // ) {
+    //     self.write_to_stream(resource_name, schema, data.into())
+    // }
+
     // fn create_external_vector<T>(resources_name: &str, schema: &str) -> ExternalVector<T>;
     // fn create_multi_vector<Index, Args>(resource_name: &str, schema: &str) -> MultiVector<Index, Args>;
 
     // virtual
+    // fn create_output_stream(&mut self, resource_name: &str) -> io::Write;
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
 
     //
@@ -83,6 +94,11 @@ pub trait ResourceStorage {
             size,
         ))
     }
+
+    // fn write_to_stream<T>(&mut self, resource_name: &str, schema: &str, data: T) {
+    //     let stream = self.create_output_stream;
+    //     stream.write();
+    // }
 }
 
 /// Describes a chunk of memory
