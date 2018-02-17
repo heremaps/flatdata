@@ -6,6 +6,7 @@ use std::iter;
 use std::marker;
 use std::fmt;
 
+#[derive(Clone)]
 pub struct ArrayView<T> {
     data: StreamType,
     size: usize,
@@ -46,7 +47,7 @@ impl<T> fmt::Debug for ArrayView<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "ArrayView{{ data: {:?}, size: {} }}",
+            "ArrayView {{ data: {:?}, size: {} }}",
             self.data, self.size
         )
     }

@@ -31,7 +31,7 @@ Generator:
 
 Misc:
 
-* [ ] Derive eq comparsion for all types.
+* [x] Derive partial eq comparsion for all structs.
 * [ ] Rename `size` of all containers into `len`.
 * [ ] Rename `index` of containers to `at`.
 

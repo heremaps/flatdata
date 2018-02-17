@@ -1,6 +1,4 @@
-use std::fmt;
-
-use flatdata::*;
+use flatdata::Struct;
 
 mod schema {
     pub mod resources {
@@ -314,13 +312,13 @@ define_index!(
 define_archive!(Graph, ::coappearances::schema::resources::GRAPH;
     // struct resources
     (meta, Meta, ::coappearances::schema::resources::META);
-    // raw data resources
-    (strings, ::coappearances::schema::resources::STRINGS);
     // vector resources
     (vertices, Character, ::coappearances::schema::resources::VERTICES),
     (edges, Coappearance, ::coappearances::schema::resources::EDGES),
     (chapters, Chapter, ::coappearances::schema::resources::CHAPTERS);
     // multivector resources
     (vertices_data, VerticesData, ::coappearances::schema::resources::VERTICES_DATA,
-        vertices_data_index, internal::IndexType32, ::coappearances::schema::resources::VERTICES_DATA_INDEX)
+        vertices_data_index, internal::IndexType32, ::coappearances::schema::resources::VERTICES_DATA_INDEX);
+    // raw data resources
+    (strings, ::coappearances::schema::resources::STRINGS)
 );

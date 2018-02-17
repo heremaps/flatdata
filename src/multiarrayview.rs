@@ -8,6 +8,7 @@ use std::iter;
 use std::marker;
 
 /// Ts is a variadic type describing the types of an element in `MultiArrayView`.
+#[derive(Clone)]
 pub struct MultiArrayView<Idx, Ts> {
     index: ArrayView<Idx>,
     data: StreamType,
@@ -75,7 +76,7 @@ where
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "MultiArrayView{{ data: {:?}, size: {} }}",
+            "MultiArrayView {{ data: {:?}, size: {} }}",
             self.data,
             self.size()
         )

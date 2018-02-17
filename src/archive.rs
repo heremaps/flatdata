@@ -8,7 +8,7 @@ use storage::ResourceStorage;
 use error::ResourceStorageError;
 
 /// A type in archive.
-pub trait Struct: convert::From<StreamType> + fmt::Debug {
+pub trait Struct: convert::From<StreamType> + fmt::Debug + Clone + PartialEq {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
@@ -24,12 +24,13 @@ pub trait Index: Struct {
 pub type TypeIndex = u8;
 
 /// A type used as element of `MultiArrayView`.
-pub trait VariadicStruct: convert::From<(TypeIndex, StreamType)> {
+pub trait VariadicStruct
+    : convert::From<(TypeIndex, StreamType)> + fmt::Debug + Clone + PartialEq {
     fn size_in_bytes(&self) -> usize;
 }
 
 /// An archive.
-pub trait Archive: fmt::Debug {
+pub trait Archive: fmt::Debug + Clone {
     const NAME: &'static str;
     const SCHEMA: &'static str;
 
@@ -53,6 +54,7 @@ macro_rules! define_struct {
     ($name:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
+        #[derive(Clone)]
         pub struct $name {
             data: ::flatdata::StreamType,
         }
@@ -75,6 +77,12 @@ macro_rules! define_struct {
                     concat!("{} {{ ",
                         intersperse!($(concat!( stringify!($field), ": {}")), *), " }}"),
                     stringify!($name), $(self.$field(),)*)
+            }
+        }
+
+        impl ::std::cmp::PartialEq for $name {
+            fn eq(&self, other: &$name) -> bool {
+                $(self.$field() == other.$field()) && *
             }
         }
 
@@ -104,6 +112,7 @@ macro_rules! define_index {
 macro_rules! define_variadic_struct {
     ($name:ident, $index_type:tt, $($type_index:expr => $type:tt),+) =>
     {
+        #[derive(Clone, PartialEq)]
         pub enum $name {
             $($type($type),)*
         }
@@ -140,43 +149,35 @@ macro_rules! define_variadic_struct {
 macro_rules! define_archive {
     ($name:ident, $archive_schema:expr;
         $(($struct_resource:ident, $struct_type:tt, $struct_schema:expr)),*;
-        $(($raw_data_resource:ident, $raw_data_schema:expr)),*;
         $(($vector_resource:ident, $element_type:tt, $element_schema:expr)),*;
         $(($multivector_resource:ident, $variadic_type:tt, $variadic_type_schema:expr,
-            $multivector_resource_index:ident, $index_type:path, $index_schema:expr)),*
+            $multivector_resource_index:ident, $index_type:path, $index_schema:expr)),*;
+        $(($raw_data_resource:ident, $raw_data_schema:expr)),*
     ) => {
 
-        // #[derive(Debug, Clone)]
+        #[derive(Clone)]
         pub struct $name {
             _storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>
             $(,$struct_resource: $struct_type)*
-            $(,$raw_data_resource: ::flatdata::MemoryDescriptor)*
             $(,$vector_resource: ::flatdata::ArrayView<$element_type>)*
             $(,$multivector_resource: ::flatdata::MultiArrayView<$index_type, $variadic_type>)*
+            $(,$raw_data_resource: ::flatdata::MemoryDescriptor)*
         }
 
         impl $name {
             fn read_resource<R>(
-                storage: &mut ResourceStorage,
+                storage: &mut ::flatdata::ResourceStorage,
                 name: &str,
                 schema: &str,
-            ) -> Result<R, ResourceStorageError>
+            ) -> Result<R, ::flatdata::ResourceStorageError>
             where
-                R: From<MemoryDescriptor>,
+                R: From<::flatdata::MemoryDescriptor>,
             {
                 storage.read(name, schema).map(R::from)
             }
 
             $(pub fn $struct_resource(&self) -> &$struct_type {
                 &self.$struct_resource
-            })*
-
-            $(pub fn $raw_data_resource(&self) -> &[u8] {
-                unsafe {
-                    ::std::slice::from_raw_parts(
-                        self.$raw_data_resource.data(),
-                        self.$raw_data_resource.size_in_bytes())
-                }
             })*
 
             // TODO: It should be ArrayView annotated with a life-time and not a ref to an
@@ -192,12 +193,40 @@ macro_rules! define_archive {
                 &self.$multivector_resource
             })*
 
+            $(pub fn $raw_data_resource(&self) -> &[u8] {
+                unsafe {
+                    ::std::slice::from_raw_parts(
+                        self.$raw_data_resource.data(),
+                        self.$raw_data_resource.size_in_bytes())
+                }
+            })*
+
             fn signature_name(archive_name: &str) -> String {
                 format!("{}.archive", archive_name)
             }
         }
 
-        impl Archive for $name {
+        impl ::std::fmt::Debug for Graph {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                write!(f,
+                    concat!("{} {{ ",
+                        intersperse!(
+                            intersperse!($(concat!(stringify!($struct_resource), ": {:?}")),*),
+                            intersperse!($(concat!(stringify!($vector_resource), ": {:?}")),*),
+                            intersperse!($(concat!(stringify!($multivector_resource), ": {:?}")),*),
+                            intersperse!($(concat!(stringify!($raw_data_resource), ": {:?}")),*)
+                        ),
+                    " }}", ),
+                    stringify!($name)
+                    $(, self.$struct_resource())*
+                    $(, self.$vector_resource())*
+                    $(, self.$multivector_resource())*
+                    $(, self.$raw_data_resource)*
+                )
+            }
+        }
+
+        impl ::flatdata::Archive for $name {
             const NAME: &'static str = stringify!($name);
             const SCHEMA: &'static str = $archive_schema;
 
@@ -205,9 +234,9 @@ macro_rules! define_archive {
                 -> ::std::result::Result<Self, ::flatdata::ResourceStorageError>
             {
                 $(let $struct_resource;)*
-                $(let $raw_data_resource;)*
                 $(let $vector_resource;)*
                 $(let $multivector_resource;)*
+                $(let $raw_data_resource;)*
                 {
                     let res_storage = &mut *storage.borrow_mut();
                     res_storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
@@ -217,12 +246,6 @@ macro_rules! define_archive {
                         stringify!($struct_resource),
                         $struct_schema
                     ).map(|mem: ::flatdata::MemoryDescriptor| $struct_type::from(mem.data()))?;
-                    )*
-
-                    $($raw_data_resource = Self::read_resource(
-                        res_storage,
-                        stringify!($raw_data_resource),
-                        $raw_data_schema)?;
                     )*
 
                     $($vector_resource = Self::read_resource(
@@ -244,20 +267,20 @@ macro_rules! define_archive {
                     ).map(|mem| ::flatdata::MultiArrayView::new(
                         $multivector_resource_index, &mem))?;
                     )*
+
+                    $($raw_data_resource = Self::read_resource(
+                        res_storage,
+                        stringify!($raw_data_resource),
+                        $raw_data_schema)?;
+                    )*
                 }
                 Ok(Self {
                     _storage: storage
                     $(,$struct_resource: $struct_resource)*
-                    $(,$raw_data_resource: $raw_data_resource)*
                     $(,$vector_resource: $vector_resource)*
                     $(,$multivector_resource: $multivector_resource)*
+                    $(,$raw_data_resource: $raw_data_resource)*
                 })
-            }
-        }
-
-        impl fmt::Debug for Graph {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                write!(f, "Graph")
             }
         }
     }

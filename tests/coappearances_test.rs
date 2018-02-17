@@ -35,12 +35,15 @@ fn read_and_validate_coappearances() {
     // usually undesirable for huge data.
     let strings = str::from_utf8(g.strings()).expect("invalid utf8 string");
 
+    let meta = g.meta().clone();
+    assert_eq!(&meta, g.meta());
+
     assert_eq!(
-        substring(strings, g.meta().title_ref()),
+        substring(strings, meta.title_ref()),
         "Anna Karenina (Анна Каренина)"
     );
     assert_eq!(
-        substring(strings, g.meta().author_ref()),
+        substring(strings, meta.author_ref()),
         "Leo Tolstoy (Лев Николаевич Толстой)"
     );
 

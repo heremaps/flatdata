@@ -88,7 +88,7 @@ pub trait ResourceStorage {
 }
 
 /// Describes a chunk of memory
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MemoryDescriptor {
     ptr: *const u8,
     size: usize,
