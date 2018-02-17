@@ -9,6 +9,9 @@ use error::ResourceStorageError;
 
 /// A type in archive.
 pub trait ArchiveType: convert::From<StreamType> + fmt::Debug {
+    /// Schema of the type. Only for debug and inspection purposes.
+    const SCHEMA: &'static str;
+    /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
 }
 
@@ -47,7 +50,7 @@ macro_rules! intersperse {
 
 #[macro_export]
 macro_rules! define_archive_type {
-    ($name:ident, $size_in_bytes:expr
+    ($name:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
         pub struct $name {
@@ -58,10 +61,6 @@ macro_rules! define_archive_type {
             $(pub fn $field(&self) -> $type {
                 read_bytes!($type, self.data, $offset, $bit_size)
             })*
-        }
-
-        impl ::flatdata::ArchiveType for $name {
-            const SIZE_IN_BYTES: usize = $size_in_bytes;
         }
 
         impl ::std::convert::From<::flatdata::StreamType> for $name {
@@ -78,14 +77,19 @@ macro_rules! define_archive_type {
                     stringify!($name), $(self.$field(),)*)
             }
         }
+
+        impl ::flatdata::ArchiveType for $name {
+            const SCHEMA: &'static str = $schema;
+            const SIZE_IN_BYTES: usize = $size_in_bytes;
+        }
     }
 }
 
 #[macro_export]
 macro_rules! define_index_type {
-    ($name:ident, $size_in_bytes:expr, $size_in_bits:expr) => {
+    ($name:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
         mod internal {
-            define_archive_type!($name, $size_in_bytes, (value, u64, 0, $size_in_bits));
+            define_archive_type!($name, $schema, $size_in_bytes, (value, u64, 0, $size_in_bits));
 
             impl ::flatdata::IndexType for $name {
                fn value(&self) -> usize {
