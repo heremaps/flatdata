@@ -28,9 +28,9 @@ where
         }
     }
 
-    pub fn index(&self, idx: usize) -> MultiArrayViewItemIter<Ts> {
-        let start = self.index.index(idx).value();
-        let end = self.index.index(idx + 1).value();
+    pub fn at(&self, idx: usize) -> MultiArrayViewItemIter<Ts> {
+        let start = self.index.at(idx).value();
+        let end = self.index.at(idx + 1).value();
         MultiArrayViewItemIter {
             data: unsafe { self.data.offset(start as isize) },
             end: unsafe { self.data.offset(end as isize) },
@@ -38,9 +38,9 @@ where
         }
     }
 
-    pub fn size(&self) -> usize {
+    pub fn len(&self) -> usize {
         // last index element is a sentinel
-        self.index.size() - 1
+        self.index.len() - 1
     }
 }
 
@@ -76,9 +76,9 @@ where
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "MultiArrayView {{ data: {:?}, size: {} }}",
+            "MultiArrayView {{ data: {:?}, len: {} }}",
             self.data,
-            self.size()
+            self.len()
         )
     }
 }

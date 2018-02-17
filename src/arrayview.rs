@@ -9,7 +9,7 @@ use std::fmt;
 #[derive(Clone)]
 pub struct ArrayView<T> {
     data: StreamType,
-    size: usize,
+    len: usize,
     _phantom: marker::PhantomData<T>,
 }
 
@@ -20,18 +20,18 @@ where
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
         Self {
             data: mem_descr.data(),
-            size: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
+            len: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
             _phantom: marker::PhantomData,
         }
     }
 
-    pub fn size(&self) -> usize {
-        self.size
+    pub fn len(&self) -> usize {
+        self.len
     }
 
     // Note: It is not possible to use std::ops::Index here, since Index::index has to return a
     // ref, however we need to return a value.
-    pub fn index(&self, idx: usize) -> T {
+    pub fn at(&self, idx: usize) -> T {
         T::from(unsafe { self.data.offset((idx * T::SIZE_IN_BYTES) as isize) })
     }
 
@@ -47,8 +47,8 @@ impl<T> fmt::Debug for ArrayView<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "ArrayView {{ data: {:?}, size: {} }}",
-            self.data, self.size
+            "ArrayView {{ data: {:?}, len: {} }}",
+            self.data, self.len
         )
     }
 }
@@ -61,8 +61,8 @@ pub struct ArrayViewIter<'a, T: 'a + Struct> {
 impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_pos < self.view.size() {
-            let element = self.view.index(self.next_pos);
+        if self.next_pos < self.view.len() {
+            let element = self.view.at(self.next_pos);
             self.next_pos += 1;
             Some(element)
         } else {
@@ -73,6 +73,6 @@ impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
 
 impl<'a, T: Struct> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
     fn len(&self) -> usize {
-        self.view.size()
+        self.view.len()
     }
 }
