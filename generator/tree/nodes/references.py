@@ -83,7 +83,7 @@ class ConstantReference(TypeReference):
 
 class EnumerationReference(TypeReference):
     """
-    IntegralTypeReference depict:
+    EnumerationReference depict:
     - Field Type -> Enumeration
     """
     def __init__(self, name, width=None):
@@ -93,4 +93,3 @@ class EnumerationReference(TypeReference):
     @property
     def width(self):
         return self._width
-    

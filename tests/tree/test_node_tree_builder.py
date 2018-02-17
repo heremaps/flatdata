@@ -10,7 +10,7 @@ import generator.tree.nodes.resources as resources
 import generator.tree.nodes.references as refs
 from generator.tree.helpers.basictype import BasicType
 from generator.tree.nodes.root import Root
-from generator.tree.builder import _build_node_tree
+from generator.tree.builder import _build_node_tree, _compute_structure_sizes
 from generator.tree.errors import SymbolRedefinition, ParsingError, InvalidWidthError
 
 from nose.tools import *
@@ -120,6 +120,7 @@ def test_single_structure_is_parsed_correctly():
         }
         }
         """)
+    _compute_structure_sizes(tree)
     assert_equal({".foo", ".foo.Bar", ".foo.Bar.fieldB", ".foo.Bar.fieldA"}, tree.symbols())
 
     check_struct(tree.find(".foo.Bar"), 35, 5)
@@ -146,6 +147,7 @@ def test_two_structures_are_parsed_correctly():
         }
         }
         """)
+    _compute_structure_sizes(tree)
     assert_equal({".foo", ".foo.Baz", ".foo.Baz.fieldB", ".foo.Bar", ".foo.Bar.fieldA"},
                  tree.symbols())
     check_struct(tree.find(".foo.Bar"), 2, 1)
@@ -160,6 +162,7 @@ def test_implicit_field_widths_are_set_correctly():
             }
             }
             """ % typename)
+        _compute_structure_sizes(tree)
         check_field(tree.find('.n.s.f'), typename, width, 0)
 
     for typename, width in [
@@ -222,6 +225,7 @@ def test_multi_vector_builtin_types_are_correct():
     assert_equal(1, len(res.builtins))
 
     index_type = res.builtins[0]
+    _compute_structure_sizes(index_type)
     assert_equal({"IndexType33", "IndexType33.value"}, index_type.symbols())
     check_struct(index_type, 33, 5)
     check_field(index_type.find("IndexType33.value"), "u64", 33, 0)

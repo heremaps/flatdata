@@ -51,9 +51,12 @@ TEST( EnumTest, StructWithEnum )
 
 TEST( EnumTest, StructWithSignedEnum )
 {
+    // we test that reading/writing signed enums of different sizes work
+    // e.g. full storage width / reduced storage width
+    // min / max, -1, etc
     Vector< StructWithSignedEnum > v( 1 );
     StructWithSignedEnumMutator x = v[ 0 ];
-    ASSERT_EQ( size_t( 3 ), x.size_in_bytes( ) );
+    ASSERT_EQ( size_t( 6 ), x.size_in_bytes( ) );
     const uint8_t* data = x.data( );
     StructWithSignedEnum reader{data};
 

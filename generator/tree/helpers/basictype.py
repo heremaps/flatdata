@@ -20,7 +20,7 @@ class BasicType(object):
         return name in grammar.BASIC_TYPES
 
     def __init__(self, name, width=None):
-        assert name in grammar.BASIC_TYPES
+        assert self.is_basic_type(name)
         self._name = name
         self._width = width
         if width is None:

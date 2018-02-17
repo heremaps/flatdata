@@ -14,7 +14,7 @@ enum Enum1 : u16 {
     VALUE_5
 }
 
-enum SignedEnum1 : i16 {
+enum SignedEnum1 : i32 {
     VALUE_INT16_MIN = -32768,
     VALUE_INT16_MAX = 32767,
     VALUE_INT8_MIN = -128,
@@ -32,7 +32,7 @@ struct StructWithEnum
 struct StructWithSignedEnum
 {
     a : SignedEnum1;
-    a_less_bits : SignedEnum1 : 8;
+    a_less_bits : SignedEnum1 : 16;
 }
 
 struct SimpleStruct {

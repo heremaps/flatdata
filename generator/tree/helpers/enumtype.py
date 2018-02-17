@@ -6,7 +6,7 @@ from .basictype import BasicType
 
 class EnumType(object):
     def __init__(self, name, basic_type):
-        assert name not in grammar.BASIC_TYPES
+        assert not BasicType.is_basic_type(name), "%r is no valid enum name" % name
         self._name = name
         self._type = basic_type;
 
