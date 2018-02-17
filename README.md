@@ -32,8 +32,8 @@ Generator:
 Misc:
 
 * [x] Derive partial eq comparsion for all structs.
-* [ ] Rename `size` of all containers into `len`.
-* [ ] Rename `index` of containers to `at`.
+* [x] Rename `size` of all containers into `len`.
+* [x] Rename `index` of containers to `at`.
 
 ## Example
 
