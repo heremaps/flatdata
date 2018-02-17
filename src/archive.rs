@@ -8,7 +8,7 @@ use storage::ResourceStorage;
 use error::ResourceStorageError;
 
 /// A type in archive.
-pub trait ArchiveType: convert::From<StreamType> + fmt::Debug {
+pub trait Struct: convert::From<StreamType> + fmt::Debug {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
@@ -16,7 +16,7 @@ pub trait ArchiveType: convert::From<StreamType> + fmt::Debug {
 }
 
 /// A type in archive used as index of a multivector.
-pub trait IndexType: ArchiveType {
+pub trait Index: Struct {
     fn value(&self) -> usize;
 }
 
@@ -24,7 +24,7 @@ pub trait IndexType: ArchiveType {
 pub type TypeIndex = u8;
 
 /// A type used as element of `MultiArrayView`.
-pub trait VariadicArchiveType: convert::From<(TypeIndex, StreamType)> {
+pub trait VariadicStruct: convert::From<(TypeIndex, StreamType)> {
     fn size_in_bytes(&self) -> usize;
 }
 
@@ -49,7 +49,7 @@ macro_rules! intersperse {
 }
 
 #[macro_export]
-macro_rules! define_archive_type {
+macro_rules! define_struct {
     ($name:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
@@ -78,7 +78,7 @@ macro_rules! define_archive_type {
             }
         }
 
-        impl ::flatdata::ArchiveType for $name {
+        impl ::flatdata::Struct for $name {
             const SCHEMA: &'static str = $schema;
             const SIZE_IN_BYTES: usize = $size_in_bytes;
         }
@@ -86,12 +86,12 @@ macro_rules! define_archive_type {
 }
 
 #[macro_export]
-macro_rules! define_index_type {
+macro_rules! define_index {
     ($name:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
         mod internal {
-            define_archive_type!($name, $schema, $size_in_bytes, (value, u64, 0, $size_in_bits));
+            define_struct!($name, $schema, $size_in_bytes, (value, u64, 0, $size_in_bits));
 
-            impl ::flatdata::IndexType for $name {
+            impl ::flatdata::Index for $name {
                fn value(&self) -> usize {
                     self.value() as usize
                 }
@@ -101,7 +101,7 @@ macro_rules! define_index_type {
 }
 
 #[macro_export]
-macro_rules! define_variadic_archive_type {
+macro_rules! define_variadic_struct {
     ($name:ident, $index_type:tt, $($type_index:expr => $type:tt),+) =>
     {
         pub enum $name {
@@ -126,7 +126,7 @@ macro_rules! define_variadic_archive_type {
             }
         }
 
-        impl ::flatdata::VariadicArchiveType for $name {
+        impl ::flatdata::VariadicStruct for $name {
             fn size_in_bytes(&self) -> usize {
                 match *self {
                     $($name::$type(_) => $type::SIZE_IN_BYTES),+
@@ -256,7 +256,7 @@ macro_rules! define_archive {
         }
 
         impl fmt::Debug for Graph {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f, "Graph")
             }
         }

@@ -1,4 +1,4 @@
-use archive::ArchiveType;
+use archive::Struct;
 use bytereader::StreamType;
 use storage::MemoryDescriptor;
 
@@ -14,7 +14,7 @@ pub struct ArrayView<T> {
 
 impl<T> ArrayView<T>
 where
-    T: ArchiveType,
+    T: Struct,
 {
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
         Self {
@@ -52,12 +52,12 @@ impl<T> fmt::Debug for ArrayView<T> {
     }
 }
 
-pub struct ArrayViewIter<'a, T: 'a + ArchiveType> {
+pub struct ArrayViewIter<'a, T: 'a + Struct> {
     view: &'a ArrayView<T>,
     next_pos: usize,
 }
 
-impl<'a, T: ArchiveType> iter::Iterator for ArrayViewIter<'a, T> {
+impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.next_pos < self.view.size() {
@@ -70,7 +70,7 @@ impl<'a, T: ArchiveType> iter::Iterator for ArrayViewIter<'a, T> {
     }
 }
 
-impl<'a, T: ArchiveType> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
+impl<'a, T: Struct> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
     fn len(&self) -> usize {
         self.view.size()
     }

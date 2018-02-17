@@ -1,4 +1,4 @@
-use archive::{IndexType, VariadicArchiveType};
+use archive::{Index, VariadicStruct};
 use arrayview::ArrayView;
 use bytereader::StreamType;
 use storage::MemoryDescriptor;
@@ -7,7 +7,7 @@ use std::fmt;
 use std::iter;
 use std::marker;
 
-/// Ts is a type describing the variadic types of the `MultiArrayView`.
+/// Ts is a variadic type describing the types of an element in `MultiArrayView`.
 pub struct MultiArrayView<Idx, Ts> {
     index: ArrayView<Idx>,
     data: StreamType,
@@ -16,8 +16,8 @@ pub struct MultiArrayView<Idx, Ts> {
 
 impl<Idx, Ts> MultiArrayView<Idx, Ts>
 where
-    Idx: IndexType,
-    Ts: VariadicArchiveType,
+    Idx: Index,
+    Ts: VariadicStruct,
 {
     pub fn new(index: ArrayView<Idx>, data_mem_descr: &MemoryDescriptor) -> Self {
         Self {
@@ -49,7 +49,7 @@ pub struct MultiArrayViewItemIter<Ts> {
     _phantom: marker::PhantomData<Ts>,
 }
 
-impl<Ts: VariadicArchiveType> iter::Iterator for MultiArrayViewItemIter<Ts> {
+impl<Ts: VariadicStruct> iter::Iterator for MultiArrayViewItemIter<Ts> {
     type Item = Ts;
     fn next(&mut self) -> Option<Self::Item> {
         if self.data < self.end {
@@ -69,8 +69,8 @@ impl<Ts: VariadicArchiveType> iter::Iterator for MultiArrayViewItemIter<Ts> {
 
 impl<Idx, Ts> fmt::Debug for MultiArrayView<Idx, Ts>
 where
-    Idx: IndexType,
-    Ts: VariadicArchiveType,
+    Idx: Index,
+    Ts: VariadicStruct,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
