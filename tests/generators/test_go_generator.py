@@ -30,8 +30,8 @@ import (
 )
 
 const (
-    flatdataOffsetSizeInBits uint = 64
-    flatdataPaddingSizeInBits uint = 64
+    flatdataOffsetSizeInBytes uint = 8
+    flatdataPaddingSizeInBytes uint = 8
 )""")
 
 
@@ -53,28 +53,17 @@ def test_structures_are_declared_correctly():
         """type S struct {
     internal flatdata.ResourceHandle
 	position int
-	multivector bool
 }""",
         """func (v *S) GetF0() uint8 {
     elementSizeInBits := uint(3)
     elementOffset := uint(0)
-    var result int
-    if v.multivector {
-        result = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
-    } else {
-        result = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSizeInBits, false)
-    }
+    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
     return uint8(result)
 }""",
         """func (v *S) GetF1() uint16 {
     elementSizeInBits := uint(15)
     elementOffset := uint(3)
-    var result int
-    if v.multivector {
-        result = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
-    } else {
-        result = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(sSizeInBytes*8*uint(v.position))+elementOffset, elementSizeInBits, false)
-    }
+    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
     return uint16(result)
 }""",
         """func (v *S) ToString() string {"""
@@ -158,7 +147,7 @@ def test_vector_resource_is_declared_correctly():
 func (v *AVectorResourceVector) Get(i int) *T {
 	return &T{
 		internal: v.internal,
-		position: i,
+		position: int(uint(i*tSizeInBytes) + flatdataOffsetSizeInBytes),
 	}
 }
 
@@ -177,7 +166,7 @@ func (v *AVectorResourceVector) GetSlice(start, end, step int) []*T {
 	for start <= end {
 		result = append(result, &T{
 			internal: v.internal,
-			position: start,
+			position: int(uint(start*tSizeInBytes) + flatdataOffsetSizeInBytes),
 		})
 		start += step
 	}
@@ -202,7 +191,8 @@ func (v *AVectorResourceVector) GetSizeInBytes() int {
     archive A {
         vector_resource : vector< T >;
     }
-    }""", GoGenerator, *expected_lines)
+    }
+    """, GoGenerator, *expected_lines)
 
 
 def test_multi_vector_resource_is_declared_correctly():
@@ -211,18 +201,12 @@ def test_multi_vector_resource_is_declared_correctly():
         """type IndexType33 struct {
     internal flatdata.ResourceHandle
 	position int
-    multivector bool
 }
 
 func (v *IndexType33) GetValue() uint64 {
     elementSizeInBits := uint(33)
     elementOffset := uint(0)
-    var result int
-    if v.multivector {
-        result = flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
-    } else {
-        result = flatdata.Read(v.internal, flatdataOffsetSizeInBits+(indexType33SizeInBytes*8*uint(v.position))+elementOffset, elementSizeInBits, false)
-    }
+    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
     return uint64(result)
 }""",
         """type AMultivectorResourceVector struct {
@@ -234,7 +218,7 @@ func (v *IndexType33) GetValue() uint64 {
 func (v *AMultivectorResourceVector) Get(i int) *IndexType33 {
 	return &IndexType33{
 		internal: v.internal,
-		position: i,
+		position: int(uint(i*indexType33SizeInBytes) + flatdataOffsetSizeInBytes),
 	}
 }
 
@@ -253,7 +237,7 @@ func (v *AMultivectorResourceVector) GetSlice(start, end, step int) []*IndexType
 	for start <= end {
 		result = append(result, &IndexType33{
 			internal: v.internal,
-			position: start,
+			position: int(uint(start*indexType33SizeInBytes) + flatdataOffsetSizeInBytes),
 		})
 		start += step
 	}
@@ -291,9 +275,9 @@ func (v *AMultivectorResourceMultivector) GetSizeInBytes() int {
 
 func (v *AMultivectorResourceMultivector) getBucketOffset(i int) int {
 	if i == v.index.GetSize() {
-		return v.internal.Len() - int(flatdataPaddingSizeInBits/8)
+		return v.internal.Len() - int(flatdataPaddingSizeInBytes)
 	} 
-	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBits/8)
+	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBytes)
 }
 
 func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
@@ -313,12 +297,10 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 		switch element := abstractElement.(type) {
 		case *T:
 			element.position = offset
-            element.multivector = true
 			result = append(result, element)
 			temp = tSizeInBytes
 		case *U:
 			element.position = offset
-            element.multivector = true
 			result = append(result, element)
 			temp = uSizeInBytes
 		default:
@@ -343,7 +325,8 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
     archive A {
         multivector_resource : multivector< 33, T, U >;
     }
-    }""", GoGenerator, *expected_lines)
+    }
+    """, GoGenerator, *expected_lines)
 
 
 def test_raw_data_resource_is_declared_correctly():

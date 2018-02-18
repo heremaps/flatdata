@@ -8,6 +8,7 @@ type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance struct 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) Get() *{{ resource|to_initializer(tree)|to_go_case }} {
 	return &{{ resource|to_initializer(tree)|to_go_case }}{
 	    internal: v.internal,
+        position: int(flatdataOffsetSizeInBytes),
 	}
 }
 

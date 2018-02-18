@@ -20,8 +20,8 @@ import (
 )
 
 const (
-    flatdataOffsetSizeInBits uint = 64
-    flatdataPaddingSizeInBits uint = 64
+    flatdataOffsetSizeInBytes uint = 8
+    flatdataPaddingSizeInBytes uint = 8
 {% for node in nodes %}
     {% if node|is_structure %}
     {{ node.name|to_go_case(false) }}SizeInBytes = {{ node.size_in_bytes }}

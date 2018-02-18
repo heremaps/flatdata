@@ -9,7 +9,7 @@ type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector struct {
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) Get(i int) *{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %} {
 	return &{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}{
 		internal: v.internal,
-		position: i,
+		position: int(uint(i*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case(False) }}{% else %}{{ resource|to_initializer(tree)|to_go_case(False) }}{% endif %}SizeInBytes) + flatdataOffsetSizeInBytes),
 	}
 }
 
@@ -29,8 +29,8 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetS
     for start <= end {
 		result = append(result, &{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}{
 			internal: v.internal,
-			position: start,
-		})
+			position: int(uint(start*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case(False) }}{% else %}{{ resource|to_initializer(tree)|to_go_case(False) }}{% endif %}SizeInBytes) + flatdataOffsetSizeInBytes),
+	    })
 		start += step
 	}
 	return result

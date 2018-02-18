@@ -25,9 +25,9 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) getBucketOffset(i int) int {
     if i == v.index.GetSize() {
-		return v.internal.Len() - int(flatdataPaddingSizeInBits/8)
+		return v.internal.Len() - int(flatdataPaddingSizeInBytes)
 	} 
-	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBits/8)
+	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBytes)
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Get(i int) []interface{} {
@@ -49,7 +49,6 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 		{% if loop.index0 >= 1%}
 		case *{{ entry|to_go_case }}:
 			element.position = offset
-            element.multivector = true
 			result = append(result, element)
 			temp = {{ entry|to_go_case(false) }}SizeInBytes
 		{% endif %}

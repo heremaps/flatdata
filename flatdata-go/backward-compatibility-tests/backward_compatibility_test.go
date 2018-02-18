@@ -26,6 +26,9 @@ func TestBackwardCompatibilityVector(t *testing.T) {
 		assert.Equal(t, 2, arc.ResourceBVector.GetSize())
 		assertSigned(t, arc.ResourceBVector.Get(0))
 		assertSigned(t, arc.ResourceBVector.Get(1))
+		slice := arc.ResourceBVector.GetSlice(0, 1, 1)
+		assertSigned(t, slice[0])
+		assertSigned(t, slice[1])
 		assert.True(t, validJSON(arc.ResourceBVector.ToString()))
 	}
 }
