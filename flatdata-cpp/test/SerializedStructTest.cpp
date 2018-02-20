@@ -13,8 +13,8 @@ using namespace test_structures;
 
 TEST( SerializedStructTest, SimpleLayoutIsInLittleEndian )
 {
-    Vector< SimpleStruct > v( 1 );
-    SimpleStructMutator x = v[ 0 ];
+    Struct< SimpleStruct > v;
+    SimpleStructMutator x = *v;
     ASSERT_EQ( size_t( 8 ), x.size_in_bytes( ) );
     x.a = 0x01234567;
     x.b = 0x89abcdef;
@@ -36,8 +36,8 @@ TEST( SerializedStructTest, SimpleLayoutIsInLittleEndian )
 
 TEST( SerializedStructTest, BitPackedWorks )
 {
-    Vector< BitPackedStruct > v( 1 );
-    BitPackedStructMutator x = v[ 0 ];
+    Struct< BitPackedStruct > v;
+    BitPackedStructMutator x = *v;
     ASSERT_EQ( size_t( 5 ), x.size_in_bytes( ) );
     x.a = true;
     x.b = 0x01234567;
@@ -58,8 +58,8 @@ TEST( SerializedStructTest, BitPackedWorks )
 
 TEST( SerializedStructTest, SignedStructWorks )
 {
-    Vector< SignedStruct > v( 1 );
-    SignedStructMutator x = v[ 0 ];
+    Struct< SignedStruct > v;
+    SignedStructMutator x = *v;
     ASSERT_EQ( size_t( 10 ), x.size_in_bytes( ) );
     x.a = -0x1;
     x.b = 0x01234567;
