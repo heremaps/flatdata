@@ -23,7 +23,3 @@ script:
       -v $(pwd)/build:/build \
       -w /build \
       $DOCKER_IMAGE /src/ci/build-and-test.sh
-  - sudo chown -R travis:travis $(pwd)/build
-
-before_deploy:
-  - touch $(pwd)/build/docs/html/.nojekyll
