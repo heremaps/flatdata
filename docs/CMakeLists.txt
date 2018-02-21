@@ -1,3 +1,8 @@
+if(${CMAKE_VERSION} VERSION_LESS "3.9.0")
+    message(WARNING "Cannot build documentation: CMake 3.9+ required.")
+    return()
+endif()
+
 find_package(Sphinx)
 find_package(Doxygen)
 
