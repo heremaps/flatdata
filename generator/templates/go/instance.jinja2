@@ -1,13 +1,13 @@
 {% macro generate(tree, archive, resource) %}
 type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     IsOptional bool
     IsOpen bool
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) Get() *{{ resource|to_initializer(tree)|to_go_case }} {
 	return &{{ resource|to_initializer(tree)|to_go_case }}{
-	    internal: v.internal,
+	    descriptor: v.descriptor,
         position: int(flatdataOffsetSizeInBytes),
 	}
 }
@@ -17,12 +17,12 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) Ge
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) ToString() string {

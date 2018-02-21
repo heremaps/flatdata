@@ -94,12 +94,12 @@ func (v *{{ archive.name|to_go_case }}Archive) ToString() string {
 	return buffer.String()
 }
 
-func Open{{ archive.name|to_go_case }}Archive(resource flatdata.ResourceProvider) (*{{ archive.name|to_go_case }}Archive, error) {
+func Open{{ archive.name|to_go_case }}Archive(resource flatdata.ResourceStorage) (*{{ archive.name|to_go_case }}Archive, error) {
     v := &{{ archive.name|to_go_case }}Archive{}
     // Initialize resources
 	{% for resource in archive.resources if not resource|is_bound_resource%}
 	{% if resource|is_archive_resource %}
-	{{ resource.name|lower|to_go_case(false) }}Archive, err := Open{{ resource.name|to_go_case }}Archive(flatdata.NewFileResourceProvider(filepath.Join(resource.GetBasePath(), "{{ resource.name|lower }}/{{ resource|to_initializer(tree) }}.archive")))
+	{{ resource.name|lower|to_go_case(false) }}Archive, err := Open{{ resource.name|to_go_case }}Archive(flatdata.NewFileResourceStorage(filepath.Join(resource.GetBasePath(), "{{ resource.name|lower }}/{{ resource|to_initializer(tree) }}.archive")))
 	{{ resource.name|lower|to_go_case(false)}}Archive.IsOptional = {{ resource.optional|lower }}
 	{{ resource.name|lower|to_go_case(false) }}Archive.IsOpen = true
 	if err != nil {
@@ -112,7 +112,7 @@ func Open{{ archive.name|to_go_case }}Archive(resource flatdata.ResourceProvider
 	}
 	{% else %}
 	{{ resource.name|lower|to_go_case(false) }}IsOpen := true
-	{{ resource.name|lower|to_go_case(false) }}Handle, schema, err := resource.GetHandle("{{ resource.name }}")
+	{{ resource.name|lower|to_go_case(false) }}MemoryDescriptor, schema, err := resource.GetMemoryDescriptor("{{ resource.name }}")
 	if err != nil {
         log.Println(err)
 	    if err.Error() == flatdata.ErrorCantAccessResource {
@@ -122,7 +122,7 @@ func Open{{ archive.name|to_go_case }}Archive(resource flatdata.ResourceProvider
 		}
 	}
 	{% if resource|is_multivector %}
-	{{ resource.name|lower|to_go_case(false) }}IndexHandle, _, err := resource.GetHandle("{{ resource.name }}_index")
+	{{ resource.name|lower|to_go_case(false) }}IndexMemoryDescriptor, _, err := resource.GetMemoryDescriptor("{{ resource.name }}_index")
 	if err != nil {
 	    log.Println(err)
 	    if err.Error() == flatdata.ErrorCantAccessResource {
@@ -155,13 +155,13 @@ func Open{{ archive.name|to_go_case }}Archive(resource flatdata.ResourceProvider
     {% elif resource|is_instance %}
     v.{{ resource.name|to_go_case }}Instance = &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance {
     {% endif %}
-        internal: {{ resource.name|lower|to_go_case(false) }}Handle,
+        descriptor: {{ resource.name|lower|to_go_case(false) }}MemoryDescriptor,
         {% if resource|is_multivector %}
-        index: &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector{internal: {{ resource.name|lower|to_go_case(false) }}IndexHandle},
+        index: &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector{descriptor: {{ resource.name|lower|to_go_case(false) }}IndexMemoryDescriptor},
         types: map[int]interface{}{
         {% for entry in resource|get_types_for_multivector(tree) %}
 		{% if loop.index0 >= 1%}
-            {{ loop.index0 - 1 }}: &{{ entry|to_go_case }}{internal: {{ resource.name|lower|to_go_case(false) }}Handle},
+            {{ loop.index0 - 1 }}: &{{ entry|to_go_case }}{descriptor: {{ resource.name|lower|to_go_case(false) }}MemoryDescriptor},
 		{% endif %}
 		{% endfor %}
         },

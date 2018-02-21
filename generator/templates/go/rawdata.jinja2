@@ -1,13 +1,13 @@
 {% macro generate(tree, archive, resource) %}
 type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     IsOptional bool
     IsOpen bool
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetValue() []byte {
 	data := make([]byte, v.GetSize())
-	_, err := v.internal.ReadAt(data, 8)
+	_, err := v.descriptor.ReadAt(data, 8)
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -16,7 +16,7 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) Get
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetSize() int {
 	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
+	_, err := v.descriptor.ReadAt(size, 0)
 	if err != nil {
 		return 0
 	}
@@ -24,12 +24,12 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) Get
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) ToString() string {

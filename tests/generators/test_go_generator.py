@@ -51,19 +51,19 @@ def test_structures_are_declared_correctly():
     expected_lines = [
         """sSizeInBytes = 3""",
         """type S struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
 	position int
 }""",
         """func (v *S) GetF0() uint8 {
     elementSizeInBits := uint(3)
     elementOffset := uint(0)
-    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
+    result := flatdata.Read(v.descriptor, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
     return uint8(result)
 }""",
         """func (v *S) GetF1() uint16 {
     elementSizeInBits := uint(15)
     elementOffset := uint(3)
-    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
+    result := flatdata.Read(v.descriptor, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
     return uint16(result)
 }""",
         """func (v *S) ToString() string {"""
@@ -100,11 +100,11 @@ func (v *AArchive) GetSizeInBytes() int {
     }
     return size
 }""",
-        """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
+        """func OpenAArchive(resource flatdata.ResourceStorage) (*AArchive, error) {
     v := &AArchive{}
     // Initialize resources
 	r0IsOpen := true
-	r0Handle, schema, err := resource.GetHandle("r0")
+	r0MemoryDescriptor, schema, err := resource.GetMemoryDescriptor("r0")
 	if err != nil {
         log.Println(err)
 	    if err.Error() == flatdata.ErrorCantAccessResource {
@@ -115,7 +115,7 @@ func (v *AArchive) GetSizeInBytes() int {
 	}""",
         """// Add resources to archive
     v.R0Instance = &AR0Instance {
-        internal: r0Handle,
+        descriptor: r0MemoryDescriptor, 
         IsOptional: false,
         IsOpen: r0IsOpen,
     }
@@ -139,21 +139,21 @@ func (v *AArchive) GetSizeInBytes() int {
 def test_vector_resource_is_declared_correctly():
     expected_lines = [
         """type AVectorResourceVector struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     IsOptional bool
     IsOpen bool
 }
 
 func (v *AVectorResourceVector) Get(i int) *T {
 	return &T{
-		internal: v.internal,
+		descriptor: v.descriptor,
 		position: int(uint(i*tSizeInBytes) + flatdataOffsetSizeInBytes),
 	}
 }
 
 func (v *AVectorResourceVector) GetSize() int {
 	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
+	_, err := v.descriptor.ReadAt(size, 0)
 	if err != nil {
 		return 0
 	}
@@ -165,7 +165,7 @@ func (v *AVectorResourceVector) GetSlice(start, end, step int) []*T {
 	var result []*T	
 	for start <= end {
 		result = append(result, &T{
-			internal: v.internal,
+			descriptor: v.descriptor,
 			position: int(uint(start*tSizeInBytes) + flatdataOffsetSizeInBytes),
 		})
 		start += step
@@ -174,12 +174,12 @@ func (v *AVectorResourceVector) GetSlice(start, end, step int) []*T {
 }
 
 func (v *AVectorResourceVector) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
 func (v *AVectorResourceVector) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }""" 
     ]
 
@@ -199,32 +199,32 @@ def test_multi_vector_resource_is_declared_correctly():
     expected_lines = [
         """indexType33SizeInBytes = 5""",
         """type IndexType33 struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
 	position int
 }
 
 func (v *IndexType33) GetValue() uint64 {
     elementSizeInBits := uint(33)
     elementOffset := uint(0)
-    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
+    result := flatdata.Read(v.descriptor, (uint(v.position)*8)+elementOffset, elementSizeInBits, false)
     return uint64(result)
 }""",
         """type AMultivectorResourceVector struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     IsOptional bool
     IsOpen bool
 }
 
 func (v *AMultivectorResourceVector) Get(i int) *IndexType33 {
 	return &IndexType33{
-		internal: v.internal,
+		descriptor: v.descriptor,
 		position: int(uint(i*indexType33SizeInBytes) + flatdataOffsetSizeInBytes),
 	}
 }
 
 func (v *AMultivectorResourceVector) GetSize() int {
 	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
+	_, err := v.descriptor.ReadAt(size, 0)
 	if err != nil {
 		return 0
 	}
@@ -236,7 +236,7 @@ func (v *AMultivectorResourceVector) GetSlice(start, end, step int) []*IndexType
 	var result []*IndexType33	
 	for start <= end {
 		result = append(result, &IndexType33{
-			internal: v.internal,
+			descriptor: v.descriptor,
 			position: int(uint(start*indexType33SizeInBytes) + flatdataOffsetSizeInBytes),
 		})
 		start += step
@@ -245,15 +245,15 @@ func (v *AMultivectorResourceVector) GetSlice(start, end, step int) []*IndexType
 }
 
 func (v *AMultivectorResourceVector) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
 func (v *AMultivectorResourceVector) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }""",
         """type AMultivectorResourceMultivector struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     index      *AMultivectorResourceVector
 	types      map[int]interface{}
     IsOptional bool
@@ -261,7 +261,7 @@ func (v *AMultivectorResourceVector) GetSizeInBytes() int {
 }
 
 func (v *AMultivectorResourceMultivector) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
@@ -270,12 +270,12 @@ func (v *AMultivectorResourceMultivector) GetSize() int {
 }
 
 func (v *AMultivectorResourceMultivector) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }
 
 func (v *AMultivectorResourceMultivector) getBucketOffset(i int) int {
 	if i == v.index.GetSize() {
-		return v.internal.Len() - int(flatdataPaddingSizeInBytes)
+		return v.descriptor.Len() - int(flatdataPaddingSizeInBytes)
 	} 
 	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBytes)
 }
@@ -286,7 +286,7 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 	var result []interface{}
 
 	for offset < nextOffset {
-	    elementType := flatdata.Read(v.internal, uint(offset*8), 8, false)
+	    elementType := flatdata.Read(v.descriptor, uint(offset*8), 8, false)
 		offset++
 		abstractElement, ok := v.types[elementType]
 		if !ok {
@@ -332,14 +332,14 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 def test_raw_data_resource_is_declared_correctly():
     expected_lines = [
         """type ARawDataResourceRawData struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     IsOptional bool
     IsOpen bool
 }
 
 func (v *ARawDataResourceRawData) GetValue() []byte {
 	data := make([]byte, v.GetSize())
-	_, err := v.internal.ReadAt(data, 8)
+	_, err := v.descriptor.ReadAt(data, 8)
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -348,7 +348,7 @@ func (v *ARawDataResourceRawData) GetValue() []byte {
 
 func (v *ARawDataResourceRawData) GetSize() int {
 	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
+	_, err := v.descriptor.ReadAt(size, 0)
 	if err != nil {
 		return 0
 	}
@@ -356,12 +356,12 @@ func (v *ARawDataResourceRawData) GetSize() int {
 }
 
 func (v *ARawDataResourceRawData) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
 func (v *ARawDataResourceRawData) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }"""
     ]
 
@@ -376,14 +376,14 @@ func (v *ARawDataResourceRawData) GetSizeInBytes() int {
 def test_optional_resource_is_declared_correctly():
     expected_lines = [
         """type ARawDataResourceRawData struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     IsOptional bool
     IsOpen bool
 }
 
 func (v *ARawDataResourceRawData) GetValue() []byte {
 	data := make([]byte, v.GetSize())
-	_, err := v.internal.ReadAt(data, 8)
+	_, err := v.descriptor.ReadAt(data, 8)
 	if err != nil {
 		return make([]byte, 0)
 	}
@@ -392,7 +392,7 @@ func (v *ARawDataResourceRawData) GetValue() []byte {
 
 func (v *ARawDataResourceRawData) GetSize() int {
 	size := make([]byte, 8)
-	_, err := v.internal.ReadAt(size, 0)
+	_, err := v.descriptor.ReadAt(size, 0)
 	if err != nil {
 		return 0
 	}
@@ -400,18 +400,18 @@ func (v *ARawDataResourceRawData) GetSize() int {
 }
 
 func (v *ARawDataResourceRawData) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
 func (v *ARawDataResourceRawData) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }""",
-    """func OpenAArchive(resource flatdata.ResourceProvider) (*AArchive, error) {
+    """func OpenAArchive(resource flatdata.ResourceStorage) (*AArchive, error) {
     v := &AArchive{}
     // Initialize resources
 	rawDataResourceIsOpen := true
-	rawDataResourceHandle, schema, err := resource.GetHandle("raw_data_resource")
+	rawDataResourceMemoryDescriptor, schema, err := resource.GetMemoryDescriptor("raw_data_resource")
 	if err != nil {
         log.Println(err)
 	    if err.Error() == flatdata.ErrorCantAccessResource {
@@ -421,7 +421,7 @@ func (v *ARawDataResourceRawData) GetSizeInBytes() int {
 		}
 	}""",
         """v.RawDataResourceRawData = &ARawDataResourceRawData{
-        internal: rawDataResourceHandle,
+        descriptor: rawDataResourceMemoryDescriptor, 
         IsOptional: true,
         IsOpen: rawDataResourceIsOpen,
     }"""

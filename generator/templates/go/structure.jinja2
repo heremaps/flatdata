@@ -1,7 +1,7 @@
 {% macro generate(tree, struct) %}
 {{ struct|to_go_doc}}
 type {{ struct.name|to_go_case }} struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
 	position int
 }
 
@@ -12,7 +12,7 @@ func (v *{{ struct.name|to_go_case }}) Get{{ field.name|to_go_case }}() {{ field
     {% endif %}
     elementSizeInBits := uint({{ field.type.width }})
     elementOffset := uint({{ field.offset }})
-    result := flatdata.Read(v.internal, (uint(v.position)*8)+elementOffset, elementSizeInBits, {{ field.type.is_signed|lower }})
+    result := flatdata.Read(v.descriptor, (uint(v.position)*8)+elementOffset, elementSizeInBits, {{ field.type.is_signed|lower }})
 {% if field.type.name|is_bool %}
     return result == 1
 {% else %}
@@ -25,7 +25,7 @@ func (v *{{ struct.name|to_go_case }}) Get{{ field.name|to_go_case }}() {{ field
 func (v *{{ struct.name|to_go_case }}) ToString() string {
     buffer := bytes.Buffer{}
     buffer.WriteString(fmt.Sprintf(`{"name": "{{ struct.name }}", "position": %d, "attributes": {`, v.position))
-    if v.internal != nil {
+    if v.descriptor != nil {
 	    {% for field in struct.fields %}
         buffer.WriteString(fmt.Sprintf(`"{{ field.name }}": %v`, {% if field.type.name|is_bool %}v.Get{{ field.name|to_go_case }}(){% else %}v.Get{{ field.name|to_go_case }}(){% endif %}))
         {% if loop.length != loop.index %}

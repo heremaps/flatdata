@@ -3,7 +3,7 @@
 {{ go_vector.generate(tree, archive, resource) }}
 
 type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector struct {
-    internal flatdata.ResourceHandle
+    descriptor flatdata.MemoryDescriptor
     index      *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector
 	types      map[int]interface{}
     IsOptional bool
@@ -11,7 +11,7 @@ type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector stru
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Close() {
-    v.internal.Close()
+    v.descriptor.Close()
     v.IsOpen = false
 }
 
@@ -20,12 +20,12 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) GetSizeInBytes() int {
-    return v.internal.Len()
+    return v.descriptor.Len()
 }
 
 func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) getBucketOffset(i int) int {
     if i == v.index.GetSize() {
-		return v.internal.Len() - int(flatdataPaddingSizeInBytes)
+		return v.descriptor.Len() - int(flatdataPaddingSizeInBytes)
 	} 
 	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBytes)
 }
@@ -36,7 +36,7 @@ func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector)
 	var result []interface{}
 
 	for offset < nextOffset {
-	    elementType := flatdata.Read(v.internal, uint(offset*8), 8, false)
+	    elementType := flatdata.Read(v.descriptor, uint(offset*8), 8, false)
 		offset++
 		abstractElement, ok := v.types[elementType]
 		if !ok {
