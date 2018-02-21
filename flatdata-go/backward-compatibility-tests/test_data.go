@@ -7,7 +7,28 @@ package backwardcompatibility
 
 import (
 	"bytes"
+
+	"github.com/heremaps/flatdata/flatdata-go/flatdata"
 )
+
+func createInMemoryResourceStorage() flatdata.ResourceStorage {
+	return &flatdata.InMemoryResourceStorage{
+		Descriptors: map[string]flatdata.MemoryDescriptor{
+			"resource_b":       &flatdata.TestMemoryDescriptor{Array: getVectorPayload()},
+			"resource_c":       &flatdata.TestMemoryDescriptor{Array: getMultivectorResourcePayload()},
+			"resource_c_index": &flatdata.TestMemoryDescriptor{Array: getMultivectorIndexPayload()},
+			"resource_d":       &flatdata.TestMemoryDescriptor{Array: getRawDataPayload()},
+			"resource_a":       &flatdata.TestMemoryDescriptor{Array: getInstanceDataPayload()},
+		},
+		Schemas: map[string]string{
+			"resource_b":       getVectorSchema(),
+			"resource_c":       getMultivectorSchema(),
+			"resource_c_index": getMultivectorSchema(),
+			"resource_d":       getRawDataSchema(),
+			"resource_a":       getInstanceSchema(),
+		},
+	}
+}
 
 func getVectorPayload() []byte {
 	var bb bytes.Buffer

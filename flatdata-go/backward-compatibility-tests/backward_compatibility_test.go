@@ -19,7 +19,7 @@ func init() {
 }
 
 func TestBackwardCompatibilityVector(t *testing.T) {
-	arc, err := OpenBackwardCompatibilityTestArchive(&byteArrayResourceStorage{})
+	arc, err := OpenBackwardCompatibilityTestArchive(createInMemoryResourceStorage())
 	if assert.NoError(t, err) {
 		defer arc.Close()
 		assert.Equal(t, 36, arc.ResourceBVector.GetSizeInBytes())
@@ -34,7 +34,7 @@ func TestBackwardCompatibilityVector(t *testing.T) {
 }
 
 func TestBackwardCompatibilityMultivector(t *testing.T) {
-	arc, err := OpenBackwardCompatibilityTestArchive(&byteArrayResourceStorage{})
+	arc, err := OpenBackwardCompatibilityTestArchive(createInMemoryResourceStorage())
 	if assert.NoError(t, err) {
 		defer arc.Close()
 		assert.Equal(t, 65, arc.ResourceCMultivector.GetSizeInBytes())
@@ -72,7 +72,7 @@ func TestBackwardCompatibilityMultivector(t *testing.T) {
 }
 
 func TestBackwardCompatibilityRawData(t *testing.T) {
-	arc, err := OpenBackwardCompatibilityTestArchive(&byteArrayResourceStorage{})
+	arc, err := OpenBackwardCompatibilityTestArchive(createInMemoryResourceStorage())
 	if assert.NoError(t, err) {
 		defer arc.Close()
 		assert.Equal(t, 21, arc.ResourceDRawData.GetSizeInBytes())
@@ -83,7 +83,7 @@ func TestBackwardCompatibilityRawData(t *testing.T) {
 }
 
 func TestBackwardCompatibilityInstance(t *testing.T) {
-	arc, err := OpenBackwardCompatibilityTestArchive(&byteArrayResourceStorage{})
+	arc, err := OpenBackwardCompatibilityTestArchive(createInMemoryResourceStorage())
 	if assert.NoError(t, err) {
 		defer arc.Close()
 		assert.Equal(t, 26, arc.ResourceAInstance.GetSizeInBytes())

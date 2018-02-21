@@ -45,7 +45,7 @@ type FileResourceStorage struct {
 	basePath string
 }
 
-// GetMemoryDescriptor returns handle for specified resource
+// GetMemoryDescriptor returns memory descriptor for specified resource
 func (r *FileResourceStorage) GetMemoryDescriptor(name string) (MemoryDescriptor, string, error) {
 	path := filepath.Join(r.basePath, name)
 
@@ -71,4 +71,36 @@ func (r *FileResourceStorage) GetMemoryDescriptor(name string) (MemoryDescriptor
 // GetBasePath returns base path to opened archive
 func (r *FileResourceStorage) GetBasePath() string {
 	return r.basePath
+}
+
+// InMemoryResourceStorage implements ResourceStorage interface for working with in-memory data
+type InMemoryResourceStorage struct {
+	Descriptors map[string]MemoryDescriptor
+	Schemas     map[string]string
+}
+
+// GetMemoryDescriptor returns memory descriptor for specified resource
+func (r *InMemoryResourceStorage) GetMemoryDescriptor(name string) (MemoryDescriptor, string, error) {
+	descriptor, ok := r.Descriptors[name]
+	if !ok {
+		return nil, "", errors.New(ErrorCantAccessResource)
+	}
+	if descriptor.Len() < (flatdataResourcePaddingBytes + flatdataSizeOffsetBytes) {
+		return nil, "", errors.New(ErrorInvalidResource)
+	}
+
+	schema, ok := r.Schemas[name]
+	if !ok {
+		return nil, "", errors.New(ErrorCantOpenSchemaForResource)
+	}
+	if len(schema) == 0 {
+		return nil, "", errors.New(ErrorSchemaEmpty)
+	}
+
+	return descriptor, schema, nil
+}
+
+// GetBasePath returns empty string in case of InMemoryResourceStorage
+func (r *InMemoryResourceStorage) GetBasePath() string {
+	return ""
 }
