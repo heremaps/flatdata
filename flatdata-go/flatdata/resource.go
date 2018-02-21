@@ -15,7 +15,7 @@ import (
 
 const (
 	flatdataResourcePaddingBytes = 8
-	flatdataSizeOffsetBytes = 8
+	flatdataSizeOffsetBytes      = 8
 	// ErrorInvalidResource returns in case of size of resource is smaller than minimal
 	ErrorInvalidResource = "invalid flatdata resource"
 	// ErrorCantAccessResource returns if resource wasn't been memory-mapped
@@ -28,32 +28,32 @@ const (
 	ErrorSchemaDidntMatch = "schemas didn't match"
 )
 
-// ResourceProvider represents abstraction for getting resource handle
-type ResourceProvider interface {
-	GetHandle(name string) (ResourceHandle, string, error)
+// ResourceStorage represents abstraction for getting resource handle
+type ResourceStorage interface {
+	GetMemoryDescriptor(name string) (MemoryDescriptor, string, error)
 	GetBasePath() string
 }
 
-// NewFileResourceProvider - constructor for FileResourceProvider
-func NewFileResourceProvider(path string) *FileResourceProvider {
+// NewFileResourceStorage - constructor for FileResourceStorage
+func NewFileResourceStorage(path string) *FileResourceStorage {
 	dir := filepath.Dir(path)
-	return &FileResourceProvider{basePath: dir}
+	return &FileResourceStorage{basePath: dir}
 }
 
-// FileResourceProvider implements ResourceProvider interface for memory-mapped file
-type FileResourceProvider struct {
+// FileResourceStorage implements ResourceStorage interface for memory-mapped file
+type FileResourceStorage struct {
 	basePath string
 }
 
-// GetHandle returns handle for specified resource
-func (r *FileResourceProvider) GetHandle(name string) (ResourceHandle, string, error) {
+// GetMemoryDescriptor returns handle for specified resource
+func (r *FileResourceStorage) GetMemoryDescriptor(name string) (MemoryDescriptor, string, error) {
 	path := filepath.Join(r.basePath, name)
 
-	handle, err := mmap.Open(path)
+	descriptor, err := mmap.Open(path)
 	if err != nil {
 		return nil, "", errors.New(ErrorCantAccessResource)
 	}
-	if handle.Len() < (flatdataResourcePaddingBytes + flatdataSizeOffsetBytes) {
+	if descriptor.Len() < (flatdataResourcePaddingBytes + flatdataSizeOffsetBytes) {
 		return nil, "", errors.New(ErrorInvalidResource)
 	}
 
@@ -65,10 +65,10 @@ func (r *FileResourceProvider) GetHandle(name string) (ResourceHandle, string, e
 		return nil, "", errors.New(ErrorSchemaEmpty)
 	}
 
-	return handle, string(bytes), nil
+	return descriptor, string(bytes), nil
 }
 
 // GetBasePath returns base path to opened archive
-func (r *FileResourceProvider) GetBasePath() string {
+func (r *FileResourceStorage) GetBasePath() string {
 	return r.basePath
 }

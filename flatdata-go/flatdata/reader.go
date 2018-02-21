@@ -17,7 +17,7 @@ func init() {
 }
 
 // Read allows to read data from flatdata memory layout
-func Read(handler ResourceHandle, offset, size uint, signed bool) int {
+func Read(handler MemoryDescriptor, offset, size uint, signed bool) int {
 	currentIndex := offset / 8
 	currentByte := uint(handler.At(int(currentIndex)))
 	bitsLeft := size

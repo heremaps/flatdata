@@ -7,8 +7,8 @@ package flatdata
 
 import "io"
 
-// ResourceHandle represents internal low level data access
-type ResourceHandle interface {
+// MemoryDescriptor represents internal low level data access
+type MemoryDescriptor interface {
 	io.ReaderAt
 	Close() error
 	Len() int

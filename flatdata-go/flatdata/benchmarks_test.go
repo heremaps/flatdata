@@ -24,7 +24,7 @@ func BenchmarkFileResourceReadSigned(b *testing.B) {
 func runBenchmarkOnFileResource(signed bool, b *testing.B) {
 	b.StopTimer()
 
-	handle := &byteArrayHandle{Array: generateRandomByteArray()}
+	handle := &TestMemoryDescriptor{Array: generateRandomByteArray()}
 
 	b.StartTimer()
 
