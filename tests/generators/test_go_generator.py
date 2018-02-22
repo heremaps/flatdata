@@ -293,21 +293,20 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 			//TODO: How to process case, then type of element is not found?
 			log.Println("Can't get type of element")
 		}
-		temp := 0
+		
 		switch element := abstractElement.(type) {
 		case *T:
 			element.position = offset
 			result = append(result, element)
-			temp = tSizeInBytes
+			offset += tSizeInBytes
 		case *U:
 			element.position = offset
 			result = append(result, element)
-			temp = uSizeInBytes
+			offset += uSizeInBytes
 		default:
 			//TODO: How to react in case if it's impossible to cast?
 			log.Println("Can't cast element. Type is unknown...")
 		}
-		offset += temp
 	}
 	
 	return result
