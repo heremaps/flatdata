@@ -12,7 +12,7 @@ import (
 )
 
 func TestOpenNonExistingFileResourceShouldReturnError(t *testing.T) {
-	r := NewFileResourceStorage("unexisted_archive")
-	_, _, err := r.GetMemoryDescriptor("unexisted_resource")
-	assert.EqualError(t, err, ErrorCantAccessResource, "Should return error for an unexisted resource")
+	r := NewFileResourceStorage("non_existing_archive")
+	_, _, err := r.GetMemoryDescriptor("non_existing_resource")
+	assert.EqualError(t, err, ErrorCantAccessResource, "Should return error for an non-existing resource")
 }

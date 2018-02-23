@@ -17,9 +17,9 @@ func init() {
 }
 
 // Read allows to read data from flatdata memory layout
-func Read(handler MemoryDescriptor, offset, size uint, signed bool) int {
+func Read(descriptor MemoryDescriptor, offset, size uint, signed bool) int {
 	currentIndex := offset / 8
-	currentByte := uint(handler.At(int(currentIndex)))
+	currentByte := uint(descriptor.At(int(currentIndex)))
 	bitsLeft := size
 	localOffset := offset % 8
 	var result uint
@@ -32,7 +32,7 @@ func Read(handler MemoryDescriptor, offset, size uint, signed bool) int {
 		}
 		bitsLeft -= 8 - localOffset
 		currentIndex++
-		currentByte = uint(handler.At(int(currentIndex)))
+		currentByte = uint(descriptor.At(int(currentIndex)))
 	}
 
 	for bitsLeft >= 8 {
@@ -42,7 +42,7 @@ func Read(handler MemoryDescriptor, offset, size uint, signed bool) int {
 
 		bitsLeft -= 8
 		currentIndex++
-		currentByte = uint(handler.At(int(currentIndex)))
+		currentByte = uint(descriptor.At(int(currentIndex)))
 	}
 
 	if bitsLeft != 0 {

@@ -1139,8 +1139,8 @@ func TestReaderShouldReadValidDataWithoutError(t *testing.T) {
 			if !assert.NoError(t, err) {
 				assert.FailNow(t, err.Error(), "Shouldn't return error on decoding hex to bytes")
 			}
-			handle := &TestMemoryDescriptor{Array: bytes}
-			result := Read(handle, v.offset, v.size, v.signed)
+			descriptor := &TestMemoryDescriptor{Array: bytes}
+			result := Read(descriptor, v.offset, v.size, v.signed)
 			assert.Equal(t, v.expected, result,
 				"Result expected: %v, actual: %v, for test data: %v", v.expected, result, v)
 		})
