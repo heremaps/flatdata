@@ -33,7 +33,7 @@ union {{ template_name }}
     /// Get structure name
     static std::string name( );
     /// Get structure size in bytes
-    static size_t size_in_bytes( );
+    static constexpr size_t size_in_bytes( );
 
     bool operator==( const {{ template_name }}& other ) const;
     bool operator!=( const {{ template_name }}& other ) const;
@@ -101,7 +101,7 @@ std::string {{ template_spec }}::name( ) { return "{{struct.name}}"; }
 
 {{ template_header }}
 inline
-size_t {{ template_spec }}::size_in_bytes( ) { return {{struct.size_in_bytes}}; }
+constexpr size_t {{ template_spec }}::size_in_bytes( ) { return {{struct.size_in_bytes}}; }
 
 {{ template_header }}
 inline

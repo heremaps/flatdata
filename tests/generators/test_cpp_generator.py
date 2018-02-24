@@ -79,7 +79,7 @@ union STemplate
     /// Get structure name
     static std::string name( );
     /// Get structure size in bytes
-    static size_t size_in_bytes( );
+    static constexpr size_t size_in_bytes( );
 
     bool operator==( const STemplate& other ) const;
     bool operator!=( const STemplate& other ) const;
@@ -317,7 +317,7 @@ std::string STemplate< Member >::name( ) { return "S"; }
 
 template< template < typename, int, int > class Member >
 inline
-size_t STemplate< Member >::size_in_bytes( ) { return 3; }
+constexpr size_t STemplate< Member >::size_in_bytes( ) { return 3; }
 
 template< template < typename, int, int > class Member >
 inline

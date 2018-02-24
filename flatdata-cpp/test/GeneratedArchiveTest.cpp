@@ -85,10 +85,10 @@ TEST( GeneratedArchiveTest, multivectors_can_be_created_incrementally )
 
     EXPECT_TRUE( builder.is_open( ) );
     auto resource = builder.start_multivector_resource( );
-    resource.add_to_current_item< AStruct >( ).value = 17;
-    resource.next_item( );
-    resource.add_to_current_item< AStruct >( ).value = 42;
-    resource.next_item( );
+    auto list = resource.grow( );
+    list.add< AStruct >( ).value = 17;
+    list = resource.grow( );
+    list.add< AStruct >( ).value = 42;
     resource.close( );
 
     auto archive = SimpleResources::open( storage );
@@ -161,15 +161,16 @@ TEST( GeneratedArchiveTest, describe_outputs_resources_as_expected )
     {
         auto builder = SimpleResourcesBuilder::open( storage );
         EXPECT_TRUE( builder.is_open( ) );
-        flatdata::Vector< AStruct > astruct( 1 );
-        builder.set_object_resource( astruct.front( ) );
-        builder.set_vector_resource( astruct );
+        flatdata::Struct< AStruct > astruct;
+        builder.set_object_resource( *astruct );
+        flatdata::Vector< AStruct > avector( 11 );
+        builder.set_vector_resource( avector );
         builder.set_optional_resource( flatdata::MemoryDescriptor( "opt", 3 ) );
         builder.set_raw_data_resource( flatdata::MemoryDescriptor( "raw_data", 8 ) );
 
         auto mv = builder.start_multivector_resource( );
-        mv.add_to_current_item< AStruct >( ).value = 17;
-        mv.next_item( );
+        auto list = mv.grow( );
+        list.add< AStruct >( ).value = 17;
         mv.close( );
     }
 
@@ -183,7 +184,7 @@ Flatdata Archive: SimpleResources
 Resource                             Optional  Loaded    Details
 ================================================================================
 object_resource                      NO        YES       Structure of size 1
-vector_resource                      NO        YES       Array of size: 1 in 1 bytes
+vector_resource                      NO        YES       Array of size: 11 in 11 bytes
 multivector_resource                 NO        YES       MultiArray of size 1, with index: Array of size: 2 in 10 bytes
 raw_data_resource                    NO        YES       Raw data of size 8
 optional_resource                    YES       YES       Raw data of size 3
@@ -198,8 +199,8 @@ TEST( GeneratedArchiveTest, describe_ouputs_resources_failed_to_load )
     {
         auto builder = SimpleResourcesBuilder::open( storage );
         EXPECT_TRUE( builder.is_open( ) );
-        flatdata::Vector< AStruct > astruct( 1 );
-        builder.set_object_resource( astruct.front( ) );
+        flatdata::Struct< AStruct > astruct;
+        builder.set_object_resource( *astruct );
         builder.set_optional_resource( flatdata::MemoryDescriptor( "opt", 3 ) );
     }
 
@@ -297,16 +298,16 @@ TEST( GeneratedArchiveTest, archive_resources_can_be_created )
     auto outer_builder = OuterArchiveBuilder::open( storage );
     EXPECT_TRUE( outer_builder );
 
-    flatdata::Vector< AStruct > s( 1 );
-    s.front( ).value = 17u;
-    outer_builder.set_outer1( s.front( ) );
-    outer_builder.set_outer2( s.front( ) );
+    flatdata::Struct< AStruct > s;
+    ( *s ).value = 17u;
+    outer_builder.set_outer1( *s );
+    outer_builder.set_outer2( *s );
 
     {
         auto inner_builder = outer_builder.inner( );
-        flatdata::Vector< AStruct > s( 1 );
-        s.front( ).value = 42u;
-        inner_builder.set_inner( s.front( ) );
+        flatdata::Struct< AStruct > s;
+        ( *s ).value = 42u;
+        inner_builder.set_inner( *s );
     }
 
     auto outer = OuterArchive::open( storage );
@@ -323,10 +324,10 @@ TEST( GeneratedArchiveTest, archive_resources_wont_load_if_missing )
     auto outer_builder = OuterArchiveBuilder::open( storage );
     EXPECT_TRUE( outer_builder );
 
-    flatdata::Vector< AStruct > o( 1 );
-    o.front( ).value = 17u;
-    outer_builder.set_outer1( o.front( ) );
-    outer_builder.set_outer2( o.front( ) );
+    flatdata::Struct< AStruct > o;
+    ( *o ).value = 17u;
+    outer_builder.set_outer1( *o );
+    outer_builder.set_outer2( *o );
 
     auto outer = OuterArchive::open( storage );
     ASSERT_FALSE( outer.is_open( ) );
@@ -340,21 +341,21 @@ TEST( GeneratedArchiveTest, only_archive_resources_can_be_incrementally_added_if
         auto outer_builder = OuterArchiveBuilder::open( storage );
         EXPECT_TRUE( outer_builder );
 
-        flatdata::Vector< AStruct > o( 1 );
-        o.front( ).value = 17u;
-        outer_builder.set_outer1( o.front( ) );
+        flatdata::Struct< AStruct > o;
+        ( *o ).value = 17u;
+        outer_builder.set_outer1( *o );
     }
 
     auto outer_builder = OuterArchiveBuilder::open( storage );
     ASSERT_TRUE( outer_builder.is_open( ) );
-    flatdata::Vector< AStruct > o( 1 );
-    ASSERT_THROW( outer_builder.set_outer1( o.front( ) ), std::runtime_error );
-    ASSERT_THROW( outer_builder.set_outer2( o.front( ) ), std::runtime_error );
+    flatdata::Struct< AStruct > o;
+    ASSERT_THROW( outer_builder.set_outer1( *o ), std::runtime_error );
+    ASSERT_THROW( outer_builder.set_outer2( *o ), std::runtime_error );
 
     auto inner_builder = outer_builder.inner( );
-    flatdata::Vector< AStruct > i( 1 );
-    i.front( ).value = 42u;
-    inner_builder.set_inner( i.front( ) );
+    flatdata::Struct< AStruct > i;
+    ( *i ).value = 42u;
+    inner_builder.set_inner( *i );
 
     auto outer = OuterArchive::open( storage );
     EXPECT_FALSE( outer.is_open( ) );
@@ -370,9 +371,9 @@ TEST( GeneratedArchiveTest, optional_archive_resources_behave_as_others )
         auto outer_builder = OuterWithOptionalBuilder::open( storage );
         EXPECT_TRUE( outer_builder );
 
-        flatdata::Vector< AStruct > o( 1 );
-        o.front( ).value = 17u;
-        outer_builder.set_outer( o.front( ) );
+        flatdata::Struct< AStruct > o;
+        ( *o ).value = 17u;
+        outer_builder.set_outer( *o );
     }
 
     {
@@ -386,9 +387,9 @@ TEST( GeneratedArchiveTest, optional_archive_resources_behave_as_others )
     ASSERT_TRUE( outer_builder.is_open( ) );
 
     auto inner_builder = outer_builder.archive_resource( );
-    flatdata::Vector< AStruct > i( 1 );
-    i.front( ).value = 42u;
-    inner_builder.set_inner( i.front( ) );
+    flatdata::Struct< AStruct > i;
+    ( *i ).value = 42u;
+    inner_builder.set_inner( *i );
 
     auto outer = OuterWithOptional::open( storage );
     EXPECT_TRUE( outer.is_open( ) );
@@ -400,23 +401,23 @@ TEST( GeneratedArchiveTest, optional_archive_resources_behave_as_others )
 TEST( GeneratedArchiveTest, nested_archives_can_be_created_incrementally )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
-    flatdata::Vector< AStruct > o( 1 );
-    o.front( ).value = 17u;
+    flatdata::Struct< AStruct > o;
+    ( *o ).value = 17u;
     {
         auto outermost_builder = OutermostArchiveBuilder::open( storage );
-        outermost_builder.set_outermost( o.front( ) );
+        outermost_builder.set_outermost( *o );
         auto outer_builder = outermost_builder.outer( );
-        outer_builder.set_outer1( o.front( ) );
+        outer_builder.set_outer1( *o );
     }
 
     auto outermost_builder = OutermostArchiveBuilder::open( storage );
-    ASSERT_THROW( outermost_builder.set_outermost( o.front( ) ), std::runtime_error );
+    ASSERT_THROW( outermost_builder.set_outermost( *o ), std::runtime_error );
     auto outer_builder = outermost_builder.outer( );
-    ASSERT_THROW( outer_builder.set_outer1( o.front( ) ), std::runtime_error );
-    ASSERT_THROW( outer_builder.set_outer2( o.front( ) ), std::runtime_error );
+    ASSERT_THROW( outer_builder.set_outer1( *o ), std::runtime_error );
+    ASSERT_THROW( outer_builder.set_outer2( *o ), std::runtime_error );
 
     auto inner_builder = outer_builder.inner( );
-    inner_builder.set_inner( o.front( ) );
+    inner_builder.set_inner( *o );
 }
 
 }  // test
