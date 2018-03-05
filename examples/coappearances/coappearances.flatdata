@@ -54,7 +54,7 @@ struct Character {
  *
  * count - multiplicity of the coappearance.
  * first_chapter_ref - a reference to the first chapter in which characters appear. How to get the
- * full range of chapters is described in `coappearances.cpp:read`.
+ * full range of chapters is described in 'coappearances.cpp:read'.
  */
 struct Coappearance {
     a_ref : u32 : 16;
@@ -127,7 +127,7 @@ archive Graph {
 
     chapters : vector< Chapter >;
 
-    // All strings contained in the data separated by `\0`.
+    // All strings contained in the data separated by '\0'.
     strings: raw_data;
 }
 } // namespace graph
