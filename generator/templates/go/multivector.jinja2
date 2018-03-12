@@ -1,0 +1,93 @@
+{% import "go/vector.jinja2" as go_vector %}
+{% macro generate(tree, archive, resource) %}
+{{ go_vector.generate(tree, archive, resource) }}
+
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector struct {
+    descriptor flatdata.MemoryDescriptor
+    index      *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector
+	types      map[int]interface{}
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Close() {
+    v.descriptor.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) GetSize() int {
+	return v.index.GetSize()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) GetSizeInBytes() int {
+    return v.descriptor.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) getBucketOffset(i int) int {
+    if i == v.index.GetSize() {
+		return v.descriptor.Len() - int(flatdataPaddingSizeInBytes)
+	} 
+	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBytes)
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) Get(i int) []interface{} {
+    offset := v.getBucketOffset(i)
+	nextOffset := v.getBucketOffset(i + 1)
+	var result []interface{}
+
+	for offset < nextOffset {
+	    elementType := flatdata.Read(v.descriptor, uint(offset*8), 8, false)
+		offset++
+		abstractElement, ok := v.types[elementType]
+		if !ok {
+			//TODO: How to process case, then type of element is not found?
+			log.Println("Can't get type of element")
+		}
+    
+		switch element := abstractElement.(type) {
+		{% for entry in resource|get_types_for_multivector(tree) %}
+		{% if loop.index0 >= 1%}
+		case *{{ entry|to_go_case }}:
+			element.position = offset
+			result = append(result, element)
+			offset += {{ entry|to_go_case(false) }}SizeInBytes
+		{% endif %}
+		{% endfor %}
+		default:
+			//TODO: How to react in case if it's impossible to cast?
+			log.Println("Can't cast element. Type is unknown...")
+		}
+	}
+	
+	return result
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString(fmt.Sprintf(`{"container_type": "Multivector", "size": %d, "size_in_bytes": %d, "element_types": [`, v.GetSize(), v.GetSizeInBytes()))
+    {% for struct in resource.referenced_structures %}
+    {% if loop.index0 >= 1 %}
+    buffer.WriteString(`{"name": "{{ resource.referenced_structures[loop.index0].node.name|to_go_case }}", "attributes": [`)
+    {% for field in resource.referenced_structures[loop.index0].node.fields %}
+    buffer.WriteString(`{"name": "{{ field.name }}", "offset": {{ field.offset }}, "width": {{ field.type.width }}, "is_signed": {{ field.type.is_signed|lower }}}`)
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %}  
+    {% endfor %}
+    buffer.WriteString("]}")
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %}  
+    {% endif %}
+    {% endfor %}
+    buffer.WriteString(`], "index_type": {"name": "{{ resource.referenced_structures[0].node.name|to_go_case }}", "attributes": [`)
+    {% for field in resource.referenced_structures[0].node.fields %}
+    buffer.WriteString(`{"name": "{{ field.name }}", "offset": {{ field.offset }}, "width": {{ field.type.width }}, "is_signed": {{ field.type.is_signed|lower }}}`)
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %} 
+    {% endfor %}
+    buffer.WriteString("]}}")
+	return buffer.String()
+}
+{% endmacro %}
