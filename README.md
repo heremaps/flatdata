@@ -1,6 +1,6 @@
 # flatdata [![Build Status](https://travis-ci.org/heremaps/flatdata.svg?branch=master)](https://travis-ci.org/heremaps/flatdata)
 
-Flatdata is a library providing data structures for convenient creation, storage and access of packed memory-mappable structures with minimal overhead. Library consists of schema language, code generator for C++ and Python, and target language libraries.
+Flatdata is a library providing data structures for convenient creation, storage and access of packed memory-mappable structures with minimal overhead. Library consists of schema language, code generator for C++, Python and Go, and target language libraries.
 
 * [Why Flatdata](#why-flatdata)
 * [Building Flatdata](#building-flatdata)
@@ -106,7 +106,9 @@ Library is organized as follows:
    * `flatdata-cpp` includes C++ library sources. Client application needs to include and
                       link against this library.
    * `flatdata-py` includes python library sources. Client application needs to have this
-                     folder in PYTHON_PATH.
+                     folder in PYTHON_PATH. 
+   * `flatdata-go`  includes Go library sources. Client application needs to have `flatdata-go/flatdata`
+                     folder in GOPATH.
    * `tools` contains tools to work with flatdata archives.
        * `tools/inspect_flatdata.py` provides interactive python interpreter loaded with a specified
            archive.
@@ -119,6 +121,7 @@ At the moment following languages are supported:
        Use `py` generator.
    * *Dot*. Used to generate diagrams of the schema. Normally, it is up to date.
        Use `dot` generator.
+   * *Go*. Beta implementation for reader. No guarantees of backward compatibility at the moment! Use `go` generator.
 
 For more details see the [documentation](docs/src/index.rst).
 
