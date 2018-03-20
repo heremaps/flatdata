@@ -119,10 +119,7 @@ impl Default for MemoryDescriptor {
 
 impl MemoryDescriptor {
     pub fn new(ptr: *const u8, size: usize) -> MemoryDescriptor {
-        MemoryDescriptor {
-            ptr: ptr,
-            size: size,
-        }
+        MemoryDescriptor { ptr, size }
     }
 
     pub fn describe(&self) -> String {

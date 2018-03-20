@@ -22,13 +22,17 @@ where
             slice::from_raw_parts(data, mem_descr.size_in_bytes())
         };
         Self {
-            data: data,
+            data,
             len: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
         }
     }
 
     pub fn len(&self) -> usize {
         self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
     }
 
     pub fn iter(&'a self) -> ArrayViewIter<T> {

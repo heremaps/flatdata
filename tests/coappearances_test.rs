@@ -96,7 +96,7 @@ fn read_and_validate_coappearances() {
     let data: Vec<_> = vertices_data.at(0).collect();
     assert_eq!(data.len(), 1);
     match data[0] {
-        coappearances::VerticesData::UnaryRelation(ref data) => {
+        coappearances::VerticesData::UnaryRelation(data) => {
             assert_eq!(substring(strings, data.kind_ref()), "maid");
             assert_eq!(
                 substring(strings, vertices[data.to_ref() as usize].name_ref()),
@@ -109,7 +109,7 @@ fn read_and_validate_coappearances() {
     let data: Vec<_> = vertices_data.at(1).collect();
     assert_eq!(data.len(), 1);
     match data[0] {
-        coappearances::VerticesData::UnaryRelation(ref data) => {
+        coappearances::VerticesData::UnaryRelation(data) => {
             assert_eq!(substring(strings, data.kind_ref()), "housekeeper");
             assert_eq!(
                 substring(strings, vertices[data.to_ref() as usize].name_ref()),
@@ -122,7 +122,7 @@ fn read_and_validate_coappearances() {
     let data: Vec<_> = vertices_data.at(vertices_data.len() - 1).collect();
     assert_eq!(data.len(), 1);
     match data[0] {
-        coappearances::VerticesData::UnaryRelation(ref data) => {
+        coappearances::VerticesData::UnaryRelation(data) => {
             assert_eq!(substring(strings, data.kind_ref()), "gambling friend");
             assert_eq!(
                 substring(strings, vertices[data.to_ref() as usize].name_ref()),

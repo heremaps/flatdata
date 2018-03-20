@@ -283,12 +283,12 @@ macro_rules! define_archive {
                 }
                 Ok(Self {
                     _storage: storage
-                    $(,$struct_resource: $struct_resource)*
-                    $(,$vector_resource: $vector_resource)*
+                    $(,$struct_resource)*
+                    $(,$vector_resource)*
                     $(,$multivector_resource: (
                         $multivector_resource_index,
                         $multivector_resource))*
-                    $(,$raw_data_resource: $raw_data_resource)*
+                    $(,$raw_data_resource)*
                 })
             }
         }

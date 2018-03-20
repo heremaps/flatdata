@@ -19,7 +19,7 @@ where
         let mut data = Vec::with_capacity(size);
         data.resize(size, 0 as bytewriter::StreamType);
         Self {
-            data: data,
+            data,
             _phantom: marker::PhantomData,
         }
     }
@@ -30,6 +30,10 @@ where
 
     pub fn len(&self) -> usize {
         self.size_in_bytes() / T::SIZE_IN_BYTES
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn reserve(&mut self, len: usize) {

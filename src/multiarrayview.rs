@@ -22,7 +22,7 @@ where
 {
     pub fn new(index: ArrayView<'a, Idx>, data_mem_descr: &MemoryDescriptor) -> Self {
         Self {
-            index: index,
+            index,
             data: data_mem_descr.data(),
             _phantom: marker::PhantomData,
         }
@@ -41,6 +41,10 @@ where
     pub fn len(&self) -> usize {
         // last index element is a sentinel
         self.index.len() - 1
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn iter(&'a self) -> MultiArrayViewIter<Idx, Ts> {

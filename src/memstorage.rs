@@ -29,7 +29,7 @@ impl MemoryResourceStorage {
     pub fn new(path: path::PathBuf) -> Self {
         Self {
             storage: MemoryStorage::new(),
-            path: path,
+            path,
         }
     }
 }

@@ -23,10 +23,10 @@ macro_rules! num_bytes {
 }
 
 /// T - integer type of the value to write (signed or unsigned)
-/// value - value to write
-/// data - slice for writing to
-/// offset - offset in bits in the slice, where the value should be written.
-/// num_bits - how many bits of the value to write.
+/// `value` - value to write
+/// `data` - slice for writing to
+/// `offset` - offset in bits in the slice, where the value should be written.
+/// `num_bits` - how many bits of the value to write.
 #[macro_export]
 macro_rules! write_bytes {
     ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{

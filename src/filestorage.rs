@@ -45,7 +45,7 @@ impl FileResourceStorage {
     pub fn new(path: path::PathBuf) -> Self {
         Self {
             storage: MemoryMappedFileStorage::new(),
-            path: path,
+            path,
         }
     }
 
