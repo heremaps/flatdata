@@ -1,10 +1,15 @@
 use archive::Struct;
+use arrayview::ArrayView;
+use storage::MemoryDescriptor;
+
 use memory;
 use bytewriter;
 use bytereader;
 
 use std::marker;
+use std::ops::{Index, IndexMut};
 
+#[derive(Debug)]
 pub struct Vector<T> {
     data: Vec<bytewriter::StreamType>,
     _phantom: marker::PhantomData<T>,
@@ -45,13 +50,31 @@ where
         len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
     }
 
-    pub fn at(&self, idx: usize) -> &T {
-        unsafe { &*(&self.data[idx * T::SIZE_IN_BYTES] as bytereader::StreamType as *const T) }
+    pub fn as_view(&self) -> ArrayView<T> {
+        ArrayView::new(&MemoryDescriptor::new(&self.data[0], self.data.len()))
     }
 
-    pub fn at_mut(&mut self, idx: usize) -> &mut T {
+    pub fn grow(&mut self) -> &mut T {
+        let old_size = self.data.len();
+        self.data
+            .resize(old_size + T::SIZE_IN_BYTES, 0 as bytewriter::StreamType);
+        let last_index = self.len() - 1;
+        &mut self[last_index]
+    }
+}
+
+impl<T: Struct> Index<usize> for Vector<T> {
+    type Output = T;
+    fn index(&self, index: usize) -> &Self::Output {
+        unsafe { &*(&self.data[index * T::SIZE_IN_BYTES] as bytereader::StreamType as *const T) }
+    }
+}
+
+impl<T: Struct> IndexMut<usize> for Vector<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         unsafe {
-            &mut *(&mut self.data[idx * T::SIZE_IN_BYTES] as *mut bytewriter::StreamType as *mut T)
+            &mut *(&mut self.data[index * T::SIZE_IN_BYTES] as *mut bytewriter::StreamType
+                as *mut T)
         }
     }
 }
@@ -62,6 +85,7 @@ mod tests {
     use std::slice;
 
     #[derive(Debug, PartialEq)]
+    #[repr(C)]
     struct A {
         first_byte: u8,
     }
@@ -72,7 +96,7 @@ mod tests {
         }
 
         pub fn y(&self) -> u32 {
-            read_bytes!(u32, &self.first_byte, 16, 32)
+            read_bytes!(u32, &self.first_byte, 16, 16)
         }
 
         pub fn set_x(&mut self, value: u32) {
@@ -84,7 +108,7 @@ mod tests {
         pub fn set_y(&mut self, value: u32) {
             let buffer =
                 unsafe { slice::from_raw_parts_mut(&mut self.first_byte, Self::SIZE_IN_BYTES) };
-            write_bytes!(u32; value, buffer, 16, 32);
+            write_bytes!(u32; value, buffer, 16, 16);
         }
     }
 
@@ -94,17 +118,74 @@ mod tests {
     }
 
     #[test]
-    fn test_vector_mut_at() {
+    fn test_vector_index() {
+        let mut v: Vector<A> = Vector::new(2);
+        assert_eq!(v.len(), 2);
+        {
+            let a = &mut v[0];
+            a.set_x(1);
+            a.set_y(2);
+            assert_eq!(a.x(), 1);
+            assert_eq!(a.y(), 2);
+        }
+        {
+            let b = &mut v[1];
+            b.set_x(3);
+            b.set_y(4);
+            assert_eq!(b.x(), 3);
+            assert_eq!(b.y(), 4);
+        }
+        let a = &v[0];
+        assert_eq!(a.x(), 1);
+        assert_eq!(a.y(), 2);
+        let b = &v[1];
+        assert_eq!(b.x(), 3);
+        assert_eq!(b.y(), 4);
+    }
+
+    #[test]
+    fn test_vector_as_view() {
         let mut v: Vector<A> = Vector::new(1);
         {
-            let a = v.at_mut(0);
+            let a = &mut v[0];
             a.set_x(1);
             assert_eq!(a.x(), 1);
             a.set_y(2);
             assert_eq!(a.y(), 2);
         }
-        let a = v.at(0);
+        let view = v.as_view();
+        let a = &view[0];
         assert_eq!(a.x(), 1);
         assert_eq!(a.y(), 2);
+    }
+
+    #[test]
+    fn test_vector_grow() {
+        let mut v: Vector<A> = Vector::new(1);
+        {
+            let a = &mut v[0];
+            a.set_x(1);
+            a.set_y(2);
+            assert_eq!(a.x(), 1);
+            assert_eq!(a.y(), 2);
+        }
+        {
+            let b = v.grow();
+            b.set_x(3);
+            b.set_y(4);
+            assert_eq!(b.x(), 3);
+            assert_eq!(b.y(), 4);
+        }
+        {
+            assert_eq!(v.len(), 2);
+            let a = &v[0];
+            assert_eq!(a.x(), 1);
+            assert_eq!(a.y(), 2);
+            let b = &v[1];
+            assert_eq!(b.x(), 3);
+            assert_eq!(b.y(), 4);
+        }
+        v.grow();
+        assert_eq!(v.len(), 3);
     }
 }
