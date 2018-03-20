@@ -9,18 +9,18 @@ use std::marker;
 
 /// Ts is a variadic type describing the types of an element in `MultiArrayView`.
 #[derive(Clone)]
-pub struct MultiArrayView<Idx, Ts> {
-    index: ArrayView<Idx>,
+pub struct MultiArrayView<'a, Idx: 'a, Ts> {
+    index: ArrayView<'a, Idx>,
     data: StreamType,
     _phantom: marker::PhantomData<Ts>,
 }
 
-impl<'a, Idx, Ts> MultiArrayView<Idx, Ts>
+impl<'a, Idx, Ts> MultiArrayView<'a, Idx, Ts>
 where
-    Idx: Index<'a>,
+    Idx: Index,
     Ts: VariadicStruct,
 {
-    pub fn new(index: ArrayView<Idx>, data_mem_descr: &MemoryDescriptor) -> Self {
+    pub fn new(index: ArrayView<'a, Idx>, data_mem_descr: &MemoryDescriptor) -> Self {
         Self {
             index: index,
             data: data_mem_descr.data(),
@@ -29,8 +29,8 @@ where
     }
 
     pub fn at(&self, idx: usize) -> MultiArrayViewItemIter<Ts> {
-        let start = self.index.at(idx).value();
-        let end = self.index.at(idx + 1).value();
+        let start = self.index[idx].value();
+        let end = self.index[idx + 1].value();
         MultiArrayViewItemIter {
             data: unsafe { self.data.offset(start as isize) },
             end: unsafe { self.data.offset(end as isize) },
@@ -75,9 +75,9 @@ impl<'a, Ts: 'a + VariadicStruct> iter::Iterator for MultiArrayViewItemIter<'a, 
     }
 }
 
-impl<'a, Idx, Ts> fmt::Debug for MultiArrayView<Idx, Ts>
+impl<'a, Idx, Ts> fmt::Debug for MultiArrayView<'a, Idx, Ts>
 where
-    Idx: Index<'a>,
+    Idx: Index,
     Ts: VariadicStruct,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -90,14 +90,12 @@ where
     }
 }
 
-pub struct MultiArrayViewIter<'a, Idx: 'a + Index<'a>, Ts: 'a + VariadicStruct> {
-    view: &'a MultiArrayView<Idx, Ts>,
+pub struct MultiArrayViewIter<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> {
+    view: &'a MultiArrayView<'a, Idx, Ts>,
     next_pos: usize,
 }
 
-impl<'a, Idx: Index<'a>, Ts: 'a + VariadicStruct> iter::Iterator
-    for MultiArrayViewIter<'a, Idx, Ts>
-{
+impl<'a, Idx: Index, Ts: 'a + VariadicStruct> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts> {
     type Item = MultiArrayViewItemIter<'a, Ts>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.next_pos < self.view.len() {
@@ -110,7 +108,7 @@ impl<'a, Idx: Index<'a>, Ts: 'a + VariadicStruct> iter::Iterator
     }
 }
 
-impl<'a, Idx: Index<'a>, Ts: VariadicStruct> iter::ExactSizeIterator
+impl<'a, Idx: Index, Ts: VariadicStruct> iter::ExactSizeIterator
     for MultiArrayViewIter<'a, Idx, Ts>
 {
     fn len(&self) -> usize {

@@ -1,38 +1,34 @@
 use archive::Struct;
-use bytereader::StreamType;
 use storage::MemoryDescriptor;
 
 use std::iter;
-use std::marker;
 use std::fmt;
+use std::slice;
+use std::ops::Index;
 
 #[derive(Clone)]
-pub struct ArrayView<T> {
-    data: StreamType,
+pub struct ArrayView<'a, T: 'a> {
+    data: &'a [T],
     len: usize,
-    _phantom: marker::PhantomData<T>,
 }
 
-impl<'a, T> ArrayView<T>
+impl<'a, T> ArrayView<'a, T>
 where
-    T: Struct<'a>,
+    T: Struct,
 {
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
+        let data = unsafe {
+            let data = &*(mem_descr.data() as *const T);
+            slice::from_raw_parts(data, mem_descr.size_in_bytes())
+        };
         Self {
-            data: mem_descr.data(),
+            data: data,
             len: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
-            _phantom: marker::PhantomData,
         }
     }
 
     pub fn len(&self) -> usize {
         self.len
-    }
-
-    // Note: It is not possible to use std::ops::Index here, since Index::index has to return a
-    // ref, however we need to return a value.
-    pub fn at(&self, idx: usize) -> T {
-        T::from(unsafe { self.data.offset((idx * T::SIZE_IN_BYTES) as isize) })
     }
 
     pub fn iter(&'a self) -> ArrayViewIter<T> {
@@ -43,26 +39,38 @@ where
     }
 }
 
-impl<T> fmt::Debug for ArrayView<T> {
+impl<'a, T> Index<usize> for ArrayView<'a, T>
+where
+    T: Struct,
+{
+    type Output = T;
+    fn index(&self, index: usize) -> &Self::Output {
+        let pos = index * T::SIZE_IN_BYTES;
+        assert!(pos + T::SIZE_IN_BYTES <= self.data.len());
+        self.data.index(pos)
+    }
+}
+
+impl<'a, T> fmt::Debug for ArrayView<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "ArrayView {{ data: {:?}, len: {} }}",
-            self.data, self.len
+            &self.data[0] as *const T, self.len
         )
     }
 }
 
-pub struct ArrayViewIter<'a, T: 'a + Struct<'a>> {
-    view: &'a ArrayView<T>,
+pub struct ArrayViewIter<'a, T: 'a + Struct> {
+    view: &'a ArrayView<'a, T>,
     next_pos: usize,
 }
 
-impl<'a, T: Struct<'a>> iter::Iterator for ArrayViewIter<'a, T> {
-    type Item = T;
+impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
+    type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         if self.next_pos < self.view.len() {
-            let element = self.view.at(self.next_pos);
+            let element = &self.view[self.next_pos];
             self.next_pos += 1;
             Some(element)
         } else {
@@ -71,7 +79,7 @@ impl<'a, T: Struct<'a>> iter::Iterator for ArrayViewIter<'a, T> {
     }
 }
 
-impl<'a, T: Struct<'a>> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
+impl<'a, T: Struct> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
     fn len(&self) -> usize {
         self.view.len()
     }

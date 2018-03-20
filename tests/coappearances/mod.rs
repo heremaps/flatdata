@@ -234,7 +234,6 @@ archive Graph {
 
 define_struct!(
     Character,
-    MutCharacter,
     ::coappearances::schema::structs::CHARACTER,
     4,
     (name_ref, set_name_ref, u32, 0, 32)
@@ -242,7 +241,6 @@ define_struct!(
 
 define_struct!(
     Meta,
-    MutMeta,
     ::coappearances::schema::structs::META,
     8,
     (title_ref, set_title_ref, u32, 0, 32),
@@ -251,7 +249,6 @@ define_struct!(
 
 define_struct!(
     Coappearance,
-    MutCoappearance,
     ::coappearances::schema::structs::COAPPEARANCE,
     8,
     (a_ref, set_a_ref, u32, 0, 16),
@@ -262,7 +259,6 @@ define_struct!(
 
 define_struct!(
     Chapter,
-    MutChapter,
     ::coappearances::schema::structs::CHAPTER,
     2,
     (major, set_major, u8, 0, 4),
@@ -272,7 +268,6 @@ define_struct!(
 // TODO: Resolve ref clashing with keywords of Rust.
 define_struct!(
     Nickname,
-    MutNickname,
     ::coappearances::schema::structs::NICKNAME,
     4,
     (ref_, set_ref_, u32, 0, 32)
@@ -280,7 +275,6 @@ define_struct!(
 
 define_struct!(
     Description,
-    MutDescription,
     ::coappearances::schema::structs::DESCRIPTION,
     4,
     (ref_, set_ref_, u32, 0, 32)
@@ -288,7 +282,6 @@ define_struct!(
 
 define_struct!(
     UnaryRelation,
-    MutUnaryRelation,
     ::coappearances::schema::structs::UNARYRELATION,
     6,
     (kind_ref, set_kind_ref, u32, 0, 32),
@@ -297,7 +290,6 @@ define_struct!(
 
 define_struct!(
     BinaryRelation,
-    MutBinaryRelation,
     ::coappearances::schema::structs::BINARYRELATION,
     8,
     (kind_ref, set_kind_ref, u32, 0, 32),
@@ -313,7 +305,6 @@ define_variadic_struct!(VerticesData, IndexType32,
 
 define_index!(
     IndexType32,
-    MutIndexType32,
     ::coappearances::schema::structs::INDEXTYPE32,
     4,
     32
@@ -328,7 +319,8 @@ define_archive!(Graph, ::coappearances::schema::resources::GRAPH;
     (chapters, Chapter, ::coappearances::schema::resources::CHAPTERS);
     // multivector resources
     (vertices_data, VerticesData, ::coappearances::schema::resources::VERTICES_DATA,
-        vertices_data_index, internal::IndexType32, ::coappearances::schema::resources::VERTICES_DATA_INDEX);
+        vertices_data_index, internal::IndexType32,
+        ::coappearances::schema::resources::VERTICES_DATA_INDEX);
     // raw data resources
     (strings, ::coappearances::schema::resources::STRINGS)
 );

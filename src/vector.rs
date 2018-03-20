@@ -10,15 +10,14 @@ pub struct Vector<T> {
     _phantom: marker::PhantomData<T>,
 }
 
-impl<'a, T> Vector<T>
+impl<T> Vector<T>
 where
-    T: Struct<'a>,
+    T: Struct,
 {
     pub fn new(len: usize) -> Self {
         let size = Self::size(len);
         let mut data = Vec::with_capacity(size);
-        data.resize(Self::size(len), 0 as bytewriter::StreamType);
-
+        data.resize(size, 0 as bytewriter::StreamType);
         Self {
             data: data,
             _phantom: marker::PhantomData,
@@ -37,95 +36,64 @@ where
         self.data.reserve(Self::size(len))
     }
 
+    /// Calculate size in bytes (with padding) needed to store len-many elements.
     fn size(len: usize) -> usize {
         len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
     }
 
-    pub fn at(&self, idx: usize) -> T {
-        let addr = &self.data[idx * T::SIZE_IN_BYTES] as bytereader::StreamType;
-        T::from(addr)
+    pub fn at(&self, idx: usize) -> &T {
+        unsafe { &*(&self.data[idx * T::SIZE_IN_BYTES] as bytereader::StreamType as *const T) }
     }
 
-    pub fn at_mut(&'a mut self, idx: usize) -> T::Mutator {
-        let start = idx * T::SIZE_IN_BYTES;
-        let end = start + T::SIZE_IN_BYTES;
-        T::Mutator::from(&mut self.data[start..end])
+    pub fn at_mut(&mut self, idx: usize) -> &mut T {
+        unsafe {
+            &mut *(&mut self.data[idx * T::SIZE_IN_BYTES] as *mut bytewriter::StreamType as *mut T)
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::MutStruct;
-    use std::convert;
+    use std::slice;
 
-    #[derive(Debug, Clone, PartialEq)]
+    #[derive(Debug, PartialEq)]
     struct A {
-        data: bytereader::StreamType,
+        first_byte: u8,
     }
 
     impl A {
         pub fn x(&self) -> u32 {
-            read_bytes!(u32, self.data, 0, 16)
+            read_bytes!(u32, &self.first_byte, 0, 16)
         }
 
         pub fn y(&self) -> u32 {
-            read_bytes!(u32, self.data, 16, 32)
-        }
-    }
-
-    impl<'a> Struct<'a> for A {
-        const SCHEMA: &'static str = "struct A { }";
-        const SIZE_IN_BYTES: usize = 4;
-        type Mutator = MutA<'a>;
-    }
-
-    impl convert::From<bytereader::StreamType> for A {
-        fn from(data: bytereader::StreamType) -> A {
-            Self { data: data }
-        }
-    }
-
-    #[derive(Debug, PartialEq)]
-    struct MutA<'a> {
-        data: &'a mut [bytewriter::StreamType],
-    }
-
-    impl<'a> MutStruct<'a> for MutA<'a> {}
-
-    impl<'a> convert::From<&'a mut [bytewriter::StreamType]> for MutA<'a> {
-        fn from(data: &'a mut [bytewriter::StreamType]) -> MutA<'a> {
-            Self { data: data }
-        }
-    }
-
-    impl<'a> MutA<'a> {
-        pub fn x(&self) -> u32 {
-            read_bytes!(u32, &self.data[0], 0, 16)
-        }
-
-        pub fn y(&self) -> u32 {
-            read_bytes!(u32, &self.data[0], 16, 32)
+            read_bytes!(u32, &self.first_byte, 16, 32)
         }
 
         pub fn set_x(&mut self, value: u32) {
-            write_bytes!(u32; value, self.data, 0, 16);
+            let buffer =
+                unsafe { slice::from_raw_parts_mut(&mut self.first_byte, Self::SIZE_IN_BYTES) };
+            write_bytes!(u32; value, buffer, 0, 16);
         }
 
         pub fn set_y(&mut self, value: u32) {
-            write_bytes!(u32; value, self.data, 16, 32);
+            let buffer =
+                unsafe { slice::from_raw_parts_mut(&mut self.first_byte, Self::SIZE_IN_BYTES) };
+            write_bytes!(u32; value, buffer, 16, 32);
         }
+    }
+
+    impl Struct for A {
+        const SCHEMA: &'static str = "struct A { }";
+        const SIZE_IN_BYTES: usize = 4;
     }
 
     #[test]
     fn test_vector_mut_at() {
         let mut v: Vector<A> = Vector::new(1);
-
-        // THIS should not be possible
-        let a = v.at(0);
-
         {
-            let mut a = v.at_mut(0);
+            let a = v.at_mut(0);
             a.set_x(1);
             assert_eq!(a.x(), 1);
             a.set_y(2);

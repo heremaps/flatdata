@@ -35,8 +35,8 @@ fn read_and_validate_coappearances() {
     // usually undesirable for huge data.
     let strings = str::from_utf8(g.strings()).expect("invalid utf8 string");
 
-    let meta = g.meta().clone();
-    assert_eq!(&meta, g.meta());
+    let meta = g.meta();
+    assert_eq!(meta, g.meta());
 
     assert_eq!(
         substring(strings, meta.title_ref()),
@@ -50,26 +50,26 @@ fn read_and_validate_coappearances() {
     let num_chapters = edges.iter().map(|e| e.count() as usize).sum();
     assert_eq!(g.chapters().len(), num_chapters);
 
-    assert_eq!(substring(strings, vertices.at(0).name_ref()), "Annushka");
+    assert_eq!(substring(strings, vertices[0].name_ref()), "Annushka");
     assert_eq!(
-        substring(strings, vertices.at(3).name_ref()),
+        substring(strings, vertices[3].name_ref()),
         "Anna Arkadyevna Karenina"
     );
 
-    let e0 = edges.at(0);
+    let e0 = &edges[0];
     assert_eq!(
-        substring(strings, vertices.at(e0.a_ref() as usize).name_ref()),
+        substring(strings, vertices[e0.a_ref() as usize].name_ref()),
         "Annushka"
     );
     assert_eq!(
-        substring(strings, vertices.at(e0.b_ref() as usize).name_ref()),
+        substring(strings, vertices[e0.b_ref() as usize].name_ref()),
         "Anna Arkadyevna Karenina"
     );
 
     let validate_chapters = |edge_ref, expected| {
-        let e = edges.at(edge_ref);
+        let e = &edges[edge_ref];
         let chapters_start = e.first_chapter_ref() as usize;
-        let chapters_end = edges.at(edge_ref + 1).first_chapter_ref() as usize;
+        let chapters_end = edges[edge_ref + 1].first_chapter_ref() as usize;
         let e_chapters: Vec<String> = g.chapters()
             .iter()
             .skip(chapters_start)
@@ -99,7 +99,7 @@ fn read_and_validate_coappearances() {
         coappearances::VerticesData::UnaryRelation(ref data) => {
             assert_eq!(substring(strings, data.kind_ref()), "maid");
             assert_eq!(
-                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
+                substring(strings, vertices[data.to_ref() as usize].name_ref()),
                 "Anna Arkadyevna Karenina"
             );
         }
@@ -112,7 +112,7 @@ fn read_and_validate_coappearances() {
         coappearances::VerticesData::UnaryRelation(ref data) => {
             assert_eq!(substring(strings, data.kind_ref()), "housekeeper");
             assert_eq!(
-                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
+                substring(strings, vertices[data.to_ref() as usize].name_ref()),
                 "Konstantin Dmitrievitch Levin"
             );
         }
@@ -125,7 +125,7 @@ fn read_and_validate_coappearances() {
         coappearances::VerticesData::UnaryRelation(ref data) => {
             assert_eq!(substring(strings, data.kind_ref()), "gambling friend");
             assert_eq!(
-                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
+                substring(strings, vertices[data.to_ref() as usize].name_ref()),
                 "Count Alexey Kirillovitch Vronsky"
             );
         }
