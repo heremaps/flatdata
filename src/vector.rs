@@ -1,10 +1,8 @@
 use archive::Struct;
 use arrayview::ArrayView;
 use storage::MemoryDescriptor;
-
 use memory;
 use bytewriter;
-use bytereader;
 
 use std::marker;
 use std::ops::{Index, IndexMut};
@@ -56,8 +54,7 @@ where
 
     pub fn grow(&mut self) -> &mut T {
         let old_size = self.data.len();
-        self.data
-            .resize(old_size + T::SIZE_IN_BYTES, 0 as bytewriter::StreamType);
+        self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
         let last_index = self.len() - 1;
         &mut self[last_index]
     }
@@ -66,16 +63,65 @@ where
 impl<T: Struct> Index<usize> for Vector<T> {
     type Output = T;
     fn index(&self, index: usize) -> &Self::Output {
-        unsafe { &*(&self.data[index * T::SIZE_IN_BYTES] as bytereader::StreamType as *const T) }
+        unsafe { &*(&self.data[index * T::SIZE_IN_BYTES] as *const _ as *const T) }
     }
 }
 
 impl<T: Struct> IndexMut<usize> for Vector<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        unsafe {
-            &mut *(&mut self.data[index * T::SIZE_IN_BYTES] as *mut bytewriter::StreamType
-                as *mut T)
+        unsafe { &mut *(&mut self.data[index * T::SIZE_IN_BYTES] as *mut _ as *mut T) }
+    }
+}
+
+/// Vector which flushes its content when growing.
+///
+/// Useful for serialization of data which does not fit fully in memory.
+pub struct ExternalVector<T> {
+    data: Vec<u8>,
+    len: usize,
+    _phantom: marker::PhantomData<T>,
+}
+
+impl<T: Struct> ExternalVector<T> {
+    // TODO: Provide something to write into here!
+    pub fn new() -> Self {
+        let mut data = Vec::with_capacity(memory::PADDING_SIZE);
+        data.resize(memory::PADDING_SIZE, 0);
+        Self {
+            data,
+            len: 0,
+            _phantom: marker::PhantomData,
         }
+    }
+
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn grow(&mut self) -> &mut T {
+        if self.data.len() > 1024 * 1024 * 32 {
+            self.flush();
+        }
+        let old_size = self.data.len();
+        self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
+        self.len += 1;
+        unsafe { &mut *(&mut self.data[old_size - memory::PADDING_SIZE] as *mut _ as *mut T) }
+    }
+
+    fn flush(&mut self) {
+        // TODO: Implement writing into storage
+        self.data.resize(0, 0);
+        self.data.resize(memory::PADDING_SIZE, 0);
+    }
+
+    pub fn close(&mut self) {
+        self.flush();
+        // TODO: Close the resource we are writing into.
+        unimplemented!();
     }
 }
 
