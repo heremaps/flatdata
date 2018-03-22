@@ -8,7 +8,7 @@ use std::str;
 use std::env;
 use std::fs;
 
-use flatdata::Archive;
+use flatdata::{Archive, ArchiveBuilder};
 
 pub mod coappearances;
 
@@ -137,31 +137,36 @@ fn read_and_validate_coappearances() {
 
 #[test]
 fn read_write_coappearances() {
+    // open for reading
+    let source_archive_path = path::PathBuf::from("tests/coappearances/karenina.archive");
     let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
-        path::PathBuf::from("tests/coappearances/karenina.archive"),
+        source_archive_path,
     )));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
 
-    use flatdata::ArchiveBuilder;
-
+    // open for writing
     let archive_path = env::temp_dir().join("flatdata-test/karenina.archive");
     println!("Will create archive in: {}", archive_path.to_str().unwrap());
-
     if archive_path.exists() {
         fs::remove_dir_all(&archive_path).expect("could not remove already existing archive");
     }
     fs::create_dir_all(&archive_path).expect("could not create archive dir");
-
     let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
-        archive_path,
+        archive_path.clone(),
     )));
     let mut gb = coappearances::GraphBuilder::new(storage).expect("could not create archive");
 
-    // copy vertices
-    let mut vertices = gb.start_vertices().expect("could not create vertices");
+    // copy data
+    let mut vertices = gb.start_vertices().expect("start_vertices failed");
     for v in g.vertices().iter() {
         let w = vertices.grow().expect("grow failed");
         w.fill_from(v);
     }
     vertices.close().expect("close failed");
+
+    let mut edges = flatdata::Vector::<coappearances::Coappearance>::new(0);
+    for e in g.edges().iter() {
+        edges.grow().fill_from(e);
+    }
+    gb.set_edges(&edges).expect("set_edges failed");
 }

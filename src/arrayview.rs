@@ -69,6 +69,12 @@ impl<'a, T> fmt::Debug for ArrayView<'a, T> {
     }
 }
 
+impl<'a, T: Struct> AsRef<[u8]> for ArrayView<'a, T> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
 pub struct ArrayViewIter<'a, T: 'a + Struct> {
     view: &'a ArrayView<'a, T>,
     next_pos: usize,

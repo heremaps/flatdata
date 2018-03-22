@@ -55,6 +55,10 @@ where
         ArrayView::new(&MemoryDescriptor::new(&self.data[0], self.data.len()))
     }
 
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.data[..self.size_in_bytes()]
+    }
+
     pub fn grow(&mut self) -> &mut T {
         let old_size = self.data.len();
         self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
@@ -73,6 +77,12 @@ impl<T: Struct> Index<usize> for Vector<T> {
 impl<T: Struct> IndexMut<usize> for Vector<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         unsafe { &mut *(&mut self.data[index * T::SIZE_IN_BYTES] as *mut _ as *mut T) }
+    }
+}
+
+impl<T: Struct> AsRef<[u8]> for Vector<T> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }
 
