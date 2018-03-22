@@ -16,11 +16,11 @@ Reader:
 
 Writer:
 
-* [ ] File resource storage
-* [ ] Memory resource storage
-* [ ] Struct writer
-* [ ] Vector
-* [ ] ExternalVector
+* [x] File resource storage
+* [x] Memory resource storage
+* [x] Struct writer
+* [x] Vector
+* [x] ExternalVector
 * [ ] MultiVector
 * [ ] Raw data writer
 * [ ] Subarchives
