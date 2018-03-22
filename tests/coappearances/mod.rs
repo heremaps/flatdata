@@ -354,7 +354,10 @@ impl GraphBuilder {
 
     // pub fn set_vertices(vertices: &::coappearances::ArrayView<::coappearances::Character>) {}
 
-    pub fn set_edges<T: AsRef<[u8]>>(&mut self, edges: &T) -> ::std::io::Result<()> {
+    pub fn set_edges(
+        &mut self,
+        edges: &::flatdata::ArrayView<::coappearances::Coappearance>,
+    ) -> ::std::io::Result<()> {
         self.storage.borrow_mut().write(
             "edges",
             ::coappearances::schema::resources::EDGES,

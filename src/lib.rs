@@ -15,6 +15,7 @@ mod memory;
 mod memstorage;
 mod multiarrayview;
 mod storage;
+mod structbuf;
 mod vector;
 
 pub use archive::*;
@@ -24,4 +25,5 @@ pub use filestorage::FileResourceStorage;
 pub use memstorage::MemoryResourceStorage;
 pub use multiarrayview::MultiArrayView;
 pub use storage::{create_external_vector, MemoryDescriptor, ResourceStorage};
+pub use structbuf::StructBuf;
 pub use vector::*;

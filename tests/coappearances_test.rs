@@ -157,6 +157,10 @@ fn read_write_coappearances() {
     let mut gb = coappearances::GraphBuilder::new(storage).expect("could not create archive");
 
     // copy data
+    let mut meta = flatdata::StructBuf::<coappearances::Meta>::new();
+    meta.fill_from(g.meta());
+    gb.set_meta(&meta).expect("set_meta failed");
+
     let mut vertices = gb.start_vertices().expect("start_vertices failed");
     for v in g.vertices().iter() {
         let w = vertices.grow().expect("grow failed");
@@ -168,5 +172,5 @@ fn read_write_coappearances() {
     for e in g.edges().iter() {
         edges.grow().fill_from(e);
     }
-    gb.set_edges(&edges).expect("set_edges failed");
+    gb.set_edges(&edges.as_view()).expect("set_edges failed");
 }
