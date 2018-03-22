@@ -23,5 +23,5 @@ pub use error::*;
 pub use filestorage::FileResourceStorage;
 pub use memstorage::MemoryResourceStorage;
 pub use multiarrayview::MultiArrayView;
-pub use storage::{MemoryDescriptor, ResourceStorage};
+pub use storage::{create_external_vector, MemoryDescriptor, ResourceStorage};
 pub use vector::*;

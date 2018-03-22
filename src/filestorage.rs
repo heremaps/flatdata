@@ -59,6 +59,10 @@ impl FileResourceStorage {
 }
 
 impl ResourceStorage for FileResourceStorage {
+    fn exists(&self, resource_name: &str) -> bool {
+        self.path.join(resource_name).exists()
+    }
+
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error> {
         let resource_path = self.path.join(resource_name);
         if !resource_path.exists() {
@@ -82,12 +86,6 @@ impl ResourceStorage for FileResourceStorage {
         resource_name: &str,
     ) -> Result<Rc<RefCell<Stream>>, io::Error> {
         let resource_path = self.path.join(resource_name);
-        if !resource_path.exists() {
-            return Err(io::Error::new(
-                io::ErrorKind::NotFound,
-                String::from(resource_path.to_str().unwrap_or(resource_name)),
-            ));
-        }
         let file = File::create(resource_path)?;
         Ok(Rc::new(RefCell::new(file)))
     }

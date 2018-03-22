@@ -41,6 +41,10 @@ where
             next_pos: 0,
         }
     }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        unsafe { slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len()) }
+    }
 }
 
 impl<'a, T> Index<usize> for ArrayView<'a, T>

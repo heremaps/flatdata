@@ -12,19 +12,6 @@ use memory::{SizeType, PADDING_SIZE};
 use vector::ExternalVector;
 use archive::Struct;
 
-fn diff(left: &str, right: &str) -> String {
-    use diff;
-    diff::lines(left, right)
-        .into_iter()
-        .map(|l| match l {
-            diff::Result::Left(l) => format!("-{}", l),
-            diff::Result::Both(l, _) => format!(" {}", l),
-            diff::Result::Right(r) => format!("+{}", r),
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
 pub trait Stream: Write + Seek {}
 
 /// Hierarchical Resource Storage
@@ -33,8 +20,6 @@ pub trait Stream: Write + Seek {}
 /// Manages schema for each resource and checks it on query.
 /// Resource storage is expected to provide read-write access to resources
 pub trait ResourceStorage {
-    // read interface
-
     fn read(
         &mut self,
         resource_name: &str,
@@ -43,23 +28,22 @@ pub trait ResourceStorage {
         self.read_and_check_schema(resource_name, schema)
     }
 
-    // fn write<T: convert::Into<MemoryDescriptor>>(
-    //     &mut self,
-    //     resource_name: &str,
-    //     schema: &str,
-    //     data: T,
-    // ) {
-    //     self.write_to_stream(resource_name, schema, data.into())
-    // }
-
-    // fn create_multi_vector<Index, Args>(resource_name: &str, schema: &str) -> MultiVector<Index, Args>;
+    fn write(&mut self, resource_name: &str, schema: &str, data: &[u8]) -> io::Result<()> {
+        // write data
+        let stream = self.create_output_stream(resource_name)?;
+        let mut mut_stream = stream.borrow_mut();
+        write_to_stream(data, mut_stream.deref_mut())?;
+        // write schema
+        let schema_name = format!("{}.schema", resource_name);
+        let stream = self.create_output_stream(&schema_name)?;
+        let mut mut_stream = stream.borrow_mut();
+        write_schema(schema, mut_stream.deref_mut())
+    }
 
     // virtual
+    fn exists(&self, resource_name: &str) -> bool;
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
-    fn create_output_stream(
-        &mut self,
-        resource_name: &str,
-    ) -> Result<Rc<RefCell<Stream>>, io::Error>;
+    fn create_output_stream(&mut self, resource_name: &str) -> io::Result<Rc<RefCell<Stream>>>;
 
     //
     // Impl Helper
@@ -103,34 +87,23 @@ pub trait ResourceStorage {
             size,
         ))
     }
-
-    // fn write_to_stream<T>(&mut self, resource_name: &str, schema: &str, data: T) {
-    //     let stream = self.create_output_stream;
-    //     stream.write();
-    // }
 }
+
+// resource factory methods
 
 pub fn create_external_vector<T: Struct>(
     storage: &mut ResourceStorage,
     resource_name: &str,
     schema: &str,
-) -> Result<ExternalVector<T>, ResourceStorageError> {
+) -> io::Result<ExternalVector<T>> {
     // write schema
     let schema_name = format!("{}.schema", resource_name);
-    let stream = storage
-        .create_output_stream(&schema_name)
-        .map_err(|e| ResourceStorageError::from_io_error(e, schema_name))?;
-    stream
-        .borrow_mut()
-        .write_all(schema.as_bytes())
-        .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
+    let stream = storage.create_output_stream(&schema_name)?;
+    stream.borrow_mut().write_all(schema.as_bytes())?;
 
     // create external vector
-    let data_writer = storage
-        .create_output_stream(resource_name)
-        .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
-    let handle = ResourceHandle::new(data_writer)
-        .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
+    let data_writer = storage.create_output_stream(resource_name)?;
+    let handle = ResourceHandle::new(data_writer)?;
     Ok(ExternalVector::new(handle))
 }
 
@@ -219,6 +192,31 @@ impl ResourceHandle {
         self.stream = None;
         Ok(())
     }
+}
+
+fn diff(left: &str, right: &str) -> String {
+    use diff;
+    diff::lines(left, right)
+        .into_iter()
+        .map(|l| match l {
+            diff::Result::Left(l) => format!("-{}", l),
+            diff::Result::Both(l, _) => format!(" {}", l),
+            diff::Result::Right(r) => format!("+{}", r),
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+// write helpers
+
+fn write_to_stream(data: &[u8], stream: &mut Stream) -> io::Result<()> {
+    write_size(data.len() as u64, stream)?;
+    stream.write_all(data)?;
+    write_padding(stream)
+}
+
+fn write_schema(schema: &str, stream: &mut Stream) -> io::Result<()> {
+    stream.write_all(schema.as_bytes())
 }
 
 fn write_size(value: SizeType, stream: &mut Stream) -> io::Result<()> {

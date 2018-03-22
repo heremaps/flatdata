@@ -41,6 +41,12 @@ impl MemoryResourceStorage {
 impl Stream for Cursor<Vec<u8>> {}
 
 impl ResourceStorage for MemoryResourceStorage {
+    fn exists(&self, resource_name: &str) -> bool {
+        let resource_path = self.path.join(resource_name);
+        self.storage.resources.contains_key(&resource_path)
+            || self.storage.streams.contains_key(&resource_path)
+    }
+
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error> {
         let resource_path = self.path.join(resource_name);
         if !self.storage.resources.contains_key(&resource_path) {

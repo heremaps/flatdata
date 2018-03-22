@@ -324,3 +324,65 @@ define_archive!(Graph, ::coappearances::schema::resources::GRAPH;
     // raw data resources
     (strings, ::coappearances::schema::resources::STRINGS)
 );
+
+// Manual implementation of GraphBuilder
+
+#[derive(Clone)]
+pub struct GraphBuilder {
+    storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
+}
+
+impl GraphBuilder {
+    pub fn set_meta(&mut self, meta: &::coappearances::Meta) -> ::std::io::Result<()> {
+        let data = unsafe {
+            ::std::slice::from_raw_parts(&meta.first_byte, ::coappearances::Meta::SIZE_IN_BYTES)
+        };
+        self.storage
+            .borrow_mut()
+            .write("meta", ::coappearances::schema::resources::META, data)
+    }
+
+    pub fn start_vertices(
+        &mut self,
+    ) -> ::std::io::Result<::flatdata::ExternalVector<::coappearances::Character>> {
+        ::flatdata::create_external_vector(
+            &mut *self.storage.borrow_mut(),
+            "vertices",
+            ::coappearances::schema::resources::VERTICES,
+        )
+    }
+
+    // pub fn set_vertices(vertices: &::coappearances::ArrayView<::coappearances::Character>) {}
+}
+
+impl ::flatdata::ArchiveBuilder for GraphBuilder {
+    const NAME: &'static str = "Graph";
+    const SCHEMA: &'static str = ::coappearances::schema::resources::GRAPH;
+
+    fn new(
+        storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
+    ) -> Result<Self, ::flatdata::ResourceStorageError> {
+        let signature_name = format!("{}.archive", Self::NAME);
+        {
+            // existing archive is an error
+            let storage = storage.borrow();
+            if storage.exists(&signature_name) {
+                return Err(::flatdata::ResourceStorageError::from_io_error(
+                    ::std::io::Error::new(
+                        ::std::io::ErrorKind::AlreadyExists,
+                        signature_name.clone(),
+                    ),
+                    signature_name,
+                ));
+            }
+        }
+        {
+            // write empty signature and schema
+            let mut mut_storage = storage.borrow_mut();
+            mut_storage
+                .write(&signature_name, Self::SCHEMA, &[])
+                .map_err(|e| ::flatdata::ResourceStorageError::from_io_error(e, signature_name))?;
+        }
+        Ok(Self { storage })
+    }
+}

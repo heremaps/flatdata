@@ -30,12 +30,20 @@ pub trait VariadicStruct
     fn size_in_bytes(&self) -> usize;
 }
 
-/// An archive.
+/// A flatdata archive representing serialized data.
 pub trait Archive: fmt::Debug + Clone {
     const NAME: &'static str;
     const SCHEMA: &'static str;
 
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
+}
+
+/// A flatdata archive builder for serializing data.
+pub trait ArchiveBuilder: Clone {
+    const NAME: &'static str;
+    const SCHEMA: &'static str;
+
+    fn new(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
 }
 
 //
@@ -69,6 +77,10 @@ macro_rules! define_struct {
                 };
                 write_bytes!($type; value, buffer, $offset, $bit_size)
             })*
+
+            pub fn fill_from(&mut self, other: &Self) {
+                $(self.$field_setter(other.$field());)*
+            }
         }
 
         impl ::std::fmt::Debug for $name {
