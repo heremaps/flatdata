@@ -2,11 +2,12 @@
 extern crate flatdata;
 
 use std::cell::RefCell;
+use std::env;
+use std::fs;
+use std::io::Read;
 use std::path;
 use std::rc::Rc;
 use std::str;
-use std::env;
-use std::fs;
 
 use flatdata::{Archive, ArchiveBuilder};
 
@@ -135,12 +136,32 @@ fn read_and_validate_coappearances() {
     };
 }
 
+fn compare_files(name_a: &path::Path, name_b: &path::Path) -> bool {
+    let mut fa = fs::File::open(name_a).unwrap();
+    let mut buf_a = Vec::new();
+    fa.read_to_end(&mut buf_a).unwrap();
+
+    let mut fb = fs::File::open(name_b).unwrap();
+    let mut buf_b = Vec::new();
+    fb.read_to_end(&mut buf_b).unwrap();
+
+    buf_a == buf_b
+}
+
+fn compare_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &str) -> bool {
+    compare_files(&from.join(resource_name), &to.join(resource_name))
+        && compare_files(
+            &from.join(format!("{}.schema", resource_name)),
+            &to.join(format!("{}.schema", resource_name)),
+        )
+}
+
 #[test]
 fn read_write_coappearances() {
     // open for reading
     let source_archive_path = path::PathBuf::from("tests/coappearances/karenina.archive");
     let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
-        source_archive_path,
+        source_archive_path.clone(),
     )));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
 
@@ -160,6 +181,11 @@ fn read_write_coappearances() {
     let mut meta = flatdata::StructBuf::<coappearances::Meta>::new();
     meta.fill_from(g.meta());
     gb.set_meta(&meta).expect("set_meta failed");
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "meta"
+    ));
 
     let mut vertices = gb.start_vertices().expect("start_vertices failed");
     for v in g.vertices().iter() {
@@ -167,10 +193,32 @@ fn read_write_coappearances() {
         w.fill_from(v);
     }
     vertices.close().expect("close failed");
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "vertices"
+    ));
 
     let mut edges = flatdata::Vector::<coappearances::Coappearance>::new(0);
     for e in g.edges().iter() {
         edges.grow().fill_from(e);
     }
     gb.set_edges(&edges.as_view()).expect("set_edges failed");
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "edges"
+    ));
+
+    let mut chapters = flatdata::Vector::<coappearances::Chapter>::new(0);
+    for ch in g.chapters().iter() {
+        chapters.grow().fill_from(ch);
+    }
+    gb.set_chapters(&chapters.as_view())
+        .expect("set_chapters failed");
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "chapters"
+    ));
 }

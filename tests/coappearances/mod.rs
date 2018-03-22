@@ -364,6 +364,17 @@ impl GraphBuilder {
             edges.as_ref(),
         )
     }
+
+    pub fn set_chapters(
+        &mut self,
+        chapters: &::flatdata::ArrayView<::coappearances::Chapter>,
+    ) -> ::std::io::Result<()> {
+        self.storage.borrow_mut().write(
+            "chapters",
+            ::coappearances::schema::resources::CHAPTERS,
+            chapters.as_ref(),
+        )
+    }
 }
 
 impl ::flatdata::ArchiveBuilder for GraphBuilder {

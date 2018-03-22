@@ -10,7 +10,7 @@ use std::io;
 use std::marker;
 use std::ops::{Index, IndexMut};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Vector<T> {
     data: Vec<bytewriter::StreamType>,
     _phantom: marker::PhantomData<T>,
@@ -20,6 +20,7 @@ impl<T> Vector<T>
 where
     T: Struct,
 {
+    // TODO: Add another method with size and remove it here.
     pub fn new(len: usize) -> Self {
         let size = Self::size(len);
         let mut data = Vec::with_capacity(size);
@@ -52,7 +53,7 @@ where
     }
 
     pub fn as_view(&self) -> ArrayView<T> {
-        ArrayView::new(&MemoryDescriptor::new(&self.data[0], self.data.len()))
+        ArrayView::new(&MemoryDescriptor::new(&self.data[0], self.size_in_bytes()))
     }
 
     pub fn as_bytes(&self) -> &[u8] {
