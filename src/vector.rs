@@ -1,9 +1,12 @@
 use archive::Struct;
+use storage::ResourceHandle;
 use arrayview::ArrayView;
 use storage::MemoryDescriptor;
 use memory;
 use bytewriter;
 
+use std::borrow::BorrowMut;
+use std::io;
 use std::marker;
 use std::ops::{Index, IndexMut};
 
@@ -79,17 +82,18 @@ impl<T: Struct> IndexMut<usize> for Vector<T> {
 pub struct ExternalVector<T> {
     data: Vec<u8>,
     len: usize,
+    resource_handle: ResourceHandle,
     _phantom: marker::PhantomData<T>,
 }
 
 impl<T: Struct> ExternalVector<T> {
-    // TODO: Provide something to write into here!
-    pub fn new() -> Self {
+    pub fn new(resource_handle: ResourceHandle) -> Self {
         let mut data = Vec::with_capacity(memory::PADDING_SIZE);
         data.resize(memory::PADDING_SIZE, 0);
         Self {
             data,
             len: 0,
+            resource_handle,
             _phantom: marker::PhantomData,
         }
     }
@@ -102,26 +106,37 @@ impl<T: Struct> ExternalVector<T> {
         self.len() == 0
     }
 
-    pub fn grow(&mut self) -> &mut T {
+    pub fn grow(&mut self) -> io::Result<&mut T> {
         if self.data.len() > 1024 * 1024 * 32 {
-            self.flush();
+            self.flush()?;
         }
         let old_size = self.data.len();
         self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
         self.len += 1;
-        unsafe { &mut *(&mut self.data[old_size - memory::PADDING_SIZE] as *mut _ as *mut T) }
+        Ok(unsafe { &mut *(&mut self.data[old_size - memory::PADDING_SIZE] as *mut _ as *mut T) })
     }
 
-    fn flush(&mut self) {
-        // TODO: Implement writing into storage
+    fn flush(&mut self) -> io::Result<()> {
+        self.resource_handle
+            .borrow_mut()
+            .write(&self.data[..self.data.len() - memory::PADDING_SIZE])?;
         self.data.resize(0, 0);
         self.data.resize(memory::PADDING_SIZE, 0);
+        Ok(())
     }
 
-    pub fn close(&mut self) {
-        self.flush();
-        // TODO: Close the resource we are writing into.
-        unimplemented!();
+    pub fn close(&mut self) -> io::Result<()> {
+        self.flush()?;
+        self.resource_handle.borrow_mut().close()
+    }
+}
+
+impl<T> Drop for ExternalVector<T> {
+    fn drop(&mut self) {
+        debug_assert!(
+            !self.resource_handle.is_open(),
+            "ExternalVector is not closed during drop"
+        )
     }
 }
 
@@ -129,6 +144,10 @@ impl<T: Struct> ExternalVector<T> {
 mod tests {
     use super::*;
     use std::slice;
+    use std::str;
+
+    use super::super::{ArrayView, MemoryResourceStorage, ResourceStorage};
+    use super::super::storage::create_external_vector;
 
     #[derive(Debug, PartialEq)]
     #[repr(C)]
@@ -233,5 +252,36 @@ mod tests {
         }
         v.grow();
         assert_eq!(v.len(), 3);
+    }
+
+    #[test]
+    fn test_external_vector() {
+        let mut storage = MemoryResourceStorage::new("/root/resources".into());
+        {
+            let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
+                .expect("failed to create ExternalVector");
+            {
+                let a = v.grow().expect("grow failed");
+                a.set_x(0);
+                a.set_y(1);
+            }
+            {
+                let a = v.grow().expect("grow failed");
+                a.set_x(2);
+                a.set_y(3);
+            }
+            v.close().expect("close failed");
+        }
+
+        let resource = storage
+            .read_and_check_schema("vector", "Some schema content")
+            .expect("failed to read vector resource");
+
+        let view: ArrayView<A> = ArrayView::new(&resource);
+        assert_eq!(view.len(), 2);
+        assert_eq!(view[0].x(), 0);
+        assert_eq!(view[0].y(), 1);
+        assert_eq!(view[1].x(), 2);
+        assert_eq!(view[1].y(), 3);
     }
 }

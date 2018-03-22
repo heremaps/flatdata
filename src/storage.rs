@@ -1,11 +1,16 @@
-use std::io;
+use std::io::{self, Seek, Write};
 use std::mem;
 use std::ptr;
 use std::slice;
 use std::str;
+use std::rc::Rc;
+use std::cell::RefCell;
+use std::ops::DerefMut;
 
 use error::ResourceStorageError;
 use memory::{SizeType, PADDING_SIZE};
+use vector::ExternalVector;
+use archive::Struct;
 
 fn diff(left: &str, right: &str) -> String {
     use diff;
@@ -19,6 +24,8 @@ fn diff(left: &str, right: &str) -> String {
         .collect::<Vec<_>>()
         .join("\n")
 }
+
+pub trait Stream: Write + Seek {}
 
 /// Hierarchical Resource Storage
 ///
@@ -45,12 +52,14 @@ pub trait ResourceStorage {
     //     self.write_to_stream(resource_name, schema, data.into())
     // }
 
-    // fn create_external_vector<T>(resources_name: &str, schema: &str) -> ExternalVector<T>;
     // fn create_multi_vector<Index, Args>(resource_name: &str, schema: &str) -> MultiVector<Index, Args>;
 
     // virtual
-    // fn create_output_stream(&mut self, resource_name: &str) -> io::Write;
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
+    fn create_output_stream(
+        &mut self,
+        resource_name: &str,
+    ) -> Result<Rc<RefCell<Stream>>, io::Error>;
 
     //
     // Impl Helper
@@ -101,6 +110,30 @@ pub trait ResourceStorage {
     // }
 }
 
+pub fn create_external_vector<T: Struct>(
+    storage: &mut ResourceStorage,
+    resource_name: &str,
+    schema: &str,
+) -> Result<ExternalVector<T>, ResourceStorageError> {
+    // write schema
+    let schema_name = format!("{}.schema", resource_name);
+    let stream = storage
+        .create_output_stream(&schema_name)
+        .map_err(|e| ResourceStorageError::from_io_error(e, schema_name))?;
+    stream
+        .borrow_mut()
+        .write_all(schema.as_bytes())
+        .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
+
+    // create external vector
+    let data_writer = storage
+        .create_output_stream(resource_name)
+        .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
+    let handle = ResourceHandle::new(data_writer)
+        .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
+    Ok(ExternalVector::new(handle))
+}
+
 /// Describes a chunk of memory
 #[derive(Debug, Clone)]
 pub struct MemoryDescriptor {
@@ -133,4 +166,69 @@ impl MemoryDescriptor {
     pub fn size_in_bytes(&self) -> usize {
         self.size
     }
+}
+
+#[derive(Clone)]
+pub struct ResourceHandle {
+    stream: Option<Rc<RefCell<Stream>>>,
+    size_in_bytes: usize,
+}
+
+impl ResourceHandle {
+    pub fn new(stream: Rc<RefCell<Stream>>) -> io::Result<Self> {
+        // Reserve space for size in the beginning of the stream, which will be updated later.
+        {
+            let mut mut_stream = stream.borrow_mut();
+            write_size(0u64, mut_stream.deref_mut())?;
+        }
+        Ok(Self {
+            stream: Some(stream),
+            size_in_bytes: 0,
+        })
+    }
+
+    pub fn is_open(&self) -> bool {
+        self.stream.is_some()
+    }
+
+    pub fn write(&mut self, data: &[u8]) -> io::Result<()> {
+        let stream = self.stream
+            .as_ref()
+            .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "stream closed"))?;
+
+        let res = stream.borrow_mut().write_all(data);
+        if res.is_ok() {
+            self.size_in_bytes += data.len();
+        }
+        res
+    }
+
+    pub fn close(&mut self) -> io::Result<()> {
+        {
+            let stream = self.stream
+                .as_ref()
+                .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "stream closed"))?;
+
+            let mut mut_stream = stream.borrow_mut();
+            write_padding(mut_stream.deref_mut())?;
+
+            // Update size in the beginning of the file
+            mut_stream.seek(io::SeekFrom::Start(0u64))?;
+            write_size(self.size_in_bytes as u64, mut_stream.deref_mut())?;
+        }
+        self.stream = None;
+        Ok(())
+    }
+}
+
+fn write_size(value: SizeType, stream: &mut Stream) -> io::Result<()> {
+    const SIZE_OF_SIZE_TYPE: usize = mem::size_of::<SizeType>();
+    let mut buffer: [u8; SIZE_OF_SIZE_TYPE] = [0; SIZE_OF_SIZE_TYPE];
+    write_bytes!(SizeType; value, &mut buffer, 0, SIZE_OF_SIZE_TYPE * 8);
+    stream.write_all(&buffer)
+}
+
+fn write_padding(stream: &mut Stream) -> io::Result<()> {
+    let zeroes: [u8; PADDING_SIZE] = [0; PADDING_SIZE];
+    stream.write_all(&zeroes)
 }

@@ -2,10 +2,12 @@ use std::collections::BTreeMap;
 use std::path;
 use std::fs::File;
 use std::io;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use memmap::Mmap;
 
-use storage::{MemoryDescriptor, ResourceStorage};
+use storage::{MemoryDescriptor, ResourceStorage, Stream};
 
 /// Storage of data in memory mapped files
 struct MemoryMappedFileStorage {
@@ -34,6 +36,8 @@ impl MemoryMappedFileStorage {
         Ok(mem_descr)
     }
 }
+
+impl Stream for File {}
 
 /// Resource storage on disk
 pub struct FileResourceStorage {
@@ -71,5 +75,20 @@ impl ResourceStorage for FileResourceStorage {
                 String::from(resource_path.to_str().unwrap_or(resource_name)),
             )),
         }
+    }
+
+    fn create_output_stream(
+        &mut self,
+        resource_name: &str,
+    ) -> Result<Rc<RefCell<Stream>>, io::Error> {
+        let resource_path = self.path.join(resource_name);
+        if !resource_path.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                String::from(resource_path.to_str().unwrap_or(resource_name)),
+            ));
+        }
+        let file = File::create(resource_path)?;
+        Ok(Rc::new(RefCell::new(file)))
     }
 }

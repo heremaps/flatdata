@@ -3,11 +3,9 @@ pub type StreamType = u8;
 #[macro_export]
 macro_rules! masked {
     ($value:expr, $num_bits:expr) => (
-        if $num_bits < 64 {
-            $value & ((1u64 << $num_bits) - 1)
-        } else {
-            $value
-        }
+        1u64.checked_shl($num_bits as u32).map(|mask| {
+            $value & (mask - 1)
+        }).unwrap_or($value)
     );
 }
 
