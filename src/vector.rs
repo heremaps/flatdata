@@ -99,10 +99,8 @@ pub struct ExternalVector<T> {
 
 impl<T: Struct> ExternalVector<T> {
     pub fn new(resource_handle: ResourceHandle) -> Self {
-        let mut data = Vec::with_capacity(memory::PADDING_SIZE);
-        data.resize(memory::PADDING_SIZE, 0);
         Self {
-            data,
+            data: vec![0; memory::PADDING_SIZE],
             len: 0,
             resource_handle,
             _phantom: marker::PhantomData,
@@ -144,10 +142,7 @@ impl<T: Struct> ExternalVector<T> {
 
 impl<T> Drop for ExternalVector<T> {
     fn drop(&mut self) {
-        debug_assert!(
-            !self.resource_handle.is_open(),
-            "ExternalVector is not closed during drop"
-        )
+        debug_assert!(!self.resource_handle.is_open(), "ExternalVector not closed")
     }
 }
 

@@ -18,6 +18,7 @@ pub trait Struct: fmt::Debug + PartialEq {
 /// A type in archive used as index of a multivector.
 pub trait Index: Struct {
     fn value(&self) -> usize;
+    fn set_value(&mut self, value: usize);
 }
 
 /// Index specifying a variadic type of `MultiArrayView`.
@@ -114,8 +115,12 @@ macro_rules! define_index {
                 (value, set_value, u64, 0, $size_in_bits));
 
             impl $crate::Index for $name {
-               fn value(&self) -> usize {
+                fn value(&self) -> usize {
                     self.value() as usize
+                }
+
+                fn set_value(&mut self, value: usize) {
+                    self.set_value(value as u64);
                 }
             }
         }
