@@ -210,10 +210,52 @@ fn read_write_coappearances() {
         "edges"
     ));
 
+    {
+        let mut vertices_data = gb.start_vertices_data()
+            .expect("start_vertices_data failed");
+        for item in g.vertices_data().iter() {
+            let mut new_item = vertices_data.grow().expect("grow failed");
+            for element in item {
+                // TODO: It is not checked by the compiler that vertices_data lives long enough,
+                // since I unbound the creation of new_item from the multivector.
+                match element {
+                    coappearances::VerticesData::Nickname(nickname) => {
+                        let mut new_element = new_item.add_nickname();
+                        new_element.fill_from(nickname);
+                    }
+                    coappearances::VerticesData::Description(desc) => {
+                        let mut new_element = new_item.add_description();
+                        new_element.fill_from(desc);
+                    }
+                    coappearances::VerticesData::UnaryRelation(rel) => {
+                        let mut new_element = new_item.add_unary_relation();
+                        new_element.fill_from(rel);
+                    }
+                    coappearances::VerticesData::BinaryRelation(rel) => {
+                        let mut new_element = new_item.add_binary_relation();
+                        new_element.fill_from(rel);
+                    }
+                }
+            }
+        }
+        vertices_data.close().expect("close failed");
+    }
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "vertices_data"
+    ));
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "vertices_data_index"
+    ));
+
     let mut chapters = flatdata::Vector::<coappearances::Chapter>::new(0);
     for ch in g.chapters().iter() {
         chapters.grow().fill_from(ch);
     }
+
     gb.set_chapters(&chapters.as_view())
         .expect("set_chapters failed");
     assert!(compare_resource(

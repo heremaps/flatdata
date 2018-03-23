@@ -1,16 +1,17 @@
+use std::cell::RefCell;
 use std::io::{self, Seek, Write};
 use std::mem;
+use std::ops::DerefMut;
 use std::ptr;
+use std::rc::Rc;
 use std::slice;
 use std::str;
-use std::rc::Rc;
-use std::cell::RefCell;
-use std::ops::DerefMut;
 
+use archive::{Index, Struct, VariadicStruct};
 use error::ResourceStorageError;
 use memory::{SizeType, PADDING_SIZE};
+use multivector::MultiVector;
 use vector::ExternalVector;
-use archive::Struct;
 
 pub trait Stream: Write + Seek {}
 
@@ -105,6 +106,27 @@ pub fn create_external_vector<T: Struct>(
     let data_writer = storage.create_output_stream(resource_name)?;
     let handle = ResourceHandle::new(data_writer)?;
     Ok(ExternalVector::new(handle))
+}
+
+pub fn create_multi_vector<'a, Idx: Index, Ts: VariadicStruct>(
+    storage: &mut ResourceStorage,
+    resource_name: &str,
+    schema: &str,
+) -> io::Result<MultiVector<Idx, Ts>> {
+    // create index
+    let index_name = format!("{}_index", resource_name);
+    let index_schema = format!("index({})", schema);
+    let index = create_external_vector(storage, &index_name, &index_schema)?;
+
+    // write schema
+    let schema_name = format!("{}.schema", resource_name);
+    let stream = storage.create_output_stream(&schema_name)?;
+    stream.borrow_mut().write_all(schema.as_bytes())?;
+
+    // create multi vector
+    let data_writer = storage.create_output_stream(resource_name)?;
+    let handle = ResourceHandle::new(data_writer)?;
+    Ok(MultiVector::new(index, handle))
 }
 
 /// Describes a chunk of memory

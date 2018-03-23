@@ -28,6 +28,13 @@ pub type TypeIndex = u8;
 pub trait VariadicStruct
     : convert::From<(TypeIndex, bytereader::StreamType)> + fmt::Debug + PartialEq
     {
+    // Note: To use a reference here, we need an `associated type constructor` (cf.
+    // http://smallcultfollowing.com/babysteps/blog/2016/11/03/associated-type-constructors-part-2-family-traits/).
+    // Also cf. https://github.com/rust-lang/rfcs/blob/master/text/1598-generic_associated_types.md
+    //
+    // This is a big hole in the borrow checker! Probably, we can find a different approach?
+    type ItemBuilder: convert::From<*mut Vec<u8>>;
+
     fn size_in_bytes(&self) -> usize;
 }
 
@@ -129,7 +136,7 @@ macro_rules! define_index {
 
 #[macro_export]
 macro_rules! define_variadic_struct {
-    ($name:ident, $index_type:tt, $($type_index:expr => $type:tt),+) =>
+    ($name:ident, $item_builder_name:ident, $index_type:tt, $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
     {
         #[derive(PartialEq)]
         pub enum $name<'a> {
@@ -159,10 +166,34 @@ macro_rules! define_variadic_struct {
         }
 
         impl<'a> $crate::VariadicStruct for $name<'a> {
+            type ItemBuilder = $item_builder_name<'a>;
+
             fn size_in_bytes(&self) -> usize {
                 match *self {
                     $($name::$type(_) => $type::SIZE_IN_BYTES),+
                 }
+            }
+        }
+
+        pub struct $item_builder_name<'a> {
+            data: &'a mut Vec<u8>
+        }
+
+        impl<'a> $item_builder_name<'a> {
+            $(pub fn $add_type_fn(&mut self) -> &'a mut $type {
+                let old_len = self.data.len();
+                let increment = 1 + $type::SIZE_IN_BYTES;
+                self.data.resize(old_len + increment, 0);
+                self.data[old_len - ::flatdata::memory::PADDING_SIZE] = $type_index;
+                unsafe {
+                    &mut *(&mut self.data[1 + old_len - ::flatdata::memory::PADDING_SIZE] as *mut _ as *mut $type)
+                }
+            })*
+        }
+
+        impl<'a> ::std::convert::From<*mut Vec<u8>> for $item_builder_name<'a> {
+            fn from(data: *mut Vec<u8>) -> Self {
+                unsafe{ Self { data: &mut *data } }
             }
         }
     }

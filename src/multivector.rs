@@ -26,15 +26,12 @@ impl<Idx: Index, Ts: VariadicStruct> MultiVector<Idx, Ts> {
         }
     }
 
-    pub fn grow(&mut self) -> io::Result<ItemBuilder<Ts>> {
+    pub fn grow(&mut self) -> io::Result<Ts::ItemBuilder> {
         if self.data.len() > 1024 * 1024 * 32 {
             self.flush()?;
         }
         self.add_to_index()?;
-        Ok(ItemBuilder {
-            data: &mut self.data,
-            _phantom: marker::PhantomData,
-        })
+        Ok(Ts::ItemBuilder::from(&mut self.data))
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -56,8 +53,8 @@ impl<Idx: Index, Ts: VariadicStruct> MultiVector<Idx, Ts> {
 
     pub fn close(&mut self) -> io::Result<()> {
         self.add_to_index()?; // sentinel for last item
-        self.flush()?;
         self.index.close()?;
+        self.flush()?;
         self.data_handle.borrow_mut().close()
     }
 }
@@ -67,14 +64,3 @@ impl<Idx, Ts> Drop for MultiVector<Idx, Ts> {
         debug_assert!(!self.data_handle.is_open(), "MultiVector not closed")
     }
 }
-
-pub struct ItemBuilder<'a, Ts> {
-    data: &'a mut Vec<u8>,
-    _phantom: marker::PhantomData<Ts>,
-}
-
-// impl<'a, Ts: VariadicStruct> ItemBuilder {
-//     pub fn add(&mut self) -> &mut Ts {
-
-//     }
-// }

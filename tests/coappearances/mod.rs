@@ -297,11 +297,11 @@ define_struct!(
     (to_b_ref, set_to_b_ref, u32, 48, 16)
 );
 
-define_variadic_struct!(VerticesData, IndexType32,
-    0 => Nickname,
-    1 => Description,
-    2 => UnaryRelation,
-    3 => BinaryRelation);
+define_variadic_struct!(VerticesData, VerticesDataItemBuilder, IndexType32,
+    0 => (Nickname, add_nickname),
+    1 => (Description, add_description),
+    2 => (UnaryRelation, add_unary_relation),
+    3 => (BinaryRelation, add_binary_relation));
 
 define_index!(
     IndexType32,
@@ -362,6 +362,21 @@ impl GraphBuilder {
             "edges",
             ::coappearances::schema::resources::EDGES,
             edges.as_ref(),
+        )
+    }
+
+    pub fn start_vertices_data(
+        &mut self,
+    ) -> ::std::io::Result<
+        ::flatdata::MultiVector<
+            ::coappearances::internal::IndexType32,
+            ::coappearances::VerticesData,
+        >,
+    > {
+        ::flatdata::create_multi_vector(
+            &mut *self.storage.borrow_mut(),
+            "vertices_data",
+            ::coappearances::schema::resources::VERTICES_DATA,
         )
     }
 
