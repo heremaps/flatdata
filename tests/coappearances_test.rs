@@ -263,4 +263,11 @@ fn read_write_coappearances() {
         &archive_path,
         "chapters"
     ));
+
+    gb.set_strings(g.strings()).expect("set_strings failed");
+    assert!(compare_resource(
+        &source_archive_path,
+        &archive_path,
+        "strings"
+    ));
 }

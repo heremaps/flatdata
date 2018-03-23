@@ -390,6 +390,14 @@ impl GraphBuilder {
             chapters.as_ref(),
         )
     }
+
+    pub fn set_strings(&mut self, data: &[u8]) -> ::std::io::Result<()> {
+        self.storage.borrow_mut().write(
+            "strings",
+            ::coappearances::schema::resources::STRINGS,
+            data,
+        )
+    }
 }
 
 impl ::flatdata::ArchiveBuilder for GraphBuilder {
