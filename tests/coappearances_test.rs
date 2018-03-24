@@ -240,6 +240,7 @@ fn read_write_coappearances() {
         }
         vertices_data.close().expect("close failed");
     }
+
     assert!(compare_resource(
         &source_archive_path,
         &archive_path,

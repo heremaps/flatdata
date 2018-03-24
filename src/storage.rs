@@ -108,7 +108,7 @@ pub fn create_external_vector<T: Struct>(
     Ok(ExternalVector::new(handle))
 }
 
-pub fn create_multi_vector<'a, Idx: Index, Ts: VariadicStruct>(
+pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
     storage: &mut ResourceStorage,
     resource_name: &str,
     schema: &str,
