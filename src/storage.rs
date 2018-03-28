@@ -130,7 +130,7 @@ pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
 }
 
 pub fn create_archive<T: ArchiveBuilder>(
-    storage: Rc<RefCell<ResourceStorage>>,
+    storage: &Rc<RefCell<ResourceStorage>>,
 ) -> Result<(), ResourceStorageError> {
     let signature_name = format!("{}.archive", T::NAME);
     {

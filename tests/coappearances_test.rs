@@ -199,7 +199,7 @@ fn read_write_coappearances() {
         "vertices"
     ));
 
-    let mut edges = flatdata::Vector::<coappearances::Coappearance>::new(0);
+    let mut edges = flatdata::Vector::<coappearances::Coappearance>::new();
     for e in g.edges().iter() {
         edges.grow().fill_from(&e);
     }
@@ -252,7 +252,7 @@ fn read_write_coappearances() {
         "vertices_data_index"
     ));
 
-    let mut chapters = flatdata::Vector::<coappearances::Chapter>::new(0);
+    let mut chapters = flatdata::Vector::<coappearances::Chapter>::new();
     for ch in g.chapters().iter() {
         chapters.grow().fill_from(&ch);
     }

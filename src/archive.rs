@@ -477,7 +477,7 @@ macro_rules! define_archive {
             fn new(
                 storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
             ) -> Result<Self, ::flatdata::ResourceStorageError> {
-                ::flatdata::create_archive::<Self>(storage.clone())?;
+                ::flatdata::create_archive::<Self>(&storage)?;
                 Ok(Self { storage })
             }
         }

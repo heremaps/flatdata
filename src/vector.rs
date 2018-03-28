@@ -18,9 +18,13 @@ impl<T> Vector<T>
 where
     T: Struct,
 {
-    // TODO: Add another method with size and remove it here.
-    pub fn new(len: usize) -> Self {
-        let size = Self::size(len);
+    /// Creates an empty `Vector<T>`.
+    pub fn new() -> Self {
+        Self::with_len(0)
+    }
+
+    pub fn with_len(len: usize) -> Self {
+        let size = Self::calc_size(len);
         let mut data = Vec::with_capacity(size);
         data.resize(size, 0);
         Self {
@@ -42,12 +46,7 @@ where
     }
 
     pub fn reserve(&mut self, len: usize) {
-        self.data.reserve(Self::size(len))
-    }
-
-    /// Calculate size in bytes (with padding) needed to store len-many elements.
-    fn size(len: usize) -> usize {
-        len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
+        self.data.reserve(Self::calc_size(len))
     }
 
     pub fn as_view(&self) -> ArrayView<T> {
@@ -71,6 +70,18 @@ where
 
     pub fn at_mut(&mut self, index: usize) -> HandleMut<T::Mut> {
         HandleMut::new(T::Mut::from(&mut self.data[index * T::SIZE_IN_BYTES]))
+    }
+
+    /// Calculate size in bytes (with padding) needed to store len-many elements.
+    fn calc_size(len: usize) -> usize {
+        len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
+    }
+}
+
+impl<T: Struct> Default for Vector<T> {
+    /// Creates an empty `Vector<T>`.
+    fn default() -> Self {
+        Vector::new()
     }
 }
 
@@ -150,8 +161,14 @@ mod tests {
     use test_structs::*;
 
     #[test]
+    fn test_vector_new() {
+        let v: Vector<A> = Vector::new();
+        assert_eq!(v.len(), 0);
+    }
+
+    #[test]
     fn test_vector_index() {
-        let mut v: Vector<A> = Vector::new(2);
+        let mut v: Vector<A> = Vector::with_len(2);
         assert_eq!(v.len(), 2);
         {
             let mut a = v.at_mut(0);
@@ -177,7 +194,8 @@ mod tests {
 
     #[test]
     fn test_vector_as_view() {
-        let mut v: Vector<A> = Vector::new(1);
+        let mut v: Vector<A> = Vector::with_len(1);
+        assert_eq!(v.len(), 1);
         {
             let mut a = v.at_mut(0);
             a.set_x(1);
@@ -193,7 +211,8 @@ mod tests {
 
     #[test]
     fn test_vector_grow() {
-        let mut v: Vector<A> = Vector::new(1);
+        let mut v: Vector<A> = Vector::with_len(1);
+        assert_eq!(v.len(), 1);
         {
             let mut a = v.at_mut(0);
             a.set_x(1);

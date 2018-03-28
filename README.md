@@ -21,8 +21,8 @@ Writer:
 * [x] Struct writer
 * [x] Vector
 * [x] ExternalVector
-* [ ] MultiVector
-* [ ] Raw data writer
+* [x] MultiVector
+* [x] Raw data writer
 * [ ] Subarchives
 
 Generator:
