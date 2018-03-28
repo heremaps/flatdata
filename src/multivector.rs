@@ -68,6 +68,7 @@ impl<Idx, Ts> Drop for MultiVector<Idx, Ts> {
 mod tests {
     use super::*;
     use std::convert;
+    use std::mem;
     use std::slice;
     use std::str;
 
@@ -76,7 +77,7 @@ mod tests {
     use super::super::handle::HandleMut;
     use super::super::storage::{create_multi_vector, ResourceStorage};
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     struct Idx {
         data: *const u8,
     }
@@ -103,6 +104,7 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
     struct IdxMut {
         data: *mut u8,
     }
@@ -120,6 +122,12 @@ mod tests {
         }
     }
 
+    impl AsRef<Idx> for IdxMut {
+        fn as_ref(&self) -> &Idx {
+            unsafe { mem::transmute(self) }
+        }
+    }
+
     impl IndexMut for IdxMut {
         fn set_value(&mut self, value: usize) {
             let buffer =
@@ -128,7 +136,7 @@ mod tests {
         }
     }
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     struct A {
         data: *const u8,
     }
@@ -158,6 +166,7 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
     struct AMut {
         data: *mut u8,
     }
@@ -184,6 +193,12 @@ mod tests {
         }
     }
 
+    impl AsRef<A> for AMut {
+        fn as_ref(&self) -> &A {
+            unsafe { mem::transmute(self) }
+        }
+    }
+
     impl StructMut for AMut {
         type Const = A;
         fn as_mut_ptr(&mut self) -> *mut u8 {
@@ -191,7 +206,7 @@ mod tests {
         }
     }
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     enum Variant {
         A(A),
     }

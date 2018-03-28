@@ -1,26 +1,26 @@
-use bytereader;
 use std::cell::RefCell;
-use std::convert;
-use std::fmt;
+use std::convert::From;
+use std::fmt::Debug;
 use std::rc::Rc;
 
 use error::ResourceStorageError;
 use storage::ResourceStorage;
 
 /// A type in archive.
-pub trait Struct: fmt::Debug + PartialEq + convert::From<*const u8> {
+pub trait Struct: Clone + Debug + PartialEq + From<*const u8> {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
 
-    type Mut: StructMut;
+    type Mut: StructMut + AsRef<Self>;
 
     fn as_ptr(&self) -> *const u8;
 }
 
-pub trait StructMut: convert::From<*mut u8> {
+pub trait StructMut: Debug + From<*mut u8> {
     type Const: Struct;
+
     fn as_mut_ptr(&mut self) -> *mut u8;
 }
 
@@ -39,16 +39,14 @@ pub trait IndexMut: StructMut {
 pub type TypeIndex = u8;
 
 /// A type used as element of `MultiArrayView`.
-pub trait VariadicStruct:
-    convert::From<(TypeIndex, bytereader::StreamType)> + fmt::Debug + PartialEq
-{
-    type ItemBuilder: convert::From<*mut Vec<u8>>;
+pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8)> {
+    type ItemBuilder: From<*mut Vec<u8>>;
 
     fn size_in_bytes(&self) -> usize;
 }
 
 /// A flatdata archive representing serialized data.
-pub trait Archive: fmt::Debug + Clone {
+pub trait Archive: Debug + Clone {
     const NAME: &'static str;
     const SCHEMA: &'static str;
 
@@ -78,6 +76,12 @@ macro_rules! define_struct {
     ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
+        // TODO: We cannot store &u8 here, since then we need to annote the type with a lifetime,
+        // which would enforce an annotation in the trait, and this would bind the lifetime at the
+        // creating of containers as ArrayView, etc... When meta-types are introduced (i.e. when
+        // we can express that a container is parametrized over a meta-type with a lifetime bound
+        // later), we can refactor this and get rid of Handle and HandleMut.
+        #[derive(Clone)]
         pub struct $name {
             data: *const u8,
         }
@@ -137,6 +141,12 @@ macro_rules! define_struct {
             }
         }
 
+        impl ::std::fmt::Debug for $name_mut {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                self.as_ref().fmt(f)
+            }
+        }
+
         impl ::std::convert::From<*mut u8> for $name_mut {
             fn from(data: *mut u8) -> Self {
                 Self { data }
@@ -145,8 +155,15 @@ macro_rules! define_struct {
 
         impl $crate::StructMut for $name_mut {
             type Const = $name;
+
             fn as_mut_ptr(&mut self) -> *mut u8 {
                 self.data
+            }
+        }
+
+        impl ::std::convert::AsRef<$name> for $name_mut {
+            fn as_ref(&self) -> &$name {
+                unsafe { ::std::mem::transmute(&self) }
             }
         }
      }
@@ -185,7 +202,7 @@ macro_rules! define_variadic_struct {
     ($name:ident, $item_builder_name:ident, $index_type:tt,
         $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
     {
-        #[derive(PartialEq)]
+        #[derive(Clone, PartialEq)]
         pub enum $name {
             $($type($type),)*
         }

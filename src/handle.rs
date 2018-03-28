@@ -1,7 +1,7 @@
 use std::marker;
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Handle<'a, T: 'a> {
     data: T,
     _phantom: marker::PhantomData<&'a T>,
@@ -23,7 +23,7 @@ impl<'a, T> Deref for Handle<'a, T> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct HandleMut<'a, T: 'a> {
     data: T,
     _phantom: marker::PhantomData<&'a T>,

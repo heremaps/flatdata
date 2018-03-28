@@ -146,6 +146,7 @@ impl<T> Drop for ExternalVector<T> {
 mod tests {
     use super::*;
     use std::convert;
+    use std::mem;
     use std::slice;
     use std::str;
 
@@ -153,7 +154,7 @@ mod tests {
     use super::super::archive::StructMut;
     use super::super::storage::create_external_vector;
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Clone, Debug, PartialEq)]
     struct A {
         data: *const u8,
     }
@@ -174,6 +175,12 @@ mod tests {
         }
     }
 
+    impl AsRef<A> for AMut {
+        fn as_ref(&self) -> &A {
+            unsafe { mem::transmute(self) }
+        }
+    }
+
     impl Struct for A {
         const SCHEMA: &'static str = "struct A { }";
         const SIZE_IN_BYTES: usize = 4;
@@ -183,6 +190,7 @@ mod tests {
         }
     }
 
+    #[derive(Debug)]
     struct AMut {
         data: *mut u8,
     }
