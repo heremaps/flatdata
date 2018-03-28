@@ -1,14 +1,13 @@
 use archive::Struct;
-use storage::ResourceHandle;
 use arrayview::ArrayView;
-use storage::MemoryDescriptor;
-use memory;
 use bytewriter;
+use handle::{Handle, HandleMut};
+use memory;
+use storage::{MemoryDescriptor, ResourceHandle};
 
 use std::borrow::BorrowMut;
 use std::io;
 use std::marker;
-use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Clone)]
 pub struct Vector<T> {
@@ -60,24 +59,19 @@ where
         &self.data[..self.size_in_bytes()]
     }
 
-    pub fn grow(&mut self) -> &mut T {
+    pub fn grow(&mut self) -> HandleMut<T::Mut> {
         let old_size = self.data.len();
         self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
         let last_index = self.len() - 1;
-        &mut self[last_index]
+        HandleMut::new(T::Mut::from(&mut self.data[last_index * T::SIZE_IN_BYTES]))
     }
-}
 
-impl<T: Struct> Index<usize> for Vector<T> {
-    type Output = T;
-    fn index(&self, index: usize) -> &Self::Output {
-        unsafe { &*(&self.data[index * T::SIZE_IN_BYTES] as *const _ as *const T) }
+    pub fn at(&self, index: usize) -> Handle<T> {
+        Handle::new(T::from(&self.data[index * T::SIZE_IN_BYTES]))
     }
-}
 
-impl<T: Struct> IndexMut<usize> for Vector<T> {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        unsafe { &mut *(&mut self.data[index * T::SIZE_IN_BYTES] as *mut _ as *mut T) }
+    pub fn at_mut(&mut self, index: usize) -> HandleMut<T::Mut> {
+        HandleMut::new(T::Mut::from(&mut self.data[index * T::SIZE_IN_BYTES]))
     }
 }
 
@@ -115,14 +109,16 @@ impl<T: Struct> ExternalVector<T> {
         self.len() == 0
     }
 
-    pub fn grow(&mut self) -> io::Result<&mut T> {
+    pub fn grow(&mut self) -> io::Result<HandleMut<T::Mut>> {
         if self.data.len() > 1024 * 1024 * 32 {
             self.flush()?;
         }
         let old_size = self.data.len();
         self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
         self.len += 1;
-        Ok(unsafe { &mut *(&mut self.data[old_size - memory::PADDING_SIZE] as *mut _ as *mut T) })
+        Ok(HandleMut::new(T::Mut::from(
+            &mut self.data[old_size - memory::PADDING_SIZE],
+        )))
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -149,43 +145,83 @@ impl<T> Drop for ExternalVector<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::convert;
     use std::slice;
     use std::str;
 
     use super::super::{ArrayView, MemoryResourceStorage, ResourceStorage};
+    use super::super::archive::StructMut;
     use super::super::storage::create_external_vector;
 
     #[derive(Debug, PartialEq)]
-    #[repr(C)]
     struct A {
-        first_byte: u8,
+        data: *const u8,
     }
 
     impl A {
         pub fn x(&self) -> u32 {
-            read_bytes!(u32, &self.first_byte, 0, 16)
+            read_bytes!(u32, self.data, 0, 16)
         }
 
         pub fn y(&self) -> u32 {
-            read_bytes!(u32, &self.first_byte, 16, 16)
+            read_bytes!(u32, self.data, 16, 16)
         }
+    }
 
-        pub fn set_x(&mut self, value: u32) {
-            let buffer =
-                unsafe { slice::from_raw_parts_mut(&mut self.first_byte, Self::SIZE_IN_BYTES) };
-            write_bytes!(u32; value, buffer, 0, 16);
-        }
-
-        pub fn set_y(&mut self, value: u32) {
-            let buffer =
-                unsafe { slice::from_raw_parts_mut(&mut self.first_byte, Self::SIZE_IN_BYTES) };
-            write_bytes!(u32; value, buffer, 16, 16);
+    impl convert::From<*const u8> for A {
+        fn from(data: *const u8) -> Self {
+            Self { data }
         }
     }
 
     impl Struct for A {
         const SCHEMA: &'static str = "struct A { }";
         const SIZE_IN_BYTES: usize = 4;
+        type Mut = AMut;
+        fn as_ptr(&self) -> *const u8 {
+            self.data
+        }
+    }
+
+    struct AMut {
+        data: *mut u8,
+    }
+
+    impl AMut {
+        pub fn x(&self) -> u32 {
+            read_bytes!(u32, self.data, 0, 16)
+        }
+
+        pub fn y(&self) -> u32 {
+            read_bytes!(u32, self.data, 16, 16)
+        }
+
+        pub fn set_x(&mut self, value: u32) {
+            let buffer = unsafe {
+                slice::from_raw_parts_mut(self.data, <Self as StructMut>::Const::SIZE_IN_BYTES)
+            };
+            write_bytes!(u32; value, buffer, 0, 16);
+        }
+
+        pub fn set_y(&mut self, value: u32) {
+            let buffer = unsafe {
+                slice::from_raw_parts_mut(self.data, <Self as StructMut>::Const::SIZE_IN_BYTES)
+            };
+            write_bytes!(u32; value, buffer, 16, 16);
+        }
+    }
+
+    impl convert::From<*mut u8> for AMut {
+        fn from(data: *mut u8) -> Self {
+            Self { data }
+        }
+    }
+
+    impl StructMut for AMut {
+        type Const = A;
+        fn as_mut_ptr(&mut self) -> *mut u8 {
+            self.data
+        }
     }
 
     #[test]
@@ -193,23 +229,23 @@ mod tests {
         let mut v: Vector<A> = Vector::new(2);
         assert_eq!(v.len(), 2);
         {
-            let a = &mut v[0];
+            let mut a = v.at_mut(0);
             a.set_x(1);
             a.set_y(2);
             assert_eq!(a.x(), 1);
             assert_eq!(a.y(), 2);
         }
         {
-            let b = &mut v[1];
+            let mut b = v.at_mut(1);
             b.set_x(3);
             b.set_y(4);
             assert_eq!(b.x(), 3);
             assert_eq!(b.y(), 4);
         }
-        let a = &v[0];
+        let a = v.at(0);
         assert_eq!(a.x(), 1);
         assert_eq!(a.y(), 2);
-        let b = &v[1];
+        let b = v.at(1);
         assert_eq!(b.x(), 3);
         assert_eq!(b.y(), 4);
     }
@@ -218,14 +254,14 @@ mod tests {
     fn test_vector_as_view() {
         let mut v: Vector<A> = Vector::new(1);
         {
-            let a = &mut v[0];
+            let mut a = v.at_mut(0);
             a.set_x(1);
             assert_eq!(a.x(), 1);
             a.set_y(2);
             assert_eq!(a.y(), 2);
         }
         let view = v.as_view();
-        let a = &view[0];
+        let a = view.at(0);
         assert_eq!(a.x(), 1);
         assert_eq!(a.y(), 2);
     }
@@ -234,14 +270,14 @@ mod tests {
     fn test_vector_grow() {
         let mut v: Vector<A> = Vector::new(1);
         {
-            let a = &mut v[0];
+            let mut a = v.at_mut(0);
             a.set_x(1);
             a.set_y(2);
             assert_eq!(a.x(), 1);
             assert_eq!(a.y(), 2);
         }
         {
-            let b = v.grow();
+            let mut b = v.grow();
             b.set_x(3);
             b.set_y(4);
             assert_eq!(b.x(), 3);
@@ -249,10 +285,10 @@ mod tests {
         }
         {
             assert_eq!(v.len(), 2);
-            let a = &v[0];
+            let a = &v.at(0);
             assert_eq!(a.x(), 1);
             assert_eq!(a.y(), 2);
-            let b = &v[1];
+            let b = &v.at(1);
             assert_eq!(b.x(), 3);
             assert_eq!(b.y(), 4);
         }
@@ -267,12 +303,12 @@ mod tests {
             let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
                 .expect("failed to create ExternalVector");
             {
-                let a = v.grow().expect("grow failed");
+                let mut a = v.grow().expect("grow failed");
                 a.set_x(0);
                 a.set_y(1);
             }
             {
-                let a = v.grow().expect("grow failed");
+                let mut a = v.grow().expect("grow failed");
                 a.set_x(2);
                 a.set_y(3);
             }
@@ -285,9 +321,9 @@ mod tests {
 
         let view: ArrayView<A> = ArrayView::new(&resource);
         assert_eq!(view.len(), 2);
-        assert_eq!(view[0].x(), 0);
-        assert_eq!(view[0].y(), 1);
-        assert_eq!(view[1].x(), 2);
-        assert_eq!(view[1].y(), 3);
+        assert_eq!(view.at(0).x(), 0);
+        assert_eq!(view.at(0).y(), 1);
+        assert_eq!(view.at(1).x(), 2);
+        assert_eq!(view.at(1).y(), 3);
     }
 }

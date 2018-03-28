@@ -1,29 +1,25 @@
 use archive::Struct;
+use handle::Handle;
 use storage::MemoryDescriptor;
 
-use std::iter;
 use std::fmt;
+use std::iter;
+use std::marker;
 use std::slice;
-use std::ops::Index;
 
 #[derive(Clone)]
 pub struct ArrayView<'a, T: 'a> {
-    data: &'a [T],
+    data: &'a [u8],
     len: usize,
+    _phantom: marker::PhantomData<T>,
 }
 
-impl<'a, T> ArrayView<'a, T>
-where
-    T: Struct,
-{
+impl<'a, T: Struct> ArrayView<'a, T> {
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
-        let data = unsafe {
-            let data = &*(mem_descr.data() as *const T);
-            slice::from_raw_parts(data, mem_descr.size_in_bytes())
-        };
         Self {
-            data,
+            data: unsafe { slice::from_raw_parts(mem_descr.data(), mem_descr.size_in_bytes()) },
             len: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
+            _phantom: marker::PhantomData,
         }
     }
 
@@ -43,19 +39,13 @@ where
     }
 
     pub fn as_bytes(&self) -> &[u8] {
-        unsafe { slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len()) }
+        self.data
     }
-}
 
-impl<'a, T> Index<usize> for ArrayView<'a, T>
-where
-    T: Struct,
-{
-    type Output = T;
-    fn index(&self, index: usize) -> &Self::Output {
-        let pos = index * T::SIZE_IN_BYTES;
-        assert!(pos + T::SIZE_IN_BYTES <= self.data.len());
-        self.data.index(pos)
+    pub fn at(&self, index: usize) -> Handle<T> {
+        let index = index * T::SIZE_IN_BYTES;
+        assert!(index + T::SIZE_IN_BYTES <= self.data.len());
+        Handle::new(T::from(&self.data[index]))
     }
 }
 
@@ -64,7 +54,7 @@ impl<'a, T> fmt::Debug for ArrayView<'a, T> {
         write!(
             f,
             "ArrayView {{ data: {:?}, len: {} }}",
-            &self.data[0] as *const T, self.len
+            self.data, self.len
         )
     }
 }
@@ -81,10 +71,10 @@ pub struct ArrayViewIter<'a, T: 'a + Struct> {
 }
 
 impl<'a, T: Struct> iter::Iterator for ArrayViewIter<'a, T> {
-    type Item = &'a T;
+    type Item = Handle<'a, T>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.next_pos < self.view.len() {
-            let element = &self.view[self.next_pos];
+            let element = self.view.at(self.next_pos);
             self.next_pos += 1;
             Some(element)
         } else {

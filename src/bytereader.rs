@@ -3,7 +3,7 @@ pub type StreamType = *const u8;
 // TODO: Refactor according to the new version in C++ implementation.
 #[macro_export]
 macro_rules! read_bytes {
-    ($T:tt, $data:expr, $offset:expr, $num_bits:expr) => {{
+    ($T: tt, $data: expr, $offset: expr, $num_bits: expr) => {{
         let bytes: *const u8 = $data;
         assert!(!bytes.is_null(), "Reading uninitialized structure");
         let mut reader: *const u8 = unsafe { bytes.offset($offset / 8) };
@@ -41,9 +41,12 @@ macro_rules! read_bytes {
         }
         result as $T
     }};
-    ($T:tt, $data:expr, $offset:expr) => (
-        read_bytes!($T, $data, $offset, ::std::mem::size_of::<$T>() * 8));
-    ($T:tt, $data:expr) => (read_bytes!($T, $data, 0, ::std::mem::size_of::<$T>() * 8));
+    ($T: tt, $data: expr, $offset: expr) => {
+        read_bytes!($T, $data, $offset, ::std::mem::size_of::<$T>() * 8)
+    };
+    ($T: tt, $data: expr) => {
+        read_bytes!($T, $data, 0, ::std::mem::size_of::<$T>() * 8)
+    };
 }
 
 #[cfg(test)]

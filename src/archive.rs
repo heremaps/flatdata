@@ -1,23 +1,37 @@
 use bytereader;
 use std::cell::RefCell;
 use std::convert;
-use std::rc::Rc;
 use std::fmt;
+use std::rc::Rc;
 
-use storage::ResourceStorage;
 use error::ResourceStorageError;
+use storage::ResourceStorage;
 
 /// A type in archive.
-pub trait Struct: fmt::Debug + PartialEq {
+pub trait Struct: fmt::Debug + PartialEq + convert::From<*const u8> {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
+
+    type Mut: StructMut;
+
+    fn as_ptr(&self) -> *const u8;
 }
 
-/// A type in archive used as index of a multivector.
+pub trait StructMut: convert::From<*mut u8> {
+    type Const: Struct;
+    fn as_mut_ptr(&mut self) -> *mut u8;
+}
+
+/// A type in archive used as index of a `MultiArrayView`.
 pub trait Index: Struct {
+    type IndexMut: IndexMut;
     fn value(&self) -> usize;
+}
+
+/// A type in archive used as mutable index of a `MultiVector`.
+pub trait IndexMut: StructMut {
     fn set_value(&mut self, value: usize);
 }
 
@@ -25,14 +39,9 @@ pub trait Index: Struct {
 pub type TypeIndex = u8;
 
 /// A type used as element of `MultiArrayView`.
-pub trait VariadicStruct
-    : convert::From<(TypeIndex, bytereader::StreamType)> + fmt::Debug + PartialEq
-    {
-    // Note: To use a reference here, we need an `associated type constructor` (cf.
-    // http://smallcultfollowing.com/babysteps/blog/2016/11/03/associated-type-constructors-part-2-family-traits/).
-    // Also cf. https://github.com/rust-lang/rfcs/blob/master/text/1598-generic_associated_types.md
-    //
-    // This is a big hole in the borrow checker! Probably, we can find a different approach?
+pub trait VariadicStruct:
+    convert::From<(TypeIndex, bytereader::StreamType)> + fmt::Debug + PartialEq
+{
     type ItemBuilder: convert::From<*mut Vec<u8>>;
 
     fn size_in_bytes(&self) -> usize;
@@ -66,29 +75,17 @@ macro_rules! intersperse {
 
 #[macro_export]
 macro_rules! define_struct {
-    ($name:ident, $schema:expr, $size_in_bytes:expr
+    ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
-        #[repr(C)]
         pub struct $name {
-            first_byte: u8,
+            data: *const u8,
         }
 
         impl $name {
             $(pub fn $field(&self) -> $type {
-                read_bytes!($type, &self.first_byte, $offset, $bit_size)
+                read_bytes!($type, self.data, $offset, $bit_size)
             })*
-
-            $(pub fn $field_setter(&mut self, value: $type) {
-                let buffer = unsafe {
-                    ::std::slice::from_raw_parts_mut(&mut self.first_byte, $size_in_bytes)
-                };
-                write_bytes!($type; value, buffer, $offset, $bit_size)
-            })*
-
-            pub fn fill_from(&mut self, other: &Self) {
-                $(self.$field_setter(other.$field());)*
-            }
         }
 
         impl ::std::fmt::Debug for $name {
@@ -106,58 +103,106 @@ macro_rules! define_struct {
             }
         }
 
+        impl ::std::convert::From<*const u8> for $name {
+            fn from(data: *const u8) -> Self {
+                Self { data }
+            }
+        }
+
         impl $crate::Struct for $name {
             const SCHEMA: &'static str = $schema;
             const SIZE_IN_BYTES: usize = $size_in_bytes;
+
+            type Mut = $name_mut;
+
+            fn as_ptr(&self) -> *const u8 {
+                self.data
+            }
         }
-    }
+
+        pub struct $name_mut {
+            data: *mut u8,
+        }
+
+        impl $name_mut {
+            $(pub fn $field_setter(&mut self, value: $type) {
+                let buffer = unsafe {
+                    ::std::slice::from_raw_parts_mut(self.data, $size_in_bytes)
+                };
+                write_bytes!($type; value, buffer, $offset, $bit_size)
+            })*
+
+            pub fn fill_from(&mut self, other: &$name) {
+                $(self.$field_setter(other.$field());)*
+            }
+        }
+
+        impl ::std::convert::From<*mut u8> for $name_mut {
+            fn from(data: *mut u8) -> Self {
+                Self { data }
+            }
+        }
+
+        impl $crate::StructMut for $name_mut {
+            type Const = $name;
+            fn as_mut_ptr(&mut self) -> *mut u8 {
+                self.data
+            }
+        }
+     }
 }
 
 #[macro_export]
 macro_rules! define_index {
-    ($name:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
+    ($name: ident, $name_mut: ident, $schema: path, $size_in_bytes: expr, $size_in_bits: expr) => {
         mod internal {
             define_struct!(
-                $name, $schema, $size_in_bytes,
-                (value, set_value, u64, 0, $size_in_bits));
+                $name,
+                $name_mut,
+                $schema,
+                $size_in_bytes,
+                (value, set_value, u64, 0, $size_in_bits)
+            );
 
             impl $crate::Index for $name {
+                type IndexMut = $name_mut;
                 fn value(&self) -> usize {
                     self.value() as usize
                 }
+            }
 
+            impl $crate::IndexMut for $name_mut {
                 fn set_value(&mut self, value: usize) {
                     self.set_value(value as u64);
                 }
             }
         }
-    }
+    };
 }
 
 #[macro_export]
 macro_rules! define_variadic_struct {
-    ($name:ident, $item_builder_name:ident, $index_type:tt, $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
+    ($name:ident, $item_builder_name:ident, $index_type:tt,
+        $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
     {
         #[derive(PartialEq)]
-        pub enum $name<'a> {
-            $($type(&'a $type),)*
+        pub enum $name {
+            $($type($type),)*
         }
 
-        impl<'a> ::std::convert::From<(
-            $crate::TypeIndex, $crate::bytereader::StreamType)> for $name<'a> {
+        impl ::std::convert::From<(
+            $crate::TypeIndex, $crate::bytereader::StreamType)> for $name {
             fn from((type_index, data):
                 ($crate::TypeIndex, $crate::bytereader::StreamType)) -> Self {
                 match type_index {
-                    $($type_index => unsafe {
-                        $name::$type(&*(data as *const $type))
-                    }),+,
+                    $($type_index => $name::$type($type::from(data))),+,
                     _ => panic!(
                         "invalid type index {} for type {}", type_index, stringify!($name)),
                 }
             }
         }
 
-        impl<'a> ::std::fmt::Debug for $name<'a> {
+        impl ::std::fmt::Debug for $name {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 match *self {
                     $($name::$type(ref inner) => write!(f, "{:?}", inner)),+
@@ -165,8 +210,8 @@ macro_rules! define_variadic_struct {
             }
         }
 
-        impl<'a> $crate::VariadicStruct for $name<'a> {
-            type ItemBuilder = $item_builder_name<'a>;
+        impl $crate::VariadicStruct for $name {
+            type ItemBuilder = $item_builder_name;
 
             fn size_in_bytes(&self) -> usize {
                 match *self {
@@ -175,25 +220,28 @@ macro_rules! define_variadic_struct {
             }
         }
 
-        pub struct $item_builder_name<'a> {
-            data: &'a mut Vec<u8>
+        pub struct $item_builder_name {
+            data: *mut Vec<u8>
         }
 
-        impl<'a> $item_builder_name<'a> {
-            $(pub fn $add_type_fn(&mut self) -> &'a mut $type {
-                let old_len = self.data.len();
+        impl $item_builder_name {
+            $(pub fn $add_type_fn(&mut self)
+                -> $crate::handle::HandleMut<<$type as ::flatdata::Struct>::Mut>
+            {
+                let data = unsafe { &mut *self.data };
+                let old_len = data.len();
                 let increment = 1 + $type::SIZE_IN_BYTES;
-                self.data.resize(old_len + increment, 0);
-                self.data[old_len - ::flatdata::memory::PADDING_SIZE] = $type_index;
-                unsafe {
-                    &mut *(&mut self.data[1 + old_len - ::flatdata::memory::PADDING_SIZE] as *mut _ as *mut $type)
-                }
+                data.resize(old_len + increment, 0);
+                data[old_len - ::flatdata::memory::PADDING_SIZE] = $type_index;
+                $crate::handle::HandleMut::new(<$type as ::flatdata::Struct>::Mut::from(
+                    &mut data[1 + old_len - ::flatdata::memory::PADDING_SIZE] as *mut _
+                ))
             })*
         }
 
-        impl<'a> ::std::convert::From<*mut Vec<u8>> for $item_builder_name<'a> {
+        impl<'a> ::std::convert::From<*mut Vec<u8>> for $item_builder_name {
             fn from(data: *mut Vec<u8>) -> Self {
-                unsafe{ Self { data: &mut *data } }
+                Self { data }
             }
         }
     }
@@ -230,10 +278,8 @@ macro_rules! define_archive {
                 storage.read(name, schema).map(R::from)
             }
 
-            $(pub fn $struct_resource(&self) -> &$struct_type {
-                unsafe {
-                    &*(self.$struct_resource.data() as *const $struct_type)
-                }
+            $(pub fn $struct_resource(&self) -> ::flatdata::handle::Handle<$struct_type> {
+                ::flatdata::handle::Handle::new($struct_type::from(self.$struct_resource.data()))
             })*
 
             $(pub fn $vector_resource(&self) -> $crate::ArrayView<$element_type> {

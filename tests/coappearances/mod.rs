@@ -234,6 +234,7 @@ archive Graph {
 
 define_struct!(
     Character,
+    CharacterMut,
     ::coappearances::schema::structs::CHARACTER,
     4,
     (name_ref, set_name_ref, u32, 0, 32)
@@ -241,6 +242,7 @@ define_struct!(
 
 define_struct!(
     Meta,
+    MetaMut,
     ::coappearances::schema::structs::META,
     8,
     (title_ref, set_title_ref, u32, 0, 32),
@@ -249,6 +251,7 @@ define_struct!(
 
 define_struct!(
     Coappearance,
+    CoappearanceMut,
     ::coappearances::schema::structs::COAPPEARANCE,
     8,
     (a_ref, set_a_ref, u32, 0, 16),
@@ -259,6 +262,7 @@ define_struct!(
 
 define_struct!(
     Chapter,
+    ChapterMut,
     ::coappearances::schema::structs::CHAPTER,
     2,
     (major, set_major, u8, 0, 4),
@@ -268,6 +272,7 @@ define_struct!(
 // TODO: Resolve ref clashing with keywords of Rust.
 define_struct!(
     Nickname,
+    NicknameMut,
     ::coappearances::schema::structs::NICKNAME,
     4,
     (ref_, set_ref_, u32, 0, 32)
@@ -275,6 +280,7 @@ define_struct!(
 
 define_struct!(
     Description,
+    DescriptionMut,
     ::coappearances::schema::structs::DESCRIPTION,
     4,
     (ref_, set_ref_, u32, 0, 32)
@@ -282,6 +288,7 @@ define_struct!(
 
 define_struct!(
     UnaryRelation,
+    UnaryRelationMut,
     ::coappearances::schema::structs::UNARYRELATION,
     6,
     (kind_ref, set_kind_ref, u32, 0, 32),
@@ -290,6 +297,7 @@ define_struct!(
 
 define_struct!(
     BinaryRelation,
+    BinaryRelationMut,
     ::coappearances::schema::structs::BINARYRELATION,
     8,
     (kind_ref, set_kind_ref, u32, 0, 32),
@@ -305,6 +313,7 @@ define_variadic_struct!(VerticesData, VerticesDataItemBuilder, IndexType32,
 
 define_index!(
     IndexType32,
+    IndexType32Mut,
     ::coappearances::schema::structs::INDEXTYPE32,
     4,
     32
@@ -333,9 +342,9 @@ pub struct GraphBuilder {
 }
 
 impl GraphBuilder {
-    pub fn set_meta(&mut self, meta: &::coappearances::Meta) -> ::std::io::Result<()> {
+    pub fn set_meta(&mut self, meta: &::coappearances::MetaMut) -> ::std::io::Result<()> {
         let data = unsafe {
-            ::std::slice::from_raw_parts(&meta.first_byte, ::coappearances::Meta::SIZE_IN_BYTES)
+            ::std::slice::from_raw_parts(meta.data, ::coappearances::Meta::SIZE_IN_BYTES)
         };
         self.storage
             .borrow_mut()

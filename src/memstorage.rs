@@ -1,8 +1,8 @@
-use std::collections::BTreeMap;
-use std::path;
-use std::io::{self, Cursor};
-use std::rc::Rc;
 use std::cell::RefCell;
+use std::collections::BTreeMap;
+use std::io::{self, Cursor};
+use std::path;
+use std::rc::Rc;
 
 use storage::{MemoryDescriptor, ResourceStorage, Stream};
 

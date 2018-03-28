@@ -53,26 +53,26 @@ fn read_and_validate_coappearances() {
     let num_chapters = edges.iter().map(|e| e.count() as usize).sum();
     assert_eq!(g.chapters().len(), num_chapters);
 
-    assert_eq!(substring(strings, vertices[0].name_ref()), "Annushka");
+    assert_eq!(substring(strings, vertices.at(0).name_ref()), "Annushka");
     assert_eq!(
-        substring(strings, vertices[3].name_ref()),
+        substring(strings, vertices.at(3).name_ref()),
         "Anna Arkadyevna Karenina"
     );
 
-    let e0 = &edges[0];
+    let e0 = edges.at(0);
     assert_eq!(
-        substring(strings, vertices[e0.a_ref() as usize].name_ref()),
+        substring(strings, vertices.at(e0.a_ref() as usize).name_ref()),
         "Annushka"
     );
     assert_eq!(
-        substring(strings, vertices[e0.b_ref() as usize].name_ref()),
+        substring(strings, vertices.at(e0.b_ref() as usize).name_ref()),
         "Anna Arkadyevna Karenina"
     );
 
     let validate_chapters = |edge_ref, expected| {
-        let e = &edges[edge_ref];
+        let e = edges.at(edge_ref);
         let chapters_start = e.first_chapter_ref() as usize;
-        let chapters_end = edges[edge_ref + 1].first_chapter_ref() as usize;
+        let chapters_end = edges.at(edge_ref + 1).first_chapter_ref() as usize;
         let e_chapters: Vec<String> = g.chapters()
             .iter()
             .skip(chapters_start)
@@ -98,11 +98,11 @@ fn read_and_validate_coappearances() {
 
     let data: Vec<_> = vertices_data.at(0).collect();
     assert_eq!(data.len(), 1);
-    match data[0] {
-        coappearances::VerticesData::UnaryRelation(data) => {
+    match *data[0] {
+        coappearances::VerticesData::UnaryRelation(ref data) => {
             assert_eq!(substring(strings, data.kind_ref()), "maid");
             assert_eq!(
-                substring(strings, vertices[data.to_ref() as usize].name_ref()),
+                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
                 "Anna Arkadyevna Karenina"
             );
         }
@@ -111,11 +111,11 @@ fn read_and_validate_coappearances() {
 
     let data: Vec<_> = vertices_data.at(1).collect();
     assert_eq!(data.len(), 1);
-    match data[0] {
-        coappearances::VerticesData::UnaryRelation(data) => {
+    match *data[0] {
+        coappearances::VerticesData::UnaryRelation(ref data) => {
             assert_eq!(substring(strings, data.kind_ref()), "housekeeper");
             assert_eq!(
-                substring(strings, vertices[data.to_ref() as usize].name_ref()),
+                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
                 "Konstantin Dmitrievitch Levin"
             );
         }
@@ -124,11 +124,11 @@ fn read_and_validate_coappearances() {
 
     let data: Vec<_> = vertices_data.at(vertices_data.len() - 1).collect();
     assert_eq!(data.len(), 1);
-    match data[0] {
-        coappearances::VerticesData::UnaryRelation(data) => {
+    match *data[0] {
+        coappearances::VerticesData::UnaryRelation(ref data) => {
             assert_eq!(substring(strings, data.kind_ref()), "gambling friend");
             assert_eq!(
-                substring(strings, vertices[data.to_ref() as usize].name_ref()),
+                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
                 "Count Alexey Kirillovitch Vronsky"
             );
         }
@@ -179,7 +179,7 @@ fn read_write_coappearances() {
 
     // copy data
     let mut meta = flatdata::StructBuf::<coappearances::Meta>::new();
-    meta.fill_from(g.meta());
+    meta.fill_from(&g.meta());
     gb.set_meta(&meta).expect("set_meta failed");
     assert!(compare_resource(
         &source_archive_path,
@@ -189,8 +189,8 @@ fn read_write_coappearances() {
 
     let mut vertices = gb.start_vertices().expect("start_vertices failed");
     for v in g.vertices().iter() {
-        let w = vertices.grow().expect("grow failed");
-        w.fill_from(v);
+        let mut w = vertices.grow().expect("grow failed");
+        w.fill_from(&v);
     }
     vertices.close().expect("close failed");
     assert!(compare_resource(
@@ -201,7 +201,7 @@ fn read_write_coappearances() {
 
     let mut edges = flatdata::Vector::<coappearances::Coappearance>::new(0);
     for e in g.edges().iter() {
-        edges.grow().fill_from(e);
+        edges.grow().fill_from(&e);
     }
     gb.set_edges(&edges.as_view()).expect("set_edges failed");
     assert!(compare_resource(
@@ -218,20 +218,20 @@ fn read_write_coappearances() {
             for element in item {
                 // TODO: It is not checked by the compiler that vertices_data lives long enough,
                 // since I unbound the creation of new_item from the multivector.
-                match element {
-                    coappearances::VerticesData::Nickname(nickname) => {
+                match *element {
+                    coappearances::VerticesData::Nickname(ref nickname) => {
                         let mut new_element = new_item.add_nickname();
                         new_element.fill_from(nickname);
                     }
-                    coappearances::VerticesData::Description(desc) => {
+                    coappearances::VerticesData::Description(ref desc) => {
                         let mut new_element = new_item.add_description();
                         new_element.fill_from(desc);
                     }
-                    coappearances::VerticesData::UnaryRelation(rel) => {
+                    coappearances::VerticesData::UnaryRelation(ref rel) => {
                         let mut new_element = new_item.add_unary_relation();
                         new_element.fill_from(rel);
                     }
-                    coappearances::VerticesData::BinaryRelation(rel) => {
+                    coappearances::VerticesData::BinaryRelation(ref rel) => {
                         let mut new_element = new_item.add_binary_relation();
                         new_element.fill_from(rel);
                     }
@@ -254,7 +254,7 @@ fn read_write_coappearances() {
 
     let mut chapters = flatdata::Vector::<coappearances::Chapter>::new(0);
     for ch in g.chapters().iter() {
-        chapters.grow().fill_from(ch);
+        chapters.grow().fill_from(&ch);
     }
 
     gb.set_chapters(&chapters.as_view())

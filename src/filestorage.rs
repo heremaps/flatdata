@@ -1,9 +1,9 @@
+use std::cell::RefCell;
 use std::collections::BTreeMap;
-use std::path;
 use std::fs::File;
 use std::io;
+use std::path;
 use std::rc::Rc;
-use std::cell::RefCell;
 
 use memmap::Mmap;
 

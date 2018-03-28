@@ -1,6 +1,7 @@
 use archive::{Index, VariadicStruct};
 use arrayview::ArrayView;
 use bytereader::StreamType;
+use handle::Handle;
 use storage::MemoryDescriptor;
 
 use std::fmt;
@@ -29,8 +30,8 @@ where
     }
 
     pub fn at(&self, idx: usize) -> MultiArrayViewItemIter<Ts> {
-        let start = self.index[idx].value();
-        let end = self.index[idx + 1].value();
+        let start = self.index.at(idx).value();
+        let end = self.index.at(idx + 1).value();
         MultiArrayViewItemIter {
             data: unsafe { self.data.offset(start as isize) },
             end: unsafe { self.data.offset(end as isize) },
@@ -62,7 +63,7 @@ pub struct MultiArrayViewItemIter<'a, Ts: 'a> {
 }
 
 impl<'a, Ts: 'a + VariadicStruct> iter::Iterator for MultiArrayViewItemIter<'a, Ts> {
-    type Item = Ts;
+    type Item = Handle<'a, Ts>;
     fn next(&mut self) -> Option<Self::Item> {
         if self.data < self.end {
             let type_index;
@@ -72,7 +73,7 @@ impl<'a, Ts: 'a + VariadicStruct> iter::Iterator for MultiArrayViewItemIter<'a, 
             }
             let res = Ts::from((type_index, self.data));
             self.data = unsafe { self.data.offset(res.size_in_bytes() as isize) };
-            Some(res)
+            Some(Handle::new(res))
         } else {
             None
         }

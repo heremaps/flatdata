@@ -1,7 +1,7 @@
 use std::error;
 use std::fmt;
-use std::str::Utf8Error;
 use std::io;
+use std::str::Utf8Error;
 
 #[derive(Debug)]
 pub enum ResourceStorageError {
