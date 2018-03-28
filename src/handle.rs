@@ -26,7 +26,7 @@ impl<'a, T> Deref for Handle<'a, T> {
 #[derive(Debug)]
 pub struct HandleMut<'a, T: 'a> {
     data: T,
-    _phantom: marker::PhantomData<&'a T>,
+    _phantom: marker::PhantomData<&'a mut T>,
 }
 
 impl<'a, T: 'a> HandleMut<'a, T> {
