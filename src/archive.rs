@@ -268,12 +268,18 @@ macro_rules! define_variadic_struct {
 
 #[macro_export]
 macro_rules! define_archive {
-    ($name:ident, $archive_schema:expr;
-        $(($struct_resource:ident, $struct_type:tt, $struct_schema:expr)),*;
-        $(($vector_resource:ident, $element_type:tt, $element_schema:expr)),*;
-        $(($multivector_resource:ident, $variadic_type:tt, $variadic_type_schema:expr,
+    ($name:ident, $builder_name:ident, $archive_schema:expr;
+        $(($struct_resource:ident,
+            $struct_setter:ident, $struct_type:tt, $struct_schema:expr)),*;
+        $(($vector_resource:ident,
+            $vector_setter:ident, $vector_start:ident,
+            $element_type:tt, $element_schema:expr)),*;
+        $(($multivector_resource:ident,
+            $multivector_start:ident,
+            $variadic_type:tt, $variadic_type_schema:expr,
             $multivector_resource_index:ident, $index_type:path, $index_schema:expr)),*;
-        $(($raw_data_resource:ident, $raw_data_schema:expr)),*
+        $(($raw_data_resource:ident,
+            $raw_data_resource_setter:ident, $raw_data_schema:expr)),*
     ) => {
 
         #[derive(Clone)]
@@ -403,6 +409,76 @@ macro_rules! define_archive {
                         $multivector_resource))*
                     $(,$raw_data_resource)*
                 })
+            }
+        }
+
+        #[derive(Clone)]
+        pub struct $builder_name {
+            storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>
+        }
+
+        impl $builder_name {
+            $(pub fn $struct_setter(
+                &mut self,
+                resource: &<$struct_type as ::flatdata::Struct>::Mut,
+            ) -> ::std::io::Result<()> {
+                let data = unsafe {
+                    ::std::slice::from_raw_parts(resource.data, $struct_type::SIZE_IN_BYTES)
+                };
+                self.storage
+                    .borrow_mut()
+                    .write(stringify!($struct_resource), $struct_schema, data)
+            })*
+
+            $(pub fn $vector_setter(
+                &mut self,
+                vector: &::flatdata::ArrayView<$element_type>,
+            ) -> ::std::io::Result<()> {
+                self.storage
+                    .borrow_mut()
+                    .write(stringify!($vector_resource), $element_schema, vector.as_ref())
+            }
+
+            pub fn $vector_start(
+                &mut self,
+            ) -> ::std::io::Result<::flatdata::ExternalVector<$element_type>> {
+                ::flatdata::create_external_vector(
+                    &mut *self.storage.borrow_mut(),
+                    stringify!($vector_resource),
+                    $element_schema,
+                )
+            })*
+
+            $(pub fn $multivector_start(
+                &mut self,
+            ) -> ::std::io::Result<
+                ::flatdata::MultiVector<$index_type, $variadic_type>
+            > {
+                ::flatdata::create_multi_vector(
+                    &mut *self.storage.borrow_mut(),
+                    stringify!($multivector_resource),
+                    $variadic_type_schema,
+                )
+            })*
+
+            $(pub fn $raw_data_resource_setter(&mut self, data: &[u8]) -> ::std::io::Result<()> {
+                self.storage.borrow_mut().write(
+                    stringify!($raw_data_resource),
+                    $raw_data_schema,
+                    data,
+                )
+            })*
+        }
+
+        impl ::flatdata::ArchiveBuilder for $builder_name {
+            const NAME: &'static str = stringify!($name);
+            const SCHEMA: &'static str = $archive_schema;
+
+            fn new(
+                storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
+            ) -> Result<Self, ::flatdata::ResourceStorageError> {
+                ::flatdata::create_archive::<Self>(storage.clone())?;
+                Ok(Self { storage })
             }
         }
     }

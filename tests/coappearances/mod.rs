@@ -319,124 +319,22 @@ define_index!(
     32
 );
 
-define_archive!(Graph, ::coappearances::schema::resources::GRAPH;
+define_archive!(Graph, GraphBuilder, ::coappearances::schema::resources::GRAPH;
     // struct resources
-    (meta, Meta, ::coappearances::schema::resources::META);
+    (meta, set_meta,
+        Meta, ::coappearances::schema::resources::META);
     // vector resources
-    (vertices, Character, ::coappearances::schema::resources::VERTICES),
-    (edges, Coappearance, ::coappearances::schema::resources::EDGES),
-    (chapters, Chapter, ::coappearances::schema::resources::CHAPTERS);
+    (vertices, set_vertices, start_vertices,
+        Character, ::coappearances::schema::resources::VERTICES),
+    (edges, set_edges, start_edges,
+        Coappearance, ::coappearances::schema::resources::EDGES),
+    (chapters, set_chapters, start_chapters,
+        Chapter, ::coappearances::schema::resources::CHAPTERS);
     // multivector resources
-    (vertices_data, VerticesData, ::coappearances::schema::resources::VERTICES_DATA,
+    (vertices_data, start_vertices_data,
+        VerticesData, ::coappearances::schema::resources::VERTICES_DATA,
         vertices_data_index, internal::IndexType32,
         ::coappearances::schema::resources::VERTICES_DATA_INDEX);
     // raw data resources
-    (strings, ::coappearances::schema::resources::STRINGS)
+    (strings, set_strings, ::coappearances::schema::resources::STRINGS)
 );
-
-// Manual implementation of GraphBuilder
-
-#[derive(Clone)]
-pub struct GraphBuilder {
-    storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
-}
-
-impl GraphBuilder {
-    pub fn set_meta(&mut self, meta: &::coappearances::MetaMut) -> ::std::io::Result<()> {
-        let data = unsafe {
-            ::std::slice::from_raw_parts(meta.data, ::coappearances::Meta::SIZE_IN_BYTES)
-        };
-        self.storage
-            .borrow_mut()
-            .write("meta", ::coappearances::schema::resources::META, data)
-    }
-
-    pub fn start_vertices(
-        &mut self,
-    ) -> ::std::io::Result<::flatdata::ExternalVector<::coappearances::Character>> {
-        ::flatdata::create_external_vector(
-            &mut *self.storage.borrow_mut(),
-            "vertices",
-            ::coappearances::schema::resources::VERTICES,
-        )
-    }
-
-    // pub fn set_vertices(vertices: &::coappearances::ArrayView<::coappearances::Character>) {}
-
-    pub fn set_edges(
-        &mut self,
-        edges: &::flatdata::ArrayView<::coappearances::Coappearance>,
-    ) -> ::std::io::Result<()> {
-        self.storage.borrow_mut().write(
-            "edges",
-            ::coappearances::schema::resources::EDGES,
-            edges.as_ref(),
-        )
-    }
-
-    pub fn start_vertices_data(
-        &mut self,
-    ) -> ::std::io::Result<
-        ::flatdata::MultiVector<
-            ::coappearances::internal::IndexType32,
-            ::coappearances::VerticesData,
-        >,
-    > {
-        ::flatdata::create_multi_vector(
-            &mut *self.storage.borrow_mut(),
-            "vertices_data",
-            ::coappearances::schema::resources::VERTICES_DATA,
-        )
-    }
-
-    pub fn set_chapters(
-        &mut self,
-        chapters: &::flatdata::ArrayView<::coappearances::Chapter>,
-    ) -> ::std::io::Result<()> {
-        self.storage.borrow_mut().write(
-            "chapters",
-            ::coappearances::schema::resources::CHAPTERS,
-            chapters.as_ref(),
-        )
-    }
-
-    pub fn set_strings(&mut self, data: &[u8]) -> ::std::io::Result<()> {
-        self.storage.borrow_mut().write(
-            "strings",
-            ::coappearances::schema::resources::STRINGS,
-            data,
-        )
-    }
-}
-
-impl ::flatdata::ArchiveBuilder for GraphBuilder {
-    const NAME: &'static str = "Graph";
-    const SCHEMA: &'static str = ::coappearances::schema::resources::GRAPH;
-
-    fn new(
-        storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
-    ) -> Result<Self, ::flatdata::ResourceStorageError> {
-        let signature_name = format!("{}.archive", Self::NAME);
-        {
-            // existing archive is an error
-            let storage = storage.borrow();
-            if storage.exists(&signature_name) {
-                return Err(::flatdata::ResourceStorageError::from_io_error(
-                    ::std::io::Error::new(
-                        ::std::io::ErrorKind::AlreadyExists,
-                        signature_name.clone(),
-                    ),
-                    signature_name,
-                ));
-            }
-        }
-        {
-            // write empty signature and schema
-            let mut mut_storage = storage.borrow_mut();
-            mut_storage
-                .write(&signature_name, Self::SCHEMA, &[])
-                .map_err(|e| ::flatdata::ResourceStorageError::from_io_error(e, signature_name))?;
-        }
-        Ok(Self { storage })
-    }
-}

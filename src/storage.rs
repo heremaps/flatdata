@@ -7,7 +7,7 @@ use std::rc::Rc;
 use std::slice;
 use std::str;
 
-use archive::{Index, Struct, VariadicStruct};
+use archive::{ArchiveBuilder, Index, Struct, VariadicStruct};
 use error::ResourceStorageError;
 use memory::{SizeType, PADDING_SIZE};
 use multivector::MultiVector;
@@ -127,6 +127,30 @@ pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
     let data_writer = storage.create_output_stream(resource_name)?;
     let handle = ResourceHandle::new(data_writer)?;
     Ok(MultiVector::new(index, handle))
+}
+
+pub fn create_archive<T: ArchiveBuilder>(
+    storage: Rc<RefCell<ResourceStorage>>,
+) -> Result<(), ResourceStorageError> {
+    let signature_name = format!("{}.archive", T::NAME);
+    {
+        // existing archive yields an error
+        let storage = storage.borrow();
+        if storage.exists(&signature_name) {
+            return Err(ResourceStorageError::from_io_error(
+                ::std::io::Error::new(::std::io::ErrorKind::AlreadyExists, signature_name.clone()),
+                signature_name,
+            ));
+        }
+    }
+    {
+        // write empty signature and schema
+        let mut mut_storage = storage.borrow_mut();
+        mut_storage
+            .write(&signature_name, T::SCHEMA, &[])
+            .map_err(|e| ResourceStorageError::from_io_error(e, signature_name))?;
+    }
+    Ok(())
 }
 
 /// Describes a chunk of memory
