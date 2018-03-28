@@ -207,10 +207,8 @@ macro_rules! define_variadic_struct {
             $($type($type),)*
         }
 
-        impl ::std::convert::From<(
-            $crate::TypeIndex, $crate::bytereader::StreamType)> for $name {
-            fn from((type_index, data):
-                ($crate::TypeIndex, $crate::bytereader::StreamType)) -> Self {
+        impl ::std::convert::From<($crate::TypeIndex, *const u8)> for $name {
+            fn from((type_index, data): ($crate::TypeIndex, *const u8)) -> Self {
                 match type_index {
                     $($type_index => $name::$type($type::from(data))),+,
                     _ => panic!(

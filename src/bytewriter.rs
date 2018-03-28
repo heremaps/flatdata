@@ -1,5 +1,3 @@
-pub type StreamType = u8;
-
 #[macro_export]
 macro_rules! masked {
     ($value: expr, $num_bits: expr) => {

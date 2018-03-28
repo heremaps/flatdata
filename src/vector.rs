@@ -1,6 +1,5 @@
 use archive::Struct;
 use arrayview::ArrayView;
-use bytewriter;
 use handle::{Handle, HandleMut};
 use memory;
 use storage::{MemoryDescriptor, ResourceHandle};
@@ -11,7 +10,7 @@ use std::marker;
 
 #[derive(Debug, Clone)]
 pub struct Vector<T> {
-    data: Vec<bytewriter::StreamType>,
+    data: Vec<u8>,
     _phantom: marker::PhantomData<T>,
 }
 
@@ -23,7 +22,7 @@ where
     pub fn new(len: usize) -> Self {
         let size = Self::size(len);
         let mut data = Vec::with_capacity(size);
-        data.resize(size, 0 as bytewriter::StreamType);
+        data.resize(size, 0);
         Self {
             data,
             _phantom: marker::PhantomData,

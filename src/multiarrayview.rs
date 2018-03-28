@@ -1,6 +1,5 @@
 use archive::{Index, VariadicStruct};
 use arrayview::ArrayView;
-use bytereader::StreamType;
 use handle::Handle;
 use storage::MemoryDescriptor;
 
@@ -12,7 +11,7 @@ use std::marker;
 #[derive(Clone)]
 pub struct MultiArrayView<'a, Idx: 'a, Ts> {
     index: ArrayView<'a, Idx>,
-    data: StreamType,
+    data: *const u8,
     _phantom: marker::PhantomData<Ts>,
 }
 
@@ -57,8 +56,8 @@ where
 }
 
 pub struct MultiArrayViewItemIter<'a, Ts: 'a> {
-    data: StreamType,
-    end: StreamType,
+    data: *const u8,
+    end: *const u8,
     _phantom: marker::PhantomData<&'a Ts>,
 }
 

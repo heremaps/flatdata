@@ -1,5 +1,3 @@
-pub type StreamType = *const u8;
-
 // TODO: Refactor according to the new version in C++ implementation.
 #[macro_export]
 macro_rules! read_bytes {
