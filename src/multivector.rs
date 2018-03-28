@@ -1,4 +1,5 @@
 use archive::{Index, IndexMut, StructMut, VariadicStruct};
+use handle::HandleMut;
 use memory;
 use storage::ResourceHandle;
 use vector::ExternalVector;
@@ -26,12 +27,12 @@ impl<Idx: Index, Ts: VariadicStruct> MultiVector<Idx, Ts> {
         }
     }
 
-    pub fn grow(&mut self) -> io::Result<Ts::ItemBuilder> {
+    pub fn grow(&mut self) -> io::Result<HandleMut<Ts::ItemBuilder>> {
         if self.data.len() > 1024 * 1024 * 32 {
             self.flush()?;
         }
         self.add_to_index()?;
-        Ok(Ts::ItemBuilder::from(&mut self.data))
+        Ok(HandleMut::new(Ts::ItemBuilder::from(&mut self.data)))
     }
 
     fn flush(&mut self) -> io::Result<()> {
@@ -80,20 +81,22 @@ mod tests {
             let mut mv =
                 create_multi_vector::<Idx, Variant>(&mut storage, "multivector", "Some schema")
                     .expect("failed to create ExternalVector");
-            let mut item = mv.grow().expect("grow failed");
             {
-                let mut a = item.add_a();
-                a.set_x(1);
-                a.set_y(2);
-                assert_eq!(a.x(), 1);
-                assert_eq!(a.y(), 2);
-            }
-            {
-                let mut b = item.add_a();
-                b.set_x(3);
-                b.set_y(4);
-                assert_eq!(b.x(), 3);
-                assert_eq!(b.y(), 4);
+                let mut item = mv.grow().expect("grow failed");
+                {
+                    let mut a = item.add_a();
+                    a.set_x(1);
+                    a.set_y(2);
+                    assert_eq!(a.x(), 1);
+                    assert_eq!(a.y(), 2);
+                }
+                {
+                    let mut b = item.add_a();
+                    b.set_x(3);
+                    b.set_y(4);
+                    assert_eq!(b.x(), 3);
+                    assert_eq!(b.y(), 4);
+                }
             }
             mv.close().expect("close failed");
         }
