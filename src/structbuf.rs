@@ -26,6 +26,12 @@ impl<T: Struct> StructBuf<T> {
     }
 }
 
+impl<T: Struct> Default for StructBuf<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Struct> ops::Deref for StructBuf<T> {
     type Target = T::Mut;
     fn deref(&self) -> &Self::Target {
@@ -42,5 +48,36 @@ impl<T: Struct> ops::DerefMut for StructBuf<T> {
 impl<T: Struct> AsRef<[u8]> for StructBuf<T> {
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use super::super::test_structs::A;
+
+    #[test]
+    fn test_new() {
+        let a = StructBuf::<A>::new();
+        let b = StructBuf::<A>::default();
+        assert_eq!(a.as_ref(), b.as_ref());
+    }
+
+    #[test]
+    fn test_setter_getter() {
+        let mut a = StructBuf::<A>::new();
+        a.set_x(1);
+        a.set_y(2);
+        assert_eq!(a.x(), 1);
+        assert_eq!(a.y(), 2);
+        a.set_x(3);
+        assert_eq!(a.x(), 3);
+        assert_eq!(a.y(), 2);
+        a.set_y(4);
+        assert_eq!(a.x(), 3);
+        assert_eq!(a.y(), 4);
+        let a_ref = (*a).as_ref();
+        assert_eq!(a_ref.x(), 3);
+        assert_eq!(a_ref.y(), 4);
     }
 }

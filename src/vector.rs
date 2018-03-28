@@ -144,92 +144,10 @@ impl<T> Drop for ExternalVector<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::convert;
-    use std::mem;
-    use std::slice;
-    use std::str;
-
-    use super::super::{ArrayView, MemoryResourceStorage, ResourceStorage};
-    use super::super::archive::StructMut;
-    use super::super::storage::create_external_vector;
-
-    #[derive(Clone, Debug, PartialEq)]
-    struct A {
-        data: *const u8,
-    }
-
-    impl A {
-        pub fn x(&self) -> u32 {
-            read_bytes!(u32, self.data, 0, 16)
-        }
-
-        pub fn y(&self) -> u32 {
-            read_bytes!(u32, self.data, 16, 16)
-        }
-    }
-
-    impl convert::From<*const u8> for A {
-        fn from(data: *const u8) -> Self {
-            Self { data }
-        }
-    }
-
-    impl AsRef<A> for AMut {
-        fn as_ref(&self) -> &A {
-            unsafe { mem::transmute(self) }
-        }
-    }
-
-    impl Struct for A {
-        const SCHEMA: &'static str = "struct A { }";
-        const SIZE_IN_BYTES: usize = 4;
-        type Mut = AMut;
-        fn as_ptr(&self) -> *const u8 {
-            self.data
-        }
-    }
-
-    #[derive(Debug)]
-    struct AMut {
-        data: *mut u8,
-    }
-
-    impl AMut {
-        pub fn x(&self) -> u32 {
-            read_bytes!(u32, self.data, 0, 16)
-        }
-
-        pub fn y(&self) -> u32 {
-            read_bytes!(u32, self.data, 16, 16)
-        }
-
-        pub fn set_x(&mut self, value: u32) {
-            let buffer = unsafe {
-                slice::from_raw_parts_mut(self.data, <Self as StructMut>::Const::SIZE_IN_BYTES)
-            };
-            write_bytes!(u32; value, buffer, 0, 16);
-        }
-
-        pub fn set_y(&mut self, value: u32) {
-            let buffer = unsafe {
-                slice::from_raw_parts_mut(self.data, <Self as StructMut>::Const::SIZE_IN_BYTES)
-            };
-            write_bytes!(u32; value, buffer, 16, 16);
-        }
-    }
-
-    impl convert::From<*mut u8> for AMut {
-        fn from(data: *mut u8) -> Self {
-            Self { data }
-        }
-    }
-
-    impl StructMut for AMut {
-        type Const = A;
-        fn as_mut_ptr(&mut self) -> *mut u8 {
-            self.data
-        }
-    }
+    use memstorage::MemoryResourceStorage;
+    use storage::ResourceStorage;
+    use storage::create_external_vector;
+    use test_structs::*;
 
     #[test]
     fn test_vector_index() {

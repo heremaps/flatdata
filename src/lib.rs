@@ -20,6 +20,8 @@ mod storage;
 mod structbuf;
 mod vector;
 
+mod test_structs;
+
 pub use archive::*;
 pub use arrayview::ArrayView;
 pub use error::*;

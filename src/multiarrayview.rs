@@ -9,10 +9,10 @@ use std::marker;
 
 /// Ts is a variadic type describing the types of an element in `MultiArrayView`.
 #[derive(Clone)]
-pub struct MultiArrayView<'a, Idx: 'a, Ts> {
+pub struct MultiArrayView<'a, Idx: 'a, Ts: 'a> {
     index: ArrayView<'a, Idx>,
     data: *const u8,
-    _phantom: marker::PhantomData<Ts>,
+    _phantom: marker::PhantomData<&'a Ts>,
 }
 
 impl<'a, Idx, Ts> MultiArrayView<'a, Idx, Ts>

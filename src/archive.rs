@@ -129,6 +129,10 @@ macro_rules! define_struct {
         }
 
         impl $name_mut {
+            $(pub fn $field(&self) -> $type {
+                read_bytes!($type, self.data, $offset, $bit_size)
+            })*
+
             $(pub fn $field_setter(&mut self, value: $type) {
                 let buffer = unsafe {
                     ::std::slice::from_raw_parts_mut(self.data, $size_in_bytes)
