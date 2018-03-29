@@ -216,8 +216,6 @@ fn read_write_coappearances() {
         for item in g.vertices_data().iter() {
             let mut new_item = vertices_data.grow().expect("grow failed");
             for element in item {
-                // TODO: It is not checked by the compiler that vertices_data lives long enough,
-                // since I unbound the creation of new_item from the multivector.
                 match *element {
                     coappearances::VerticesData::Nickname(ref nickname) => {
                         let mut new_element = new_item.add_nickname();
