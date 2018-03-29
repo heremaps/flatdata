@@ -12,7 +12,7 @@ Reader:
 * [x] ArrayView
 * [x] MultiArrayView
 * [x] Raw data view
-* [ ] Subarchives
+* [x] Subarchives
 
 Writer:
 
@@ -23,23 +23,17 @@ Writer:
 * [x] ExternalVector
 * [x] MultiVector
 * [x] Raw data writer
-* [ ] Subarchives
+* [x] Subarchives
 
 Generator:
 
 * [ ] `flatdata`'s schema to Rust generator
 
-Misc:
-
-* [x] Derive partial eq comparsion for all structs.
-* [x] Rename `size` of all containers into `len`.
-* [x] Rename `index` of containers to `at`.
-
 ## Example
 
-The folder [tests/coappearances](tests/coappearances) contains a graph of character coappearances in Tolstoi's Anna Karenina described in `flatdata` together with the serialized data. The example is from the original [flatdata repository](https://github.com/heremaps/flatdata). It also contains a Rust module which implements the schema. Usually, this code would be generated automatically by `flatdata`'s generator. For now, we use it as a proof of concept to develop readers and writers, and also to manually define a desired layout we would generate automatically.
+The folder [tests/coappearances](tests/coappearances) contains a graph of character coappearances in Tolstoi's Anna Karenina described in `flatdata` together with the serialized data. The example is taken from the original [flatdata repository](https://github.com/heremaps/flatdata). It also contains a Rust module which implements the schema. Usually, this code would be generated automatically by `flatdata`'s generator. For now, we use it as a proof of concept to develop readers and writers, and also to manually define a desired layout we would generate automatically otherwise.
 
-The tests reads all types of different data and checks that it was deserialized correctly. It can be also considered as a reader example. Run it as follows:
+The standalone tests read and write all different types of data and check that the data was de/serialized correctly. Run them as follows:
 
 ```shell
 cargo test

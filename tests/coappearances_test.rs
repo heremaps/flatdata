@@ -156,17 +156,19 @@ fn compare_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &st
         )
 }
 
-#[test]
-fn read_write_coappearances() {
+fn copy_coappearances_archive(
+    from_path: &str,
+    to_path: &str,
+) -> (path::PathBuf, coappearances::GraphBuilder) {
     // open for reading
-    let source_archive_path = path::PathBuf::from("tests/coappearances/karenina.archive");
+    let source_archive_path = path::PathBuf::from(from_path);
     let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
         source_archive_path.clone(),
     )));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
 
     // open for writing
-    let archive_path = env::temp_dir().join("flatdata-test/karenina.archive");
+    let archive_path = env::temp_dir().join(to_path);
     println!("Will create archive in: {}", archive_path.to_str().unwrap());
     if archive_path.exists() {
         fs::remove_dir_all(&archive_path).expect("could not remove already existing archive");
@@ -210,34 +212,32 @@ fn read_write_coappearances() {
         "edges"
     ));
 
-    {
-        let mut vertices_data = gb.start_vertices_data()
-            .expect("start_vertices_data failed");
-        for item in g.vertices_data().iter() {
-            let mut new_item = vertices_data.grow().expect("grow failed");
-            for element in item {
-                match *element {
-                    coappearances::VerticesData::Nickname(ref nickname) => {
-                        let mut new_element = new_item.add_nickname();
-                        new_element.fill_from(nickname);
-                    }
-                    coappearances::VerticesData::Description(ref desc) => {
-                        let mut new_element = new_item.add_description();
-                        new_element.fill_from(desc);
-                    }
-                    coappearances::VerticesData::UnaryRelation(ref rel) => {
-                        let mut new_element = new_item.add_unary_relation();
-                        new_element.fill_from(rel);
-                    }
-                    coappearances::VerticesData::BinaryRelation(ref rel) => {
-                        let mut new_element = new_item.add_binary_relation();
-                        new_element.fill_from(rel);
-                    }
+    let mut vertices_data = gb.start_vertices_data()
+        .expect("start_vertices_data failed");
+    for item in g.vertices_data().iter() {
+        let mut new_item = vertices_data.grow().expect("grow failed");
+        for element in item {
+            match *element {
+                coappearances::VerticesData::Nickname(ref nickname) => {
+                    let mut new_element = new_item.add_nickname();
+                    new_element.fill_from(nickname);
+                }
+                coappearances::VerticesData::Description(ref desc) => {
+                    let mut new_element = new_item.add_description();
+                    new_element.fill_from(desc);
+                }
+                coappearances::VerticesData::UnaryRelation(ref rel) => {
+                    let mut new_element = new_item.add_unary_relation();
+                    new_element.fill_from(rel);
+                }
+                coappearances::VerticesData::BinaryRelation(ref rel) => {
+                    let mut new_element = new_item.add_binary_relation();
+                    new_element.fill_from(rel);
                 }
             }
         }
-        vertices_data.close().expect("close failed");
     }
+    vertices_data.close().expect("close failed");
 
     assert!(compare_resource(
         &source_archive_path,
@@ -269,6 +269,91 @@ fn read_write_coappearances() {
         &archive_path,
         "strings"
     ));
+
+    (archive_path, gb)
+}
+
+#[test]
+fn read_write_coappearances() {
+    copy_coappearances_archive(
+        "tests/coappearances/karenina.archive",
+        "read_write_coappearances/karenina.archive",
+    );
+}
+
+#[test]
+fn read_non_existent_calculated_data_subarchive() {
+    let (archive_path, _) = copy_coappearances_archive(
+        "tests/coappearances/karenina.archive",
+        "read_non_existent_calculated_data_subarchive/karenina.archive",
+    );
+
+    let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
+        archive_path,
+    )));
+    let g = coappearances::Graph::open(storage).expect("invalid archive");
+    assert!(g.calculated_data().is_none());
+}
+
+#[test]
+fn read_write_calculated_data_subarchive() {
+    let (archive_path, mut gb) = copy_coappearances_archive(
+        "tests/coappearances/karenina.archive",
+        "read_write_calculated_data_subarchive/karenina.archive",
+    );
+
+    let mut builder = gb.calculated_data().expect("calculated_data failed");
+    let mut inv = flatdata::StructBuf::<coappearances::Invariants>::new();
+    inv.set_max_degree(71);
+    inv.set_max_degree_ref(46);
+    inv.set_min_degree(1);
+    inv.set_min_degree_ref(9);
+    inv.set_num_connected_components(1);
+    builder.set_invariants(&inv).expect("set_invariants failed");
+
+    let degrees = vec![
+        4, 11, 25, 43, 3, 3, 4, 7, 2, 1, 1, 1, 12, 3, 1, 4, 8, 2, 6, 40, 2, 5, 2, 1, 1, 6, 3, 16,
+        3, 5, 5, 1, 1, 1, 3, 3, 13, 44, 27, 5, 3, 10, 2, 11, 4, 6, 71, 7, 2, 5, 7, 6, 2, 11, 3, 1,
+        1, 2, 3, 4, 6, 2, 2, 6, 5, 2, 3, 3, 1, 3, 1, 6, 3, 5, 3, 7, 1, 7, 4, 3, 2, 3, 1, 5, 1, 1,
+        6, 10, 7, 6, 3, 1, 27, 18, 8, 3, 3, 2, 4, 2, 1, 10, 3, 4, 2, 9, 3, 6, 4, 1, 6, 50, 1, 15,
+        2, 14, 1, 7, 1, 12, 15, 3, 3, 2, 1, 6, 15, 4, 7, 47, 6, 14, 3, 2, 1, 7, 10, 13,
+    ];
+    let mut vertex_degrees = builder
+        .start_vertex_degrees()
+        .expect("start_vertex_degrees failed");
+    for deg in degrees {
+        vertex_degrees.grow().expect("grow failed").set_value(deg)
+    }
+    vertex_degrees.close().expect("close failed");
+
+    // compare
+    let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
+        "tests/coappearances/karenina.archive".into(),
+    )));
+    let orig = coappearances::Graph::open(storage).expect("invalid archive");
+    let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
+        archive_path,
+    )));
+    let copy = coappearances::Graph::open(storage).expect("invalid archive");
+
+    let orig_calc_data = orig.calculated_data()
+        .as_ref()
+        .expect("orig calculated_data failed");
+    let copy_calc_data = copy.calculated_data()
+        .as_ref()
+        .expect("copy calculated_data failed");
+
+    assert_eq!(orig_calc_data.invariants(), copy_calc_data.invariants());
+    assert_eq!(
+        orig_calc_data.vertex_degrees().len(),
+        copy_calc_data.vertex_degrees().len()
+    );
+    for i in 0..orig_calc_data.vertex_degrees().len() {
+        assert_eq!(
+            orig_calc_data.vertex_degrees().at(i),
+            copy_calc_data.vertex_degrees().at(i)
+        );
+    }
 }
 
 #[test]

@@ -193,14 +193,14 @@ namespace coappearances { archive CalculatedData {
     vertex_degrees : vector< Degree >;
 } }
 namespace coappearances { struct Invariants {
-    num_vertices : u32 : 16;
-    num_edges : u32 : 16;
     max_degree : u32 : 16;
+    max_degree_ref : u32 : 16;
     min_degree : u32 : 16;
+    min_degree_ref : u32 : 16;
     num_connected_components : u32 : 16;
 } }
 namespace coappearances { struct Degree {
-    value : u32;
+    value : u32 : 16;
 } }
 namespace coappearances { @bound_implicitly( characters: vertices, vertices_data )
 archive Graph {
@@ -231,6 +231,7 @@ archive Graph {
     strings: raw_data;
 
     // Optional archive containing calculated statistics.
+    @optional
     calculated_data : archive CalculatedData;
 } }"#;
 
@@ -385,7 +386,13 @@ define_archive!(Graph, GraphBuilder,
         vertices_data_index, internal::IndexType32,
         ::coappearances::schema::resources::VERTICES_DATA_INDEX);
     // raw data resources
-    (strings, set_strings, ::coappearances::schema::resources::STRINGS)
+    (strings, set_strings, ::coappearances::schema::resources::STRINGS);
+    // subarchives
+    ;
+    // optional subarchives
+    (calculated_data,
+        CalculatedData, CalculatedDataBuilder,
+        ::coappearances::schema::resources::CALCULATED_DATA)
 );
 
 define_struct!(
@@ -425,4 +432,8 @@ define_archive!(CalculatedData, CalculatedDataBuilder,
     // multivector resources
     ;
     // raw data resources
+    ;
+    // subarchives
+    ;
+    // optional subarchives
 );

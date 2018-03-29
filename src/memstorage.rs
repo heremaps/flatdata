@@ -41,6 +41,10 @@ impl MemoryResourceStorage {
 impl Stream for Cursor<Vec<u8>> {}
 
 impl ResourceStorage for MemoryResourceStorage {
+    fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>> {
+        Rc::new(RefCell::new(Self::new(self.path.join(dir))))
+    }
+
     fn exists(&self, resource_name: &str) -> bool {
         let resource_path = self.path.join(resource_name);
         self.storage.resources.contains_key(&resource_path)

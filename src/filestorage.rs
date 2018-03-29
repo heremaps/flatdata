@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io;
 use std::path;
 use std::rc::Rc;
@@ -52,13 +52,13 @@ impl FileResourceStorage {
             path,
         }
     }
-
-    pub fn path(&self) -> &path::Path {
-        &self.path
-    }
 }
 
 impl ResourceStorage for FileResourceStorage {
+    fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>> {
+        Rc::new(RefCell::new(Self::new(self.path.join(dir))))
+    }
+
     fn exists(&self, resource_name: &str) -> bool {
         self.path.join(resource_name).exists()
     }
@@ -85,6 +85,9 @@ impl ResourceStorage for FileResourceStorage {
         &mut self,
         resource_name: &str,
     ) -> Result<Rc<RefCell<Stream>>, io::Error> {
+        if !self.path.exists() {
+            fs::create_dir_all(self.path.clone())?;
+        }
         let resource_path = self.path.join(resource_name);
         let file = File::create(resource_path)?;
         Ok(Rc::new(RefCell::new(file)))

@@ -42,6 +42,7 @@ pub trait ResourceStorage {
     }
 
     // virtual
+    fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>>;
     fn exists(&self, resource_name: &str) -> bool;
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
     fn create_output_stream(&mut self, resource_name: &str) -> io::Result<Rc<RefCell<Stream>>>;
