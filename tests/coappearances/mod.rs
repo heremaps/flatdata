@@ -188,6 +188,20 @@ struct Chapter {
     major: u8 : 4;
     minor: u8 : 7;
 } }
+namespace coappearances { archive CalculatedData {
+    invariants : Invariants;
+    vertex_degrees : vector< Degree >;
+} }
+namespace coappearances { struct Invariants {
+    num_vertices : u32 : 16;
+    num_edges : u32 : 16;
+    max_degree : u32 : 16;
+    min_degree : u32 : 16;
+    num_connected_components : u32 : 16;
+} }
+namespace coappearances { struct Degree {
+    value : u32;
+} }
 namespace coappearances { @bound_implicitly( characters: vertices, vertices_data )
 archive Graph {
     @explicit_reference( Meta.title_ref, strings )
@@ -215,6 +229,9 @@ archive Graph {
 
     // All strings contained in the data separated by `\0`.
     strings: raw_data;
+
+    // Optional archive containing calculated statistics.
+    calculated_data : archive CalculatedData;
 } }"#;
     }
 

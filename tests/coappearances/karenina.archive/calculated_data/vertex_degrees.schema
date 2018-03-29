@@ -1,0 +1,4 @@
+namespace coappearances { struct Degree {
+    value : u32 : 16;
+} }
+namespace coappearances { vertex_degrees : vector< Degree >; }
