@@ -233,6 +233,35 @@ archive Graph {
     // Optional archive containing calculated statistics.
     calculated_data : archive CalculatedData;
 } }"#;
+
+        pub const CALCULATED_DATA: &str = r#"namespace coappearances { struct Invariants {
+    max_degree : u32 : 16;
+    max_degree_ref : u32 : 16;
+    min_degree : u32 : 16;
+    min_degree_ref : u32 : 16;
+    num_connected_components : u32 : 16;
+} }
+namespace coappearances { struct Degree {
+    value : u32 : 16;
+} }
+namespace coappearances { archive CalculatedData {
+    invariants : Invariants;
+    vertex_degrees : vector< Degree >;
+} }"#;
+
+        pub const INVARIANTS: &str = r#"namespace coappearances { struct Invariants {
+    max_degree : u32 : 16;
+    max_degree_ref : u32 : 16;
+    min_degree : u32 : 16;
+    min_degree_ref : u32 : 16;
+    num_connected_components : u32 : 16;
+} }
+namespace coappearances { invariants : Invariants; }"#;
+
+        pub const VERTEX_DEGREES: &str = r#"namespace coappearances { struct Degree {
+    value : u32 : 16;
+} }
+namespace coappearances { vertex_degrees : vector< Degree >; }"#;
     }
 
     pub mod structs {
@@ -246,6 +275,8 @@ archive Graph {
         pub const UNARYRELATION: &str = "";
         pub const BINARYRELATION: &str = "";
         pub const INDEXTYPE32: &str = "";
+        pub const INVARIANTS: &str = "";
+        pub const DEGREE: &str = "";
     }
 }
 
@@ -336,7 +367,8 @@ define_index!(
     32
 );
 
-define_archive!(Graph, GraphBuilder, ::coappearances::schema::resources::GRAPH;
+define_archive!(Graph, GraphBuilder,
+    ::coappearances::schema::resources::GRAPH;
     // struct resources
     (meta, set_meta,
         Meta, ::coappearances::schema::resources::META);
@@ -354,4 +386,43 @@ define_archive!(Graph, GraphBuilder, ::coappearances::schema::resources::GRAPH;
         ::coappearances::schema::resources::VERTICES_DATA_INDEX);
     // raw data resources
     (strings, set_strings, ::coappearances::schema::resources::STRINGS)
+);
+
+define_struct!(
+    Invariants,
+    InvariantsMut,
+    ::coappearances::schema::structs::INVARIANTS,
+    10,
+    (max_degree, set_max_degree, u32, 0, 16),
+    (max_degree_ref, set_max_degree_ref, u32, 16, 16),
+    (min_degree, set_min_degree, u32, 32, 16),
+    (min_degree_ref, set_min_degree_ref, u32, 48, 16),
+    (
+        num_connected_components,
+        set_num_connected_components,
+        u32,
+        64,
+        16
+    )
+);
+
+define_struct!(
+    Degree,
+    DegreeMut,
+    ::coappearances::schema::structs::DEGREE,
+    2,
+    (value, set_value, u32, 0, 16)
+);
+
+define_archive!(CalculatedData, CalculatedDataBuilder,
+    ::coappearances::schema::resources::CALCULATED_DATA;
+    // struct resources
+    (invariants, set_invariants,
+        Invariants, ::coappearances::schema::resources::INVARIANTS);
+    // vector resources
+    (vertex_degrees, set_vertex_degrees, start_vertex_degrees,
+        Degree, ::coappearances::schema::resources::VERTEX_DEGREES);
+    // multivector resources
+    ;
+    // raw data resources
 );

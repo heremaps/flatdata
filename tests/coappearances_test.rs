@@ -272,3 +272,30 @@ fn read_write_coappearances() {
         "strings"
     ));
 }
+
+#[test]
+fn read_and_validate_calculate_data_subarchive() {
+    let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
+        path::PathBuf::from("tests/coappearances/karenina.archive/calculated_data"),
+    )));
+    let calc_data = coappearances::CalculatedData::open(storage).expect("invalid archive");
+    println!("{:?}", calc_data);
+
+    let inv = calc_data.invariants();
+    assert_eq!(inv.max_degree(), 71);
+    assert_eq!(inv.max_degree_ref(), 46);
+    assert_eq!(inv.min_degree(), 1);
+    assert_eq!(inv.min_degree_ref(), 9);
+    assert_eq!(inv.num_connected_components(), 1);
+
+    let expected_degrees = vec![
+        4, 11, 25, 43, 3, 3, 4, 7, 2, 1, 1, 1, 12, 3, 1, 4, 8, 2, 6, 40, 2, 5, 2, 1, 1, 6, 3, 16,
+        3, 5, 5, 1, 1, 1, 3, 3, 13, 44, 27, 5, 3, 10, 2, 11, 4, 6, 71, 7, 2, 5, 7, 6, 2, 11, 3, 1,
+        1, 2, 3, 4, 6, 2, 2, 6, 5, 2, 3, 3, 1, 3, 1, 6, 3, 5, 3, 7, 1, 7, 4, 3, 2, 3, 1, 5, 1, 1,
+        6, 10, 7, 6, 3, 1, 27, 18, 8, 3, 3, 2, 4, 2, 1, 10, 3, 4, 2, 9, 3, 6, 4, 1, 6, 50, 1, 15,
+        2, 14, 1, 7, 1, 12, 15, 3, 3, 2, 1, 6, 15, 4, 7, 47, 6, 14, 3, 2, 1, 7, 10, 13,
+    ];
+    for (index, deg) in calc_data.vertex_degrees().iter().enumerate() {
+        assert_eq!(deg.value(), expected_degrees[index]);
+    }
+}

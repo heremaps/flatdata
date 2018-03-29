@@ -67,6 +67,7 @@ pub trait ArchiveBuilder: Clone {
 
 #[macro_export]
 macro_rules! intersperse {
+    () => {""};
     ($head:expr) => {$head};
     ($head:expr, $($tail:expr),+) => (concat!($head, ", ", intersperse!($($tail),*)));
 }
@@ -332,7 +333,7 @@ macro_rules! define_archive {
             }
         }
 
-        impl ::std::fmt::Debug for Graph {
+        impl ::std::fmt::Debug for $name {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
                     concat!("{} {{ ",
