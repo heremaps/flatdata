@@ -25,18 +25,24 @@ class Multivector(ResourceBase):
         return [StructureReference(name=t) for t in self._types]
 
     @property
+    def types(self):
+        return self._types
+
+    @property
     def width(self):
         return self._width
 
     @property
     def builtins(self):
-        StructProperties = namedtuple("Properties", ["name", "schema", "doc", "fields"])
+        StructProperties = namedtuple(
+            "Properties", ["name", "schema", "doc", "fields", "is_index"])
         FieldProperties = namedtuple("Properties", ["name", "width", "type"])
         properties = StructProperties(
             name="IndexType{width}".format(width=self._width),
             schema="struct IndexType%s { value : u64 : %s; }" % (self._width, self._width),
             doc="/** Builtin type to for MultiVector index */",
-            fields=[FieldProperties(name="value", width=self._width, type="u64")])
+            fields=[FieldProperties(name="value", width=self._width, type="u64")],
+            is_index=True)
         index_type = Structure.create(properties=properties, own_schema=properties.schema,
                                       definition="")
         return [index_type]

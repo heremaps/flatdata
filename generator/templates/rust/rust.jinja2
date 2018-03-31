@@ -1,0 +1,135 @@
+use flatdata::Struct;
+
+{# schemas #}
+mod schema {
+    pub mod resources {
+    {% for node in nodes %}
+        {%- if node | is_archive %}
+        pub mod {{ node.name | camel_to_snake_case }} {
+            {% for r in node.resources | supported_resources %}
+            {% if not r | is_archive_resource %}
+            pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
+            {% endif %}
+            {% endfor %}
+        }
+        {% endif %}
+    {% endfor %}
+    }
+    pub mod structs {
+    {% for node in nodes %}
+        {%- if node | is_structure or node | is_archive %}
+        pub const {{ node.name | camel_to_snake_case | upper }}: &str = r#"{{ tree.schema(node) }}"#;
+        {% endif %}
+    {% endfor %}
+    }
+}
+
+{% for node in nodes %}
+
+{# structs #}
+{% if node | is_structure and not node | is_index %}
+{{ node.doc | rust_doc }}
+define_struct!(
+    {{ node.name }},
+    {{ node.name }}Mut,
+    schema::structs::{{ node.name | camel_to_snake_case | upper }},
+    {{ node.size_in_bytes }},
+    {% for field in node.fields %}
+    {% if field.doc %}
+        {{ field.doc | rust_doc }}
+    {% endif %}
+    ({{ field.name | escape_rust_keywords }}, set_{{ field.name }}, {{ field.type.name }}, {{ field.offset }}, {{ field.type.width }})
+    {%- if not loop.last %},
+    {% endif %}
+    {% endfor %}
+);
+
+{% endif %}
+
+{% if node | is_archive %}
+
+{# multivector index structs #}
+{% if node | is_archive %}
+{% for r in node.resources | multivector_resources %}
+{% set index = r.builtins[0] %}
+{{ index.doc | rust_doc }}
+define_index!(
+    {{ index.name }},
+    {{ index.name }}Mut,
+    schema::structs::{{ index.name | camel_to_snake_case | upper }},
+    {{ index.size_in_bytes }},
+    {{ index.fields[0].type.width }}
+);
+
+{% endfor %}
+{% endif %}
+
+{# variadic structs #}
+{% if node | is_archive %}
+{% for r in node.resources | supported_resources %}
+{% if r | is_multivector %}
+define_variadic_struct!({{ r.name | snake_to_camel_case }}, {{ r.name | snake_to_camel_case }}ItemBuilder, {{ r.builtins[0].name }},
+{% for type in r.types %}
+    {{ loop.index0 }} => ({{ type }}, add_{{ type | camel_to_snake_case }})
+    {%- if not loop.last %},
+    {% endif %}
+{% endfor %}
+);
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{# archives #}
+{% set archive_ns = node.name | camel_to_snake_case %}
+define_archive!({{node.name}}, {{node.name}}Builder,
+    schema::structs::{{ node.name | camel_to_snake_case | upper }};
+    // struct resources
+    {% for r in node.resources | instance_resources %}
+    ({{ r.name }}, set_{{ r.name }},
+        {{r.type}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // vector resources
+    {% for r in node.resources | vector_resources %}
+    ({{ r.name }}, set_{{ r.name }}, start_{{ r.name }},
+        {{ r.referenced_structures[0].node.name }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // multivector resources
+    {% for r in node.resources | multivector_resources %}
+    ({{ r.name }}, start_{{ r.name }},
+        {{ r.name | snake_to_camel_case }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }},
+        {{ r.name }}_index, {{ r.builtins[0].name }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // raw data resources
+    {% for r in node.resources | rawdata_resources %}
+    ({{ r.name }}, set_{{ r.name }},
+        schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // subarchives
+    {% for r in node.resources | subarchive_resources %}
+    ({{ r.name }},
+        {{ r.name }}, {{ r.name }}Builder,
+        schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // optional subarchives
+    {% for r in node.resources | optional_subarchive_resources %}
+    ({{ r.name }},
+        {{ r.target.node.name }}, {{ r.target.node.name }}Builder,
+        schema::resources::{{ archive_ns }}::{{ r.target.node.name | camel_to_snake_case | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %}
+);
+
+{% endif %}
+{% endfor %}

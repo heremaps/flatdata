@@ -12,6 +12,7 @@ from .generators.CppGenerator import CppGenerator
 from .generators.DotGenerator import DotGenerator
 from .generators.GoGenerator import GoGenerator
 from .generators.PythonGenerator import PythonGenerator
+from .generators.RustGenerator import RustGenerator
 
 
 class Engine(object):
@@ -27,7 +28,8 @@ class Engine(object):
         "cpp": CppGenerator,
         "dot": DotGenerator,
         "go": GoGenerator,
-        "py": PythonGenerator
+        "py": PythonGenerator,
+        "rust": RustGenerator,
     }
 
     @classmethod

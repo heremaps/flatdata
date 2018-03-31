@@ -14,6 +14,7 @@ class Structure(Node):
         super(Structure, self).__init__(name=name, properties=properties)
         self._own_schema = own_schema
         self._size_in_bits = size_in_bits
+        self._is_index = properties.is_index is not None and properties.is_index
 
     @staticmethod
     def create(properties, own_schema, definition):
@@ -46,3 +47,8 @@ class Structure(Node):
     @property
     def fields(self):
         return self.children_like(Field)
+
+    @property
+    def is_index(self):
+        return self._is_index
+

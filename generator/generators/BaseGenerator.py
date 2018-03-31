@@ -32,6 +32,7 @@ class BaseGenerator:
         env.filters['is_raw_data'] = lambda n: isinstance(n, RawData)
         env.filters['is_archive_resource'] = lambda n: isinstance(n, ArchiveResource)
         env.filters['is_structure'] = lambda n: isinstance(n, Structure)
+        env.filters['is_index'] = lambda n: isinstance(n, Structure) and n.is_index
         env.filters['is_constant'] = lambda n: isinstance(n, Constant)
         env.filters['is_namespace'] = lambda n: isinstance(n, Namespace)
         env.filters['is_resource'] = lambda n: isinstance(n, ResourceBase)
