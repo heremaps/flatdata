@@ -27,7 +27,6 @@ impl MemoryMappedFileStorage {
         }
 
         let file = File::open(path)?;
-
         let file_mmap = unsafe { Mmap::map(&file)? };
 
         let mem_descr = MemoryDescriptor::new(file_mmap.as_ptr(), file_mmap.len());

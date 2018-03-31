@@ -177,26 +177,25 @@ macro_rules! define_struct {
 #[macro_export]
 macro_rules! define_index {
     ($name: ident, $name_mut: ident, $schema: path, $size_in_bytes: expr, $size_in_bits: expr) => {
-        mod internal {
-            define_struct!(
-                $name,
-                $name_mut,
-                $schema,
-                $size_in_bytes,
-                (value, set_value, u64, 0, $size_in_bits)
-            );
+        // TODO: Find a way to put this definition into an internal submodule.
+        define_struct!(
+            $name,
+            $name_mut,
+            $schema,
+            $size_in_bytes,
+            (value, set_value, u64, 0, $size_in_bits)
+        );
 
-            impl $crate::Index for $name {
-                type IndexMut = $name_mut;
-                fn value(&self) -> usize {
-                    self.value() as usize
-                }
+        impl $crate::Index for $name {
+            type IndexMut = $name_mut;
+            fn value(&self) -> usize {
+                self.value() as usize
             }
+        }
 
-            impl $crate::IndexMut for $name_mut {
-                fn set_value(&mut self, value: usize) {
-                    self.set_value(value as u64);
-                }
+        impl $crate::IndexMut for $name_mut {
+            fn set_value(&mut self, value: usize) {
+                self.set_value(value as u64);
             }
         }
     };
@@ -281,7 +280,7 @@ macro_rules! define_archive {
         $(($multivector_resource:ident,
             $multivector_start:ident,
             $variadic_type:tt, $variadic_type_schema:expr,
-            $multivector_resource_index:ident, $index_type:path, $index_schema:expr)),*;
+            $multivector_resource_index:ident, $index_type:path)),*;
         // raw data resources
         $(($raw_data_resource:ident,
             $raw_data_resource_setter:ident, $raw_data_schema:expr)),*;
@@ -411,7 +410,7 @@ macro_rules! define_archive {
                     $($multivector_resource_index = Self::read_resource(
                         res_storage,
                         stringify!($multivector_resource_index),
-                        $index_schema
+                        &format!("index({})", $variadic_type_schema)
                     )?;
                     $multivector_resource = Self::read_resource(
                         res_storage,

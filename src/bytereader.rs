@@ -1,6 +1,9 @@
 // TODO: Refactor according to the new version in C++ implementation.
 #[macro_export]
 macro_rules! read_bytes {
+    (bool, $data: expr, $offset: expr, $num_bits: expr) => {{
+        read_bytes!(u8, $data, $offset, $num_bits) != 0
+    }};
     ($T: tt, $data: expr, $offset: expr, $num_bits: expr) => {{
         let bytes: *const u8 = $data;
         assert!(!bytes.is_null(), "Reading uninitialized structure");
