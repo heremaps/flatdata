@@ -10,6 +10,7 @@ use memmap::Mmap;
 use storage::{MemoryDescriptor, ResourceStorage, Stream};
 
 /// Storage of data in memory mapped files
+#[derive(Debug)]
 struct MemoryMappedFileStorage {
     maps: BTreeMap<String, Mmap>,
 }

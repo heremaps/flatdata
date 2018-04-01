@@ -1,6 +1,9 @@
 extern crate diff;
 extern crate memmap;
 
+/// Number of elements in ArrayView, MultiArrayView, and Vector to show in Debug output.
+const DEBUG_PREVIEW_LEN: usize = 10;
+
 pub mod helper;
 #[macro_use]
 pub mod bytereader;

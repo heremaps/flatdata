@@ -85,11 +85,21 @@ where
     Ts: VariadicStruct,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let preview: Vec<(usize, Vec<_>)> = self.iter()
+            .take(super::DEBUG_PREVIEW_LEN)
+            .enumerate()
+            .map(|(index, item)| (index, item.collect()))
+            .collect();
         write!(
             f,
-            "MultiArrayView {{ data: {:?}, len: {} }}",
-            self.data,
-            self.len()
+            "MultiArrayView {{ len: {}, data: {:?}{} }}",
+            self.len(),
+            preview,
+            if self.len() <= super::DEBUG_PREVIEW_LEN {
+                ""
+            } else {
+                "..."
+            }
         )
     }
 }

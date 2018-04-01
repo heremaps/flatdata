@@ -5,6 +5,7 @@ use storage::ResourceHandle;
 use vector::ExternalVector;
 
 use std::borrow::BorrowMut;
+use std::fmt;
 use std::io;
 use std::marker;
 
@@ -62,6 +63,12 @@ impl<Idx: Index, Ts: VariadicStruct> MultiVector<Idx, Ts> {
 impl<Idx, Ts> Drop for MultiVector<Idx, Ts> {
     fn drop(&mut self) {
         debug_assert!(!self.data_handle.is_open(), "MultiVector not closed")
+    }
+}
+
+impl<Idx: Index, Ts: VariadicStruct> fmt::Debug for MultiVector<Idx, Ts> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "MultiVector {{ len: {} }}", self.index.len())
     }
 }
 

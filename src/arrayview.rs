@@ -49,12 +49,19 @@ impl<'a, T: Struct> ArrayView<'a, T> {
     }
 }
 
-impl<'a, T> fmt::Debug for ArrayView<'a, T> {
+impl<'a, T: Struct> fmt::Debug for ArrayView<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let preview: Vec<_> = self.iter().take(super::DEBUG_PREVIEW_LEN).collect();
         write!(
             f,
-            "ArrayView {{ data: {:?}, len: {} }}",
-            self.data, self.len
+            "ArrayView {{ len: {}, data: {:?}{} }}",
+            self.len(),
+            preview,
+            if self.len <= super::DEBUG_PREVIEW_LEN {
+                ""
+            } else {
+                "..."
+            }
         )
     }
 }

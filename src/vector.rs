@@ -5,10 +5,11 @@ use memory;
 use storage::{MemoryDescriptor, ResourceHandle};
 
 use std::borrow::BorrowMut;
+use std::fmt;
 use std::io;
 use std::marker;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Vector<T> {
     data: Vec<u8>,
     _phantom: marker::PhantomData<T>,
@@ -91,6 +92,24 @@ impl<T: Struct> AsRef<[u8]> for Vector<T> {
     }
 }
 
+impl<T: Struct> fmt::Debug for Vector<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let view = self.as_view();
+        let preview: Vec<_> = view.iter().take(super::DEBUG_PREVIEW_LEN).collect();
+        write!(
+            f,
+            "Vector {{ len: {}, data: {:?}{} }}",
+            self.len(),
+            preview,
+            if self.len() <= super::DEBUG_PREVIEW_LEN {
+                ""
+            } else {
+                "..."
+            }
+        )
+    }
+}
+
 /// Vector which flushes its content when growing.
 ///
 /// Useful for serialization of data which does not fit fully in memory.
@@ -149,6 +168,12 @@ impl<T: Struct> ExternalVector<T> {
 impl<T> Drop for ExternalVector<T> {
     fn drop(&mut self) {
         debug_assert!(!self.resource_handle.is_open(), "ExternalVector not closed")
+    }
+}
+
+impl<T: Struct> fmt::Debug for ExternalVector<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ExternalVector {{ len: {} }}", self.len())
     }
 }
 

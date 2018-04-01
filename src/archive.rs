@@ -68,7 +68,9 @@ pub trait ArchiveBuilder: Clone {
 #[macro_export]
 macro_rules! intersperse {
     () => {""};
+    ("", $($tail:expr),*) => (intersperse!($($tail),*));
     ($head:expr) => {$head};
+    ($head:expr, "" $(, $tail:expr)*, ) => (intersperse!($head $(, $tail)*));
     ($head:expr, $($tail:expr),+) => (concat!($head, ", ", intersperse!($($tail),*)));
 }
 
@@ -357,15 +359,15 @@ macro_rules! define_archive {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
                     concat!("{} {{ ",
-                        intersperse!(
-                            intersperse!($(concat!(stringify!($struct_resource), ": {:?}")),*),
-                            intersperse!($(concat!(stringify!($vector_resource), ": {:?}")),*),
-                            intersperse!($(concat!(stringify!($multivector_resource), ": {:?}")),*),
-                            intersperse!($(concat!(stringify!($raw_data_resource), ": {:?}")),*),
-                            intersperse!($(concat!(stringify!($subarchive_resource), ": {:?}")),*),
-                            intersperse!($(concat!(stringify!($opt_subarchive_resource), ": {:?}")),*)
+                        intersperse!(""
+                            $(, concat!(stringify!($struct_resource), ": {:?}"))*
+                            $(, concat!(stringify!($vector_resource), ": {:?}"))*
+                            $(, concat!(stringify!($multivector_resource), ": {:?}"))*
+                            $(, concat!(stringify!($raw_data_resource), ": {:?}"))*
+                            $(, concat!(stringify!($subarchive_resource), ": {:?}"))*
+                            $(, concat!(stringify!($opt_subarchive_resource), ": {:?}"))*
                         ),
-                    " }}", ),
+                    " }}"),
                     stringify!($name)
                     $(, self.$struct_resource())*
                     $(, self.$vector_resource())*
@@ -431,9 +433,7 @@ macro_rules! define_archive {
                 )*
                 $(
                 let $opt_subarchive_resource = $opt_subarchive_type::open(
-                    storage.borrow().subdir(&stringify!($opt_subarchive_resource)));
-                println!("{:?}", $opt_subarchive_resource);
-                let $opt_subarchive_resource = $opt_subarchive_resource.ok();
+                    storage.borrow().subdir(&stringify!($opt_subarchive_resource))).ok();
                 )*
                 Ok(Self {
                     _storage: storage
