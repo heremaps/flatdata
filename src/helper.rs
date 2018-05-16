@@ -54,6 +54,7 @@ impl Int for u64 {
 /// assert_eq!(s, "cat, dog, fish");
 /// # }
 /// ```
+#[doc(hidden)]
 #[macro_export]
 macro_rules! intersperse {
     () => ("");

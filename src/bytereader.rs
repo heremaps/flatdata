@@ -1,4 +1,20 @@
 // TODO: Refactor according to the new version in C++ implementation.
+/// Reads specified number of bits from data at specified offset in portable way.
+///
+/// This macro is the counterpart of the macro [`write_bytes`]. It is used by [`Archive`] to read
+/// data from storage, which was serialized by the corresponding [`ArchiveBuilder`]. The latter uses
+/// [`write_bytes`] for writing the data.
+///
+/// # Arguments
+///
+/// * `T` – type of the value of the read data,
+/// * `data` – type convertible to `*const u8` address to read the data from,
+/// * `offset` – offset in bits in `data`, where the value should be read,
+/// * `num_bits` – number of bits to read.
+///
+/// [`write_bytes`]: macro.write_bytes.html
+/// [`Archive`]: trait.Archive.html
+/// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
 #[macro_export]
 macro_rules! read_bytes {
     (bool, $data:expr, $offset:expr, $num_bits:expr) => {{

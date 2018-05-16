@@ -1,3 +1,4 @@
+#[doc(hidden)]
 #[macro_export]
 macro_rules! masked {
     ($value:expr, $num_bits:expr) => {
@@ -7,6 +8,7 @@ macro_rules! masked {
     };
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! num_bytes {
     ($offset:expr, $num_bits:expr) => {
@@ -18,11 +20,27 @@ macro_rules! num_bytes {
     };
 }
 
-/// T - integer type of the value to write (signed or unsigned)
-/// `value` - value to write
-/// `data` - slice for writing to
-/// `offset` - offset in bits in the slice, where the value should be written.
-/// `num_bits` - how many bits of the value to write.
+/// Writes specified number of bits of a given value to a slice at a specified offset in portable
+/// way.
+///
+/// This macro is used by [`ArchiveBuilder`] to serialize data to storage. It
+/// ensures that the data is written in a portable way independent of the platform and compiler.
+/// To read the data written by this macro, use [`read_bytes`].
+///
+/// The maximum amount of bits which can be written is 64. If `$num_bits` is not specified,
+/// [`std::mem::size_of::<T>`] is used.
+///
+/// # Arguments
+///
+/// * `T` – integer type of the value to write (signed or unsigned),
+/// * `value` – value to write,
+/// * `data` – slice for writing to,
+/// * `offset` – offset in bits in the slice, where the value should be written,
+/// * `num_bits` – how many bits of the value to write.
+///
+/// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
+/// [`read_bytes`]: macro.read_bytes.html
+/// [`std::mem::size_of::<T>`]: https://doc.rust-lang.org/std/mem/fn.size_of.html
 #[macro_export]
 macro_rules! write_bytes {
     ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{
