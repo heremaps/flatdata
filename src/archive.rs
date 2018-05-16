@@ -41,7 +41,7 @@ use storage::ResourceStorage;
 ///
 /// Each struct in generated code implements this trait.
 pub trait Struct: Clone + Debug + PartialEq + From<*const u8> {
-    /// Schema of the type. Only for debug and inspection purposes.
+    /// Schema of the type. Used only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
@@ -64,12 +64,15 @@ pub trait StructMut: Debug + From<*mut u8> {
 
 /// A type in archive used as index of a `MultiArrayView`.
 pub trait Index: Struct {
+    /// Corresponding mutable index type used for writing an index.
     type IndexMut: IndexMut;
+    /// Returns the index value.
     fn value(&self) -> usize;
 }
 
 /// A type in archive used as mutable index of a `MultiVector`.
 pub trait IndexMut: StructMut {
+    /// Sets index value.
     fn set_value(&mut self, value: usize);
 }
 
@@ -77,9 +80,18 @@ pub trait IndexMut: StructMut {
 pub type TypeIndex = u8;
 
 /// A type used as element of `MultiArrayView`.
+///
+/// Implemented by an enum type.
 pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8)> {
+    /// Associated type used for building an item in `MultiVector` based on this variadic type.
+    ///
+    /// The builder is returned by [`MultiVector::grow`](struct.MultiVector.html#method.grow)
+    /// method. It provides convenient methods `add_{variant_name}` for each enum variant.
     type ItemBuilder: From<*mut Vec<u8>>;
-
+    /// Returns size in bytes of the current variant type.
+    ///
+    /// Since a variadic struct can contain types of different sized, this is a method based on the
+    /// current value type.
     fn size_in_bytes(&self) -> usize;
 }
 
@@ -87,9 +99,23 @@ pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8
 ///
 /// Each archive in generated code implements this trait.
 pub trait Archive: Debug + Clone {
+    /// Name of the archive.
     const NAME: &'static str;
+    /// Schema of the archive.
+    ///
+    /// Used for verifying the integrity of the archive when opening.
     const SCHEMA: &'static str;
 
+    /// Opens the archive with name `NAME` and schema `SCHEMA` in the given storage for reading.
+    ///
+    /// When opening the archive, the schema of the archive and the schema stored in the storage
+    /// are compared as strings. If there is a difference, an Error
+    /// [`ResourceStorageError::WrongSignature`](enum.ResourceStorageError.html) is
+    /// returned containing a detailed diff of both schemata.
+    ///
+    /// All resources are in the archive are also opened and their schemata are verified.
+    /// If any non-optional resource is missing or has a wrong signature (unexpected schema), the
+    /// operation will fail. Therefore, it is not possible to open partially written archive.
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
 }
 
@@ -98,9 +124,27 @@ pub trait Archive: Debug + Clone {
 /// For each archive in generated code there is a corresponding archive builder which implements
 /// this trait.
 pub trait ArchiveBuilder: Clone {
+    /// Name of the archive associated with this archive builder.
     const NAME: &'static str;
+    /// Schema of the archive associated with this archive builder.
+    ///
+    /// Used only for debug and inspection purposes.
     const SCHEMA: &'static str;
 
+    /// Creates an archive with name `NAME` and schema `SCHEMA` in the given storage for writing.
+    ///
+    /// If the archive is successfully created, the storage will contain the archive and
+    /// archives schema. Archive's resources need to be written separately by using the
+    /// corresponding generated methods:
+    ///
+    /// * `set_struct`
+    /// * `set_vector`
+    /// * `start_vector`/`finish_vector`
+    /// * `start_multivector`/`finish_multivector`.
+    ///
+    /// For more information about how write resources, cf. the [coapperances] example.
+    ///
+    /// [coapperances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
     fn new(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
 }
 
@@ -108,16 +152,17 @@ pub trait ArchiveBuilder: Clone {
 // Generator macros
 //
 
+/// Macro used by generator to define a flatdata struct.
 #[macro_export]
 macro_rules! define_struct {
     ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
     {
-        // TODO: We cannot store &u8 here, since then we need to annote the type with a lifetime,
-        // which would enforce an annotation in the trait, and this would bind the lifetime at the
-        // creating of containers as ArrayView, etc... When meta-types are introduced (i.e. when
-        // we can express that a container is parametrized over a meta-type with a lifetime bound
-        // later), we can refactor this and get rid of Handle and HandleMut.
+        // TODO: We cannot store `&u8` here, since then we need to annotate the type with a
+        // lifetime, which would enforce an annotation in the trait, and this would bind the
+        // lifetime at the creating of containers as ArrayView, etc... When meta-types are
+        // introduced (i.e. when we can express that a container is parametrized over a meta-type
+        // with a lifetime bound later), we can refactor this and get rid of Handle and HandleMut.
         #[derive(Clone)]
         pub struct $name {
             data: *const u8,
@@ -210,6 +255,7 @@ macro_rules! define_struct {
      }
 }
 
+/// Macro used by generator to define a flatdata index.
 #[macro_export]
 macro_rules! define_index {
     ($name:ident, $name_mut:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
@@ -237,6 +283,8 @@ macro_rules! define_index {
     };
 }
 
+
+/// Macro used by generator to define a flatdata variant used in `MultiVector` and `MultiArrayView`.
 #[macro_export]
 macro_rules! define_variadic_struct {
     ($name:ident, $item_builder_name:ident, $index_type:tt,
@@ -300,6 +348,7 @@ macro_rules! define_variadic_struct {
     }
 }
 
+/// Macro used by generator to define a flatdata archive and corresponding archive builder.
 #[macro_export]
 macro_rules! define_archive {
     ($name:ident, $builder_name:ident, $archive_schema:expr;
