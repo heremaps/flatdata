@@ -4,7 +4,7 @@ use handle::{Handle, HandleMut};
 use memory;
 use storage::{MemoryDescriptor, ResourceHandle};
 
-use std::borrow::BorrowMut;
+use std::borrow::{Borrow, BorrowMut};
 use std::fmt;
 use std::io;
 use std::marker;
@@ -24,8 +24,9 @@ use std::marker;
 ///
 /// ```
 /// # #[macro_use] extern crate flatdata;
-/// # use flatdata::Vector;
 /// # fn main() {
+/// use flatdata::Vector;
+///
 /// define_struct!(A, AMut, "no_schema", 4,
 ///     (x, set_x, u32, 0, 16),
 ///     (y, set_y, u32, 16, 16)
@@ -121,7 +122,7 @@ where
         &self.data[..self.size_in_bytes()]
     }
 
-    /// Appends an element to the end of this vector and returns a mutator handle to it.
+    /// Appends an element to the end of this vector and returns a mutable handle to it.
     #[inline]
     pub fn grow(&mut self) -> HandleMut<T::Mut> {
         let old_size = self.data.len();
@@ -136,7 +137,7 @@ where
         Handle::new(T::from(&self.data[index * T::SIZE_IN_BYTES]))
     }
 
-    /// Return a mutator handle to the element at position `index` in the vector.
+    /// Return a mutable handle to the element at position `index` in the vector.
     #[inline]
     pub fn at_mut(&mut self, index: usize) -> HandleMut<T::Mut> {
         HandleMut::new(T::Mut::from(&mut self.data[index * T::SIZE_IN_BYTES]))
@@ -185,7 +186,60 @@ impl<T: Struct> fmt::Debug for Vector<T> {
 
 /// Vector which flushes its content when growing.
 ///
-/// Useful for serialization of data which does not fit fully in memory.
+/// Useful for serialization of data which does not fully fit in memory.
+///
+/// External vector does not provide access to elements previously added to it. Only the last
+/// element added to the vector using the result of the method [`grow`] can be accessed and written.
+///
+/// An external vector *must* be closed, after the last element was written to it. After closing, it
+/// can not be used anymore. Not closing the vector will result in panic in debug mode.
+///
+/// # Examples
+///
+/// ```
+/// # #[macro_use] extern crate flatdata;
+/// # fn main() {
+/// use flatdata::{
+///     create_external_vector, ArrayView, ExternalVector, MemoryResourceStorage, ResourceStorage,
+/// };
+///
+/// define_struct!(A, AMut, "no_schema", 4,
+///     (x, set_x, u32, 0, 16),
+///     (y, set_y, u32, 16, 16)
+/// );
+///
+/// let mut storage = MemoryResourceStorage::new("/root/extvec".into());
+/// {
+///     let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
+///         .expect("failed to create ExternalVector");
+///     {
+///         let mut a = v.grow().expect("grow failed");
+///         a.set_x(0);
+///         a.set_y(1);
+///     }
+///     {
+///         let mut a = v.grow().expect("grow failed");
+///         a.set_x(2);
+///         a.set_y(3);
+///     }
+///     v.close().expect("close failed");
+/// }
+///
+/// let resource = storage
+///     .read_and_check_schema("vector", "Some schema content")
+///     .expect("failed to read vector resource");
+///
+/// let view: ArrayView<A> = ArrayView::new(&resource);
+/// assert_eq!(view.len(), 2);
+/// assert_eq!(view.at(0).x(), 0);
+/// assert_eq!(view.at(0).y(), 1);
+/// assert_eq!(view.at(1).x(), 2);
+/// assert_eq!(view.at(1).y(), 3);
+///
+/// # }
+/// ```
+///
+/// [`grow`]: #method.grow
 pub struct ExternalVector<T> {
     data: Vec<u8>,
     len: usize,
@@ -194,6 +248,7 @@ pub struct ExternalVector<T> {
 }
 
 impl<T: Struct> ExternalVector<T> {
+    /// Creates an empty `ExternalVector<T>` in the given resource storage.
     pub fn new(resource_handle: ResourceHandle) -> Self {
         Self {
             data: vec![0; memory::PADDING_SIZE],
@@ -203,14 +258,22 @@ impl<T: Struct> ExternalVector<T> {
         }
     }
 
+    /// Number of elements that where added to this vector.
     pub fn len(&self) -> usize {
         self.len
     }
 
+    /// Returns `true` if no element were added to this vector yet.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    /// Appends an element to the end of this vector and returns a mutable handle to it.
+    ///
+    /// Calling this method may flush data to storage (cf. [`flush`]), which may fail due to
+    /// different IO reasons.
+    ///
+    /// [`flush`]: #method.flush
     pub fn grow(&mut self) -> io::Result<HandleMut<T::Mut>> {
         if self.data.len() > 1024 * 1024 * 32 {
             self.flush()?;
@@ -223,6 +286,7 @@ impl<T: Struct> ExternalVector<T> {
         )))
     }
 
+    /// Flushes the not yet flushed content in this vector to storage.
     fn flush(&mut self) -> io::Result<()> {
         self.resource_handle
             .borrow_mut()
@@ -232,6 +296,16 @@ impl<T: Struct> ExternalVector<T> {
         Ok(())
     }
 
+    /// Returns `true` if this vector was not closed yet and more elements can be added to it.
+    pub fn is_open(&self) -> bool {
+        self.resource_handle.borrow().is_open()
+    }
+
+    /// Flushes the remaining not yet flushed elements in this vector and finalizes the data inside
+    /// the storage.
+    ///
+    /// After this method is called, it cannot be written into this vector. An external vector
+    /// *must* be closed, otherwise it will panic on drop (in debug mode).
     pub fn close(&mut self) -> io::Result<()> {
         self.flush()?;
         self.resource_handle.borrow_mut().close()
@@ -252,10 +326,9 @@ impl<T: Struct> fmt::Debug for ExternalVector<T> {
 
 #[cfg(test)]
 mod tests {
+    // Note: ExternalVector is tested in the corresponding example.
+
     use super::*;
-    use memstorage::MemoryResourceStorage;
-    use storage::create_external_vector;
-    use storage::ResourceStorage;
     use test_structs::*;
 
     #[test]
@@ -336,36 +409,5 @@ mod tests {
         }
         v.grow();
         assert_eq!(v.len(), 3);
-    }
-
-    #[test]
-    fn test_external_vector() {
-        let mut storage = MemoryResourceStorage::new("/root/resources".into());
-        {
-            let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
-                .expect("failed to create ExternalVector");
-            {
-                let mut a = v.grow().expect("grow failed");
-                a.set_x(0);
-                a.set_y(1);
-            }
-            {
-                let mut a = v.grow().expect("grow failed");
-                a.set_x(2);
-                a.set_y(3);
-            }
-            v.close().expect("close failed");
-        }
-
-        let resource = storage
-            .read_and_check_schema("vector", "Some schema content")
-            .expect("failed to read vector resource");
-
-        let view: ArrayView<A> = ArrayView::new(&resource);
-        assert_eq!(view.len(), 2);
-        assert_eq!(view.at(0).x(), 0);
-        assert_eq!(view.at(0).y(), 1);
-        assert_eq!(view.at(1).x(), 2);
-        assert_eq!(view.at(1).y(), 3);
     }
 }
