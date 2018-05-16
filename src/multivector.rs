@@ -78,8 +78,8 @@ mod tests {
     use arrayview::ArrayView;
     use memstorage::MemoryResourceStorage;
     use multiarrayview::MultiArrayView;
-    use storage::ResourceStorage;
     use storage::create_multi_vector;
+    use storage::ResourceStorage;
 
     #[test]
     fn test_multi_vector() {

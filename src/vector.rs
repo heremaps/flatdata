@@ -9,6 +9,48 @@ use std::fmt;
 use std::io;
 use std::marker;
 
+/// A container holding a contiguous sequence of flatdata structs of the same type T in memory,
+/// and providing read and write access to it.
+///
+/// Vector data is fully stored and populated in memory before it is serialized. This container
+/// is often used for data which needs to be changed or updated after insertion in the container.
+/// When data can be incrementally serialized without later updates, [`ExternalVector`] is usually a
+/// better choice since it may decrease the memory footprint of serialization significantly.
+///
+/// An archive builder provides a setter for each vector resource. Use [`as_view`] and the
+/// corresponding setter to serialize a `Vector`.
+///
+/// # Examples
+///
+/// ```
+/// # #[macro_use] extern crate flatdata;
+/// # use flatdata::Vector;
+/// # fn main() {
+/// define_struct!(A, AMut, "no_schema", 4,
+///     (x, set_x, u32, 0, 16),
+///     (y, set_y, u32, 16, 16)
+/// );
+///
+/// let mut v: Vector<A> = Vector::new();
+/// {
+///     let mut a = v.grow();
+///     a.set_x(1);
+///     a.set_y(2);
+/// }
+/// {
+///     let mut b = v.grow();
+///     b.set_x(3);
+///     b.set_y(4);
+/// }
+///
+/// assert_eq!(v.len(), 2);
+/// // serialize
+/// // SomeArchiveBuilder.set_vector_resource_of_a_s(&v.as_view());
+/// # }
+/// ```
+///
+/// [`ExternalVector`]: struct.ExternalVector.html
+/// [`as_view`]: #method.as_view
 #[derive(Clone)]
 pub struct Vector<T> {
     data: Vec<u8>,
@@ -20,10 +62,15 @@ where
     T: Struct,
 {
     /// Creates an empty `Vector<T>`.
+    #[inline]
     pub fn new() -> Self {
         Self::with_len(0)
     }
 
+    /// Creates a `Vector<T>` with `len` many elements.
+    ///
+    /// `T`'s fields are all filled with zeroes.
+    #[inline]
     pub fn with_len(len: usize) -> Self {
         let size = Self::calc_size(len);
         let mut data = Vec::with_capacity(size);
@@ -34,30 +81,48 @@ where
         }
     }
 
+    /// Size of the vector in bytes.
+    #[inline]
     pub fn size_in_bytes(&self) -> usize {
         self.data.len() - memory::PADDING_SIZE
     }
 
+    /// Number of elements in the vector.
+    #[inline]
     pub fn len(&self) -> usize {
         self.size_in_bytes() / T::SIZE_IN_BYTES
     }
 
+    /// Returns `true` if the vector has a length 0.
+    #[inline]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    pub fn reserve(&mut self, len: usize) {
-        self.data.reserve(Self::calc_size(len))
+    /// Reserves capacity for at least `additional` more elements to be inserted in the given
+    /// vector. The collection may reserve more space to avoid frequent reallocations. After calling
+    /// reserve, capacity will be greater than or equal to `self.len() + additional`. Does nothing
+    /// if capacity is already sufficient.
+    #[inline]
+    pub fn reserve(&mut self, additional: usize) {
+        let additional_bytes = Self::calc_size(self.len() + additional) - self.size_in_bytes();
+        self.data.reserve(additional_bytes)
     }
 
+    /// Returns an `ArrayView` to this vector.
+    #[inline]
     pub fn as_view(&self) -> ArrayView<T> {
         ArrayView::new(&MemoryDescriptor::new(&self.data[0], self.size_in_bytes()))
     }
 
+    /// Returns the contents of this vector as slice of bytes.
+    #[inline]
     pub fn as_bytes(&self) -> &[u8] {
         &self.data[..self.size_in_bytes()]
     }
 
+    /// Appends an element to the end of this vector and returns a mutator handle to it.
+    #[inline]
     pub fn grow(&mut self) -> HandleMut<T::Mut> {
         let old_size = self.data.len();
         self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
@@ -65,15 +130,20 @@ where
         HandleMut::new(T::Mut::from(&mut self.data[last_index * T::SIZE_IN_BYTES]))
     }
 
+    /// Return an accessor handle to the element at position `index` in the vector.
+    #[inline]
     pub fn at(&self, index: usize) -> Handle<T> {
         Handle::new(T::from(&self.data[index * T::SIZE_IN_BYTES]))
     }
 
+    /// Return a mutator handle to the element at position `index` in the vector.
+    #[inline]
     pub fn at_mut(&mut self, index: usize) -> HandleMut<T::Mut> {
         HandleMut::new(T::Mut::from(&mut self.data[index * T::SIZE_IN_BYTES]))
     }
 
-    /// Calculate size in bytes (with padding) needed to store len-many elements.
+    /// Calculates size in bytes (with padding) needed to store `len` many elements.
+    #[inline]
     fn calc_size(len: usize) -> usize {
         len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
     }
@@ -87,6 +157,9 @@ impl<T: Struct> Default for Vector<T> {
 }
 
 impl<T: Struct> AsRef<[u8]> for Vector<T> {
+    /// Returns the content of this vector as slice of bytes. Equivalent to [`as_bytes`].
+    ///
+    /// [`as_bytes`]: #method.as_bytes
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
@@ -181,8 +254,8 @@ impl<T: Struct> fmt::Debug for ExternalVector<T> {
 mod tests {
     use super::*;
     use memstorage::MemoryResourceStorage;
-    use storage::ResourceStorage;
     use storage::create_external_vector;
+    use storage::ResourceStorage;
     use test_structs::*;
 
     #[test]

@@ -1,3 +1,34 @@
+//! This module contains traits and macros that are used by generated code to define flatdata's
+//! structs, archives and resources.
+//!
+//! flatdata's code generator translates a flatdata schema to Rust code. The generated
+//! code contains all schema definitions embedded as strings, and for each schema element it
+//! uses one of the macros `define_struct`, `define_index`, `define_variadic_struct`, and
+//! `define_archive` to define the corresponding Rust struct and implement all needed methods and
+//! traits.
+//!
+//! ## Structs
+//!
+//! A flatdata struct, let's say `SomeData`, is introduced by macro `define_struct` which defines
+//! two  Rust struct types: `SomeData` and `SomeDataMut`. The former type is used to read data from
+//! a serialized archive, the second to write data to archive. Both refer to each other through  the
+//! trait `Struct`.
+//!
+//! ## Indexes and variadic types
+//!
+//! A `MultiVector` is a heterogeneous container which consists of indexed items, each containing
+//! several elements of different types (cf. `MultiVector`). Macros `define_index` and
+//! `define_variadic_struct` are used to introduce types used with `MultiVector`. `define_index`
+//! introduces a struct with a single field `value` used as an index for items.
+//! `define_variadic_struct` bounds multiple structs as into a single enum type, which is used for
+//! reading. For writing, the macro defines a builder type which has corresponding methods to add
+//! each struct to the item.
+//!
+//! # Archive
+//!
+//! A flatdata archive is introduced by `define_archive`. It defines two types `ArchiveName` and
+//! `ArchiveNameBuilder` for reading resp. writing data.
+
 use std::cell::RefCell;
 use std::convert::From;
 use std::fmt::Debug;
@@ -6,21 +37,28 @@ use std::rc::Rc;
 use error::ResourceStorageError;
 use storage::ResourceStorage;
 
-/// A type in archive.
+/// A type in flatdata used for reading data.
+///
+/// Each struct in generated code implements this trait.
 pub trait Struct: Clone + Debug + PartialEq + From<*const u8> {
     /// Schema of the type. Only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
-
+    /// Corresponding mutable type used for writing data.
     type Mut: StructMut + AsRef<Self>;
-
+    /// Raw pointer to the data.
     fn as_ptr(&self) -> *const u8;
 }
 
+/// A mutable type in flatdata used for writing data.
+///
+/// Each struct in generated code has a corresponding type with suffix `Mut` which implements this
+/// trait.
 pub trait StructMut: Debug + From<*mut u8> {
+    /// Corresponding mutable type used for reading data.
     type Const: Struct;
-
+    /// Raw pointer to the mutable data.
     fn as_mut_ptr(&mut self) -> *mut u8;
 }
 
@@ -46,6 +84,8 @@ pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8
 }
 
 /// A flatdata archive representing serialized data.
+///
+/// Each archive in generated code implements this trait.
 pub trait Archive: Debug + Clone {
     const NAME: &'static str;
     const SCHEMA: &'static str;
@@ -54,6 +94,9 @@ pub trait Archive: Debug + Clone {
 }
 
 /// A flatdata archive builder for serializing data.
+///
+/// For each archive in generated code there is a corresponding archive builder which implements
+/// this trait.
 pub trait ArchiveBuilder: Clone {
     const NAME: &'static str;
     const SCHEMA: &'static str;
@@ -64,15 +107,6 @@ pub trait ArchiveBuilder: Clone {
 //
 // Generator macros
 //
-
-#[macro_export]
-macro_rules! intersperse {
-    () => {""};
-    ("", $($tail:expr),*) => (intersperse!($($tail),*));
-    ($head:expr) => {$head};
-    ($head:expr, "" $(, $tail:expr)*, ) => (intersperse!($head $(, $tail)*));
-    ($head:expr, $($tail:expr),+) => (concat!($head, ", ", intersperse!($($tail),*)));
-}
 
 #[macro_export]
 macro_rules! define_struct {
@@ -178,7 +212,7 @@ macro_rules! define_struct {
 
 #[macro_export]
 macro_rules! define_index {
-    ($name: ident, $name_mut: ident, $schema: path, $size_in_bytes: expr, $size_in_bits: expr) => {
+    ($name:ident, $name_mut:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
         // TODO: Find a way to put this definition into an internal submodule.
         define_struct!(
             $name,
@@ -246,16 +280,14 @@ macro_rules! define_variadic_struct {
         }
 
         impl $item_builder_name {
-            $(pub fn $add_type_fn(&mut self)
-                -> $crate::handle::HandleMut<<$type as ::flatdata::Struct>::Mut>
-            {
+            $(pub fn $add_type_fn(&mut self) -> $crate::HandleMut<<$type as $crate::Struct>::Mut> {
                 let data = unsafe { &mut *self.data };
                 let old_len = data.len();
                 let increment = 1 + $type::SIZE_IN_BYTES;
                 data.resize(old_len + increment, 0);
-                data[old_len - ::flatdata::memory::PADDING_SIZE] = $type_index;
-                $crate::handle::HandleMut::new(<$type as ::flatdata::Struct>::Mut::from(
-                    &mut data[1 + old_len - ::flatdata::memory::PADDING_SIZE] as *mut _
+                data[old_len - $crate::PADDING_SIZE] = $type_index;
+                $crate::HandleMut::new(<$type as $crate::Struct>::Mut::from(
+                    &mut data[1 + old_len - $crate::PADDING_SIZE] as *mut _
                 ))
             })*
         }
@@ -318,8 +350,8 @@ macro_rules! define_archive {
                 storage.read(name, schema).map(R::from)
             }
 
-            $(pub fn $struct_resource(&self) -> ::flatdata::handle::Handle<$struct_type> {
-                ::flatdata::handle::Handle::new($struct_type::from(self.$struct_resource.data()))
+            $(pub fn $struct_resource(&self) -> $crate::Handle<$struct_type> {
+                $crate::Handle::new($struct_type::from(self.$struct_resource.data()))
             })*
 
             $(pub fn $vector_resource(&self) -> $crate::ArrayView<$element_type> {
@@ -451,13 +483,13 @@ macro_rules! define_archive {
 
         #[derive(Clone)]
         pub struct $builder_name {
-            storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>
+            storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>
         }
 
         impl $builder_name {
             $(pub fn $struct_setter(
                 &mut self,
-                resource: &<$struct_type as ::flatdata::Struct>::Mut,
+                resource: &<$struct_type as $crate::Struct>::Mut,
             ) -> ::std::io::Result<()> {
                 let data = unsafe {
                     ::std::slice::from_raw_parts(resource.data, $struct_type::SIZE_IN_BYTES)
@@ -469,7 +501,7 @@ macro_rules! define_archive {
 
             $(pub fn $vector_setter(
                 &mut self,
-                vector: &::flatdata::ArrayView<$element_type>,
+                vector: &$crate::ArrayView<$element_type>,
             ) -> ::std::io::Result<()> {
                 self.storage
                     .borrow_mut()
@@ -478,8 +510,8 @@ macro_rules! define_archive {
 
             pub fn $vector_start(
                 &mut self,
-            ) -> ::std::io::Result<::flatdata::ExternalVector<$element_type>> {
-                ::flatdata::create_external_vector(
+            ) -> ::std::io::Result<$crate::ExternalVector<$element_type>> {
+                $crate::create_external_vector(
                     &mut *self.storage.borrow_mut(),
                     stringify!($vector_resource),
                     $element_schema,
@@ -489,9 +521,9 @@ macro_rules! define_archive {
             $(pub fn $multivector_start(
                 &mut self,
             ) -> ::std::io::Result<
-                ::flatdata::MultiVector<$index_type, $variadic_type>
+                $crate::MultiVector<$index_type, $variadic_type>
             > {
-                ::flatdata::create_multi_vector(
+                $crate::create_multi_vector(
                     &mut *self.storage.borrow_mut(),
                     stringify!($multivector_resource),
                     $variadic_type_schema,
@@ -508,8 +540,8 @@ macro_rules! define_archive {
 
             $(pub fn $subarchive_resource(
                 &mut self,
-            ) -> Result<$subarchive_builder_type, ::flatdata::ResourceStorageError> {
-                use ::flatdata::ArchiveBuilder;
+            ) -> Result<$subarchive_builder_type, $crate::ResourceStorageError> {
+                use $crate::ArchiveBuilder;
                 let storage = self.storage.borrow().subdir(stringify!($subarchive_resource));
                 $subarchive_builder_type::new(storage)
             }
@@ -517,22 +549,22 @@ macro_rules! define_archive {
 
             $(pub fn $opt_subarchive_resource(
                 &mut self,
-            ) -> Result<$opt_subarchive_builder_type, ::flatdata::ResourceStorageError> {
-                use ::flatdata::ArchiveBuilder;
+            ) -> Result<$opt_subarchive_builder_type, $crate::ResourceStorageError> {
+                use $crate::ArchiveBuilder;
                 let storage = self.storage.borrow().subdir(stringify!($opt_subarchive_resource));
                 $opt_subarchive_builder_type::new(storage)
             }
             )*
         }
 
-        impl ::flatdata::ArchiveBuilder for $builder_name {
+        impl $crate::ArchiveBuilder for $builder_name {
             const NAME: &'static str = stringify!($name);
             const SCHEMA: &'static str = $archive_schema;
 
             fn new(
-                storage: ::std::rc::Rc<::std::cell::RefCell<::flatdata::ResourceStorage>>,
-            ) -> Result<Self, ::flatdata::ResourceStorageError> {
-                ::flatdata::create_archive::<Self>(&storage)?;
+                storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>,
+            ) -> Result<Self, $crate::ResourceStorageError> {
+                $crate::create_archive::<Self>(&storage)?;
                 Ok(Self { storage })
             }
         }

@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! masked {
-    ($value: expr, $num_bits: expr) => {
+    ($value:expr, $num_bits:expr) => {
         1u64.checked_shl($num_bits as u32)
             .map(|mask| $value & (mask - 1))
             .unwrap_or($value)
@@ -9,7 +9,7 @@ macro_rules! masked {
 
 #[macro_export]
 macro_rules! num_bytes {
-    ($offset: expr, $num_bits: expr) => {
+    ($offset:expr, $num_bits:expr) => {
         if $num_bits + $offset % 8 <= 64 {
             ($num_bits + $offset % 8 + 7) / 8
         } else {
@@ -25,7 +25,7 @@ macro_rules! num_bytes {
 /// `num_bits` - how many bits of the value to write.
 #[macro_export]
 macro_rules! write_bytes {
-    ($T: tt; $value: expr, $data: expr, $offset: expr, $num_bits: expr) => {{
+    ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{
         assert!($num_bits <= 64, "num_bits cannot be > 64");
 
         let destination = &mut $data[$offset / 8] as *mut u8;
@@ -77,10 +77,10 @@ macro_rules! write_bytes {
             }
         }
     }};
-    ($T: tt; $value: expr, $data: expr, $offset: expr) => {
+    ($T:tt; $value:expr, $data:expr, $offset:expr) => {
         write_bytes!($T; $value, $data, $offset, ::std::mem::size_of::<$T>() * 8)
     };
-    ($T: tt; $value: expr, $data: expr) => {
+    ($T:tt; $value:expr, $data:expr) => {
         write_bytes!($T, $value, $data, 0, ::std::mem::size_of::<$T>() * 8)
     };
 }

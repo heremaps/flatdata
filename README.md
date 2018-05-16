@@ -4,30 +4,25 @@ Implementation of [heremaps/flatdata](https://github.com/heremaps/flatdata) in R
 
 ## Progress
 
-Reader:
-
-* [x] File resource storage
-* [x] Memory resource storage
-* [x] Struct reader
-* [x] ArrayView
-* [x] MultiArrayView
-* [x] Raw data view
-* [x] Subarchives
-
-Writer:
-
-* [x] File resource storage
-* [x] Memory resource storage
-* [x] Struct writer
-* [x] Vector
-* [x] ExternalVector
-* [x] MultiVector
-* [x] Raw data writer
-* [x] Subarchives
+* [x] Reader
+* [x] Writer
 
 Generator:
 
-* [ ] `flatdata`'s schema to Rust generator
+* [ ] `flatdata`'s schema to Rust generator (implemented, but the code is not yet merge into the
+      `flatdata` main repository).
+* [ ] Support for namespaces.
+* [ ] Support for constants.
+
+Docs:
+
+* [ ] Inline all container methods.
+* [x] Vector
+* [ ] ExternalVector
+* [ ] ArrayView
+* [ ] MultiVector
+* [ ] Library's entry docs.
+* [ ] Add example to readme.
 
 ## Example
 
