@@ -6,33 +6,26 @@ use std::io::{self, Cursor};
 use std::path;
 use std::rc::Rc;
 
-/// Storage of data in memory
+/// Internal storage of data in memory.
+#[derive(Default)]
 struct MemoryStorage {
-    // streams of resources that were written
+    // Streams of resources that were written.
     streams: BTreeMap<path::PathBuf, Rc<RefCell<Cursor<Vec<u8>>>>>,
-    // data of resources that were opened for reading
+    // Data of resources that were opened for reading.
     resources: BTreeMap<path::PathBuf, Rc<Vec<u8>>>,
 }
 
-impl MemoryStorage {
-    pub fn new() -> Self {
-        Self {
-            streams: BTreeMap::new(),
-            resources: BTreeMap::new(),
-        }
-    }
-}
-
-/// Resource storage in memory
+/// Resource storage in memory.
 pub struct MemoryResourceStorage {
     storage: MemoryStorage,
     path: path::PathBuf,
 }
 
 impl MemoryResourceStorage {
+    /// Create an empty memory resource storage.
     pub fn new(path: path::PathBuf) -> Self {
         Self {
-            storage: MemoryStorage::new(),
+            storage: MemoryStorage::default(),
             path,
         }
     }

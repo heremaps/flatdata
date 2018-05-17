@@ -9,19 +9,13 @@ use memmap::Mmap;
 
 use storage::{MemoryDescriptor, ResourceStorage, Stream};
 
-/// Storage of data in memory mapped files
-#[derive(Debug)]
+/// Internal storage of data as files.
+#[derive(Debug, Default)]
 struct MemoryMappedFileStorage {
     maps: BTreeMap<String, Mmap>,
 }
 
 impl MemoryMappedFileStorage {
-    pub fn new() -> Self {
-        Self {
-            maps: BTreeMap::new(),
-        }
-    }
-
     pub fn read(&mut self, path: &str) -> Result<MemoryDescriptor, io::Error> {
         if let Some(mapping) = self.maps.get(path) {
             return Ok(MemoryDescriptor::new(mapping.as_ptr(), mapping.len()));
@@ -39,16 +33,17 @@ impl MemoryMappedFileStorage {
 
 impl Stream for File {}
 
-/// Resource storage on disk
+/// Resource storage on disk using memory mapped files.
 pub struct FileResourceStorage {
     storage: MemoryMappedFileStorage,
     path: path::PathBuf,
 }
 
 impl FileResourceStorage {
+    /// Create an empty memory mapped file storage.
     pub fn new(path: path::PathBuf) -> Self {
         Self {
-            storage: MemoryMappedFileStorage::new(),
+            storage: MemoryMappedFileStorage::default(),
             path,
         }
     }
