@@ -7,6 +7,41 @@ use std::iter;
 use std::marker;
 use std::slice;
 
+/// A read-only view on a contiguous sequence of flatdata structs of the same type `T`.
+///
+/// The sequence is written using [`Vector`] or [`ExternalVector`]. The former provides a method
+/// to create an `ArrayView` to it. Note that, that an array view does not hold the data itself.
+///
+/// An archive provides a getter for each vector resource, which returns an array view.
+///
+/// # Examples
+///
+/// ```
+/// # #[macro_use] extern crate flatdata;
+/// # fn main() {
+/// use flatdata::{ArrayView, Vector};
+///
+/// define_struct!(A, AMut, "no_schema", 4,
+///     (x, set_x, u32, 0, 16),
+///     (y, set_y, u32, 16, 16)
+/// );
+///
+/// let mut v: Vector<A> = Vector::with_len(1);
+/// {
+///     let mut a = v.at_mut(0);
+///     a.set_x(1);
+///     a.set_y(2);
+/// }
+///
+/// let view: ArrayView<_> = v.as_view();
+/// let a = view.at(0);
+/// assert_eq!(a.x(), 1);
+/// assert_eq!(a.y(), 2);
+/// # }
+/// ```
+///
+/// [`Vector`]: struct.Vector.html
+/// [`ExternalVector`]: struct.ExternalVector.html
 #[derive(Clone)]
 pub struct ArrayView<'a, T: 'a> {
     data: &'a [u8],
@@ -15,6 +50,9 @@ pub struct ArrayView<'a, T: 'a> {
 }
 
 impl<'a, T: Struct> ArrayView<'a, T> {
+    /// Creates a new `ArrayView` to data at the given address.
+    ///
+    /// The returned array view does not own the data.
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
         Self {
             data: unsafe { slice::from_raw_parts(mem_descr.data(), mem_descr.size_in_bytes()) },
@@ -23,14 +61,28 @@ impl<'a, T: Struct> ArrayView<'a, T> {
         }
     }
 
+    /// Number of elements in the array.
     pub fn len(&self) -> usize {
         self.len
     }
 
+    /// Return `true` if the array is empty.
     pub fn is_empty(&self) -> bool {
         self.len == 0
     }
 
+    /// Returns a read-only handle to the element in the array at position `index`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if index is greater than or equal to `ArrayView::len()`.
+    pub fn at(&self, index: usize) -> Handle<T> {
+        let index = index * T::SIZE_IN_BYTES;
+        assert!(index + T::SIZE_IN_BYTES <= self.data.len());
+        Handle::new(T::from(&self.data[index]))
+    }
+
+    /// Returns an iterator to the elements of the array.
     pub fn iter(&'a self) -> ArrayViewIter<T> {
         ArrayViewIter {
             view: self,
@@ -38,14 +90,9 @@ impl<'a, T: Struct> ArrayView<'a, T> {
         }
     }
 
+    /// Returns a raw bytes representation of the underlying array data.
     pub fn as_bytes(&self) -> &[u8] {
         self.data
-    }
-
-    pub fn at(&self, index: usize) -> Handle<T> {
-        let index = index * T::SIZE_IN_BYTES;
-        assert!(index + T::SIZE_IN_BYTES <= self.data.len());
-        Handle::new(T::from(&self.data[index]))
     }
 }
 
@@ -72,6 +119,7 @@ impl<'a, T: Struct> AsRef<[u8]> for ArrayView<'a, T> {
     }
 }
 
+/// Iterator through elements of `ArrayView`.
 pub struct ArrayViewIter<'a, T: 'a + Struct> {
     view: &'a ArrayView<'a, T>,
     next_pos: usize,

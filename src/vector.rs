@@ -9,7 +9,7 @@ use std::fmt;
 use std::io;
 use std::marker;
 
-/// A container holding a contiguous sequence of flatdata structs of the same type T in memory,
+/// A container holding a contiguous sequence of flatdata structs of the same type `T` in memory,
 /// and providing read and write access to it.
 ///
 /// Vector data is fully stored and populated in memory before it is serialized. This container
@@ -18,7 +18,7 @@ use std::marker;
 /// better choice since it may decrease the memory footprint of serialization significantly.
 ///
 /// An archive builder provides a setter for each vector resource. Use [`as_view`] and the
-/// corresponding setter to serialize a `Vector`.
+/// corresponding setter to write a `Vector` to storage.
 ///
 /// # Examples
 ///
