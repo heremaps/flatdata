@@ -2,6 +2,7 @@
 
 /// Helper trait defining a constant for an integer type whether it is signed.
 pub trait Int {
+    /// `true` if the implementing type is signed, otherwise `false`.
     const IS_SIGNED: bool;
 }
 

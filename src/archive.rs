@@ -283,7 +283,6 @@ macro_rules! define_index {
     };
 }
 
-
 /// Macro used by generator to define a flatdata variant used in `MultiVector` and `MultiArrayView`.
 #[macro_export]
 macro_rules! define_variadic_struct {
