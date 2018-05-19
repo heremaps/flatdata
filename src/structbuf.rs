@@ -1,20 +1,22 @@
-// Note: This module is called `structbuf` in contrast to `struct` in the C++ implementation,
-// since Rust does not allow module names to be one of the language keywords.
+// Note: This module is called `structbuf` in contrast to `struct` in the C++
+// implementation, since Rust does not allow module names to be one of the
+// language keywords.
 use archive::Struct;
 use memory;
 
+use std::fmt;
 use std::ops;
 use std::slice;
-use std::fmt;
 
-/// A container holding a single flatdata struct in memory, and providing read and write access to
-/// it.
+/// A container holding a single flatdata struct in memory, and providing read
+/// and write access to it.
 ///
-/// Used in combination with [`ArchiveBuilder`] to serialize single struct resources, cf.
-/// [coappearances] example.
+/// Used in combination with [`ArchiveBuilder`] to serialize single struct
+/// resources, cf. [coappearances] example.
 ///
-/// A struct buffer derefs (const and mut) to a reference of the underlying struct, therefore,
-/// struct getters and setters can be used directly on buffer.
+/// A struct buffer derefs (const and mut) to a reference of the underlying
+/// struct, therefore, struct getters and setters can be used directly on
+/// buffer.
 ///
 /// # Examples
 ///
@@ -64,11 +66,7 @@ impl<T: Struct> StructBuf<T> {
 
 impl<T: Struct> fmt::Debug for StructBuf<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "StructBuf {{ resource: {:?} }}",
-            self.data
-        )
+        write!(f, "StructBuf {{ resource: {:?} }}", self.data)
     }
 }
 

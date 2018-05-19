@@ -4,11 +4,13 @@ use std::ops::{Deref, DerefMut};
 
 /// Handle to a flatdata struct for read-only fields access.
 ///
-/// Wraps a flatdata struct and provides a read-only access to its data. A handle automatically
-/// `deref`'s to a reference of the underlying struct. It is used to track the lifetime of the
-/// wrapped object, since a generated flatdata struct does not tracks the lifetime of the underlying
-/// data itself. A handle is similar to const references, it is possible to have several of them in
-/// scope, but not a const and mutable handle at the same time, cf. [`HandleMut`].
+/// Wraps a flatdata struct and provides a read-only access to its data. A
+/// handle automatically `deref`'s to a reference of the underlying struct. It
+/// is used to track the lifetime of the wrapped object, since a generated
+/// flatdata struct does not tracks the lifetime of the underlying data itself.
+/// A handle is similar to const references, it is possible to have several of
+/// them in scope, but not a const and mutable handle at the same time, cf.
+/// [`HandleMut`].
 ///
 /// [`HandleMut`]: struct.HandleMut.html
 #[derive(Clone, PartialEq)]
@@ -42,11 +44,13 @@ impl<'a, T: fmt::Debug> fmt::Debug for Handle<'a, T> {
 
 /// Mutable handle to a flatdata struct for reading and writing fields.
 ///
-/// Wraps a flatdata struct and provides a read and write access to its data. A handle automatically
-/// `deref`'s to a reference of the underlying struct, since a generated flatdata struct does not
-/// tracks the lifetime of the underlying data itself. It is used to track the lifetime of the
-/// wrapped object. Similar to mutable references, it is possible to have only one mutable handle in
-/// scope, and no other mutable or const handles, cf. [`Handle`].
+/// Wraps a flatdata struct and provides a read and write access to its data. A
+/// handle automatically `deref`'s to a reference of the underlying struct,
+/// since a generated flatdata struct does not tracks the lifetime of the
+/// underlying data itself. It is used to track the lifetime of the
+/// wrapped object. Similar to mutable references, it is possible to have only
+/// one mutable handle in scope, and no other mutable or const handles, cf.
+/// [`Handle`].
 ///
 /// [`Handle`]: struct.Hande.html
 pub struct HandleMut<'a, T: 'a> {

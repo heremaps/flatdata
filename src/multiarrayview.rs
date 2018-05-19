@@ -9,7 +9,8 @@ use std::marker;
 
 /// A read-only view on a multivector.
 ///
-/// For the detailed description of multivector and examples, cf. [`MultiVector`].
+/// For the detailed description of multivector and examples, cf.
+/// [`MultiVector`].
 ///
 /// [`MultiVector`]: struct.MultiVector.html
 #[derive(Clone)]
@@ -37,8 +38,8 @@ where
 
     /// Number of indexed items in the array.
     ///
-    /// Note that this is not the *total* number of overall elements stored in the array. An item
-    /// may be also empty.
+    /// Note that this is not the *total* number of overall elements stored in
+    /// the array. An item may be also empty.
     pub fn len(&self) -> usize {
         // last index element is a sentinel
         self.index.len() - 1
@@ -49,7 +50,8 @@ where
         self.len() == 0
     }
 
-    /// Returns a read-only iterator to the elements of the item at position `index`.
+    /// Returns a read-only iterator to the elements of the item at position
+    /// `index`.
     ///
     /// # Panics
     ///
@@ -107,7 +109,8 @@ where
     Ts: VariadicStruct,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview: Vec<(usize, Vec<_>)> = self.iter()
+        let preview: Vec<(usize, Vec<_>)> = self
+            .iter()
             .take(super::DEBUG_PREVIEW_LEN)
             .enumerate()
             .map(|(index, item)| (index, item.collect()))

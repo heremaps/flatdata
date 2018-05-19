@@ -1,9 +1,11 @@
 // TODO: Refactor according to the new version in C++ implementation.
-/// Reads specified number of bits from data at specified offset in portable way.
+/// Reads specified number of bits from data at specified offset in portable
+/// way.
 ///
-/// This macro is the counterpart of the macro [`write_bytes`]. It is used by [`Archive`] to read
-/// data from storage, which was serialized by the corresponding [`ArchiveBuilder`]. The latter uses
-/// [`write_bytes`] for writing the data.
+/// This macro is the counterpart of the macro [`write_bytes`]. It is used by
+/// [`Archive`] to read data from storage, which was serialized by the
+/// corresponding [`ArchiveBuilder`]. The latter uses [`write_bytes`] for
+/// writing the data.
 ///
 /// # Arguments
 ///

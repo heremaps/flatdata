@@ -20,15 +20,16 @@ macro_rules! num_bytes {
     };
 }
 
-/// Writes specified number of bits of a given value to a slice at a specified offset in portable
-/// way.
+/// Writes specified number of bits of a given value to a slice at a specified
+/// offset in portable way.
 ///
 /// This macro is used by [`ArchiveBuilder`] to serialize data to storage. It
-/// ensures that the data is written in a portable way independent of the platform and compiler.
-/// To read the data written by this macro, use [`read_bytes`].
+/// ensures that the data is written in a portable way independent of the
+/// platform and compiler. To read the data written by this macro, use
+/// [`read_bytes`].
 ///
-/// The maximum amount of bits which can be written is 64. If `$num_bits` is not specified,
-/// [`std::mem::size_of::<T>`] is used.
+/// The maximum amount of bits which can be written is 64. If `$num_bits` is
+/// not specified, [`std::mem::size_of::<T>`] is used.
 ///
 /// # Arguments
 ///

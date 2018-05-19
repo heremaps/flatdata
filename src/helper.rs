@@ -44,8 +44,9 @@ impl Int for u64 {
 
 /// Intersperses a list of string literals with comma.
 ///
-/// This macro takes any number of string literals, yielding an expression of type `&'static str`
-/// which represents all literals concatenated with commas (,) in between.
+/// This macro takes any number of string literals, yielding an expression of
+/// type `&'static str` which represents all literals concatenated with commas
+/// (,) in between.
 ///
 /// # Examples
 ///

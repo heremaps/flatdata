@@ -1,4 +1,11 @@
+use archive::{ArchiveBuilder, Index, Struct, VariadicStruct};
+use error::ResourceStorageError;
+use memory::{SizeType, PADDING_SIZE};
+use multivector::MultiVector;
+use vector::ExternalVector;
+
 use std::cell::RefCell;
+use std::fmt;
 use std::io::{self, Seek, Write};
 use std::mem;
 use std::ops::DerefMut;
@@ -6,26 +13,21 @@ use std::ptr;
 use std::rc::Rc;
 use std::slice;
 use std::str;
-use std::fmt;
-
-use archive::{ArchiveBuilder, Index, Struct, VariadicStruct};
-use error::ResourceStorageError;
-use memory::{SizeType, PADDING_SIZE};
-use multivector::MultiVector;
-use vector::ExternalVector;
 
 pub trait Stream: Write + Seek {}
 
 /// Hierarchical Resource Storage
 ///
-/// Manages and returns resources corresponding to their keys. Keys can be slash-separated('/').
-/// Manages schema for each resource and checks it on query. Resource storage is expected to provide
-/// read-write access to resources.
+/// Manages and returns resources corresponding to their keys. Keys can be
+/// slash-separated('/'). Manages schema for each resource and checks it on
+/// query. Resource storage is expected to provide read-write access to
+/// resources.
 pub trait ResourceStorage {
     /// Open a flatdata resource with given name and schema for reading.
     ///
-    /// Also checks if the schema matches the stored schema in the storage. The schema is expected
-    /// to be stored in the storage as another resource with name `{resource_name}.schema`.
+    /// Also checks if the schema matches the stored schema in the storage. The
+    /// schema is expected to be stored in the storage as another resource
+    /// with name `{resource_name}.schema`.
     fn read(
         &mut self,
         resource_name: &str,
@@ -34,9 +36,11 @@ pub trait ResourceStorage {
         self.read_and_check_schema(resource_name, schema)
     }
 
-    /// Writes data of a flatdata resource with given name and schema to storage.
+    /// Writes data of a flatdata resource with given name and schema to
+    /// storage.
     ///
-    /// The schema will be stored as another resource under the name `{resource_name}.schema`.
+    /// The schema will be stored as another resource under the name
+    /// `{resource_name}.schema`.
     fn write(&mut self, resource_name: &str, schema: &str, data: &[u8]) -> io::Result<()> {
         // write data
         let stream = self.create_output_stream(resource_name)?;
@@ -61,13 +65,15 @@ pub trait ResourceStorage {
 
     /// Reads a resource in storage and returns a pointer to its raw data.
     ///
-    /// This is a low level facility for opening and reading resources. Cf. [`read`] for opening
-    /// flatdata resources and checking the corresponding schema.
+    /// This is a low level facility for opening and reading resources. Cf.
+    /// [`read`] for opening flatdata resources and checking the
+    /// corresponding schema.
     ///
     /// [`read`]: #method.read
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
 
-    /// Creates a resource with given name and returns an output stream for writing to it.
+    /// Creates a resource with given name and returns an output stream for
+    /// writing to it.
     fn create_output_stream(&mut self, resource_name: &str) -> io::Result<Rc<RefCell<Stream>>>;
 
     //
@@ -76,9 +82,10 @@ pub trait ResourceStorage {
 
     /// Implementation helper for [`read`].
     ///
-    /// Uses the required method [`read_resource`] for open the corresponding resource and its
-    /// schema. It checks the integrity of data by verifying that the size of resource matched the
-    /// size specified in the header. Also checks that the stored schema matches the provided
+    /// Uses the required method [`read_resource`] for open the corresponding
+    /// resource and its schema. It checks the integrity of data by
+    /// verifying that the size of resource matched the size specified in
+    /// the header. Also checks that the stored schema matches the provided
     /// schema.
     ///
     /// [`read`]: #method.read
@@ -88,11 +95,13 @@ pub trait ResourceStorage {
         resource_name: &str,
         expected_schema: &str,
     ) -> Result<MemoryDescriptor, ResourceStorageError> {
-        let data = self.read_resource(resource_name)
+        let data = self
+            .read_resource(resource_name)
             .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
 
         let schema_name = format!("{}.schema", resource_name);
-        let schema = self.read_resource(&schema_name)
+        let schema = self
+            .read_resource(&schema_name)
             .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
 
         if data.size_in_bytes() < mem::size_of::<SizeType>() + PADDING_SIZE {
@@ -129,8 +138,9 @@ pub trait ResourceStorage {
 
 /// Helper for creating an external vector in the given resource storage.
 ///
-/// Creates a new resource with given name and schema in storage, and returns an [`ExternalVector`]
-/// using this resource for writing and flushing data to storage.
+/// Creates a new resource with given name and schema in storage, and returns
+/// an [`ExternalVector`] using this resource for writing and flushing data to
+/// storage.
 pub fn create_external_vector<T: Struct>(
     storage: &mut ResourceStorage,
     resource_name: &str,
@@ -149,8 +159,9 @@ pub fn create_external_vector<T: Struct>(
 
 /// Helper for creating a multivector in the given resource storage.
 ///
-/// Creates a new resource with given name and schema in storage, and returns an [`MultiVector`]
-/// using this resource for writing and flushing data to storage.
+/// Creates a new resource with given name and schema in storage, and returns
+/// an [`MultiVector`] using this resource for writing and flushing data to
+/// storage.
 pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
     storage: &mut ResourceStorage,
     resource_name: &str,
@@ -174,13 +185,13 @@ pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
 
 /// Creates a new archive in resource storage.
 ///
-/// A resource with name `T::NAME` is created in the storage. Its content is the signature of the
-/// archive, i.e. `T::SCHEMA`.
+/// A resource with name `T::NAME` is created in the storage. Its content is
+/// the signature of the archive, i.e. `T::SCHEMA`.
 ///
 /// # Errors
 ///
-/// If an archive with the same name already exists in the storage, then an IO error of kind
-/// [`AlreadyExists`] is returned.
+/// If an archive with the same name already exists in the storage, then an IO
+/// error of kind [`AlreadyExists`] is returned.
 ///
 /// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
 pub fn create_archive<T: ArchiveBuilder>(
@@ -255,7 +266,8 @@ pub struct ResourceHandle {
 impl ResourceHandle {
     /// Create a new resource handle from a stream.
     pub fn new(stream: Rc<RefCell<Stream>>) -> io::Result<Self> {
-        // Reserve space for size in the beginning of the stream, which will be updated later.
+        // Reserve space for size in the beginning of the stream, which will be updated
+        // later.
         {
             let mut mut_stream = stream.borrow_mut();
             write_size(0u64, mut_stream.deref_mut())?;
@@ -273,7 +285,8 @@ impl ResourceHandle {
 
     /// Writes data to the underlying stream.
     pub fn write(&mut self, data: &[u8]) -> io::Result<()> {
-        let stream = self.stream
+        let stream = self
+            .stream
             .as_ref()
             .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "stream closed"))?;
 
@@ -284,11 +297,12 @@ impl ResourceHandle {
         res
     }
 
-    /// Close the underlying stream and write the header containing the size in bytes of written
-    /// data.
+    /// Close the underlying stream and write the header containing the size in
+    /// bytes of written data.
     pub fn close(&mut self) -> io::Result<()> {
         {
-            let stream = self.stream
+            let stream = self
+                .stream
                 .as_ref()
                 .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "stream closed"))?;
 

@@ -1,13 +1,13 @@
+use storage::{MemoryDescriptor, ResourceStorage, Stream};
+
+use memmap::Mmap;
+
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io;
 use std::path;
 use std::rc::Rc;
-
-use memmap::Mmap;
-
-use storage::{MemoryDescriptor, ResourceStorage, Stream};
 
 /// Internal storage of data as files.
 #[derive(Debug, Default)]

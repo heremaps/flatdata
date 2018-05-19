@@ -1,41 +1,43 @@
-//! This module contains traits and macros that are used by generated code to define flatdata's
-//! structs, archives and resources.
+//! This module contains traits and macros that are used by generated code to
+//! define flatdata's structs, archives and resources.
 //!
-//! flatdata's code generator translates a flatdata schema to Rust code. The generated
-//! code contains all schema definitions embedded as strings, and for each schema element it
-//! uses one of the macros `define_struct`, `define_index`, `define_variadic_struct`, and
-//! `define_archive` to define the corresponding Rust struct and implement all needed methods and
-//! traits.
+//! flatdata's code generator translates a flatdata schema to Rust code. The
+//! generated code contains all schema definitions embedded as strings, and for
+//! each schema element it uses one of the macros `define_struct`,
+//! `define_index`, `define_variadic_struct`, and `define_archive` to define
+//! the corresponding Rust struct and implement all needed methods and traits.
 //!
 //! ## Structs
 //!
-//! A flatdata struct, let's say `SomeData`, is introduced by macro `define_struct` which defines
-//! two  Rust struct types: `SomeData` and `SomeDataMut`. The former type is used to read data from
-//! a serialized archive, the second to write data to archive. Both refer to each other through  the
-//! trait `Struct`.
+//! A flatdata struct, let's say `SomeData`, is introduced by macro
+//! `define_struct` which defines two  Rust struct types: `SomeData` and
+//! `SomeDataMut`. The former type is used to read data from a serialized
+//! archive, the second to write data to archive. Both refer to each other
+//! through  the trait `Struct`.
 //!
 //! ## Indexes and variadic types
 //!
-//! A `MultiVector` is a heterogeneous container which consists of indexed items, each containing
-//! several elements of different types (cf. `MultiVector`). Macros `define_index` and
-//! `define_variadic_struct` are used to introduce types used with `MultiVector`. `define_index`
-//! introduces a struct with a single field `value` used as an index for items.
-//! `define_variadic_struct` bounds multiple structs as into a single enum type, which is used for
-//! reading. For writing, the macro defines a builder type which has corresponding methods to add
-//! each struct to the item.
+//! A `MultiVector` is a heterogeneous container which consists of indexed
+//! items, each containing several elements of different types (cf.
+//! `MultiVector`). Macros `define_index` and `define_variadic_struct` are used
+//! to introduce types used with `MultiVector`. `define_index` introduces a
+//! struct with a single field `value` used as an index for items.
+//! `define_variadic_struct` bounds multiple structs as into a single enum
+//! type, which is used for reading. For writing, the macro defines a builder
+//! type which has corresponding methods to add each struct to the item.
 //!
 //! # Archive
 //!
-//! A flatdata archive is introduced by `define_archive`. It defines two types `ArchiveName` and
-//! `ArchiveNameBuilder` for reading resp. writing data.
+//! A flatdata archive is introduced by `define_archive`. It defines two types
+//! `ArchiveName` and `ArchiveNameBuilder` for reading resp. writing data.
+
+use error::ResourceStorageError;
+use storage::ResourceStorage;
 
 use std::cell::RefCell;
 use std::convert::From;
 use std::fmt::Debug;
 use std::rc::Rc;
-
-use error::ResourceStorageError;
-use storage::ResourceStorage;
 
 /// A type in flatdata used for reading data.
 ///
@@ -53,8 +55,8 @@ pub trait Struct: Clone + Debug + PartialEq + From<*const u8> {
 
 /// A mutable type in flatdata used for writing data.
 ///
-/// Each struct in generated code has a corresponding type with suffix `Mut` which implements this
-/// trait.
+/// Each struct in generated code has a corresponding type with suffix `Mut`
+/// which implements this trait.
 pub trait StructMut: Debug + From<*mut u8> {
     /// Corresponding mutable type used for reading data.
     type Const: Struct;
@@ -83,15 +85,18 @@ pub type TypeIndex = u8;
 ///
 /// Implemented by an enum type.
 pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8)> {
-    /// Associated type used for building an item in `MultiVector` based on this variadic type.
+    /// Associated type used for building an item in `MultiVector` based on
+    /// this variadic type.
     ///
-    /// The builder is returned by [`MultiVector::grow`](struct.MultiVector.html#method.grow)
-    /// method. It provides convenient methods `add_{variant_name}` for each enum variant.
+    /// The builder is returned by
+    /// [`MultiVector::grow`](struct.MultiVector.html#method.grow)
+    /// method. It provides convenient methods `add_{variant_name}` for each
+    /// enum variant.
     type ItemBuilder: From<*mut Vec<u8>>;
     /// Returns size in bytes of the current variant type.
     ///
-    /// Since a variadic struct can contain types of different sized, this is a method based on the
-    /// current value type.
+    /// Since a variadic struct can contain types of different sized, this is a
+    /// method based on the current value type.
     fn size_in_bytes(&self) -> usize;
 }
 
@@ -106,23 +111,26 @@ pub trait Archive: Debug + Clone {
     /// Used for verifying the integrity of the archive when opening.
     const SCHEMA: &'static str;
 
-    /// Opens the archive with name `NAME` and schema `SCHEMA` in the given storage for reading.
+    /// Opens the archive with name `NAME` and schema `SCHEMA` in the given
+    /// storage for reading.
     ///
-    /// When opening the archive, the schema of the archive and the schema stored in the storage
-    /// are compared as strings. If there is a difference, an Error
-    /// [`ResourceStorageError::WrongSignature`](enum.ResourceStorageError.html) is
-    /// returned containing a detailed diff of both schemata.
+    /// When opening the archive, the schema of the archive and the schema
+    /// stored in the storage are compared as strings. If there is a
+    /// difference, an Error [`ResourceStorageError::WrongSignature`](enum.
+    /// ResourceStorageError.html) is returned containing a detailed diff
+    /// of both schemata.
     ///
-    /// All resources are in the archive are also opened and their schemata are verified.
-    /// If any non-optional resource is missing or has a wrong signature (unexpected schema), the
-    /// operation will fail. Therefore, it is not possible to open partially written archive.
+    /// All resources are in the archive are also opened and their schemata are
+    /// verified. If any non-optional resource is missing or has a wrong
+    /// signature (unexpected schema), the operation will fail. Therefore,
+    /// it is not possible to open partially written archive.
     fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
 }
 
 /// A flatdata archive builder for serializing data.
 ///
-/// For each archive in generated code there is a corresponding archive builder which implements
-/// this trait.
+/// For each archive in generated code there is a corresponding archive builder
+/// which implements this trait.
 pub trait ArchiveBuilder: Clone {
     /// Name of the archive associated with this archive builder.
     const NAME: &'static str;
@@ -131,18 +139,20 @@ pub trait ArchiveBuilder: Clone {
     /// Used only for debug and inspection purposes.
     const SCHEMA: &'static str;
 
-    /// Creates an archive with name `NAME` and schema `SCHEMA` in the given storage for writing.
+    /// Creates an archive with name `NAME` and schema `SCHEMA` in the given
+    /// storage for writing.
     ///
-    /// If the archive is successfully created, the storage will contain the archive and
-    /// archives schema. Archive's resources need to be written separately by using the
-    /// corresponding generated methods:
+    /// If the archive is successfully created, the storage will contain the
+    /// archive and archives schema. Archive's resources need to be written
+    /// separately by using the corresponding generated methods:
     ///
     /// * `set_struct`
     /// * `set_vector`
     /// * `start_vector`/`finish_vector`
     /// * `start_multivector`/`finish_multivector`.
     ///
-    /// For more information about how to write resources, cf. the [coappearances] example.
+    /// For more information about how to write resources, cf. the
+    /// [coappearances] example.
     ///
     /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
     fn new(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
@@ -283,7 +293,8 @@ macro_rules! define_index {
     };
 }
 
-/// Macro used by generator to define a flatdata variant used in `MultiVector` and `MultiArrayView`.
+/// Macro used by generator to define a flatdata variant used in `MultiVector`
+/// and `MultiArrayView`.
 #[macro_export]
 macro_rules! define_variadic_struct {
     ($name:ident, $item_builder_name:ident, $index_type:tt,
@@ -347,7 +358,8 @@ macro_rules! define_variadic_struct {
     }
 }
 
-/// Macro used by generator to define a flatdata archive and corresponding archive builder.
+/// Macro used by generator to define a flatdata archive and corresponding
+/// archive builder.
 #[macro_export]
 macro_rules! define_archive {
     ($name:ident, $builder_name:ident, $archive_schema:expr;

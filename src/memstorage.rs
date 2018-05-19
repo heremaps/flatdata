@@ -2,10 +2,10 @@ use storage::{MemoryDescriptor, ResourceStorage, Stream};
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::fmt;
 use std::io::{self, Cursor};
 use std::path;
 use std::rc::Rc;
-use std::fmt;
 
 /// Internal storage of data in memory.
 #[derive(Default)]
@@ -18,7 +18,8 @@ struct MemoryStorage {
 
 impl fmt::Debug for MemoryStorage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
+        write!(
+            f,
             "MemoryStorage {{ num_streams: {}, num_resources: {} }}",
             self.streams.len(),
             self.resources.len(),
@@ -84,7 +85,8 @@ impl ResourceStorage for MemoryResourceStorage {
         resource_name: &str,
     ) -> Result<Rc<RefCell<Stream>>, io::Error> {
         let resource_path = self.path.join(resource_name);
-        let stream = self.storage
+        let stream = self
+            .storage
             .streams
             .entry(resource_path)
             .or_insert_with(|| Rc::new(RefCell::new(Cursor::new(Vec::new()))));

@@ -11,28 +11,34 @@ use std::marker;
 
 /// A container for writing an indexed sequence of heterogeneous data items.
 ///
-/// The concept of a multivector is used for storing and reading heterogeneous flatdata structs
-/// in/from the same container. The data is indexed by integers. Each index refers to a bucket which
-/// may contain a variable number of items of different types unified in the same variant enum `Ts`.
-/// Such bucket may also be empty, which allows to represent sparse data in a multivector. For those
-/// who are familiar with C++'s `std::multimap` data structure, a multivector can be considered as a
-/// `std::multimap` mapping integers to sequences of variable length.
+/// The concept of a multivector is used for storing and reading heterogeneous
+/// flatdata structs in/from the same container. The data is indexed by
+/// integers. Each index refers to a bucket which may contain a variable number
+/// of items of different types unified in the same variant enum `Ts`.
+/// Such bucket may also be empty, which allows to represent sparse data in a
+/// multivector. For those who are familiar with C++'s `std::multimap` data
+/// structure, a multivector can be considered as a `std::multimap` mapping
+/// integers to sequences of variable length.
 ///
-/// A `MultiVector` corresponds rather to [`ExternalVector`] than to [`Vector`], in the sense that
-/// the items are flushed to storage whenever the internal buffer is full. In particular, it is only
-/// possible to modify the last bucket. There is no access to the buckets previously stored.
+/// A `MultiVector` corresponds rather to [`ExternalVector`] than to
+/// [`Vector`], in the sense that the items are flushed to storage whenever the
+/// internal buffer is full. In particular, it is only possible to modify the
+/// last bucket. There is no access to the buckets previously stored.
 ///
-/// For accessing and reading the data stored by in multivector, cf. [`MultiArrayView`].
+/// For accessing and reading the data stored by in multivector, cf.
+/// [`MultiArrayView`].
 ///
-/// A multivector *must* be closed, after the last element was written to it. After closing, it can
-/// not be used anymore. Not closing the multivector will result in panic on drop (in debug mode).
+/// A multivector *must* be closed, after the last element was written to it.
+/// After closing, it can not be used anymore. Not closing the multivector will
+/// result in panic on drop (in debug mode).
 ///
 /// Internally data is stored like this:
 ///
-/// * `Index`: `Vector<Idx>` - encodes start/end byte in `Data` array for each element `i`.
-/// * `Data`: `Vec<u8>` - sequence of serialized (`Tag`, `ItemData`) tuples, where `Tag` encodes the
-///   the variant type, and `ItemData` contains the underlying variant data. `Tag` has size of 1
-///   byte, `ItemData` is of size `Ts::Type::SIZE_IN_BYTES`.
+/// * `Index`: `Vector<Idx>` - encodes start/end byte in `Data` array for each
+/// element `i`. * `Data`: `Vec<u8>` - sequence of serialized (`Tag`,
+/// `ItemData`) tuples, where `Tag` encodes the the variant type, and
+/// `ItemData` contains the underlying variant data. `Tag` has size of 1 byte,
+/// `ItemData` is of size `Ts::Type::SIZE_IN_BYTES`.
 ///
 /// # Examples
 ///
@@ -68,9 +74,9 @@ use std::marker;
 ///
 /// let mut storage = MemoryResourceStorage::new("/root/multivec".into());
 /// {
-///     let mut mv =
-///         create_multi_vector::<Idx, AB>(&mut storage, "multivector", "some schema")
-///             .expect("failed to create MultiVector");
+///     let mut mv = create_multi_vector::<Idx, AB>(
+///             &mut storage, "multivector", "some schema")
+///         .expect("failed to create MultiVector");
 ///     {
 ///         let mut item = mv.grow().expect("grow failed");
 ///         {
@@ -141,12 +147,14 @@ impl<Idx: Index, Ts: VariadicStruct> MultiVector<Idx, Ts> {
         }
     }
 
-    /// Appends a new item to the end of this multivector and returns a builder for it.
+    /// Appends a new item to the end of this multivector and returns a builder
+    /// for it.
     ///
-    /// The builder is used for storing different variants of `Ts` in the newly created item.
+    /// The builder is used for storing different variants of `Ts` in the newly
+    /// created item.
     ///
-    /// Calling this method may flush data to storage (cf. [`flush`]), which may fail due to
-    /// different IO reasons.
+    /// Calling this method may flush data to storage (cf. [`flush`]), which
+    /// may fail due to different IO reasons.
     ///
     /// [`flush`]: #method.flush
     pub fn grow(&mut self) -> io::Result<HandleMut<Ts::ItemBuilder>> {
@@ -176,11 +184,12 @@ impl<Idx: Index, Ts: VariadicStruct> MultiVector<Idx, Ts> {
         Ok(())
     }
 
-    /// Flushes the remaining not yet flushed elements in this multivector and finalizes the data
-    /// inside the storage.
+    /// Flushes the remaining not yet flushed elements in this multivector and
+    /// finalizes the data inside the storage.
     ///
-    /// After this method is called, more data cannot be written into this multivector. A
-    /// multivector *must* be closed, otherwise it will panic on drop (in debug mode).
+    /// After this method is called, more data cannot be written into this
+    /// multivector. A multivector *must* be closed, otherwise it will
+    /// panic on drop (in debug mode).
     pub fn close(&mut self) -> io::Result<()> {
         self.add_to_index()?; // sentinel for last item
         self.index.close()?;

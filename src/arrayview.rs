@@ -7,12 +7,15 @@ use std::iter;
 use std::marker;
 use std::slice;
 
-/// A read-only view on a contiguous sequence of flatdata structs of the same type `T`.
+/// A read-only view on a contiguous sequence of flatdata structs of the same
+/// type `T`.
 ///
-/// The sequence is written using [`Vector`] or [`ExternalVector`]. The former provides a method
-/// to create an `ArrayView` to it. Note that, that an array view does not hold the data itself.
+/// The sequence is written using [`Vector`] or [`ExternalVector`]. The former
+/// provides a method to create an `ArrayView` to it. Note that, that an array
+/// view does not hold the data itself.
 ///
-/// An archive provides a getter for each vector resource, which returns an array view.
+/// An archive provides a getter for each vector resource, which returns an
+/// array view.
 ///
 /// # Examples
 ///
@@ -71,7 +74,8 @@ impl<'a, T: Struct> ArrayView<'a, T> {
         self.len == 0
     }
 
-    /// Returns a read-only handle to the element in the array at position `index`.
+    /// Returns a read-only handle to the element in the array at position
+    /// `index`.
     ///
     /// # Panics
     ///
@@ -152,7 +156,7 @@ impl<'a, T: Struct> fmt::Debug for ArrayViewIter<'a, T> {
             .skip(self.next_pos)
             .take(super::DEBUG_PREVIEW_LEN);
         write!(
-            f ,
+            f,
             "ArrayViewIter {{ data: {:?}{} }}",
             preview,
             if self.view.len() - self.next_pos <= super::DEBUG_PREVIEW_LEN {

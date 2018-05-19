@@ -9,16 +9,18 @@ use std::fmt;
 use std::io;
 use std::marker;
 
-/// A container holding a contiguous sequence of flatdata structs of the same type `T` in memory,
-/// and providing read and write access to it.
+/// A container holding a contiguous sequence of flatdata structs of the same
+/// type `T` in memory, and providing read and write access to it.
 ///
-/// Vector data is fully stored and populated in memory before it is serialized. This container
-/// is often used for data which needs to be changed or updated after insertion in the container.
-/// When data can be incrementally serialized without later updates, [`ExternalVector`] is usually a
-/// better choice since it may decrease the memory footprint of serialization significantly.
+/// Vector data is fully stored and populated in memory before it is
+/// serialized. This container is often used for data which needs to be changed
+/// or updated after insertion in the container. When data can be incrementally
+/// serialized without later updates, [`ExternalVector`] is usually a
+/// better choice since it may decrease the memory footprint of serialization
+/// significantly.
 ///
-/// An archive builder provides a setter for each vector resource. Use [`as_view`] and the
-/// corresponding setter to write a `Vector` to storage.
+/// An archive builder provides a setter for each vector resource. Use
+/// [`as_view`] and the corresponding setter to write a `Vector` to storage.
 ///
 /// # Examples
 ///
@@ -100,9 +102,10 @@ where
         self.len() == 0
     }
 
-    /// Reserves capacity for at least `additional` more elements to be inserted in the given
-    /// vector. The collection may reserve more space to avoid frequent reallocations. After calling
-    /// reserve, capacity will be greater than or equal to `self.len() + additional`. Does nothing
+    /// Reserves capacity for at least `additional` more elements to be
+    /// inserted in the given vector. The collection may reserve more space
+    /// to avoid frequent reallocations. After calling reserve, capacity
+    /// will be greater than or equal to `self.len() + additional`. Does nothing
     /// if capacity is already sufficient.
     #[inline]
     pub fn reserve(&mut self, additional: usize) {
@@ -122,7 +125,8 @@ where
         &self.data[..self.size_in_bytes()]
     }
 
-    /// Appends an element to the end of this vector and returns a mutable handle to it.
+    /// Appends an element to the end of this vector and returns a mutable
+    /// handle to it.
     #[inline]
     pub fn grow(&mut self) -> HandleMut<T::Mut> {
         let old_size = self.data.len();
@@ -131,19 +135,22 @@ where
         HandleMut::new(T::Mut::from(&mut self.data[last_index * T::SIZE_IN_BYTES]))
     }
 
-    /// Return an accessor handle to the element at position `index` in the vector.
+    /// Return an accessor handle to the element at position `index` in the
+    /// vector.
     #[inline]
     pub fn at(&self, index: usize) -> Handle<T> {
         Handle::new(T::from(&self.data[index * T::SIZE_IN_BYTES]))
     }
 
-    /// Return a mutable handle to the element at position `index` in the vector.
+    /// Return a mutable handle to the element at position `index` in the
+    /// vector.
     #[inline]
     pub fn at_mut(&mut self, index: usize) -> HandleMut<T::Mut> {
         HandleMut::new(T::Mut::from(&mut self.data[index * T::SIZE_IN_BYTES]))
     }
 
-    /// Calculates size in bytes (with padding) needed to store `len` many elements.
+    /// Calculates size in bytes (with padding) needed to store `len` many
+    /// elements.
     #[inline]
     fn calc_size(len: usize) -> usize {
         len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
@@ -158,7 +165,8 @@ impl<T: Struct> Default for Vector<T> {
 }
 
 impl<T: Struct> AsRef<[u8]> for Vector<T> {
-    /// Returns the content of this vector as slice of bytes. Equivalent to [`as_bytes`].
+    /// Returns the content of this vector as slice of bytes. Equivalent to
+    /// [`as_bytes`].
     ///
     /// [`as_bytes`]: #method.as_bytes
     fn as_ref(&self) -> &[u8] {
@@ -188,11 +196,13 @@ impl<T: Struct> fmt::Debug for Vector<T> {
 ///
 /// Useful for serialization of data which does not fully fit in memory.
 ///
-/// External vector does not provide access to elements previously added to it. Only the last
-/// element added to the vector using the result of the method [`grow`] can be accessed and written.
+/// External vector does not provide access to elements previously added to it.
+/// Only the last element added to the vector using the result of the method
+/// [`grow`] can be accessed and written.
 ///
-/// An external vector *must* be closed, after the last element was written to it. After closing, it
-/// can not be used anymore. Not closing the vector will result in panic on drop (in debug mode).
+/// An external vector *must* be closed, after the last element was written to
+/// it. After closing, it can not be used anymore. Not closing the vector will
+/// result in panic on drop (in debug mode).
 ///
 /// # Examples
 ///
@@ -200,8 +210,8 @@ impl<T: Struct> fmt::Debug for Vector<T> {
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
 /// use flatdata::{
-///     create_external_vector, ArrayView, ExternalVector, MemoryResourceStorage, ResourceStorage,
-/// };
+/// create_external_vector, ArrayView, ExternalVector,
+/// MemoryResourceStorage, ResourceStorage, };
 ///
 /// define_struct!(A, AMut, "no_schema", 4,
 ///     (x, set_x, u32, 0, 16),
@@ -210,8 +220,9 @@ impl<T: Struct> fmt::Debug for Vector<T> {
 ///
 /// let mut storage = MemoryResourceStorage::new("/root/extvec".into());
 /// {
-///     let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
-///         .expect("failed to create ExternalVector");
+/// let mut v = create_external_vector::<A>(
+///         &mut storage, "vector", "Some schema content")
+///     .expect("failed to create ExternalVector");
 ///     {
 ///         let mut a = v.grow().expect("grow failed");
 ///         a.set_x(0);
@@ -268,10 +279,11 @@ impl<T: Struct> ExternalVector<T> {
         self.len() == 0
     }
 
-    /// Appends an element to the end of this vector and returns a mutable handle to it.
+    /// Appends an element to the end of this vector and returns a mutable
+    /// handle to it.
     ///
-    /// Calling this method may flush data to storage (cf. [`flush`]), which may fail due to
-    /// different IO reasons.
+    /// Calling this method may flush data to storage (cf. [`flush`]), which
+    /// may fail due to different IO reasons.
     ///
     /// [`flush`]: #method.flush
     pub fn grow(&mut self) -> io::Result<HandleMut<T::Mut>> {
@@ -296,16 +308,18 @@ impl<T: Struct> ExternalVector<T> {
         Ok(())
     }
 
-    /// Returns `true` if this vector was not closed yet and more elements can be added to it.
+    /// Returns `true` if this vector was not closed yet and more elements can
+    /// be added to it.
     pub fn is_open(&self) -> bool {
         self.resource_handle.borrow().is_open()
     }
 
-    /// Flushes the remaining not yet flushed elements in this vector and finalizes the data inside
-    /// the storage.
+    /// Flushes the remaining not yet flushed elements in this vector and
+    /// finalizes the data inside the storage.
     ///
-    /// After this method is called, more data cannot be written into this vector. An external
-    /// vector *must* be closed, otherwise it will panic on drop (in debug mode).
+    /// After this method is called, more data cannot be written into this
+    /// vector. An external vector *must* be closed, otherwise it will
+    /// panic on drop (in debug mode).
     pub fn close(&mut self) -> io::Result<()> {
         self.flush()?;
         self.resource_handle.borrow_mut().close()

@@ -1,28 +1,32 @@
 //! Implementation of [heremaps/flatdata] in Rust.
 //!
-//! Flatdata is a library providing data structures for convenient creation, storage and access of
-//! packed memory-mappable structures with minimal overhead.
+//! Flatdata is a library providing data structures for convenient creation,
+//! storage and access of packed memory-mappable structures with minimal
+//! overhead.
 //!
-//! The idea is, that the user defines a schema of the data format using flatdata's very simple
-//! schema language supporting plain structs, vectors and multivectors. The schema is then used to
-//! generate builders and readers for serialization and deserialization of the data. The data is
-//! serialized in a portable way which allows zero-overhead random access to it by using memory
-//! mapped storage. Memory mapped approach makes it possible to use the operating system facilities
-//! for loading, caching and paging of the data, and most important, accessing it as if it were in
-//! memory. Read more in "[Why flatdata?]".
+//! The idea is, that the user defines a schema of the data format using
+//! flatdata's very simple schema language supporting plain structs, vectors
+//! and multivectors. The schema is then used to generate builders and readers
+//! for serialization and deserialization of the data. The data is serialized
+//! in a portable way which allows zero-overhead random access to it by using
+//! memory mapped storage. Memory mapped approach makes it possible to use the
+//! operating system facilities for loading, caching and paging of the data,
+//! and most important, accessing it as if it were in memory. Read more in
+//! "[Why flatdata?]".
 //!
 //! This create provides:
 //!
 //! * macros for generated code (prefixed with `create_`),
-//! * macros for zero-cost serialization [`read_bytes`] and deserialization [`write_bytes`],
-//! * in-memory [`MemoryResourceStorage`] and memory-mapped [`FileResourceStorage`] storages,
-//! * data structures for writing data: [`StructBuf`], [`Vector`], [`ExternalVector`],
-//!   [`MultiVector`],
+//! * macros for zero-cost serialization [`read_bytes`] and deserialization
+//! [`write_bytes`], * in-memory [`MemoryResourceStorage`] and memory-mapped
+//! [`FileResourceStorage`] storages, * data structures for writing data:
+//! [`StructBuf`], [`Vector`], [`ExternalVector`],   [`MultiVector`],
 //! * data structures for reading data: [`ArrayView`], [`MultiArrayView`].
 //!
 //! The generator is part of the main [heremaps/flatdata] repository.
 //!
-//! For a comprehensive example, cf. coappearances [generated code] and the corresponding [usage].
+//! For a comprehensive example, cf. coappearances [generated code] and the
+//! corresponding [usage].
 //!
 //! [heremaps/flatdata]: https://github.com/heremaps/flatdata
 //! [generated code]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances/generated.rs
@@ -44,7 +48,8 @@
 extern crate diff;
 extern crate memmap;
 
-/// Number of elements in `ArrayView`, `MultiArrayView`, and `Vector` to show in Debug output.
+/// Number of elements in `ArrayView`, `MultiArrayView`, and `Vector` to show
+/// in Debug output.
 const DEBUG_PREVIEW_LEN: usize = 10;
 
 #[macro_use]
