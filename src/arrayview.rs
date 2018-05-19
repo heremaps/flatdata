@@ -50,7 +50,7 @@ pub struct ArrayView<'a, T: 'a> {
 }
 
 impl<'a, T: Struct> ArrayView<'a, T> {
-    /// Creates a new `ArrayView` to data at the given address.
+    /// Creates a new `ArrayView` to the data at the given address.
     ///
     /// The returned array view does not own the data.
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {

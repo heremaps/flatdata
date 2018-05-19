@@ -192,7 +192,7 @@ impl<T: Struct> fmt::Debug for Vector<T> {
 /// element added to the vector using the result of the method [`grow`] can be accessed and written.
 ///
 /// An external vector *must* be closed, after the last element was written to it. After closing, it
-/// can not be used anymore. Not closing the vector will result in panic in debug mode.
+/// can not be used anymore. Not closing the vector will result in panic on drop (in debug mode).
 ///
 /// # Examples
 ///
@@ -304,8 +304,8 @@ impl<T: Struct> ExternalVector<T> {
     /// Flushes the remaining not yet flushed elements in this vector and finalizes the data inside
     /// the storage.
     ///
-    /// After this method is called, it cannot be written into this vector. An external vector
-    /// *must* be closed, otherwise it will panic on drop (in debug mode).
+    /// After this method is called, more data cannot be written into this vector. An external
+    /// vector *must* be closed, otherwise it will panic on drop (in debug mode).
     pub fn close(&mut self) -> io::Result<()> {
         self.flush()?;
         self.resource_handle.borrow_mut().close()

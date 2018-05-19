@@ -258,7 +258,7 @@ macro_rules! define_struct {
 /// Macro used by generator to define a flatdata index.
 #[macro_export]
 macro_rules! define_index {
-    ($name:ident, $name_mut:ident, $schema:path, $size_in_bytes:expr, $size_in_bits:expr) => {
+    ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr, $size_in_bits:expr) => {
         // TODO: Find a way to put this definition into an internal submodule.
         define_struct!(
             $name,

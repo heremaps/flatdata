@@ -7,7 +7,11 @@ use std::fmt;
 use std::iter;
 use std::marker;
 
-/// Ts is a variadic type describing the types of an element in `MultiArrayView`.
+/// A read-only view on a multivector.
+///
+/// For the detailed description of multivector and examples, cf. [`MultiVector`].
+///
+/// [`MultiVector`]: struct.MultiVector.html
 #[derive(Clone)]
 pub struct MultiArrayView<'a, Idx: 'a, Ts: 'a> {
     index: ArrayView<'a, Idx>,
@@ -20,6 +24,9 @@ where
     Idx: Index,
     Ts: VariadicStruct,
 {
+    /// Creates a new `MultiArrayView` to the data at the given address.
+    ///
+    /// The returned array view does not own the data.
     pub fn new(index: ArrayView<'a, Idx>, data_mem_descr: &MemoryDescriptor) -> Self {
         Self {
             index,
@@ -28,9 +35,28 @@ where
         }
     }
 
-    pub fn at(&self, idx: usize) -> MultiArrayViewItemIter<Ts> {
-        let start = self.index.at(idx).value();
-        let end = self.index.at(idx + 1).value();
+    /// Number of indexed items in the array.
+    ///
+    /// Note that this is not the *total* number of overall elements stored in the array. An item
+    /// may be also empty.
+    pub fn len(&self) -> usize {
+        // last index element is a sentinel
+        self.index.len() - 1
+    }
+
+    /// Returns `true` if no item is stored in the array.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Returns a read-only iterator to the elements of the item at position `index`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if index is greater than or equal to `MultiArrayView::len()`.
+    pub fn at(&self, index: usize) -> MultiArrayViewItemIter<Ts> {
+        let start = self.index.at(index).value();
+        let end = self.index.at(index + 1).value();
         MultiArrayViewItemIter {
             data: unsafe { self.data.offset(start as isize) },
             end: unsafe { self.data.offset(end as isize) },
@@ -38,15 +64,7 @@ where
         }
     }
 
-    pub fn len(&self) -> usize {
-        // last index element is a sentinel
-        self.index.len() - 1
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
+    /// Returns an iterator through the indexed items of the array.
     pub fn iter(&'a self) -> MultiArrayViewIter<Idx, Ts> {
         MultiArrayViewIter {
             view: self,
@@ -55,6 +73,9 @@ where
     }
 }
 
+/// Iterator through elements of an array item.
+///
+/// An item may be empty.
 pub struct MultiArrayViewItemIter<'a, Ts: 'a> {
     data: *const u8,
     end: *const u8,
@@ -104,6 +125,7 @@ where
     }
 }
 
+/// Iterator through items of an multivector.
 pub struct MultiArrayViewIter<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> {
     view: &'a MultiArrayView<'a, Idx, Ts>,
     next_pos: usize,
