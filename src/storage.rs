@@ -1,3 +1,5 @@
+#![deny(missing_docs)]
+
 use std::cell::RefCell;
 use std::io::{self, Seek, Write};
 use std::mem;
@@ -18,9 +20,13 @@ pub trait Stream: Write + Seek {}
 /// Hierarchical Resource Storage
 ///
 /// Manages and returns resources corresponding to their keys. Keys can be slash-separated('/').
-/// Manages schema for each resource and checks it on query.
-/// Resource storage is expected to provide read-write access to resources
+/// Manages schema for each resource and checks it on query. Resource storage is expected to provide
+/// read-write access to resources.
 pub trait ResourceStorage {
+    /// Open a flatdata resource with given name and schema for reading.
+    ///
+    /// Also checks if the schema matches the stored schema in the storage. The schema is expected
+    /// to be stored in the storage as another resource with name `{resource_name}.schema`.
     fn read(
         &mut self,
         resource_name: &str,
@@ -29,6 +35,9 @@ pub trait ResourceStorage {
         self.read_and_check_schema(resource_name, schema)
     }
 
+    /// Writes data of a flatdata resource with given name and schema to storage.
+    ///
+    /// The schema will be stored as another resource under the name `{resource_name}.schema`.
     fn write(&mut self, resource_name: &str, schema: &str, data: &[u8]) -> io::Result<()> {
         // write data
         let stream = self.create_output_stream(resource_name)?;
@@ -41,16 +50,40 @@ pub trait ResourceStorage {
         write_schema(schema, mut_stream.deref_mut())
     }
 
-    // virtual
+    //
+    // Virtual
+    //
+
+    /// Creates a resource storage at a given subdirectory.
     fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>>;
+
+    /// Returns `true` if resource exists in the storage.
     fn exists(&self, resource_name: &str) -> bool;
+
+    /// Reads a resource in storage and returns a pointer to its raw data.
+    ///
+    /// This is a low level facility for opening and reading resources. Cf. [`read`] for opening
+    /// flatdata resources and checking the corresponding schema.
+    ///
+    /// [`read`]: #method.read
     fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error>;
+
+    /// Creates a resource with given name and returns an output stream for writing to it.
     fn create_output_stream(&mut self, resource_name: &str) -> io::Result<Rc<RefCell<Stream>>>;
 
     //
     // Impl Helper
     //
 
+    /// Implementation helper for [`read`].
+    ///
+    /// Uses the required method [`read_resource`] for open the corresponding resource and its
+    /// schema. It checks the integrity of data by verifying that the size of resource matched the
+    /// size specified in the header. Also checks that the stored schema matches the provided
+    /// schema.
+    ///
+    /// [`read`]: #method.read
+    /// [`read_resource`]: #tymethod.read_resource
     fn read_and_check_schema(
         &mut self,
         resource_name: &str,
@@ -91,8 +124,14 @@ pub trait ResourceStorage {
     }
 }
 
-// resource factory methods
+//
+// Resource factory helpers
+//
 
+/// Helper for creating an external vector in the given resource storage.
+///
+/// Creates a new resource with given name and schema in storage, and returns an [`ExternalVector`]
+/// using this resource for writing and flushing data to storage.
 pub fn create_external_vector<T: Struct>(
     storage: &mut ResourceStorage,
     resource_name: &str,
@@ -109,6 +148,10 @@ pub fn create_external_vector<T: Struct>(
     Ok(ExternalVector::new(handle))
 }
 
+/// Helper for creating an multivector in the given resource storage.
+///
+/// Creates a new resource with given name and schema in storage, and returns an [`MultiVector`]
+/// using this resource for writing and flushing data to storage.
 pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
     storage: &mut ResourceStorage,
     resource_name: &str,
@@ -130,6 +173,17 @@ pub fn create_multi_vector<Idx: Index, Ts: VariadicStruct>(
     Ok(MultiVector::new(index, handle))
 }
 
+/// Creates a new archive in resource storage.
+///
+/// A resource with name `T::NAME` is created in the storage. Its content is the signature of the
+/// archive, i.e. `T::SCHEMA`.
+///
+/// # Errors
+///
+/// If an archive with the same name already exists in the storage, then an IO error of kind
+/// [`AlreadyExists`] is returned.
+///
+/// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
 pub fn create_archive<T: ArchiveBuilder>(
     storage: &Rc<RefCell<ResourceStorage>>,
 ) -> Result<(), ResourceStorageError> {
@@ -139,7 +193,7 @@ pub fn create_archive<T: ArchiveBuilder>(
         let storage = storage.borrow();
         if storage.exists(&signature_name) {
             return Err(ResourceStorageError::from_io_error(
-                ::std::io::Error::new(::std::io::ErrorKind::AlreadyExists, signature_name.clone()),
+                io::Error::new(io::ErrorKind::AlreadyExists, signature_name.clone()),
                 signature_name,
             ));
         }
@@ -170,24 +224,29 @@ impl Default for MemoryDescriptor {
     }
 }
 
+/// Describes a contiguous constant chunk of memory.
 impl MemoryDescriptor {
+    /// Creates a new memory descriptor from a pointer and its size in bytes.
     pub fn new(ptr: *const u8, size: usize) -> MemoryDescriptor {
         MemoryDescriptor { ptr, size }
     }
 
-    pub fn describe(&self) -> String {
-        format!("Raw data of size {}", self.size)
-    }
-
+    /// Returns pointer to the first byte of the chunk.
     pub fn data(&self) -> *const u8 {
         self.ptr
     }
 
+    /// Returns size of chunk in bytes.
     pub fn size_in_bytes(&self) -> usize {
         self.size
     }
 }
 
+/// A handle to a resource for writing to it.
+///
+/// Wraps a `Stream` returned by [`create_output_stream`].
+///
+/// [`create_output_stream`]: trait.ResourceStorage.html#tycreate_output_stream
 #[derive(Clone)]
 pub struct ResourceHandle {
     stream: Option<Rc<RefCell<Stream>>>,
@@ -195,6 +254,7 @@ pub struct ResourceHandle {
 }
 
 impl ResourceHandle {
+    /// Create a new resource handle from a stream.
     pub fn new(stream: Rc<RefCell<Stream>>) -> io::Result<Self> {
         // Reserve space for size in the beginning of the stream, which will be updated later.
         {
@@ -207,10 +267,12 @@ impl ResourceHandle {
         })
     }
 
+    /// Returns `true` is the underlying is still open for writing.
     pub fn is_open(&self) -> bool {
         self.stream.is_some()
     }
 
+    /// Writes data to the underlying stream.
     pub fn write(&mut self, data: &[u8]) -> io::Result<()> {
         let stream = self.stream
             .as_ref()
@@ -223,6 +285,8 @@ impl ResourceHandle {
         res
     }
 
+    /// Close the underlying stream and write the header containing the size in bytes of written
+    /// data.
     pub fn close(&mut self) -> io::Result<()> {
         {
             let stream = self.stream
@@ -254,7 +318,9 @@ fn diff(left: &str, right: &str) -> String {
         .join("\n")
 }
 
-// write helpers
+//
+// Write helpers
+//
 
 fn write_to_stream(data: &[u8], stream: &mut Stream) -> io::Result<()> {
     write_size(data.len() as u64, stream)?;

@@ -1,5 +1,5 @@
-/// Note: This module is called `structbuf` in contrast to `struct` in the C++ implementation,
-/// since Rust does not allow module names to be one of the language keywords.
+// Note: This module is called `structbuf` in contrast to `struct` in the C++ implementation,
+// since Rust does not allow module names to be one of the language keywords.
 use archive::Struct;
 use memory;
 
