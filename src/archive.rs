@@ -142,9 +142,9 @@ pub trait ArchiveBuilder: Clone {
     /// * `start_vector`/`finish_vector`
     /// * `start_multivector`/`finish_multivector`.
     ///
-    /// For more information about how write resources, cf. the [coapperances] example.
+    /// For more information about how to write resources, cf. the [coappearances] example.
     ///
-    /// [coapperances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
+    /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
     fn new(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
 }
 

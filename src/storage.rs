@@ -1,5 +1,3 @@
-#![deny(missing_docs)]
-
 use std::cell::RefCell;
 use std::io::{self, Seek, Write};
 use std::mem;
@@ -72,7 +70,7 @@ pub trait ResourceStorage {
     fn create_output_stream(&mut self, resource_name: &str) -> io::Result<Rc<RefCell<Stream>>>;
 
     //
-    // Impl Helper
+    // Implementation helper
     //
 
     /// Implementation helper for [`read`].
@@ -148,7 +146,7 @@ pub fn create_external_vector<T: Struct>(
     Ok(ExternalVector::new(handle))
 }
 
-/// Helper for creating an multivector in the given resource storage.
+/// Helper for creating a multivector in the given resource storage.
 ///
 /// Creates a new resource with given name and schema in storage, and returns an [`MultiVector`]
 /// using this resource for writing and flushing data to storage.

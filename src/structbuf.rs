@@ -8,12 +8,44 @@ use std::slice;
 
 /// A container holding a single flatdata struct in memory, and providing read and write access to
 /// it.
+///
+/// Used in combination with [`ArchiveBuilder`] to serialize single struct resources, cf.
+/// [coappearances] example.
+///
+/// A struct buffer derefs (const and mut) to a reference of the underlying struct, therefore,
+/// struct getters and setters can be used directly on buffer.
+///
+/// # Examples
+///
+/// ```
+/// # #[macro_use] extern crate flatdata;
+/// # fn main() {
+/// use flatdata::StructBuf;
+///
+/// define_struct!(A, AMut, "no_schema", 4,
+///     (x, set_x, u32, 0, 16),
+///     (y, set_y, u32, 16, 16)
+/// );
+///
+/// let mut a = StructBuf::<A>::new();
+/// a.set_x(1);
+/// a.set_y(2);
+/// assert_eq!(a.x(), 1);
+/// assert_eq!(a.y(), 2);
+/// # }
+/// ```
+///
+/// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
+/// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L183
 pub struct StructBuf<T: Struct> {
     buffer: Vec<u8>,
     data: T::Mut,
 }
 
 impl<T: Struct> StructBuf<T> {
+    /// Creates an empty struct buffer.
+    ///
+    /// All fields are set to 0.
     pub fn new() -> Self {
         let mut buffer = vec![0; T::SIZE_IN_BYTES + memory::PADDING_SIZE];
         let ptr = buffer.as_mut_ptr();
@@ -23,6 +55,7 @@ impl<T: Struct> StructBuf<T> {
         }
     }
 
+    /// Returns a raw bytes representation of the buffer.
     pub fn as_bytes(&self) -> &[u8] {
         unsafe { slice::from_raw_parts(self.buffer.as_ptr(), T::SIZE_IN_BYTES) }
     }
