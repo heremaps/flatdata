@@ -1,4 +1,4 @@
-# flatdata-rs [![Build Status](https://travis-ci.org/boxdot/flatdata-rs.svg?branch=master)](https://travis-ci.org/boxdot/flatdata-rs)
+# flatdata-rs [![travis status]][travis] [![latest version]][crates.io] [![docs]][docs.rs]
 
 Implementation of [heremaps/flatdata](https://github.com/heremaps/flatdata) in
 Rust.
@@ -55,3 +55,10 @@ Generator:
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in this document by you, as defined in the Apache-2.0 license,
 shall be dual licensed as above, without any additional terms or conditions.
+
+[travis]: https://travis-ci.org/boxdot/flatdata-rs
+[travis status]: https://travis-ci.org/boxdot/flatdata-rs.svg?branch=master
+[latest version]: https://img.shields.io/crates/v/flatdata.svg
+[crates.io]: https://crates.io/crates/flatdata
+[docs]: https://docs.rs/flatdata/badge.svg
+[docs.rs]: https://docs.rs/flatdata/
