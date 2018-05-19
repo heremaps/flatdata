@@ -143,3 +143,23 @@ impl<'a, T: Struct> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
         self.view.len()
     }
 }
+
+impl<'a, T: Struct> fmt::Debug for ArrayViewIter<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let preview = self
+            .view
+            .iter()
+            .skip(self.next_pos)
+            .take(super::DEBUG_PREVIEW_LEN);
+        write!(
+            f ,
+            "ArrayViewIter {{ data: {:?}{} }}",
+            preview,
+            if self.view.len() - self.next_pos <= super::DEBUG_PREVIEW_LEN {
+                ""
+            } else {
+                "..."
+            }
+        )
+    }
+}

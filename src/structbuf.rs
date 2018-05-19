@@ -5,6 +5,7 @@ use memory;
 
 use std::ops;
 use std::slice;
+use std::fmt;
 
 /// A container holding a single flatdata struct in memory, and providing read and write access to
 /// it.
@@ -58,6 +59,16 @@ impl<T: Struct> StructBuf<T> {
     /// Returns a raw bytes representation of the buffer.
     pub fn as_bytes(&self) -> &[u8] {
         unsafe { slice::from_raw_parts(self.buffer.as_ptr(), T::SIZE_IN_BYTES) }
+    }
+}
+
+impl<T: Struct> fmt::Debug for StructBuf<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "StructBuf {{ resource: {:?} }}",
+            self.data
+        )
     }
 }
 

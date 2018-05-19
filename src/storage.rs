@@ -6,6 +6,7 @@ use std::ptr;
 use std::rc::Rc;
 use std::slice;
 use std::str;
+use std::fmt;
 
 use archive::{ArchiveBuilder, Index, Struct, VariadicStruct};
 use error::ResourceStorageError;
@@ -300,6 +301,17 @@ impl ResourceHandle {
         }
         self.stream = None;
         Ok(())
+    }
+}
+
+impl fmt::Debug for ResourceHandle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "ResourceHandle {{ is_open: {}, size_in_bytes: {} }}",
+            self.is_open(),
+            self.size_in_bytes,
+        )
     }
 }
 

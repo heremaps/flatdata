@@ -34,6 +34,7 @@ impl MemoryMappedFileStorage {
 impl Stream for File {}
 
 /// Resource storage on disk using memory mapped files.
+#[derive(Debug)]
 pub struct FileResourceStorage {
     storage: MemoryMappedFileStorage,
     path: path::PathBuf,

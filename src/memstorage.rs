@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use std::io::{self, Cursor};
 use std::path;
 use std::rc::Rc;
+use std::fmt;
 
 /// Internal storage of data in memory.
 #[derive(Default)]
@@ -15,7 +16,18 @@ struct MemoryStorage {
     resources: BTreeMap<path::PathBuf, Rc<Vec<u8>>>,
 }
 
+impl fmt::Debug for MemoryStorage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+            "MemoryStorage {{ num_streams: {}, num_resources: {} }}",
+            self.streams.len(),
+            self.resources.len(),
+        )
+    }
+}
+
 /// Resource storage in memory.
+#[derive(Debug)]
 pub struct MemoryResourceStorage {
     storage: MemoryStorage,
     path: path::PathBuf,
