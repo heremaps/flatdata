@@ -185,8 +185,8 @@ dump_resource( const std::string& key,
         }
     }
     out << "|" << line << "|" << std::endl << std::endl;
-};
-}  // helpers
+}
+}  // namespace helpers
 
 inline bool
 MemoryResourceStorage::exists( const char* key )
