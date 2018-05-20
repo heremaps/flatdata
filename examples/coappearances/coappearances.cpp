@@ -212,6 +212,108 @@ convert( const char* json_path, const char* archive_path )
     builder.set_strings( {strings.data( ), strings.size( )} );
 }
 
+// Note: The linear search below is slow for big graphs for obvious reasons, where it is much better
+// to build a lookup table. However, for our small graph this works fine.
+std::vector< uint32_t >
+get_neighbors( co::Graph graph, uint32_t vertex_ref )
+{
+    std::vector< uint32_t > neighbors;
+    for ( auto e : graph.edges( ) )
+    {
+        if ( e.a_ref == vertex_ref )
+        {
+            neighbors.push_back( e.b_ref );
+        }
+        else if ( e.b_ref == vertex_ref )
+        {
+            neighbors.push_back( e.a_ref );
+        }
+    }
+    return neighbors;
+}
+
+size_t
+calculate_num_connected_components( co::Graph graph )
+{
+    size_t num_connected_components = 0;
+
+    std::vector< bool > visited( graph.vertices( ).size( ) );
+    uint32_t num_visited = 0;
+    std::vector< uint32_t > stack;
+
+    while ( num_visited != graph.vertices( ).size( ) )
+    {
+        stack.clear( );
+        // find first non-visited vertex
+        for ( uint32_t vertex_ref = 0; vertex_ref < graph.vertices( ).size( ); ++vertex_ref )
+        {
+            if ( !visited[ vertex_ref ] )
+            {
+                stack.push_back( vertex_ref );
+                break;
+            }
+        }
+        // depth first search
+        while ( !stack.empty( ) )
+        {
+            uint32_t vertex_ref = stack.back( );
+            stack.pop_back( );
+
+            if ( visited[ vertex_ref ] )
+            {
+                continue;
+            }
+
+            visited[ vertex_ref ] = true;
+            num_visited++;
+
+            for ( auto neighbor_ref : get_neighbors( graph, vertex_ref ) )
+            {
+                if ( !visited[ neighbor_ref ] )
+                {
+                    stack.push_back( neighbor_ref );
+                }
+            }
+        }
+        num_connected_components++;
+    }
+    return num_connected_components;
+}
+
+void
+calculate( const char* archive_path )
+{
+    auto graph = co::Graph::open( flatdata::FileResourceStorage::create( archive_path ) );
+    if ( !graph )
+    {
+        throw std::runtime_error( std::string( "Could not open graph at: " ) + archive_path );
+    }
+
+    std::string subarchive_path = std::string( archive_path ) + "/calculated_data";
+    auto builder = co::CalculatedDataBuilder::open(
+        flatdata::FileResourceStorage::create( subarchive_path.c_str( ) ) );
+
+    flatdata::Vector< co::Degree > vertex_degrees( graph.vertices( ).size( ) );
+    for ( auto e : graph.edges( ) )
+    {
+        vertex_degrees[ e.a_ref ].value = vertex_degrees[ e.a_ref ].value + 1;
+        vertex_degrees[ e.b_ref ].value = vertex_degrees[ e.b_ref ].value + 1;
+    }
+    builder.set_vertex_degrees( vertex_degrees );
+
+    flatdata::ArrayView< co::Degree > degrees_view = vertex_degrees;
+    auto minmax = std::minmax_element( degrees_view.begin( ), degrees_view.end( ) );
+
+    flatdata::Struct< co::Invariants > data;
+    auto inv = *data;
+    inv.min_degree = minmax.first->value;
+    inv.min_degree_ref = std::distance( degrees_view.begin( ), minmax.first );
+    inv.max_degree = minmax.second->value;
+    inv.max_degree_ref = std::distance( degrees_view.begin( ), minmax.second );
+    inv.num_connected_components = calculate_num_connected_components( graph );
+    builder.set_invariants( inv );
+}
+
 void
 read( const char* archive_path )
 {
@@ -275,6 +377,27 @@ read( const char* archive_path )
         }
         std::cout << std::endl;
     }
+
+    auto calculated_data = graph.calculated_data( );
+    if ( calculated_data )
+    {
+        std::cout << std::endl;
+        std::cout << "Calculated data: " << std::endl;
+
+        auto inv = calculated_data->invariants( );
+        std::cout << "max_degree: " << inv.max_degree << " ("
+                  << strings + graph.vertices( )[ inv.max_degree_ref ].name_ref << ")" << std::endl;
+        std::cout << "min_degree: " << inv.min_degree << " ("
+                  << strings + graph.vertices( )[ inv.min_degree_ref ].name_ref << ")" << std::endl;
+        std::cout << "num_connected_components: " << inv.num_connected_components << std::endl;
+
+        std::cout << "Vertex degrees: " << std::endl;
+        for ( auto degree : calculated_data->vertex_degrees( ) )
+        {
+            std::cout << degree.value << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 static const char* USAGE = 1 + R"_(
@@ -282,8 +405,15 @@ Coappearances graph example.
 
 Usage:
   coappearances convert <input.json> <output_folder>
+  coappearances calculate <output_folder>
   coappearances read <output_folder>
   coappearances -h | --help
+
+Commands:
+  convert       Convert example json into flatdata archive.
+  calculate     Calculate invariants and other graph data from converted archive,
+                and store the results in a subarchive embedded into the archive.
+  read          Read and print out the data.
 )_";
 
 int
@@ -296,6 +426,10 @@ main( int argc, char const* argv[] )
         if ( args.at( "convert" ).asBool( ) )
         {
             convert( args.at( "<input.json>" ).asString( ).c_str( ), output_folder.c_str( ) );
+        }
+        else if ( args.at( "calculate" ).asBool( ) )
+        {
+            calculate( output_folder.c_str( ) );
         }
         else
         {
