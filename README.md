@@ -19,11 +19,11 @@ flatdata?]".
 ## Example
 
 The folder [tests/coappearances](tests/coappearances) contains a graph of
-character coappearances in Tolstoi's Anna Karenina described in `flatdata`
+character coappearances in Tolstoi's _Anna Karenina_ as flatdata archive schema
 together with the serialized data. The example is taken from the original
 [flatdata repository](https://github.com/heremaps/flatdata). It also contains a
 Rust module which implements the schema. Usually, this code would be generated
-automatically by `flatdata`'s generator.
+automatically by flatdata's generator.
 
 The standalone tests read and write all different types of data and check that
 the data was de/serialized correctly. Run them simply with:
@@ -31,17 +31,6 @@ the data was de/serialized correctly. Run them simply with:
 ```shell
 cargo test
 ```
-
-Implementation of [heremaps/flatdata](https://github.com/heremaps/flatdata) in Rust.
-
-## TODO
-
-Generator:
-
-* [ ] `flatdata`'s schema to Rust generator (implemented, but the code is not
-  yet merge into the `flatdata` main repository).
-* [ ] Support for namespaces.
-* [ ] Support for constants.
 
 ## License
 
@@ -62,3 +51,4 @@ shall be dual licensed as above, without any additional terms or conditions.
 [crates.io]: https://crates.io/crates/flatdata
 [docs]: https://docs.rs/flatdata/badge.svg
 [docs.rs]: https://docs.rs/flatdata/
+[Why flatdata?]: https://github.com/heremaps/flatdata/blob/master/docs/src/why-flatdata.rst
