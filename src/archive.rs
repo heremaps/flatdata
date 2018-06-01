@@ -187,9 +187,9 @@ macro_rules! define_struct {
         impl ::std::fmt::Debug for $name {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
-                    concat!("{} {{ ",
+                    concat!(stringify!($name), " {{ ",
                         intersperse!($(concat!( stringify!($field), ": {}")), *), " }}"),
-                    stringify!($name), $(self.$field(),)*)
+                    $(self.$field(),)*)
             }
         }
 
@@ -259,7 +259,7 @@ macro_rules! define_struct {
 
         impl ::std::convert::AsRef<$name> for $name_mut {
             fn as_ref(&self) -> &$name {
-                unsafe { ::std::mem::transmute(&self) }
+                unsafe { &*(self as *const $name_mut as *const $name) }
             }
         }
      }
@@ -309,8 +309,8 @@ macro_rules! define_variadic_struct {
             fn from((type_index, data): ($crate::TypeIndex, *const u8)) -> Self {
                 match type_index {
                     $($type_index => $name::$type($type::from(data))),+,
-                    _ => panic!(
-                        "invalid type index {} for type {}", type_index, stringify!($name)),
+                    _ => panic!(concat!(
+                        "invalid type index {} for type ", stringify!($name)), type_index),
                 }
             }
         }
@@ -450,7 +450,7 @@ macro_rules! define_archive {
         impl ::std::fmt::Debug for $name {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
-                    concat!("{} {{ ",
+                    concat!(stringify!($name), " {{ ",
                         intersperse!(""
                             $(, concat!(stringify!($struct_resource), ": {:?}"))*
                             $(, concat!(stringify!($vector_resource), ": {:?}"))*
@@ -460,13 +460,12 @@ macro_rules! define_archive {
                             $(, concat!(stringify!($opt_subarchive_resource), ": {:?}"))*
                         ),
                     " }}"),
-                    stringify!($name)
-                    $(, self.$struct_resource())*
-                    $(, self.$vector_resource())*
-                    $(, self.$multivector_resource())*
-                    $(, self.$raw_data_resource)*
-                    $(, self.$subarchive_resource)*
-                    $(, self.$opt_subarchive_resource)*
+                    $(self.$struct_resource(), )*
+                    $(self.$vector_resource(), )*
+                    $(self.$multivector_resource(), )*
+                    $(self.$raw_data_resource, )*
+                    $(self.$subarchive_resource, )*
+                    $(self.$opt_subarchive_resource, )*
                 )
             }
         }
@@ -628,5 +627,26 @@ macro_rules! define_archive {
                 Ok(Self { storage })
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::super::structbuf::StructBuf;
+
+    #[test]
+    #[allow(dead_code)]
+    fn test_debug() {
+        define_struct!(
+            A,
+            AMut,
+            "no_schema",
+            4,
+            (x, set_x, u32, 0, 16),
+            (y, set_y, u32, 16, 16)
+        );
+        let a = StructBuf::<A>::new();
+        let output = format!("{:?}", a);
+        assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0 } }");
     }
 }

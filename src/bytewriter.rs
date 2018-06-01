@@ -12,7 +12,7 @@ macro_rules! masked {
 #[macro_export]
 macro_rules! num_bytes {
     ($offset:expr, $num_bits:expr) => {
-        if $num_bits + $offset % 8 <= 64 {
+        if $num_bits + $offset % 8 < 64 {
             ($num_bits + $offset % 8 + 7) / 8
         } else {
             ($num_bits + 7) / 8
@@ -45,7 +45,7 @@ macro_rules! num_bytes {
 #[macro_export]
 macro_rules! write_bytes {
     ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{
-        assert!($num_bits <= 64, "num_bits cannot be > 64");
+        debug_assert!($num_bits <= 64, "num_bits cannot be > 64");
 
         let destination = &mut $data[$offset / 8] as *mut u8;
         let bit_offset = $offset % 8;

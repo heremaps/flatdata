@@ -24,7 +24,7 @@ macro_rules! read_bytes {
     }};
     ($T:tt, $data:expr, $offset:expr, $num_bits:expr) => {{
         let bytes: *const u8 = $data;
-        assert!(!bytes.is_null(), "Reading uninitialized structure");
+        debug_assert!(!bytes.is_null(), "Reading uninitialized structure");
         let mut reader: *const u8 = unsafe { bytes.offset($offset / 8) };
         let mut bits_left = $num_bits;
         let local_offset = $offset % 8;
