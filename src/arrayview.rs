@@ -48,7 +48,6 @@ use std::slice;
 #[derive(Clone)]
 pub struct ArrayView<'a, T: 'a> {
     data: &'a [u8],
-    len: usize,
     _phantom: marker::PhantomData<T>,
 }
 
@@ -59,19 +58,18 @@ impl<'a, T: Struct> ArrayView<'a, T> {
     pub fn new(mem_descr: &MemoryDescriptor) -> Self {
         Self {
             data: unsafe { slice::from_raw_parts(mem_descr.data(), mem_descr.size_in_bytes()) },
-            len: mem_descr.size_in_bytes() / T::SIZE_IN_BYTES,
             _phantom: marker::PhantomData,
         }
     }
 
     /// Number of elements in the array.
     pub fn len(&self) -> usize {
-        self.len
+        self.data.len() / T::SIZE_IN_BYTES
     }
 
     /// Return `true` if the array is empty.
     pub fn is_empty(&self) -> bool {
-        self.len == 0
+        self.len() == 0
     }
 
     /// Returns a read-only handle to the element in the array at position
@@ -80,7 +78,7 @@ impl<'a, T: Struct> ArrayView<'a, T> {
     /// # Panics
     ///
     /// Panics if index is greater than or equal to `ArrayView::len()`.
-    pub fn at(&self, index: usize) -> Handle<T> {
+    pub fn at(&self, index: usize) -> Handle<'a, T> {
         let index = index * T::SIZE_IN_BYTES;
         assert!(index + T::SIZE_IN_BYTES <= self.data.len());
         Handle::new(T::from(&self.data[index]))
@@ -108,7 +106,7 @@ impl<'a, T: Struct> fmt::Debug for ArrayView<'a, T> {
             "ArrayView {{ len: {}, data: {:?}{} }}",
             self.len(),
             preview,
-            if self.len <= super::DEBUG_PREVIEW_LEN {
+            if self.len() <= super::DEBUG_PREVIEW_LEN {
                 ""
             } else {
                 "..."
@@ -124,6 +122,7 @@ impl<'a, T: Struct> AsRef<[u8]> for ArrayView<'a, T> {
 }
 
 /// Iterator through elements of `ArrayView`.
+#[derive(Clone)]
 pub struct ArrayViewIter<'a, T: 'a + Struct> {
     view: &'a ArrayView<'a, T>,
     next_pos: usize,
@@ -150,8 +149,7 @@ impl<'a, T: Struct> iter::ExactSizeIterator for ArrayViewIter<'a, T> {
 
 impl<'a, T: Struct> fmt::Debug for ArrayViewIter<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview = self
-            .view
+        let preview = self.view
             .iter()
             .skip(self.next_pos)
             .take(super::DEBUG_PREVIEW_LEN);

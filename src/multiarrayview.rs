@@ -56,7 +56,7 @@ where
     /// # Panics
     ///
     /// Panics if index is greater than or equal to `MultiArrayView::len()`.
-    pub fn at(&self, index: usize) -> MultiArrayViewItemIter<Ts> {
+    pub fn at(&self, index: usize) -> MultiArrayViewItemIter<'a, Ts> {
         let start = self.index.at(index).value();
         let end = self.index.at(index + 1).value();
         MultiArrayViewItemIter {
@@ -78,7 +78,7 @@ where
 /// Iterator through elements of an array item.
 ///
 /// An item may be empty.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultiArrayViewItemIter<'a, Ts: 'a> {
     data: *const u8,
     end: *const u8,
@@ -109,8 +109,7 @@ where
     Ts: VariadicStruct,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview: Vec<(usize, Vec<_>)> = self
-            .iter()
+        let preview: Vec<(usize, Vec<_>)> = self.iter()
             .take(super::DEBUG_PREVIEW_LEN)
             .enumerate()
             .map(|(index, item)| (index, item.collect()))
@@ -130,7 +129,7 @@ where
 }
 
 /// Iterator through items of an multivector.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultiArrayViewIter<'a, Idx: 'a + Index, Ts: 'a + VariadicStruct> {
     view: &'a MultiArrayView<'a, Idx, Ts>,
     next_pos: usize,
