@@ -1,5 +1,6 @@
 from generator import grammar
 from generator.tree.errors import InvalidWidthError
+from generator.tree.errors import InvalidSignError
 
 
 class BasicType(object):
@@ -39,3 +40,14 @@ class BasicType(object):
     @property
     def is_signed(self):
         return self._name[0] == 'i'
+
+    def bits_required(self, value):
+        if self.is_signed:
+            if value >= 0:
+                # sign bit
+                return value.bit_length() + 1;
+            # sign bit plus 2 complement allowes one more value
+            return (-value -1).bit_length() + 1;
+        if value >= 0:
+            return value.bit_length()
+        raise InvalidSignError(value=value)

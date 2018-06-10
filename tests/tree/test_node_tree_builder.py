@@ -10,8 +10,8 @@ import generator.tree.nodes.resources as resources
 import generator.tree.nodes.references as refs
 from generator.tree.helpers.basictype import BasicType
 from generator.tree.nodes.root import Root
-from generator.tree.builder import _build_node_tree, _compute_structure_sizes
-from generator.tree.errors import SymbolRedefinition, ParsingError, InvalidWidthError
+from generator.tree.builder import _build_node_tree, _compute_structure_sizes, resolve_references, _update_field_type_references
+from generator.tree.errors import *
 
 from nose.tools import *
 
@@ -411,3 +411,66 @@ def test_exceeding_field_width_results_in_an_error():
                 f : u8 : 9;
             }
         } """)
+
+def test_signed_enum_value_in_unsigned_enum():
+    with assert_raises(InvalidSignError):
+        _build_node_tree("""
+        namespace n {
+            enum A : u16 {
+                VALUE_1 = -1
+            }
+        } """)
+
+def test_not_enough_bits_for_enum_value():
+    with assert_raises(InvalidEnumValueError):
+        _build_node_tree("""
+        namespace n {
+            enum A : u8 {
+                VALUE_1 = 256
+            }
+        } """)
+
+def test_duplicate_enum_value():
+    with assert_raises(DuplicateEnumValueError):
+        _build_node_tree("""
+        namespace n {
+            enum A : u16 {
+                VALUE_1 = 1,
+                VALUE_2 = 0,
+                VALUE_3
+            }
+        } """)
+
+def test_not_enough_bits_in_enum_field():
+    with assert_raises(InvalidEnumWidthError):
+        tree = _build_node_tree("""
+        namespace n {
+            enum A : i16 {
+                VALUE_1 = 127
+            }
+            struct B {
+                f1 : A : 7;
+            }
+        } """)
+        resolve_references(tree)
+        _update_field_type_references(tree)
+
+def test_enumeration():
+    tree = _build_node_tree("""
+    namespace n {
+        enum A : u16 {
+            VALUE_1,
+            VALUE_2 = 4,
+            VALUE_3
+        }
+        struct B {
+            f1 : A;
+        }
+    } """)
+    resolve_references(tree)
+    _update_field_type_references(tree)
+    _compute_structure_sizes(tree)
+
+    assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
+
+    check_struct(tree.find(".n.B"), 16, 2)

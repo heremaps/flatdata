@@ -11,8 +11,9 @@ class Field(Node):
 
         if type is not None:
             if not BasicType.is_basic_type(type):
-                self._type = EnumerationReference(type, width=self._width)
-                self.insert(self._type)
+                self._type_reference = EnumerationReference(type, width=self._width)
+                self._type = None
+                self.insert(self._type_reference)
             else:
                 self._type = BasicType(name=type, width=self._width)
 
@@ -34,6 +35,10 @@ class Field(Node):
     @type.setter
     def type(self, value):
         self._type = value
+
+    @property
+    def type_reference(self):
+        return self._type_reference
 
     @property
     def offset(self):

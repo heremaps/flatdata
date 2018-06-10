@@ -4,6 +4,7 @@
 '''
 
 from generator.grammar import flatdata_grammar
+from generator.tree.errors import InvalidEnumWidthError
 from generator.tree.nodes.archive import Archive
 from generator.tree.nodes.node import Node
 from generator.tree.syntax_tree import SyntaxTree
@@ -119,9 +120,15 @@ def _append_constant_references(root):
 def _update_field_type_references(root):
     fields = [f for f in root.iterate(nodes.Field)]
     for f in fields:
-        reference = f.type
+        if f.type:
+            continue
+        reference = f.type_reference
         if isinstance(reference, EnumerationReference):
-            f.type = EnumType(name=reference.name, basic_type=BasicType(name=reference.node.type.name, width=reference.width))
+            f.type = EnumType(name=reference.name, basic_type=BasicType(
+                name=reference.node.type.name, width=reference.width))
+            if reference.width and reference.width < reference.node.bits_required:
+                raise InvalidEnumWidthError(enumeration_name=reference.name,
+                    width=reference.node.bits_required, provided_width=reference.width)
 
 def _compute_structure_sizes(root):
     # visit structs in the correct order. Not important right now,

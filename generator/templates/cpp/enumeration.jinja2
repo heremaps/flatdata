@@ -23,13 +23,16 @@ const char* to_string( {{ enum.name }} value );
 inline
 const char* to_string( {{ enum.name }} value )
 {
-    // Do not use a switch statement here since the user might specified duplicate values
+    switch( value )
+    {
     {% for value in enum.values %}
-    if ( value == {{ enum.name }}::{{ value.name }} )
+    case {{ enum.name }}::{{ value.name }}:
         return "{{ enum.name }}::{{ value.name }}";
     {% endfor %}
-    // default needed since C++ allows storage of unknown values
-    return "Unknown value of {{ enum.name }}";
+    default:
+        // default needed since C++ allows storage of unknown values
+        return "Unknown value of {{ enum.name }}";
+    }
 }
 
 {% endmacro %}

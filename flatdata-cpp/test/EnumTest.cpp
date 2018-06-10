@@ -16,8 +16,8 @@ TEST( EnumTest, EnumerationValues )
     ASSERT_EQ( 0u, static_cast< unsigned >( Enum1::VALUE_1 ) );
     ASSERT_EQ( 3u, static_cast< unsigned >( Enum1::VALUE_2 ) );
     ASSERT_EQ( 4u, static_cast< unsigned >( Enum1::VALUE_3 ) );
-    ASSERT_EQ( 3u, static_cast< unsigned >( Enum1::VALUE_4 ) );
-    ASSERT_EQ( 4u, static_cast< unsigned >( Enum1::VALUE_5 ) );
+    ASSERT_EQ( 1u, static_cast< unsigned >( Enum1::VALUE_4 ) );
+    ASSERT_EQ( 2u, static_cast< unsigned >( Enum1::VALUE_5 ) );
 }
 
 TEST( EnumTest, ToString )
@@ -25,10 +25,9 @@ TEST( EnumTest, ToString )
     ASSERT_STREQ( "Enum1::VALUE_1", to_string( Enum1::VALUE_1 ) );
     ASSERT_STREQ( "Enum1::VALUE_2", to_string( Enum1::VALUE_2 ) );
     ASSERT_STREQ( "Enum1::VALUE_3", to_string( Enum1::VALUE_3 ) );
-
-    // duplicate values are supposed to be serialized to their first definition
-    ASSERT_STREQ( "Enum1::VALUE_2", to_string( Enum1::VALUE_4 ) );
-    ASSERT_STREQ( "Enum1::VALUE_3", to_string( Enum1::VALUE_5 ) );
+    ASSERT_STREQ( "Enum1::VALUE_4", to_string( Enum1::VALUE_4 ) );
+    ASSERT_STREQ( "Enum1::VALUE_5", to_string( Enum1::VALUE_5 ) );
+    ASSERT_STREQ( "Unknown value of Enum1", to_string( static_cast< Enum1 >( 66 ) ) );
 }
 
 TEST( EnumTest, StructWithEnum )

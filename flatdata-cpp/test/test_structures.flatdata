@@ -8,9 +8,9 @@ enum Enum1 : u16 {
     VALUE_2 = 3,
     // = 4
     VALUE_3,
-    // = 3
-    VALUE_4 = 3,
-    // = 4
+    // = 1
+    VALUE_4 = 1,
+    // = 2
     VALUE_5
 }
 

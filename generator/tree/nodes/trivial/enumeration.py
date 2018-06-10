@@ -1,4 +1,6 @@
 from generator.tree.nodes.node import Node
+from generator.tree.errors import DuplicateEnumValueError
+from generator.tree.errors import InvalidEnumValueError
 from .enumeration_value import EnumerationValue
 from generator.tree.helpers.basictype import BasicType
 
@@ -16,12 +18,23 @@ class Enumeration(Node):
         result = Enumeration(name=properties.name, properties=properties, own_schema=own_schema, type=properties.type)
 
         current_assigned_value = 0
+        unique_values = set();
         for value in properties.enum_values:
             if value.constant:
                 current_assigned_value = int(value.constant)
+            if (current_assigned_value in unique_values):
+                raise DuplicateEnumValueError(enumeration_name=result._name, value=current_assigned_value)
+            unique_values.add(current_assigned_value)
             value_node = EnumerationValue.create(properties=value, value=current_assigned_value)
             result.insert(value_node)
             current_assigned_value += 1
+
+        bits_required = 0
+        for value in unique_values:
+            bits_required = max(bits_required, result.type.bits_required(value=value))
+            if bits_required > result.type.width:
+                raise InvalidEnumValueError(enumeration_name=result._name, value=value)
+        result._bits_required = bits_required
 
         return result
 
@@ -36,3 +49,8 @@ class Enumeration(Node):
     @property
     def values(self):
         return self.children_like(EnumerationValue)
+
+    @property
+    def bits_required(self):
+        return self._bits_required
+    
