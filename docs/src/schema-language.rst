@@ -16,6 +16,26 @@ Flatdata supports following basic types:
 -  ``i64`` - signed 64-bit wide type
 -  ``u64`` - unsigned 64-bit wide type
 
+Enumerations
+----------
+
+Flatdata supports adding enumeration over basic types. Each enumeration
+value can either be automatically be assigned a value (previous value +1,
+starting with 0), or manually.
+
+Each enumeration is defined as follows:
+
+.. code_block:: c
+
+    enum <Name> : <type>{
+        <value name> [= value],
+        ...
+    }
+
+The following restrictions for values are checked:
+-   No duplicate values
+-   Values most fit into the underlying type
+
 Structures
 ----------
 
@@ -38,6 +58,8 @@ Each structure is defined as follows:
         <field> : <type> : <width>;
         ...
     }
+
+``<type>`` can either be a basic type, or an enumeration.
 
 Example:
 
