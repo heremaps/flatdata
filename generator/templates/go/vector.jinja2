@@ -1,0 +1,61 @@
+{% macro generate(tree, archive, resource) %}
+{{ resource|to_go_doc }}    
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector struct {
+    descriptor flatdata.MemoryDescriptor
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) Get(i int) *{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %} {
+	return &{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}{
+		descriptor: v.descriptor,
+		position: int(uint(i*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case(False) }}{% else %}{{ resource|to_initializer(tree)|to_go_case(False) }}{% endif %}SizeInBytes) + flatdataOffsetSizeInBytes),
+	}
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetSize() int {
+	size := make([]byte, 8)
+	_, err := v.descriptor.ReadAt(size, 0)
+	if err != nil {
+		return 0
+	}
+	intSize := binary.LittleEndian.Uint64(size)
+	return int(intSize) / {% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case(false) }}{% else %}{{ resource|to_initializer(tree)|to_go_case(false) }}{% endif %}SizeInBytes
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetSlice(start, end, step int) []*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %} {
+	var result []*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}
+	
+    for start <= end {
+		result = append(result, &{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case }}{% else %}{{ resource|to_initializer(tree)|to_go_case }}{% endif %}{
+			descriptor: v.descriptor,
+			position: int(uint(start*{% if resource|is_multivector %}{{ resource|get_types_for_multivector(tree)|first|to_go_case(False) }}{% else %}{{ resource|to_initializer(tree)|to_go_case(False) }}{% endif %}SizeInBytes) + flatdataOffsetSizeInBytes),
+	    })
+		start += step
+	}
+	return result
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) Close() {
+    v.descriptor.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) GetSizeInBytes() int {
+    return v.descriptor.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString(fmt.Sprintf(`{"container_type": "Vector", "size": %d, "size_in_bytes": %d, `, v.GetSize(), v.GetSizeInBytes()))
+    buffer.WriteString(`"element_types": [{ "name": "{{ resource.referenced_structures[0].node.name|to_go_case }}", "attributes": [`)
+    {% for field in resource.referenced_structures[0].node.fields %}
+    buffer.WriteString(`{"name": "{{ field.name }}", "offset": {{ field.offset }}, "width": {{ field.type.width }}, "is_signed": {{ field.type.is_signed|lower }}}`)
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %}   
+    {% endfor %}
+    buffer.WriteString("]}]}")
+	return buffer.String()
+}
+{% endmacro %}

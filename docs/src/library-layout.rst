@@ -21,6 +21,8 @@ Flatdata Code is organized as follows:
    needs to include and link against this library.
 -  ``flatdata-py`` includes python library sources. Client application
    needs to have this folder in PYTHON\_PATH
+-  ``flatdata-go`` includes Go library sources. Client application 
+   needs to have ``flatdata-go/flatdata`` folder in GOPATH.
 -  ``tools`` contains tools to work with flatdata archives.
 
    -  ``tools/inspect_flatdata.py`` provides interactive python

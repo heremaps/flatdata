@@ -1,0 +1,41 @@
+{% macro generate(tree, archive, resource) %}
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance struct {
+    descriptor flatdata.MemoryDescriptor
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) Get() *{{ resource|to_initializer(tree)|to_go_case }} {
+	return &{{ resource|to_initializer(tree)|to_go_case }}{
+	    descriptor: v.descriptor,
+        position: int(flatdataOffsetSizeInBytes),
+	}
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) GetSize() int {
+	return 1
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) Close() {
+    v.descriptor.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) GetSizeInBytes() int {
+    return v.descriptor.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString(fmt.Sprintf(`{"container_type": "Instance", "size": %d, "size_in_bytes": %d, `, v.GetSize(), v.GetSizeInBytes()))
+    buffer.WriteString(`"element_types": [{ "name": "{{ resource.referenced_structures[0].node.name|to_go_case }}", "attributes": [`)
+    {% for field in resource.referenced_structures[0].node.fields %}
+    buffer.WriteString(`{"name": "{{ field.name }}", "offset": {{ field.offset }}, "width": {{ field.type.width }}, "is_signed": {{ field.type.is_signed|lower }}}`)
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %}   
+    {% endfor %}
+    buffer.WriteString("]}]}")
+	return buffer.String()
+}
+{% endmacro %}

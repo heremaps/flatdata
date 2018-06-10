@@ -1,0 +1,35 @@
+{% import "go/archive.jinja2" as go_archive %}
+{% import "go/vector.jinja2" as go_vector %}
+{% import "go/rawdata.jinja2" as go_rawdata %}
+{% import "go/instance.jinja2" as go_instance %}
+{% import "go/multivector.jinja2" as go_multivector %}
+{% import "go/base.jinja2" as go_base %}
+{% import "go/structure.jinja2" as go_struct %}
+{{ go_base.generate(tree, nodes) }}
+
+{% macro structure_definition(tree, struct) %}
+{{ go_struct.generate(tree, struct) }}    
+{% endmacro %}
+
+{% macro archive_definition(tree, archive) %}
+{% for resource in archive.resources if not resource|is_bound_resource %}
+{% if resource|is_instance %}
+{{ go_instance.generate(tree, archive, resource) }}    
+{% elif resource|is_vector %}
+{{ go_vector.generate(tree, archive, resource) }}
+{% elif resource|is_raw_data %}
+{{ go_rawdata.generate(tree, archive, resource) }}    
+{% elif resource|is_multivector %}
+{{ go_multivector.generate(tree, archive, resource) }}    
+{% endif %}
+{% endfor %}
+{{ go_archive.generate(tree, archive) }}
+{% endmacro %}
+
+{% for node in nodes %}
+    {%- if node|is_structure %}
+        {{- structure_definition(tree, node) }}
+    {%- elif node|is_archive %}
+        {{- archive_definition(tree, node) }}
+    {% endif %}
+{% endfor %}

@@ -1,0 +1,38 @@
+{% macro generate(tree, archive, resource) %}
+type {{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData struct {
+    descriptor flatdata.MemoryDescriptor
+    IsOptional bool
+    IsOpen bool
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetValue() []byte {
+	data := make([]byte, v.GetSize())
+	_, err := v.descriptor.ReadAt(data, 8)
+	if err != nil {
+		return make([]byte, 0)
+	}
+	return data
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetSize() int {
+	size := make([]byte, 8)
+	_, err := v.descriptor.ReadAt(size, 0)
+	if err != nil {
+		return 0
+	}
+	return int(binary.LittleEndian.Uint64(size))
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) Close() {
+    v.descriptor.Close()
+    v.IsOpen = false
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) GetSizeInBytes() int {
+    return v.descriptor.Len()
+}
+
+func (v *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData) ToString() string {
+    return fmt.Sprintf(`{"container_type": "RawData", "size": %d, "size_in_bytes": %d, "element_types": []}`, v.GetSize(), v.GetSizeInBytes())
+}
+{% endmacro %}

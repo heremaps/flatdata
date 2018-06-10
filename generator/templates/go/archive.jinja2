@@ -1,0 +1,176 @@
+{% macro generate(tree, archive) %}
+type {{ archive.name|to_go_case }}Archive struct {
+    IsOptional bool
+    IsOpen bool
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+    {% if resource|is_vector %}
+    {{ resource.name|to_go_case }}Vector *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector
+    {% elif resource|is_archive_resource %}
+    {{ resource.name|to_go_case }}Archive *{{ resource.name|to_go_case }}Archive
+    {% elif resource|is_raw_data %}
+    {{ resource.name|to_go_case }}RawData *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData
+    {% elif resource|is_multivector %}
+    {{ resource.name|to_go_case }}Multivector *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector
+    {% elif resource|is_instance %}
+    {{ resource.name|to_go_case }}Instance *{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance
+    {% endif %}
+    {% endfor %}
+}
+
+func (v *{{ archive.name|to_go_case }}Archive) Close() {
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+    {% if resource|is_vector %}
+    if v.{{ resource.name|to_go_case }}Vector.IsOpen {
+        v.{{ resource.name|to_go_case }}Vector.Close()
+    }
+    {% elif resource|is_archive_resource %}
+    if v.{{ resource.name|to_go_case }}Archive.IsOpen {
+        v.{{ resource.name|to_go_case }}Archive.Close()
+    }
+    {% elif resource|is_raw_data %}
+    if v.{{ resource.name|to_go_case }}RawData.IsOpen {
+        v.{{ resource.name|to_go_case }}RawData.Close()
+    }
+    {% elif resource|is_multivector %}
+    if v.{{ resource.name|to_go_case }}Multivector.IsOpen {
+        v.{{ resource.name|to_go_case }}Multivector.Close()
+    }
+    {% elif resource|is_instance %}
+    if v.{{ resource.name|to_go_case }}Instance.IsOpen {
+        v.{{ resource.name|to_go_case }}Instance.Close()
+    }
+    {% endif %}
+    {% endfor %}
+}
+
+func (v *{{ archive.name|to_go_case }}Archive) GetSizeInBytes() int {
+    var size int
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+    {% if resource|is_vector %}
+    if v.{{ resource.name|to_go_case }}Vector.IsOpen {
+        size += v.{{ resource.name|to_go_case }}Vector.GetSizeInBytes()
+    }
+    {% elif resource|is_archive_resource %}
+    if v.{{ resource.name|to_go_case }}Archive.IsOpen {
+        size += v.{{ resource.name|to_go_case }}Archive.GetSizeInBytes()
+    }
+    {% elif resource|is_raw_data %}
+    if v.{{ resource.name|to_go_case }}RawData.IsOpen {
+        size += v.{{ resource.name|to_go_case }}RawData.GetSizeInBytes()
+    }
+    {% elif resource|is_multivector %}
+    if v.{{ resource.name|to_go_case }}Multivector.IsOpen {
+        size += v.{{ resource.name|to_go_case }}Multivector.GetSizeInBytes()
+    }
+    {% elif resource|is_instance %}
+    if v.{{ resource.name|to_go_case }}Instance.IsOpen {
+        size += v.{{ resource.name|to_go_case }}Instance.GetSizeInBytes()
+    }
+    {% endif %}
+    {% endfor %}
+    return size
+}
+
+func (v *{{ archive.name|to_go_case }}Archive) ToString() string {
+    buffer := bytes.Buffer{}
+    buffer.WriteString(fmt.Sprintf(`{"name": "{{ archive.name|to_go_case }}", "container_type": "Archive", "size_in_bytes": %d, "resources": [`, v.GetSizeInBytes()))
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+    {% if resource|is_vector %}
+    buffer.WriteString(v.{{ resource.name|to_go_case }}Vector.ToString())
+    {% elif resource|is_archive_resource %}
+    buffer.WriteString(v.{{ resource.name|to_go_case }}Archive.ToString())
+    {% elif resource|is_raw_data %}
+    buffer.WriteString(v.{{ resource.name|to_go_case }}RawData.ToString())
+    {% elif resource|is_multivector %}
+    buffer.WriteString(v.{{ resource.name|to_go_case }}Multivector.ToString())
+    {% elif resource|is_instance %}
+    buffer.WriteString(v.{{ resource.name|to_go_case }}Instance.ToString())
+    {% endif %}
+    {% if loop.length != loop.index %}
+    buffer.WriteString(",")
+    {% endif %}      
+    {% endfor %}
+    buffer.WriteString("]}")
+	return buffer.String()
+}
+
+func Open{{ archive.name|to_go_case }}Archive(resource flatdata.ResourceStorage) (*{{ archive.name|to_go_case }}Archive, error) {
+    v := &{{ archive.name|to_go_case }}Archive{}
+    // Initialize resources
+	{% for resource in archive.resources if not resource|is_bound_resource%}
+	{% if resource|is_archive_resource %}
+	{{ resource.name|lower|to_go_case(false) }}Archive, err := Open{{ resource.name|to_go_case }}Archive(flatdata.NewFileResourceStorage(filepath.Join(resource.GetBasePath(), "{{ resource.name|lower }}/{{ resource|to_initializer(tree) }}.archive")))
+	{{ resource.name|lower|to_go_case(false)}}Archive.IsOptional = {{ resource.optional|lower }}
+	{{ resource.name|lower|to_go_case(false) }}Archive.IsOpen = true
+	if err != nil {
+	    log.Println(err)
+	    if err.Error() == flatdata.ErrorCantAccessResource {
+	        {{ resource.name|lower|to_go_case(false) }}Archive.IsOpen = false
+	    } else {
+		    return v, err
+		}
+	}
+	{% else %}
+	{{ resource.name|lower|to_go_case(false) }}IsOpen := true
+	{{ resource.name|lower|to_go_case(false) }}MemoryDescriptor, schema, err := resource.GetMemoryDescriptor("{{ resource.name }}")
+	if err != nil {
+        log.Println(err)
+	    if err.Error() == flatdata.ErrorCantAccessResource {
+	        {{ resource.name|lower|to_go_case(false) }}IsOpen = false
+	    } else {
+		    return v, err
+		}
+	}
+	{% if resource|is_multivector %}
+	{{ resource.name|lower|to_go_case(false) }}IndexMemoryDescriptor, _, err := resource.GetMemoryDescriptor("{{ resource.name }}_index")
+	if err != nil {
+	    log.Println(err)
+	    if err.Error() == flatdata.ErrorCantAccessResource {
+	        {{ resource.name|lower|to_go_case(false) }}IsOpen = false
+	    } else {
+		    return v, err
+		}
+	}
+	{% endif %}
+	if {{ resource.name|lower|to_go_case(false) }}IsOpen {
+	    {{ resource.name|lower|to_go_case(false) }}Schema := `{{ tree.schema(resource) }}`
+	    if {{ resource.name|lower|to_go_case(false) }}Schema != schema {
+	        log.Println(fmt.Sprintf("Schemas didn't match, expected: \n%s\n, actual: \n%s\n", {{ resource.name|lower|to_go_case(false) }}Schema, schema))
+	        return v, errors.New(flatdata.ErrorSchemaDidntMatch)
+	    }
+	}
+	{% endif %}
+	{% endfor %}
+	// Add resources to archive
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+    {% if resource|is_archive_resource %}
+    v.{{ resource.name|to_go_case }}Archive = {{ resource.name|lower|to_go_case(false) }}Archive
+    {% else %}
+    {% if resource|is_vector %}
+    v.{{ resource.name|to_go_case }}Vector = &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector{
+    {% elif resource|is_raw_data %}
+    v.{{ resource.name|to_go_case }}RawData = &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}RawData{
+    {% elif resource|is_multivector %}
+    v.{{ resource.name|to_go_case }}Multivector = &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Multivector{
+    {% elif resource|is_instance %}
+    v.{{ resource.name|to_go_case }}Instance = &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Instance {
+    {% endif %}
+        descriptor: {{ resource.name|lower|to_go_case(false) }}MemoryDescriptor,
+        {% if resource|is_multivector %}
+        index: &{{ archive.name|to_go_case }}{{ resource.name|to_go_case }}Vector{descriptor: {{ resource.name|lower|to_go_case(false) }}IndexMemoryDescriptor},
+        types: map[int]interface{}{
+        {% for entry in resource|get_types_for_multivector(tree) %}
+		{% if loop.index0 >= 1%}
+            {{ loop.index0 - 1 }}: &{{ entry|to_go_case }}{descriptor: {{ resource.name|lower|to_go_case(false) }}MemoryDescriptor},
+		{% endif %}
+		{% endfor %}
+        },
+        {% endif %}
+        IsOptional: {{ resource.optional|lower }},
+        IsOpen: {{ resource.name|lower|to_go_case(false) }}IsOpen,
+    }
+    {% endif %}
+    {% endfor %}
+	return v, nil
+}
+{% endmacro %}
