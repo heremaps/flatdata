@@ -34,7 +34,7 @@ Each enumeration is defined as follows:
 
 The following restrictions for values are checked:
 -   No duplicate values
--   Values most fit into the underlying type
+-   Values must fit into the underlying type
 
 Structures
 ----------
