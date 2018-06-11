@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 namespace flatdata
 {
@@ -43,7 +44,7 @@ struct Token
         // PUNCTUATION or INVALID
         char character;
         // NUMBER
-        uint64_t number;
+        int64_t number;
     };
 };
 
@@ -113,7 +114,7 @@ Lexer::next_token( )
         }
 
         const char* start = m_data;
-        // enough to hold UINT64_MAX as decimal or hex + nul byte
+        // enough to hold INT64_MIN as decimal or hex + nul byte
         char number_buffer[ 21 ];
 
         // Using the custom interface to be able to deal inputs that are not nul
@@ -142,8 +143,8 @@ Lexer::next_token( )
         whitespace = [ \t\r\n];
         nul = '\000';
         word = "@"? [A-Za-z_] [A-Za-z0-9_]*;
-        decimal = [0-9]{1,20};
-        hex = "0x" [0-9a-fA-F]{1,19};
+        decimal = "-"? [0-9]{1,19};
+        hex = "-"? "0x" [0-9a-fA-F]{1,19};
         punctuation = [;:{}<>\[\]];
 
         <*> * {
@@ -173,19 +174,21 @@ Lexer::next_token( )
             return t;
         }
         <init> decimal / ( whitespace | punctuation | nul ) {
+            assert( sizeof( number_buffer ) > m_data - start );
             memset(number_buffer, 0, sizeof(number_buffer));
             memcpy(number_buffer, start, m_data - start);
             Token t;
             t.kind = Token::KIND::NUMBER;
-            t.number = strtoull( number_buffer, nullptr, 10 );
+            t.number = strtoll( number_buffer, nullptr, 10 );
             return t;
         }
         <init> hex / ( whitespace | punctuation | nul ) {
+            assert( sizeof( number_buffer ) > m_data - start );
             memset(number_buffer, 0, sizeof(number_buffer));
             memcpy(number_buffer, start, m_data - start);
             Token t;
             t.kind = Token::KIND::NUMBER;
-            t.number = strtoull( number_buffer, nullptr, 16 );
+            t.number = strtoll( number_buffer, nullptr, 16 );
             return t;
         }
 

@@ -31,6 +31,29 @@ S( const char ( &s )[ N ] )
     static_assert( N > 0, "zero sized string array passed" );
     return std::string( s, s + ( N - 1 ) );
 }
+
+template < class T >
+std::string
+dec( const T& x )
+{
+    return std::to_string( x );
+}
+
+template < class T >
+std::string
+hex( const T& x )
+{
+    std::ostringstream s;
+    if ( x >= 0 )
+    {
+        s << "0x" << std::hex << x;
+    }
+    else
+    {
+        s << "-0x" << std::hex << -x;
+    }
+    return s.str( );
+}
 }  // anonymous namespace
 
 TEST( TestSchemaEqual, empty )
@@ -56,6 +79,20 @@ TEST( TestSchemaEqual, number )
     EXPECT_PRED2( string_schema_unequal, "10", "00x0000000a" );
     EXPECT_PRED2( string_schema_unequal, "10a", "10 a" );
     EXPECT_PRED2( string_schema_unequal, "0xabcdefg", "0xabcdef g" );
+
+    EXPECT_PRED2( string_schema_equal, dec( INT64_MAX ), "9223372036854775807" );
+    EXPECT_PRED2( string_schema_equal, hex( INT64_MAX ), "9223372036854775807" );
+}
+
+TEST( TestSchemaEqual, negative_number )
+{
+    EXPECT_PRED2( string_schema_equal, "-0", "0" );
+    EXPECT_PRED2( string_schema_equal, "-1", "-1" );
+    EXPECT_PRED2( string_schema_unequal, "-1", "- 1" );
+    EXPECT_PRED2( string_schema_equal, "-10", "-0xa" );
+
+    EXPECT_PRED2( string_schema_equal, dec( INT64_MIN ), "-9223372036854775808" );
+    EXPECT_PRED2( string_schema_equal, hex( INT64_MIN ), "-9223372036854775808" );
 }
 
 TEST( TestSchemaEqual, invalid )
