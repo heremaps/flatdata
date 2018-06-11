@@ -20,14 +20,14 @@ Enumerations
 ----------
 
 Flatdata supports adding enumeration over basic types. Each enumeration
-value can either be automatically be assigned a value (previous value +1,
+value can either automatically be assigned a value (previous value +1,
 starting with 0), or manually.
 
 Each enumeration is defined as follows:
 
 .. code_block:: c
 
-    enum <Name> : <type>{
+    enum <Name> : <type> {
         <value name> [= value],
         ...
     }

@@ -118,8 +118,7 @@ def _append_constant_references(root):
             a.insert(ConstantReference(c.path))
 
 def _update_field_type_references(root):
-    fields = [f for f in root.iterate(nodes.Field)]
-    for f in fields:
+    for f in root.iterate(nodes.Field):
         if f.type:
             continue
         reference = f.type_reference

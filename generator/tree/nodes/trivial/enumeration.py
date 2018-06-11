@@ -22,7 +22,7 @@ class Enumeration(Node):
         for value in properties.enum_values:
             if value.constant:
                 current_assigned_value = int(value.constant)
-            if (current_assigned_value in unique_values):
+            if current_assigned_value in unique_values:
                 raise DuplicateEnumValueError(enumeration_name=result._name, value=current_assigned_value)
             unique_values.add(current_assigned_value)
             value_node = EnumerationValue.create(properties=value, value=current_assigned_value)

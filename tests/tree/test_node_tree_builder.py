@@ -474,3 +474,4 @@ def test_enumeration():
     assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
 
     check_struct(tree.find(".n.B"), 16, 2)
+    
