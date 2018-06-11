@@ -14,7 +14,7 @@ file(GLOB FLATDATA_SOURCE
 list(FILTER FLATDATA_SOURCE EXCLUDE REGEX "[.]re2c[.]cpp$")
 
 if (FLATDATA_RE2C_EXECUTABLE)
-    list(FILTER FLATDATA_RE2C_EXECUTABLE EXCLUDE REGEX "[.]no-re2c[.]cpp")
+    list(FILTER FLATDATA_SOURCE EXCLUDE REGEX "[.]no-re2c[.]cpp$")
     set(re2c_in "${CMAKE_CURRENT_SOURCE_DIR}/src/SchemaUtils.re2c.cpp")
     set(re2c_out "${CMAKE_CURRENT_BINARY_DIR}/SchemaUtils.cpp")
     add_custom_command(
