@@ -47,20 +47,54 @@ struct BitsToUnsigned
     using type = typename MakeUnsignedInt< ( SizeInBytes + 7 ) / 8 >::type;
 };
 
+template < typename T, bool is_enum >
+struct IsSignedImpl
+{
+};
+
+template < typename T >
+struct IsSignedImpl< T, false >
+{
+    enum
+    {
+        value = std::is_signed< T >::value
+    };
+};
+
+template < typename T >
+struct IsSignedImpl< T, true >
+{
+    enum
+    {
+        value = std::is_signed< typename std::underlying_type< T >::type >::value
+    };
+};
+
+// Since std::is_signed does not support strictly typed enums we need to add support ourselves
+template < typename T >
+struct IsSigned
+{
+    enum
+    {
+        value = IsSignedImpl< T, std::is_enum< T >::value >::value
+    };
+};
+
 template < typename ResultType, int num_bits, typename T >
-typename std::enable_if< std::is_signed< ResultType >::value, ResultType >::type
+typename std::enable_if< IsSigned< ResultType >::value, ResultType >::type
 extend_sign( T value )
 {
     static_assert( std::is_unsigned< T >::value, "expected unsigned type" );
     struct
     {
-        ResultType x : num_bits;  // use the compiler to sign extend bits
+        typename std::make_signed< T >::type x : num_bits;  // use the compiler to sign extend bits
     } temp_struct;
-    return temp_struct.x = value;
+    temp_struct.x = value;
+    return static_cast< ResultType >( temp_struct.x );
 }
 
 template < typename ResultType, int num_bits, typename T >
-typename std::enable_if< !std::is_signed< ResultType >::value, ResultType >::type
+typename std::enable_if< !IsSigned< ResultType >::value, ResultType >::type
 extend_sign( T value )
 {
     return static_cast< ResultType >( value );

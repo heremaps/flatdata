@@ -6,7 +6,7 @@
 from jinja2 import Environment, PackageLoader
 
 from generator.tree.nodes.archive import Archive
-from generator.tree.nodes.trivial import Structure, Constant, Namespace
+from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Namespace
 from generator.tree.nodes.resources import ResourceBase, BoundResource, Archive as \
     ArchiveResource, Vector, Multivector, Instance, RawData
 from generator.tree.syntax_tree import SyntaxTree
@@ -32,6 +32,7 @@ class BaseGenerator:
         env.filters['is_raw_data'] = lambda n: isinstance(n, RawData)
         env.filters['is_archive_resource'] = lambda n: isinstance(n, ArchiveResource)
         env.filters['is_structure'] = lambda n: isinstance(n, Structure)
+        env.filters['is_enumeration'] = lambda n: isinstance(n, Enumeration)
         env.filters['is_constant'] = lambda n: isinstance(n, Constant)
         env.filters['is_namespace'] = lambda n: isinstance(n, Namespace)
         env.filters['is_resource'] = lambda n: isinstance(n, ResourceBase)

@@ -53,7 +53,8 @@ def _validate_target_type(root, ref):
         refs.FieldReference: nodes.Field,
         refs.BuiltinStructureReference: nodes.Structure,
         refs.VectorReference: resources.Vector,
-        refs.ConstantReference: nodes.Constant
+        refs.ConstantReference: nodes.Constant,
+        refs.EnumerationReference: nodes.Enumeration
     }[type(ref)]
     target = root.find(ref.target)
     if not isinstance(target, expected) and not issubclass(type(target), expected):
