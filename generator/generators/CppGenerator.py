@@ -5,7 +5,7 @@
 
 from generator.tree.nodes.resources import Vector, Multivector, Instance, RawData, BoundResource, \
     ResourceBase, Archive as ArchiveResource
-from generator.tree.nodes.trivial import Structure, Constant, Field
+from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
 from generator.tree.nodes.archive import Archive
 from .BaseGenerator import BaseGenerator
 
@@ -15,7 +15,7 @@ class CppGenerator(BaseGenerator):
         BaseGenerator.__init__(self, "cpp/cpp.jinja2")
 
     def _supported_nodes(self):
-        return [Structure, Archive, Constant]
+        return [Structure, Archive, Constant, Enumeration]
 
     def _populate_environment(self, env):
         env.filters["cpp_doc"] = lambda value: value
@@ -26,7 +26,7 @@ class CppGenerator(BaseGenerator):
         env.filters["safe_cpp_string_line"] = _safe_cpp_string_line
 
         def _cpp_base_type(t):
-            return {
+            type_map = {
                 "bool": "bool",
                 "i8": "int8_t",
                 "u8": "uint8_t",
@@ -36,7 +36,10 @@ class CppGenerator(BaseGenerator):
                 "i32": "int32_t",
                 "u64": "uint64_t",
                 "i64": "int64_t"
-            }[t.name]
+            }
+            if t.name in type_map:
+                return type_map[t.name]
+            return t.name.replace("@@", "::").replace("@", "::")
 
         env.filters["cpp_base_type"] = _cpp_base_type
 

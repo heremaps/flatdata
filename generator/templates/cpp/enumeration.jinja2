@@ -1,0 +1,38 @@
+{% macro declaration(enum) %}
+
+{% if enum.doc %}
+{{ enum.doc|cpp_doc }}
+{% endif %}
+enum class {{ enum.name }} : {{ enum.type|cpp_base_type }}
+{
+    {% for value in enum.values %}
+    {% if value.doc %}
+    {{ value.doc|cpp_doc }}
+    {% endif %}
+    {{ value.name }} = {{ value.value }} {{ "," if not loop.last }}
+    {% endfor %}
+};
+
+inline
+const char* to_string( {{ enum.name }} value );
+
+{% endmacro %}
+
+{% macro definition(enum, tree) %}
+
+inline
+const char* to_string( {{ enum.name }} value )
+{
+    switch( value )
+    {
+    {% for value in enum.values %}
+    case {{ enum.name }}::{{ value.name }}:
+        return "{{ enum.name }}::{{ value.name }}";
+    {% endfor %}
+    default:
+        // default needed since C++ allows storage of unknown values
+        return "Unknown value of {{ enum.name }}";
+    }
+}
+
+{% endmacro %}

@@ -69,3 +69,26 @@ class InvalidWidthError(FlatdataSyntaxError):
         super(InvalidWidthError, self).__init__(
             "Bit field of {width}bit width cannot fit in {type}".format(width=width,
                                                                         type=type))
+
+class InvalidSignError(FlatdataSyntaxError):
+    def __init__(self, value):
+        super(InvalidSignError, self).__init__(
+            "Value has wrong sign: {value}".format(value=value))
+
+class DuplicateEnumValueError(FlatdataSyntaxError):
+    def __init__(self, enumeration_name, value):
+        super(DuplicateEnumValueError, self).__init__(
+            "Enumeration {enumeration_name} has duplicate entries for value {value}"
+                .format(enumeration_name=enumeration_name, value=value))
+
+class InvalidEnumValueError(FlatdataSyntaxError):
+    def __init__(self, enumeration_name, value):
+        super(InvalidEnumValueError, self).__init__(
+            "Enumeration {enumeration_name} has not enough bits for value {value}"
+                .format(enumeration_name=enumeration_name, value=value))
+
+class InvalidEnumWidthError(FlatdataSyntaxError):
+    def __init__(self, enumeration_name, width, provided_width):
+        super(InvalidEnumWidthError, self).__init__(
+            "Enumeration {enumeration_name} needs at least {width} bits, but only has {provided_width}"
+                .format(enumeration_name=enumeration_name, width=width, provided_width=provided_width))
