@@ -241,37 +241,29 @@ calculate_num_connected_components( co::Graph graph )
     uint32_t num_visited = 0;
     std::vector< uint32_t > stack;
 
-    while ( num_visited != graph.vertices( ).size( ) )
+    for ( uint32_t vertex_ref = 0; vertex_ref < graph.vertices( ).size( ); ++vertex_ref )
     {
-        stack.clear( );
-        // find first non-visited vertex
-        for ( uint32_t vertex_ref = 0; vertex_ref < graph.vertices( ).size( ); ++vertex_ref )
+        // skip already visited vertices
+        if ( visited[ vertex_ref ] )
         {
-            if ( !visited[ vertex_ref ] )
-            {
-                stack.push_back( vertex_ref );
-                break;
-            }
+            continue;
         }
+
+        stack.clear( );
+        stack.push_back( vertex_ref );
+        visited[ vertex_ref ] = true;
+
         // depth first search
         while ( !stack.empty( ) )
         {
             uint32_t vertex_ref = stack.back( );
             stack.pop_back( );
-
-            if ( visited[ vertex_ref ] )
-            {
-                continue;
-            }
-
-            visited[ vertex_ref ] = true;
-            num_visited++;
-
             for ( auto neighbor_ref : get_neighbors( graph, vertex_ref ) )
             {
                 if ( !visited[ neighbor_ref ] )
                 {
                     stack.push_back( neighbor_ref );
+                    visited[ neighbor_ref ] = true;
                 }
             }
         }
@@ -286,11 +278,12 @@ calculate( const char* archive_path )
     auto graph = co::Graph::open( flatdata::FileResourceStorage::create( archive_path ) );
     if ( !graph )
     {
+        std::cerr << graph.describe( ) << std::endl;
         throw std::runtime_error( std::string( "Could not open graph at: " ) + archive_path );
     }
 
-    std::string subarchive_path = std::string( archive_path ) + "/calculated_data";
-    auto builder = co::CalculatedDataBuilder::open(
+    std::string subarchive_path = std::string( archive_path ) + "/statistics";
+    auto builder = co::StatisticsBuilder::open(
         flatdata::FileResourceStorage::create( subarchive_path.c_str( ) ) );
 
     flatdata::Vector< co::Degree > vertex_degrees( graph.vertices( ).size( ) );
@@ -319,6 +312,11 @@ read( const char* archive_path )
 {
     auto storage = flatdata::FileResourceStorage::create( archive_path );
     auto graph = co::Graph::open( std::move( storage ) );
+    if ( !graph )
+    {
+        std::cerr << graph.describe( ) << std::endl;
+        throw std::runtime_error( std::string( "Could not open graph at: " ) + archive_path );
+    }
 
     const char* strings = graph.strings( ).char_ptr( );
 
@@ -378,13 +376,13 @@ read( const char* archive_path )
         std::cout << std::endl;
     }
 
-    auto calculated_data = graph.calculated_data( );
-    if ( calculated_data )
+    auto statistics = graph.statistics( );
+    if ( statistics )
     {
         std::cout << std::endl;
-        std::cout << "Calculated data: " << std::endl;
+        std::cout << "Statistics: " << std::endl;
 
-        auto inv = calculated_data->invariants( );
+        auto inv = statistics->invariants( );
         std::cout << "max_degree: " << inv.max_degree << " ("
                   << strings + graph.vertices( )[ inv.max_degree_ref ].name_ref << ")" << std::endl;
         std::cout << "min_degree: " << inv.min_degree << " ("
@@ -392,7 +390,7 @@ read( const char* archive_path )
         std::cout << "num_connected_components: " << inv.num_connected_components << std::endl;
 
         std::cout << "Vertex degrees: " << std::endl;
-        for ( auto degree : calculated_data->vertex_degrees( ) )
+        for ( auto degree : statistics->vertex_degrees( ) )
         {
             std::cout << degree.value << " ";
         }

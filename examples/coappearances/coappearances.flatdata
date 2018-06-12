@@ -132,7 +132,7 @@ archive Graph {
 
     // Optional archive containing calculated statistics.
     @optional
-    calculated_data : archive CalculatedData;
+    statistics : archive Statistics;
 }
 
 struct Invariants {
@@ -147,8 +147,11 @@ struct Degree {
     value : u32 : 16;
 }
 
-archive CalculatedData {
+@bound_implicitly( characters: Graph.vertices, vertex_degrees )
+archive Statistics {
     invariants : Invariants;
+
+    // indexed by `vertices`
     vertex_degrees : vector< Degree >;
 }
 } // namespace graph
