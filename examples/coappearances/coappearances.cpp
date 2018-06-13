@@ -275,16 +275,15 @@ calculate_num_connected_components( co::Graph graph )
 void
 calculate( const char* archive_path )
 {
-    auto graph = co::Graph::open( flatdata::FileResourceStorage::create( archive_path ) );
+    std::shared_ptr< flatdata::FileResourceStorage > storage
+        = flatdata::FileResourceStorage::create( archive_path );
+    auto graph = co::Graph::open( storage );
     if ( !graph )
     {
         std::cerr << graph.describe( ) << std::endl;
         throw std::runtime_error( std::string( "Could not open graph at: " ) + archive_path );
     }
-
-    std::string subarchive_path = std::string( archive_path ) + "/statistics";
-    auto builder = co::StatisticsBuilder::open(
-        flatdata::FileResourceStorage::create( subarchive_path.c_str( ) ) );
+    auto builder = co::GraphBuilder::open( storage ).statistics( );
 
     flatdata::Vector< co::Degree > vertex_degrees( graph.vertices( ).size( ) );
     for ( auto e : graph.edges( ) )
