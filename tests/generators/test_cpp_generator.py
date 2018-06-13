@@ -10,13 +10,18 @@ from .assertions import *
 def test_constants_are_declared_correctly():
     generate_and_assert_in("""
         namespace n{
+        /**
+         * There is some documentation about foo.
+         */
         const i8 foo = 17;
+        // Comment
         const u16 bar = 0x42;
         }
     """, CppGenerator, """
 namespace n {
 enum : uint16_t
 {
+    // Comment
     bar = 0x42
 };
 } // namespace n
@@ -24,6 +29,9 @@ enum : uint16_t
 namespace n {
 enum : int8_t
 {
+    /**
+     * There is some documentation about foo.
+     */
     foo = 17
 };
 } // namespace n""")
