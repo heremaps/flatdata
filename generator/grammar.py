@@ -22,10 +22,29 @@ hex_literal = Combine("0x" + Word(hexnums))
 
 comment = cppStyleComment
 
+enumValue = Group(
+    Optional(comment).setResultsName("doc") +
+    identifier.setResultsName("name") + 
+    Optional( '=' + Combine(Optional('-') + (dec_literal ^ hex_literal)).setResultsName("constant") )
+)
+
+enum = originalTextFor(
+    Group(
+        Optional(comment).setResultsName("doc") +
+        Keyword("enum") +
+        identifier.setResultsName("name") +
+        ':' +
+        basic_type.setResultsName("type") +
+        '{' +
+        delimitedList(enumValue.setResultsName("enum_values", listAllMatches=True), ",") +
+        '}'
+    ), asString=False
+)
+
 field = Group(
     Optional(comment).setResultsName("doc") +
     identifier.setResultsName("name") + ':' +
-    basic_type.setResultsName("type") +
+    identifier.setResultsName("type") +
     Optional(':' + bit_width.setResultsName("width")) +
     ';'
 )
@@ -127,6 +146,7 @@ constant = originalTextFor(
 )
 
 flatdata_entry = (
+    enum.setResultsName("enumerations", listAllMatches=True) ^
     struct.setResultsName("structures", listAllMatches=True) ^
     archive.setResultsName("archives", listAllMatches=True) ^
     constant.setResultsName("constants", listAllMatches=True) ^

@@ -21,12 +21,8 @@ class Structure(Node):
     def create(properties, own_schema, definition):
         result = Structure(name=properties.name, properties=properties, own_schema=own_schema)
 
-        offset = 0
         for field in properties.fields:
-            field_node = Field.create(properties=field, offset=offset)
-            result.insert(field_node)
-            offset += int(field_node.type.width)
-        result.size_in_bits = offset
+            result.insert(Field.create(properties=field))
         return result
 
     @property

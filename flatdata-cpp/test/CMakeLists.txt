@@ -2,7 +2,7 @@ find_package(GTest QUIET)
 find_package(Threads)
 if(NOT GTest_FOUND)
     set(USE_VENDOR_GTEST ON)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/vendor/gtest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/gtest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
 endif()
 
 file(GLOB TEST_FLATDATA_SOURCES "*.cpp")
