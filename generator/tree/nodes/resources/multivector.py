@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from .base import ResourceBase
-from generator.tree.nodes.references import StructureReference
+from generator.tree.nodes.references import StructureReference, BuiltinStructureReference
 from generator.tree.nodes.trivial import Structure
 
 
@@ -12,6 +12,7 @@ class Multivector(ResourceBase):
         if types is not None:
             self._types = types
         self._width = width
+        self._index_type = None
 
     @staticmethod
     def create(properties, own_schema):
@@ -33,16 +34,20 @@ class Multivector(ResourceBase):
         return self._width
 
     @property
+    def index_type(self):
+        return self._index_type
+
+    @property
     def builtins(self):
         StructProperties = namedtuple(
-            "Properties", ["name", "schema", "doc", "fields", "is_index"])
+            "Properties", ["name", "schema", "doc", "fields"])
         FieldProperties = namedtuple("Properties", ["name", "width", "type"])
         properties = StructProperties(
             name="IndexType{width}".format(width=self._width),
             schema="struct IndexType%s { value : u64 : %s; }" % (self._width, self._width),
             doc="/** Builtin type to for MultiVector index */",
-            fields=[FieldProperties(name="value", width=self._width, type="u64")],
-            is_index=True)
+            fields=[FieldProperties(name="value", width=self._width, type="u64")])
         index_type = Structure.create(properties=properties, own_schema=properties.schema,
                                       definition="")
+        self._index_type = index_type
         return [index_type]

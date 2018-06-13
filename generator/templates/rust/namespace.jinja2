@@ -1,0 +1,15 @@
+{% macro opening(node) %}
+{% for ns in node | namespaces %}
+{% if loop.index > 1 %}
+pub mod {{ ns.name }} {
+{% endif %}
+{% endfor %}
+{% endmacro %}
+
+{% macro closing(node) %}
+{% for ns in node | namespaces %}
+{% if loop.index > 1 %}
+}
+{% endif %}
+{% endfor %}
+{% endmacro %}

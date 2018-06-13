@@ -1,0 +1,80 @@
+{# {% import "cpp/resource.jinja2" as resource %} #}
+
+{% macro declaration(archive) %}
+
+{# multivector index structs #}
+{% for r in archive.resources | multivector_resources %}
+{% set index = r.index_type %}
+{{ index.doc | rust_doc }}
+define_index!(
+    {{ index.name }},
+    {{ index.name }}Mut,
+    schema::structs::{{ index.name | camel_to_snake_case | upper }},
+    {{ index.size_in_bytes }},
+    {{ index.fields[0].type.width }}
+);
+{% endfor %}
+
+{# variadic structs #}
+{% for r in archive.resources | multivector_resources %}
+/// Builtin union type of {{ r.types | join(', ') }}.
+define_variadic_struct!({{ r.name | snake_to_camel_case }}, {{ r.name | snake_to_camel_case }}ItemBuilder, {{ r.builtins[0].name }},
+{% for type in r.types %}
+    {{ loop.index0 }} => ({{ type }}, add_{{ type | camel_to_snake_case }})
+    {%- if not loop.last %},
+    {% endif %}
+{% endfor %}
+);
+{% endfor %}
+
+{# archive definition #}
+{% set archive_ns = archive.name | camel_to_snake_case %}
+define_archive!({{archive.name}}, {{archive.name}}Builder,
+    schema::structs::{{ archive.name | camel_to_snake_case | upper }};
+    // struct resources
+    {% for r in archive.resources | instance_resources %}
+    ({{ r.name }}, set_{{ r.name }},
+        {{r.type}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // vector resources
+    {% for r in archive.resources | vector_resources %}
+    ({{ r.name }}, set_{{ r.name }}, start_{{ r.name }},
+        {{ r.referenced_structures[0].node.name }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // multivector resources
+    {% for r in archive.resources | multivector_resources %}
+    ({{ r.name }}, start_{{ r.name }},
+        {{ r.name | snake_to_camel_case }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }},
+        {{ r.name }}_index, {{ r.builtins[0].name }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // raw data resources
+    {% for r in archive.resources | rawdata_resources %}
+    ({{ r.name }}, set_{{ r.name }},
+        schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // subarchives
+    {% for r in archive.resources | subarchive_resources %}
+    ({{ r.name }},
+        {{ r.name }}, {{ r.name }}Builder,
+        schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %};
+    // optional subarchives
+    {% for r in archive.resources | optional_subarchive_resources %}
+    ({{ r.name }},
+        {{ r.target.node.name }}, {{ r.target.node.name }}Builder,
+        schema::resources::{{ archive_ns }}::{{ r.target.node.name | camel_to_snake_case | upper }})
+        {%- if not loop.last %},
+        {% endif %}
+    {% endfor %}
+);
+{% endmacro %}

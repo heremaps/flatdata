@@ -31,16 +31,16 @@ class RustGenerator(BaseGenerator):
         env.filters["snake_to_camel_case"] = _snake_to_camel_case
 
         def _rust_doc(s):
-            return '\n'.join(
-                re.sub(r'^/\*\*|^ \*/|^ \*', "///", line)
-                for line in s.split('\n'))
+            lines = [re.sub(r'^[ \t]*(/\*\*|\*/|\*)', "///", line) for line in s.split('\n')]
+            start = 0
+            end = len(lines)
+            if lines[0] == "///":
+                start = 1
+            if lines[-1] == "///":
+                end = -1;
+            return "\n".join(lines[start:end])
 
         env.filters["rust_doc"] = _rust_doc
-
-        def _is_index(n):
-            return re.match(r'^IndexType[0-9]{1,2}', n.name)
-
-        env.filters["is_index"] = _is_index
 
         def _escape_rust_keywords(s):
             if s == "ref":
