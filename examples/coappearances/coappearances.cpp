@@ -237,21 +237,20 @@ calculate_num_connected_components( co::Graph graph )
 {
     size_t num_connected_components = 0;
 
-    std::vector< bool > visited( graph.vertices( ).size( ) );
-    uint32_t num_visited = 0;
+    std::vector< bool > seen( graph.vertices( ).size( ) );
     std::vector< uint32_t > stack;
 
     for ( uint32_t vertex_ref = 0; vertex_ref < graph.vertices( ).size( ); ++vertex_ref )
     {
-        // skip already visited vertices
-        if ( visited[ vertex_ref ] )
+        // skip already seen vertices
+        if ( seen[ vertex_ref ] )
         {
             continue;
         }
 
         stack.clear( );
         stack.push_back( vertex_ref );
-        visited[ vertex_ref ] = true;
+        seen[ vertex_ref ] = true;
 
         // depth first search
         while ( !stack.empty( ) )
@@ -260,10 +259,10 @@ calculate_num_connected_components( co::Graph graph )
             stack.pop_back( );
             for ( auto neighbor_ref : get_neighbors( graph, vertex_ref ) )
             {
-                if ( !visited[ neighbor_ref ] )
+                if ( !seen[ neighbor_ref ] )
                 {
                     stack.push_back( neighbor_ref );
-                    visited[ neighbor_ref ] = true;
+                    seen[ neighbor_ref ] = true;
                 }
             }
         }
