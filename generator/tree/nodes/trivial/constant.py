@@ -17,5 +17,9 @@ class Constant(Node):
         return BasicType(self._properties.type)
 
     @property
+    def doc(self):
+        return self._properties.doc
+
+    @property
     def value(self):
         return self._properties.value
