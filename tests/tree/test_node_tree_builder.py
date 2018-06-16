@@ -94,13 +94,13 @@ def test_constants_are_placed_on_final_namespace():
 
 def test_constants_are_parsed():
     tree = _build_node_tree("""namespace foo{
-        const i8 foo = 17;
+        const i8 foo = -17;
         const u16 bar = 0x42;
         }
         """)
     assert_equal({".foo", ".foo.bar", ".foo.foo"}, tree.symbols())
-    check_constant(tree.find(".foo.foo"), "i8", "17")
-    check_constant(tree.find(".foo.bar"), "u16", "0x42")
+    check_constant(tree.find(".foo.foo"), "i8", -17)
+    check_constant(tree.find(".foo.bar"), "u16", 0x42)
 
 
 def test_duplicate_constants_raise_syntax_error():
@@ -111,6 +111,12 @@ def test_duplicate_constants_raise_syntax_error():
             }
             """)
 
+def constant_size_check():
+    with assert_raises(InvalidConstantValueError):
+        _build_node_tree("""namespace a{
+            const i8 foo = 128;
+            }
+            """)
 
 def test_single_structure_is_parsed_correctly():
     tree = _build_node_tree("""namespace foo{

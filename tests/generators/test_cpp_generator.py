@@ -22,7 +22,7 @@ namespace n {
 enum : uint16_t
 {
     // Comment
-    bar = 0x42
+    bar = 66
 };
 } // namespace n
 
