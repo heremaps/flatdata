@@ -9,11 +9,11 @@ from .assertions import *
 def test_normalization():
     expected_lines = [
         "namespace ns {",
-        "const u32 C = 0xFFFFFFF;",
+        "const u32 C = 268435455;",
         "}",
         "",
         "namespace ns {",
-        "const u32 D = -10;",
+        "const i32 D = -10;",
         "}",
         "",
         "namespace ns {",
