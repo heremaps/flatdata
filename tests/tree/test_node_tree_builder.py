@@ -461,7 +461,8 @@ def test_enumeration():
         enum A : u16 {
             VALUE_1,
             VALUE_2 = 4,
-            VALUE_3
+            VALUE_3,
+            VALUE_4 = 0x10
         }
         struct B {
             f1 : A;
@@ -471,7 +472,8 @@ def test_enumeration():
     _update_field_type_references(tree)
     _compute_structure_sizes(tree)
 
-    assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
+    assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.A.VALUE_4",
+        ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
 
     check_struct(tree.find(".n.B"), 16, 2)
     
