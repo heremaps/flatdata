@@ -1,0 +1,11 @@
+{% macro opening(node) %}
+{% for ns in node|namespaces %}
+namespace {{ ns.name }} {
+{% endfor %}
+{% endmacro %}
+
+{% macro closing(node) %}
+{% for ns in node|namespaces %}
+}
+{% endfor %}
+{% endmacro %}

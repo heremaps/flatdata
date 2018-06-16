@@ -1,0 +1,3 @@
+{%- macro declaration(node) %}
+const {{ node.type.name }} {{ node.name }} = {{ node.value }};
+{% endmacro %}
