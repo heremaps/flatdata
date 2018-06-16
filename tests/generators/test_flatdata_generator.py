@@ -13,6 +13,10 @@ def test_normalization():
         "}",
         "",
         "namespace ns {",
+        "const u32 D = -10;",
+        "}",
+        "",
+        "namespace ns {",
         "struct S1",
         "{",
         "    f0 : u64 : 64;",
@@ -93,7 +97,7 @@ namespace ns{
 
 // Even more comments
 enum Enum1 : u16 {
- A = 1, B=13,
+ A = 0x1, B=13,
  // Comment here as well
  C
 }
@@ -102,6 +106,7 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
 
     // Comments everywhere
     const u32 C = 0xFFFFFFF;
+    const i32 D = -10;
 
     // Even here
     archive A1 {
