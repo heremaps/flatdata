@@ -8,13 +8,14 @@ import sys
 sys.path.insert(0, "..")
 from generator.tree.errors import MissingSymbol
 from generator.tree.builder import SyntaxTreeBuilder
-from generator.tree.nodes.trivial import Namespace, Structure, Field, Constant
+from generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from generator.tree.nodes.archive import Archive
 from generator.tree.nodes.explicit_reference import ExplicitReference
 import generator.tree.nodes.resources as res
 from generator.tree.nodes.resources import Vector, Multivector, RawData, Instance, BoundResource
 from generator.tree.nodes.references import ResourceReference, StructureReference, \
-    FieldReference, ArchiveReference, BuiltinStructureReference, VectorReference, ConstantReference
+    FieldReference, ArchiveReference, BuiltinStructureReference, VectorReference, ConstantReference, \
+    EnumerationReference
 
 from nose.tools import *
 
@@ -139,14 +140,26 @@ namespace ns{
         v1 : multivector< 14, S1 >;
     }
 
+enum Enum1 : u16 {
+ A = 1, B=13, C
+}
+
+struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
+
     const u32 C = 0xFFFFFFF;
 
     archive A1 {
         i : S0;
         v0 : vector< S1 >;
 
-        @explicit_reference( S0.f0, v0 )
+        @optional
+        v1 : vector< S1 >;
+
+        v2 : vector< XXX >;
+
+        @explicit_reference( .ns.S0.f0, v0 )
         @explicit_reference( S0.f1, A1.v0 )
+        @explicit_reference( S0.f1, .ns.A1.v1 )
         mv : multivector< 14, S0 >;
         rd : raw_data;
         a : archive A0;
@@ -184,23 +197,40 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A1.mv': Multivector,
         '.ns.A1.mv.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A1.mv.@@ns@S0': StructureReference,
-        '.ns.A1.mv.er_S0_f0_v0': ExplicitReference,
-        '.ns.A1.mv.er_S0_f0_v0.@@ns@A1@v0': ResourceReference,
-        '.ns.A1.mv.er_S0_f0_v0.@@ns@S0': StructureReference,
-        '.ns.A1.mv.er_S0_f0_v0.@@ns@S0@f0': FieldReference,
+        '.ns.A1.mv.er__ns_S0_f0_v0': ExplicitReference,
+        '.ns.A1.mv.er__ns_S0_f0_v0.@@ns@A1@v0': ResourceReference,
+        '.ns.A1.mv.er__ns_S0_f0_v0.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er__ns_S0_f0_v0.@@ns@S0@f0': FieldReference,
         '.ns.A1.mv.er_S0_f1_A1_v0': ExplicitReference,
         '.ns.A1.mv.er_S0_f1_A1_v0.@@ns@A1@v0': ResourceReference,
         '.ns.A1.mv.er_S0_f1_A1_v0.@@ns@S0': StructureReference,
         '.ns.A1.mv.er_S0_f1_A1_v0.@@ns@S0@f1': FieldReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1': ExplicitReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1.@@ns@A1@v1': ResourceReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1.@@ns@S0@f1': FieldReference,
         '.ns.A1.rd': RawData,
         '.ns.A1.v0': Vector,
         '.ns.A1.v0.@@ns@S1': StructureReference,
+        '.ns.A1.v1': Vector,
+        '.ns.A1.v1.@@ns@S1': StructureReference,
+        '.ns.A1.v2': Vector,
+        '.ns.A1.v2.@@ns@XXX': StructureReference,
         '.ns.C': Constant,
         '.ns.S0': Structure,
         '.ns.S0.f0': Field,
         '.ns.S0.f1': Field,
         '.ns.S1': Structure,
-        '.ns.S1.f0': Field
+        '.ns.S1.f0': Field,
+        '.ns.Enum1': Enumeration,
+        '.ns.Enum1.A': EnumerationValue,
+        '.ns.Enum1.B': EnumerationValue,
+        '.ns.Enum1.C': EnumerationValue,
+        '.ns.XXX': Structure,
+        '.ns.XXX.e': Field,
+        '.ns.XXX.e.@@ns@Enum1': EnumerationReference,
+        '.ns.XXX.f': Field,
+        '.ns.XXX.f.@@ns@Enum1': EnumerationReference,
     }, tree.symbols(include_types=True))
 
 
