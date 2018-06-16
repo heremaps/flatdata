@@ -21,7 +21,7 @@ class Enumeration(Node):
         unique_values = set();
         for value in properties.enum_values:
             if value.constant:
-                current_assigned_value = int(value.constant)
+                current_assigned_value = int(value.constant, 0)
             if current_assigned_value in unique_values:
                 raise DuplicateEnumValueError(enumeration_name=result._name, value=current_assigned_value)
             unique_values.add(current_assigned_value)
