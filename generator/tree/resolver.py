@@ -58,7 +58,7 @@ def _validate_target_type(root, ref):
     }[type(ref)]
     target = root.find(ref.target)
     if not isinstance(target, expected) and not issubclass(type(target), expected):
-        raise errors.IncorrectReferenceType(type(target), expected)
+        raise errors.IncorrectReferenceType(ref.name, type(target), expected)
 
 
 def resolve_references(tree):

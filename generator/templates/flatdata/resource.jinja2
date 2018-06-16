@@ -9,7 +9,7 @@
     {%- elif r|is_raw_data -%}
         raw_data
     {%- elif r|is_archive_resource -%}
-        {{ r.target.node.path_with(".") }}
+        archive {{ r.target.node.path_with(".") }}
     {%- else -%}
         {% raise "Unsupported resource type" %}
     {%- endif -%}

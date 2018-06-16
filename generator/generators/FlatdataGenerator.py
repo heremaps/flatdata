@@ -39,3 +39,6 @@ class FlatdataGenerator(BaseGenerator):
 
         env.filters["supported_resources"] = lambda l: [x for x in l if
                                                         not isinstance(x, BoundResource)]
+
+        env.filters["bound_resources"] = lambda l: [x for x in l if
+                                                    isinstance(x, BoundResource)]
