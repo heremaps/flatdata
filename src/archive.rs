@@ -165,8 +165,15 @@ pub trait ArchiveBuilder: Clone {
 /// Macro used by generator to define a flatdata struct.
 #[macro_export]
 macro_rules! define_struct {
+    // Simpler case where type and primitive_type coincide.
     ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
-        $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) =>
+        $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) => {
+        define_struct!($name, $name_mut, $schema, $size_in_bytes
+            $(,($field, $field_setter, $type: $type, $offset, $bit_size))*
+        );
+    };
+    ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
+        $(,($field:ident, $field_setter:ident, $type:tt: $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
     {
         // TODO: We cannot store `&u8` here, since then we need to annotate the type with a
         // lifetime, which would enforce an annotation in the trait, and this would bind the
@@ -180,7 +187,8 @@ macro_rules! define_struct {
 
         impl $name {
             $(pub fn $field(&self) -> $type {
-                read_bytes!($type, self.data, $offset, $bit_size)
+                let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
+                unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
         }
 
@@ -188,7 +196,7 @@ macro_rules! define_struct {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
                     concat!(stringify!($name), " {{ ",
-                        intersperse!($(concat!( stringify!($field), ": {}")), *), " }}"),
+                        intersperse!($(concat!( stringify!($field), ": {:?}")), *), " }}"),
                     $(self.$field(),)*)
             }
         }
@@ -222,7 +230,8 @@ macro_rules! define_struct {
 
         impl $name_mut {
             $(pub fn $field(&self) -> $type {
-                read_bytes!($type, self.data, $offset, $bit_size)
+                let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
+                unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
 
             $(pub fn $field_setter(&mut self, value: $type) {
@@ -262,7 +271,7 @@ macro_rules! define_struct {
                 unsafe { &*(self as *const $name_mut as *const $name) }
             }
         }
-     }
+    };
 }
 
 /// Macro used by generator to define a flatdata index.
@@ -632,6 +641,7 @@ macro_rules! define_archive {
 
 #[cfg(test)]
 mod test {
+    use super::super::helper::Int;
     use super::super::structbuf::StructBuf;
 
     #[test]
@@ -649,4 +659,55 @@ mod test {
         let output = format!("{:?}", a);
         assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0 } }");
     }
+
+    macro_rules! define_enum_test {
+        ($test_name:ident, $type:tt, $is_signed:expr, $val1:expr, $val2:expr) => {
+            #[test]
+            #[allow(dead_code)]
+            fn $test_name() {
+                #[derive(Debug, PartialEq, Eq)]
+                #[repr($type)]
+                pub enum Variant {
+                    X = $val1,
+                    Y = $val2,
+                }
+
+                impl Int for Variant {
+                    const IS_SIGNED: bool = $is_signed;
+                }
+
+                define_struct!(A, AMut, "no_schema", 1, (x, set_x, Variant: $type, 0, 2));
+                let mut a = StructBuf::<A>::new();
+                let output = format!("{:?}", a);
+                assert_eq!(output, "StructBuf { resource: A { x: X } }");
+
+                a.set_x(Variant::Y);
+                let output = format!("{:?}", a);
+                assert_eq!(output, "StructBuf { resource: A { x: Y } }");
+            }
+        };
+    }
+
+    define_enum_test!(test_enum_u8_1, u8, false, 0, 1);
+    define_enum_test!(test_enum_u8_2, u8, false, 0, 2);
+    define_enum_test!(test_enum_u16_1, u16, false, 0, 1);
+    define_enum_test!(test_enum_u16_2, u16, false, 0, 2);
+    define_enum_test!(test_enum_u32_1, u32, false, 0, 1);
+    define_enum_test!(test_enum_u32_2, u32, false, 0, 2);
+    define_enum_test!(test_enum_u64_1, u64, false, 0, 1);
+    define_enum_test!(test_enum_u64_2, u64, false, 0, 2);
+
+    // Note: Right now, there a regression bug for binary enums with underlying
+    // type i8: https://github.com/rust-lang/rust/issues/51582
+    //
+    // Until it is backported into stable release, we have to disable this test.
+    //
+    // define_enum_test!(test_enum_i8, i8, true, 0, 1);
+    // define_enum_test!(test_enum_i8, i8, true, 0, -1);
+    define_enum_test!(test_enum_i16_1, i16, true, 0, 1);
+    define_enum_test!(test_enum_i16_2, i16, true, 0, -1);
+    define_enum_test!(test_enum_i32_1, i32, true, 0, 1);
+    define_enum_test!(test_enum_i32_2, i32, true, 0, -1);
+    define_enum_test!(test_enum_i64_1, i64, true, 0, 1);
+    define_enum_test!(test_enum_i64_2, i64, true, 0, -1);
 }
