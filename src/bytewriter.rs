@@ -1,25 +1,3 @@
-#[doc(hidden)]
-#[macro_export]
-macro_rules! masked {
-    ($value:expr, $num_bits:expr) => {
-        1u64.checked_shl($num_bits as u32)
-            .map(|mask| $value & (mask - 1))
-            .unwrap_or($value)
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! num_bytes {
-    ($offset:expr, $num_bits:expr) => {
-        if $num_bits + $offset % 8 < 64 {
-            ($num_bits + $offset % 8 + 7) / 8
-        } else {
-            ($num_bits + 7) / 8
-        }
-    };
-}
-
 /// Writes specified number of bits of a given value to a slice at a specified
 /// offset in portable way.
 ///

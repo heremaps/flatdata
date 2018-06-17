@@ -31,7 +31,7 @@ impl convert::From<*const u8> for Idx {
 impl Index for Idx {
     type IndexMut = IdxMut;
     fn value(&self) -> usize {
-        read_bytes!(usize, self.data, 0, 32)
+        read_bytes!(u64, self.data, 0, 32) as usize
     }
 }
 
