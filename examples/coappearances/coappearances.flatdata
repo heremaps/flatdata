@@ -129,5 +129,29 @@ archive Graph {
 
     // All strings contained in the data separated by '\0'.
     strings: raw_data;
+
+    // Optional archive containing calculated statistics.
+    @optional
+    statistics : archive Statistics;
+}
+
+struct Invariants {
+    max_degree : u32 : 16;
+    max_degree_ref : u32 : 16;
+    min_degree : u32 : 16;
+    min_degree_ref : u32 : 16;
+    num_connected_components : u32 : 16;
+}
+
+struct Degree {
+    value : u32 : 16;
+}
+
+@bound_implicitly( characters: Graph.vertices, vertex_degrees )
+archive Statistics {
+    invariants : Invariants;
+
+    // indexed by `vertices`
+    vertex_degrees : vector< Degree >;
 }
 } // namespace graph
