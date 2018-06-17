@@ -23,7 +23,7 @@ pub mod n {
 pub const FOO: i8 = 17;
 // Comment
 pub const BAR: u16 = 0x42;
-}""",debug=True)
+}""")
 
 
 def test_folded_namespaces_are_represented_correctly():
@@ -182,4 +182,4 @@ def _test_optional_resource_is_declared_correctly():
         @optional
         raw_data_resource : raw_data;
     }
-    }""", RustGenerator, "NOT_YET_SUPPORTED", debug=True)
+    }""", RustGenerator, "NOT_YET_SUPPORTED")

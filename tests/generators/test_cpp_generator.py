@@ -34,7 +34,7 @@ enum : int8_t
      */
     foo = 17
 };
-} // namespace n""", debug=True)
+} // namespace n""")
 
 
 def test_folded_namespaces_are_represented_correctly():
