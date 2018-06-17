@@ -12,6 +12,14 @@ from .BaseGenerator import BaseGenerator
 import re
 
 class RustGenerator(BaseGenerator):
+
+    RESERVED_KEYWORDS = [
+        "abstract", "alignof", "as", "become", "box", "break", "const", "continue", "crate", "do",
+        "else", "enum", "extern", "false", "final", "fn", "for", "if", "impl", "in", "let", "loop",
+        "macro", "match", "mod", "move", "mut", "offsetof", "override", "priv", "proc", "pub",
+        "pure", "ref", "return", "self", "sizeof", "static", "struct", "super", "trait", "true",
+        "type", "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield"]
+
     def __init__(self):
         BaseGenerator.__init__(self, "rust/rust.jinja2")
 
@@ -43,12 +51,9 @@ class RustGenerator(BaseGenerator):
         env.filters["rust_doc"] = _rust_doc
 
         def _escape_rust_keywords(s):
-            if s == "ref":
-                return "ref_"
-            if s == "type":
-                return "type_"
-            else:
-                return s
+            if s in self.RESERVED_KEYWORDS:
+                return "{}_".format(s)
+            return s
 
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
 
