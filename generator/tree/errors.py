@@ -92,3 +92,9 @@ class InvalidEnumWidthError(FlatdataSyntaxError):
         super(InvalidEnumWidthError, self).__init__(
             "Enumeration {enumeration_name} needs at least {width} bits, but only has {provided_width}"
                 .format(enumeration_name=enumeration_name, width=width, provided_width=provided_width))
+
+class InvalidConstantValueError(FlatdataSyntaxError):
+    def __init__(self, name, value):
+        super(InvalidEnumValueError, self).__init__(
+            "Constant {name} has not enough bits for value {value}"
+                .format(name=name, value=value))

@@ -94,13 +94,17 @@ def test_constants_are_placed_on_final_namespace():
 
 def test_constants_are_parsed():
     tree = _build_node_tree("""namespace foo{
-        const i8 foo = 17;
+        const i8 foo = -17;
         const u16 bar = 0x42;
+        const i16 foo2 = -0x20;
+        const u32 bar2 = 19;
         }
         """)
-    assert_equal({".foo", ".foo.bar", ".foo.foo"}, tree.symbols())
-    check_constant(tree.find(".foo.foo"), "i8", "17")
-    check_constant(tree.find(".foo.bar"), "u16", "0x42")
+    assert_equal({".foo", ".foo.bar", ".foo.foo", ".foo.foo2", ".foo.bar2"}, tree.symbols())
+    check_constant(tree.find(".foo.foo"), "i8", -17)
+    check_constant(tree.find(".foo.bar"), "u16", 0x42)
+    check_constant(tree.find(".foo.foo2"), "i16", -0x20)
+    check_constant(tree.find(".foo.bar2"), "u32", 19)
 
 
 def test_duplicate_constants_raise_syntax_error():
@@ -111,6 +115,12 @@ def test_duplicate_constants_raise_syntax_error():
             }
             """)
 
+def constant_size_check():
+    with assert_raises(InvalidConstantValueError):
+        _build_node_tree("""namespace a{
+            const i8 foo = 128;
+            }
+            """)
 
 def test_single_structure_is_parsed_correctly():
     tree = _build_node_tree("""namespace foo{
@@ -461,7 +471,8 @@ def test_enumeration():
         enum A : u16 {
             VALUE_1,
             VALUE_2 = 4,
-            VALUE_3
+            VALUE_3,
+            VALUE_4 = 0x10
         }
         struct B {
             f1 : A;
@@ -471,7 +482,8 @@ def test_enumeration():
     _update_field_type_references(tree)
     _compute_structure_sizes(tree)
 
-    assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
+    assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.A.VALUE_4",
+        ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
 
     check_struct(tree.find(".n.B"), 16, 2)
     
