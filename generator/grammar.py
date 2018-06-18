@@ -19,13 +19,14 @@ bit_width = Word(nums)
 
 dec_literal = Word(nums)
 hex_literal = Combine("0x" + Word(hexnums))
+signed_literal = Combine(Optional('-') + (dec_literal ^ hex_literal))
 
 comment = cppStyleComment
 
 enumValue = Group(
     Optional(comment).setResultsName("doc") +
     identifier.setResultsName("name") + 
-    Optional( '=' + Combine(Optional('-') + (dec_literal ^ hex_literal)).setResultsName("constant") )
+    Optional( '=' + signed_literal.setResultsName("constant") )
 )
 
 enum = originalTextFor(
@@ -140,7 +141,7 @@ constant = originalTextFor(
         Keyword("const") +
         basic_type.setResultsName("type") +
         identifier.setResultsName("name") + "=" +
-        (dec_literal ^ hex_literal).setResultsName("value") +
+        signed_literal.setResultsName("value") +
         ";"
     ), asString=False
 )
