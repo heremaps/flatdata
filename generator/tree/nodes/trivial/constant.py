@@ -6,9 +6,10 @@ class Constant(Node):
     def __init__(self, name, properties=None, own_schema=None):
         super(Constant, self).__init__(name=name, properties=properties)
         self._own_schema = own_schema
-        self._value = int(properties.value, 0)
-        if self.type.bits_required(self.value) > self.type.width:
-            raise InvalidConstantValueError(name=name, value=self.value)
+        if properties:
+            self._value = int(properties.value, 0)
+            if self.type.bits_required(self.value) > self.type.width:
+                raise InvalidConstantValueError(name=name, value=self.value)
 
     @staticmethod
     def create(properties, own_schema, definition):

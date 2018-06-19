@@ -1,0 +1,18 @@
+{% import "flatdata/constant.jinja2" as constant %}
+{% import "flatdata/enumeration.jinja2" as enumeration %}
+{% import "flatdata/structure.jinja2" as structure %}
+{% import "flatdata/archive.jinja2" as archive %}
+{% import "flatdata/namespace.jinja2" as namespace %}
+{% for node in nodes | filter_builtin %}
+{{ namespace.opening(node) }}
+    {%- if node|is_structure %}
+        {{- structure.declaration(node) }}
+    {%- elif node|is_enumeration %}
+        {{- enumeration.declaration(node) }}
+    {%- elif node|is_archive %}
+        {{- archive.declaration(node) }}
+    {%- elif node|is_constant %}
+        {{- constant.declaration(node) }}
+    {%- endif %}
+{{ namespace.closing(node) }}
+{% endfor %}

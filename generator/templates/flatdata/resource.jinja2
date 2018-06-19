@@ -1,0 +1,16 @@
+{%- macro resource_type(r) -%}
+    {%- set type_params = r.referenced_structures|to_type_params -%}
+    {%- if r|is_instance -%}
+        {{ type_params }}
+    {%- elif r|is_vector -%}
+        vector< {{ type_params }} >
+    {%- elif r|is_multivector -%}
+        multivector< {{ r.width }}, {{ type_params }} >
+    {%- elif r|is_raw_data -%}
+        raw_data
+    {%- elif r|is_archive_resource -%}
+        archive {{ r.target.node.path_with(".") }}
+    {%- else -%}
+        {% raise "Unsupported resource type" %}
+    {%- endif -%}
+{%- endmacro -%}

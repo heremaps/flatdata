@@ -1,0 +1,8 @@
+{% macro declaration(struct) %}
+struct {{ struct.name }}
+{
+    {% for field in struct.fields %}
+    {{ field.name }} : {{field.type.name | field_type}} : {{ field.type.width }};
+    {% endfor %}
+}
+{% endmacro %}

@@ -38,6 +38,7 @@ enum = originalTextFor(
         basic_type.setResultsName("type") +
         '{' +
         delimitedList(enumValue.setResultsName("enum_values", listAllMatches=True), ",") +
+        Optional(',') +
         '}'
     ), asString=False
 )
