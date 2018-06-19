@@ -371,8 +371,9 @@ define_struct!(
 
 /// An appearance of two characters in the same scene.
 /// count - multiplicity of the coappearance.
-/// first_chapter_ref - a reference to the first chapter in which characters appear. How to get the
-/// full range of chapters is described in `coappearances.cpp:read`.
+/// first_chapter_ref - a reference to the first chapter in which characters
+/// appear. How to get the full range of chapters is described in
+/// `coappearances.cpp:read`.
 define_struct!(
     Coappearance,
     CoappearanceMut,
@@ -422,41 +423,37 @@ define_archive!(CalculatedData, CalculatedDataBuilder,
     schema::structs::CALCULATED_DATA;
     // struct resources
     (invariants, set_invariants,
-        Invariants, schema::resources::INVARIANTS);
+        Invariants, schema::resources::INVARIANTS, false);
     // vector resources
     (vertex_degrees, set_vertex_degrees, start_vertex_degrees,
-        Degree, schema::resources::VERTEX_DEGREES);
+        Degree, schema::resources::VERTEX_DEGREES, false);
     // multivector resources
 ;
     // raw data resources
 ;
     // subarchives
-;
-    // optional subarchives
 );
 
 define_archive!(Graph, GraphBuilder,
     schema::structs::GRAPH;
     // struct resources
     (meta, set_meta,
-        Meta, schema::resources::META);
+        Meta, schema::resources::META, false);
     // vector resources
     (vertices, set_vertices, start_vertices,
-        Character, schema::resources::VERTICES),
+        Character, schema::resources::VERTICES, false),
     (edges, set_edges, start_edges,
-        Coappearance, schema::resources::EDGES),
+        Coappearance, schema::resources::EDGES, false),
     (chapters, set_chapters, start_chapters,
-        Chapter, schema::resources::CHAPTERS);
+        Chapter, schema::resources::CHAPTERS, false);
     // multivector resources
     (vertices_data, start_vertices_data,
         VerticesData, schema::resources::VERTICES_DATA,
-        vertices_data_index, IndexType32);
+        vertices_data_index, IndexType32, false);
     // raw data resources
     (strings, set_strings,
-        schema::resources::STRINGS);
+        schema::resources::STRINGS, false);
     // subarchives
-;
-    // optional subarchives
     (calculated_data,
         CalculatedData, CalculatedDataBuilder,
-        schema::resources::CALCULATED_DATA));
+        schema::resources::CALCULATED_DATA, true));

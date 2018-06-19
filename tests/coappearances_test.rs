@@ -32,9 +32,10 @@ fn read_and_validate_coappearances() {
     assert_eq!(vertices.len(), 138);
     assert_eq!(edges.len(), 494);
 
-    // Note: We could use `from_utf8_unchecked` here, which simply does a raw pointer conversion,
-    // however we use the safe version of the function, which does exactly the same except it
-    // validates that the string is utf8. For that, it need to scan the whole string once, which is
+    // Note: We could use `from_utf8_unchecked` here, which simply does a raw
+    // pointer conversion, however we use the safe version of the function,
+    // which does exactly the same except it validates that the string is utf8.
+    // For that, it need to scan the whole string once, which is
     // usually undesirable for huge data.
     let strings = str::from_utf8(g.strings()).expect("invalid utf8 string");
 
@@ -73,7 +74,8 @@ fn read_and_validate_coappearances() {
         let e = edges.at(edge_ref);
         let chapters_start = e.first_chapter_ref() as usize;
         let chapters_end = edges.at(edge_ref + 1).first_chapter_ref() as usize;
-        let e_chapters: Vec<String> = g.chapters()
+        let e_chapters: Vec<String> = g
+            .chapters()
             .iter()
             .skip(chapters_start)
             .take(chapters_end - chapters_start)
@@ -85,12 +87,12 @@ fn read_and_validate_coappearances() {
     validate_chapters(
         0,
         vec![
-            "1.29", "2.27", "3.15", "3.16", "6.19", "7.25", "7.27", "7.29"
+            "1.29", "2.27", "3.15", "3.16", "6.19", "7.25", "7.27", "7.29",
         ],
     );
     validate_chapters(1, vec!["6.19"]);
-    // Note: Last element in edges is not an edge but a sentinel which allows us to calculate the
-    // range of chapter.
+    // Note: Last element in edges is not an edge but a sentinel which allows us to
+    // calculate the range of chapter.
     validate_chapters(edges.len() - 2, vec!["7.25"]);
 
     let vertices_data = g.vertices_data();
@@ -212,7 +214,8 @@ fn copy_coappearances_archive(
         "edges"
     ));
 
-    let mut vertices_data = gb.start_vertices_data()
+    let mut vertices_data = gb
+        .start_vertices_data()
         .expect("start_vertices_data failed");
     for item in g.vertices_data().iter() {
         let mut new_item = vertices_data.grow().expect("grow failed");
@@ -336,10 +339,12 @@ fn read_write_calculated_data_subarchive() {
     )));
     let copy = coappearances::Graph::open(storage).expect("invalid archive");
 
-    let orig_calc_data = orig.calculated_data()
+    let orig_calc_data = orig
+        .calculated_data()
         .as_ref()
         .expect("orig calculated_data failed");
-    let copy_calc_data = copy.calculated_data()
+    let copy_calc_data = copy
+        .calculated_data()
         .as_ref()
         .expect("copy calculated_data failed");
 

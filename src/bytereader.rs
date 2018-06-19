@@ -39,7 +39,7 @@ macro_rules! read_bytes {
             result >>= bit_offset;
 
             if num_bytes * 8 - bit_offset < $num_bits {
-                let temp = unsafe { *data.offset((byte_offset + num_bytes) as isize) } as u64;
+                let temp = u64::from(unsafe { *data.offset((byte_offset + num_bytes) as isize) });
                 result |= temp << (num_bytes * 8 - bit_offset) % (num_bytes * 8);
             }
             result = masked!(result, $num_bits);
