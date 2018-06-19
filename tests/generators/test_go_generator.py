@@ -42,7 +42,7 @@ def test_constants_are_declared_correctly():
         const u16 bar = 0x42;
         }
     """, GoGenerator, """
-    Bar uint16 = 0x42
+    Bar uint16 = 66
     Foo int8 = 17
     """)
 
