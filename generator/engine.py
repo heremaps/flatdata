@@ -13,6 +13,7 @@ from .generators.DotGenerator import DotGenerator
 from .generators.GoGenerator import GoGenerator
 from .generators.PythonGenerator import PythonGenerator
 from .generators.RustGenerator import RustGenerator
+from .generators.FlatdataGenerator import FlatdataGenerator
 
 
 class Engine(object):
@@ -30,6 +31,7 @@ class Engine(object):
         "go": GoGenerator,
         "py": PythonGenerator,
         "rust": RustGenerator,
+        "flatdata" : FlatdataGenerator
     }
 
     @classmethod

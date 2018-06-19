@@ -39,10 +39,10 @@ class MissingSymbol(FlatdataSyntaxError):
 
 
 class IncorrectReferenceType(FlatdataSyntaxError):
-    def __init__(self, actual, expected):
+    def __init__(self, name, actual, expected):
         super(IncorrectReferenceType, self).__init__(
-            "Referring to incorrect type. Expected {expected}, actual {actual}".format(
-                expected=expected, actual=actual))
+            "{name} referring to incorrect type. Expected {expected}, actual {actual}".format(
+                name=name, expected=expected, actual=actual))
 
 
 class UnexpectedResourceType(FlatdataSyntaxError):

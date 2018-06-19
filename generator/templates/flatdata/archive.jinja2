@@ -1,0 +1,22 @@
+{% import "flatdata/resource.jinja2" as resource %}
+
+{% macro declaration(archive) %}
+{% for b in archive.resources|bound_resources %}
+@bound_implicitly( {{ b.name }} : {% for r in b.children -%}
+{{ r.node.path_with(".") }}{{ ", " if not loop.last }}
+{%- endfor %}
+ )
+{% endfor %}
+archive {{ archive.name }}
+{
+    {% for r in archive.resources|supported_resources %}
+    {% for ref in r.explicit_references %}
+    @explicit_reference( {{ ref.structure.node.path_with(".") }}.{{ ref.field.node.name }}, {{ ref.destination.node.path_with(".")}} )
+    {% endfor %}
+    {% if r.optional %}
+    @optional
+    {% endif %}
+    {{ r.name }} : {{ resource.resource_type(r) }};
+    {% endfor %}
+}
+{% endmacro %}

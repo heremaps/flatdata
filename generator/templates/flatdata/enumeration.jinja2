@@ -1,0 +1,8 @@
+{% macro declaration(enum) %}
+enum {{ enum.name }} : {{ enum.type.name }}
+{
+    {% for value in enum.values %}
+    {{ value.name }} = {{ value.value }},
+    {% endfor %}
+}
+{% endmacro %}
