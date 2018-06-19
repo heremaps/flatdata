@@ -159,7 +159,7 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
 
         @explicit_reference( .ns.S0.f0, v0 )
         @explicit_reference( S0.f1, A1.v0 )
-        @explicit_reference( S0.f1, .ns.A1.v0 )
+        @explicit_reference( S0.f1, .ns.A1.v1 )
         mv : multivector< 14, S0 >;
         rd : raw_data;
         a : archive A0;
@@ -205,10 +205,10 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A1.mv.er_S0_f1_A1_v0.@@ns@A1@v0': ResourceReference,
         '.ns.A1.mv.er_S0_f1_A1_v0.@@ns@S0': StructureReference,
         '.ns.A1.mv.er_S0_f1_A1_v0.@@ns@S0@f1': FieldReference,
-        '.ns.A1.mv.er_S0_f1__ns_A1_v0': ExplicitReference,
-        '.ns.A1.mv.er_S0_f1__ns_A1_v0.@@ns@A1@v0': ResourceReference,
-        '.ns.A1.mv.er_S0_f1__ns_A1_v0.@@ns@S0': StructureReference,
-        '.ns.A1.mv.er_S0_f1__ns_A1_v0.@@ns@S0@f1': FieldReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1': ExplicitReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1.@@ns@A1@v1': ResourceReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er_S0_f1__ns_A1_v1.@@ns@S0@f1': FieldReference,
         '.ns.A1.rd': RawData,
         '.ns.A1.v0': Vector,
         '.ns.A1.v0.@@ns@S1': StructureReference,
