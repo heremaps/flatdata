@@ -4,7 +4,7 @@
 '''
 
 from pyparsing import Word, alphas, alphanums, nums, cppStyleComment, Keyword, Group, Optional, \
-    Or, OneOrMore, originalTextFor, delimitedList, ZeroOrMore, hexnums, Combine, \
+    Or, OneOrMore, originalTextFor, delimitedList, ZeroOrMore, hexnums, Combine, FollowedBy, \
     ParseException as pyparsingParseException
 
 ParseException = pyparsingParseException
@@ -45,7 +45,7 @@ enum = originalTextFor(
 field = Group(
     Optional(comment).setResultsName("doc") +
     identifier.setResultsName("name") + ':' +
-    identifier.setResultsName("type") +
+    qualified_identifier.setResultsName("type") +
     Optional(':' + bit_width.setResultsName("width")) +
     ';'
 )
@@ -89,9 +89,16 @@ resource_type = Group(
     archive_resource.setResultsName("archive")
 )
 
+def combine_list(t):
+    return "".join(t[0].asList())
+
+explicit_field_reference_prefix = Group(
+    OneOrMore((Optional( "." ) + identifier + ~FollowedBy(',')))
+)
+
 explicit_reference = Group(
     Keyword("@explicit_reference") + "(" +
-    identifier.setResultsName("source_type") + "." +
+    explicit_field_reference_prefix.setParseAction(combine_list).setResultsName("source_type") + "." +
     identifier.setResultsName("source_field") + "," + qualified_identifier.setResultsName(
         "destination") + ")"
 )
