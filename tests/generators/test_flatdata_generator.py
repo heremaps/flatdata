@@ -1,12 +1,12 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2018 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
 from generator.generators.FlatdataGenerator import FlatdataGenerator
 from generator.tree.builder import SyntaxTreeBuilder
 
-from nose.tools import *
+from nose.tools import assert_equal
 
 def generate_and_compare(definition, generator, expectation):
     tree = SyntaxTreeBuilder.build(definition=definition)
@@ -51,9 +51,9 @@ struct S0
 namespace ns {
 enum Enum1 : u16
 {
-    A = 1 ,
-    B = 13 ,
-    C = 14 
+    A = 1,
+    B = 13,
+    C = 14
 }
 }
 

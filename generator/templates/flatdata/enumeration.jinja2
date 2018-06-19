@@ -2,7 +2,7 @@
 enum {{ enum.name }} : {{ enum.type.name }}
 {
     {% for value in enum.values %}
-    {{ value.name }} = {{ value.value }} {{ "," if not loop.last }}
+    {{ value.name }} = {{ value.value }}{{ "," if not loop.last }}
     {% endfor %}
 }
 {% endmacro %}

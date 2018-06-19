@@ -1,11 +1,10 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2018 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.tree.nodes.resources import Vector, Multivector, Instance, RawData, BoundResource, \
-    ResourceBase, Archive as ArchiveResource
-from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
+from generator.tree.nodes.resources import BoundResource
+from generator.tree.nodes.trivial import Structure, Enumeration, Constant
 from generator.tree.nodes.archive import Archive
 from generator.tree.syntax_tree import SyntaxTree
 from .BaseGenerator import BaseGenerator
