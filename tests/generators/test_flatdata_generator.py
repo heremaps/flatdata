@@ -53,7 +53,7 @@ enum Enum1 : u16
 {
     A = 1,
     B = 13,
-    C = 14
+    C = 14,
 }
 }
 
@@ -67,6 +67,7 @@ struct XXX
 
 namespace ns {
 @bound_implicitly( foo : .ns.A1.v0, .ns.A1.v2, .ns.A0.v0 )
+@bound_implicitly( stuff : .ns.A1.v1, .ns.A1.mv )
 archive A1
 {
     i : .ns.S0;
@@ -120,6 +121,7 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
 
     // Even here
     @bound_implicitly(foo: .ns.A1.v0, v2, A0.v0)
+    @bound_implicitly( stuff : v1, mv )
     archive A1 {
         i : S0;
         // Another comment
