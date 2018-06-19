@@ -33,10 +33,10 @@ class RustGenerator(BaseGenerator):
 
         env.filters["camel_to_snake_case"] = _camel_to_snake_case
 
-        def _snake_to_camel_case(s):
+        def _snake_to_upper_camel_case(s):
             return ''.join(p.title() for p in  s.split('_'))
 
-        env.filters["snake_to_camel_case"] = _snake_to_camel_case
+        env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
         def _rust_doc(s):
             lines = [re.sub(r'^[ \t]*(/\*\*|\*/|\*)', "///", line) for line in s.split('\n')]
