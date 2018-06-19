@@ -22,7 +22,7 @@ pub mod n {
     /// There is some documentation about foo.
 pub const FOO: i8 = 17;
 // Comment
-pub const BAR: u16 = 0x42;
+pub const BAR: u16 = 66;
 }""")
 
 
@@ -36,7 +36,7 @@ def test_folded_namespaces_are_represented_correctly():
 pub mod n {
     pub mod nn {
     pub const FOO: i8 = 17;
-pub const BAR: u16 = 0x42;
+pub const BAR: u16 = 66;
 }
 }
 """)
