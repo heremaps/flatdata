@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "SchemaUtils.h"
+
 #include <iostream>
 
 namespace flatdata
@@ -140,9 +142,9 @@ ResourceStorage::read_and_check_schema( const char* resource_name, const char* e
         return MemoryDescriptor( );
     }
 
-    std::string stored_schema( reinterpret_cast< const char* >( schema.data( ) ),
-                               schema.size_in_bytes( ) );
-    if ( stored_schema != expected_schema )
+    if ( !internal::schema_equal( reinterpret_cast< const char* >( schema.data( ) ),
+                                  schema.size_in_bytes( ), expected_schema,
+                                  strlen( expected_schema ) ) )
     {
         return MemoryDescriptor( );
     }
