@@ -7,6 +7,7 @@ from generator.tree.nodes.resources import (Vector, Multivector, Instance, RawDa
     Archive as ArchiveResource)
 from generator.tree.nodes.trivial import Structure, Constant
 from generator.tree.nodes.archive import Archive
+from generator.tree.syntax_tree import SyntaxTree
 from .BaseGenerator import BaseGenerator
 
 import re
@@ -59,6 +60,16 @@ class RustGenerator(BaseGenerator):
             return s
 
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
+
+        def _relative_namespace_prefix(node):
+            """Return prefix of [super::]+ namespaces to relative to the node.
+
+            Used for refering from one node in a nested namespace to another node in a different
+            nested namespace both namespaces starting at the root namespace.
+            """
+            return "::".join("super" for _ in SyntaxTree.namespaces(node))
+
+        env.filters["relative_namespace_prefix"] = _relative_namespace_prefix
 
         env.filters['instance_resources'] = lambda ls: [
             x for x in ls if isinstance(x, Instance)]

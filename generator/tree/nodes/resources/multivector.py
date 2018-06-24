@@ -34,8 +34,11 @@ class Multivector(ResourceBase):
         return self._width
 
     @property
-    def index_type(self):
-        return self._index_type
+    def index_reference(self):
+        builtin_refs =  [
+            node for node in self.children if isinstance(node, BuiltinStructureReference)]
+        assert len(builtin_refs) == 1, "multivector has exactly one builtin ref which is its index"
+        return builtin_refs[0]
 
     @property
     def builtins(self):

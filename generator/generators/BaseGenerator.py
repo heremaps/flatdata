@@ -33,7 +33,7 @@ class BaseGenerator:
         env.filters['is_archive_resource'] = lambda n: isinstance(n, ArchiveResource)
         env.filters['is_structure'] = lambda n: isinstance(n, Structure)
         env.filters['is_index'] = lambda n: (isinstance(n, Structure) and
-            "._builtin.multivector" in SyntaxTree.namespace_path(n))
+            "_builtin.multivector" in SyntaxTree.namespace_path(n))
         env.filters['is_enumeration'] = lambda n: isinstance(n, Enumeration)
         env.filters['is_constant'] = lambda n: isinstance(n, Constant)
         env.filters['is_namespace'] = lambda n: isinstance(n, Namespace)

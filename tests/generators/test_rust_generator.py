@@ -128,20 +128,16 @@ def test_multi_vector_resource_is_declared_correctly():
         f0 : u8 : 3;
     }
     archive A {
-        multivector_resource : multivector< 33, T, U >;
+        multivector_resource_a : multivector< 33, T, U >;
+        multivector_resource_b : multivector< 33, T, U >;
     }
     }""", RustGenerator, """
-/// Builtin type to for MultiVector index
-define_index!(
-    IndexType33,
-    IndexType33Mut,
-    schema::structs::INDEX_TYPE33,
-    5,
-    33
-);
-
 /// Builtin union type of T, U.
-define_variadic_struct!(MultivectorResource, MultivectorResourceItemBuilder, IndexType33,
+define_variadic_struct!(MultivectorResourceA, MultivectorResourceAItemBuilder, super::_builtin::multivector::IndexType33,
+    0 => (T, add_t),
+    1 => (U, add_u));
+/// Builtin union type of T, U.
+define_variadic_struct!(MultivectorResourceB, MultivectorResourceBItemBuilder, super::_builtin::multivector::IndexType33,
     0 => (T, add_t),
     1 => (U, add_u));
 
@@ -152,26 +148,48 @@ define_archive!(A, ABuilder,
     // vector resources
 ;
     // multivector resources
-    (multivector_resource, start_multivector_resource,
-        MultivectorResource, schema::resources::a::MULTIVECTOR_RESOURCE,
-        multivector_resource_index, IndexType33);
+    (multivector_resource_a, start_multivector_resource_a,
+        MultivectorResourceA, schema::resources::a::MULTIVECTOR_RESOURCE_A,
+        multivector_resource_a_index, super::_builtin::multivector::IndexType33),
+    (multivector_resource_b, start_multivector_resource_b,
+        MultivectorResourceB, schema::resources::a::MULTIVECTOR_RESOURCE_B,
+        multivector_resource_b_index, super::_builtin::multivector::IndexType33);
     // raw data resources
 ;
     // subarchives
 ;
     // optional subarchives
-);""")
+);
+
+}
+pub mod _builtin {
+
+pub mod multivector {
+    ///  Builtin type to for MultiVector index
+define_index!(
+    IndexType33,
+    IndexType33Mut,
+    schema::structs::INDEX_TYPE33,
+    5,
+    33
+);
+
+}
+}""")
 
 
 def test_raw_data_resource_is_declared_correctly():
     generate_and_assert_in("""
     namespace n{
     archive A {
-        raw_data_resource : raw_data;
+        raw_data_resource_a : raw_data;
+        raw_data_resource_b : raw_data;
     }
     }""", RustGenerator, """
-(raw_data_resource, set_raw_data_resource,
-    schema::resources::a::RAW_DATA_RESOURCE);""")
+(raw_data_resource_a, set_raw_data_resource_a,
+    schema::resources::a::RAW_DATA_RESOURCE_A),
+(raw_data_resource_b, set_raw_data_resource_b,
+    schema::resources::a::RAW_DATA_RESOURCE_B);""")
 
 
 # TODO: Enable when optional resources are supported
