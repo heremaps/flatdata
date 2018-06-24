@@ -131,7 +131,7 @@ def test_multi_vector_resource_is_declared_correctly():
         multivector_resource : multivector< 33, T, U >;
     }
     }""", RustGenerator, """
-/// Builtin type to for MultiVector index */
+/// Builtin type to for MultiVector index
 define_index!(
     IndexType33,
     IndexType33Mut,

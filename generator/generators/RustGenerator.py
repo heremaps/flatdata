@@ -39,7 +39,10 @@ class RustGenerator(BaseGenerator):
         env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
         def _rust_doc(s):
-            lines = [re.sub(r'^[ \t]*(/\*\*|\*/|\*)', "///", line) for line in s.split('\n')]
+            lines = [
+                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)(.*?)(\*/)?$', r"/// \2", line).strip()
+                for line in s.split('\n')
+            ]
             start = 0
             end = len(lines)
             if lines[0] == "///":
