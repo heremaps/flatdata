@@ -5,7 +5,7 @@
 
 from generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
     Archive as ArchiveResource)
-from generator.tree.nodes.trivial import Structure, Constant
+from generator.tree.nodes.trivial import Structure, Constant, Enumeration
 from generator.tree.nodes.archive import Archive
 from generator.tree.syntax_tree import SyntaxTree
 from .BaseGenerator import BaseGenerator
@@ -25,7 +25,7 @@ class RustGenerator(BaseGenerator):
         BaseGenerator.__init__(self, "rust/rust.jinja2")
 
     def _supported_nodes(self):
-        return [Structure, Archive, Constant]
+        return [Structure, Archive, Constant, Enumeration]
 
     def _populate_environment(self, env):
         def _camel_to_snake_case(s):
@@ -41,16 +41,16 @@ class RustGenerator(BaseGenerator):
 
         def _rust_doc(s):
             lines = [
-                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)(.*?)(\*/)?$', r"\2", line).strip()
+                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)\s*(.*?)\s*(\*/)?$', r"/// \2", line).strip()
                 for line in s.split('\n')
             ]
             start = 0
             end = len(lines)
-            if lines[0] == "":
+            if lines[0] == "///":
                 start = 1
-            if lines[-1] == "":
+            if lines[-1] == "///":
                 end = -1;
-            return "\n".join(("/// {}".format(l) for l in lines[start:end]))
+            return "\n".join(lines[start:end])
 
         env.filters["rust_doc"] = _rust_doc
 

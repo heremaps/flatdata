@@ -18,29 +18,13 @@ def test_constants_are_declared_correctly():
         const u16 bar = 0x42;
         }
     """, RustGenerator, """
-pub mod n {
-    /// There is some documentation about foo.
+/// There is some documentation about foo.
 pub const FOO: i8 = 17;
+""",
+"""
 // Comment
 pub const BAR: u16 = 66;
-}""")
-
-
-def test_folded_namespaces_are_represented_correctly():
-    generate_and_assert_in("""
-        namespace n.nn{
-        const i8 foo = 17;
-        const u16 bar = 0x42;
-        }
-    """, RustGenerator, """
-pub mod n {
-    pub mod nn {
-    pub const FOO: i8 = 17;
-pub const BAR: u16 = 66;
-}
-}
 """)
-
 
 def test_structures_are_declared_correctly():
     generate_and_assert_in("""
@@ -130,51 +114,37 @@ def test_multi_vector_resource_is_declared_correctly():
         @optional
         opt_multivector_resource : multivector< 33, T, U >;
     }
-    }""", RustGenerator, """
-/// Builtin union type of T, U.
-define_variadic_struct!(MultivectorResource, MultivectorResourceItemBuilder,
-    super::_builtin::multivector::IndexType33,
-    0 => (T, add_t),
-    1 => (U, add_u));
-/// Builtin union type of T, U.
-define_variadic_struct!(OptMultivectorResource, OptMultivectorResourceItemBuilder,
-    super::_builtin::multivector::IndexType33,
-    0 => (T, add_t),
-    1 => (U, add_u));
-
-define_archive!(A, ABuilder,
-    schema::structs::A;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-    (multivector_resource, start_multivector_resource,
-        MultivectorResource, schema::resources::a::MULTIVECTOR_RESOURCE,
-        multivector_resource_index, super::_builtin::multivector::IndexType33, false),
-    (opt_multivector_resource, start_opt_multivector_resource,
-        OptMultivectorResource, schema::resources::a::OPT_MULTIVECTOR_RESOURCE,
-        opt_multivector_resource_index, super::_builtin::multivector::IndexType33, true);
-    // raw data resources
-;
-    // subarchives
-);
-
-}
-pub mod _builtin {
-
-pub mod multivector {
-    ///  Builtin type to for MultiVector index
+    }""", RustGenerator,
+"""
+/// Builtin type to for MultiVector index
 define_index!(
     IndexType33,
     IndexType33Mut,
     schema::structs::INDEX_TYPE33,
     5,
     33
-);
-
-}
-}""", debug=True)
+);""",
+"""
+/// Builtin union type of T, U.
+define_variadic_struct!(MultivectorResource, MultivectorResourceItemBuilder,
+    IndexType33,
+    0 => (T, add_t),
+    1 => (U, add_u));
+/// Builtin union type of T, U.
+define_variadic_struct!(OptMultivectorResource, OptMultivectorResourceItemBuilder,
+    IndexType33,
+    0 => (T, add_t),
+    1 => (U, add_u));
+""",
+"""
+    (multivector_resource, start_multivector_resource,
+        MultivectorResource, schema::resources::a::MULTIVECTOR_RESOURCE,
+        multivector_resource_index, IndexType33, false),""",
+"""
+    (opt_multivector_resource, start_opt_multivector_resource,
+        OptMultivectorResource, schema::resources::a::OPT_MULTIVECTOR_RESOURCE,
+        opt_multivector_resource_index, IndexType33, true);
+""")
 
 
 def test_raw_data_resource_is_declared_correctly():
@@ -191,15 +161,18 @@ def test_raw_data_resource_is_declared_correctly():
 (raw_data_resource_b, set_raw_data_resource_b,
     schema::resources::a::RAW_DATA_RESOURCE_B, true);""")
 
-# TODO: Enable when optional resources are supported
-def _test_optional_resource_is_declared_correctly():
+def test_optional_resource_is_declared_correctly():
     generate_and_assert_in("""
     namespace n{
     archive A {
         @optional
         raw_data_resource : raw_data;
     }
-    }""", RustGenerator, "NOT_YET_SUPPORTED")
+    }""", RustGenerator,
+"""
+(raw_data_resource, set_raw_data_resource,
+        schema::resources::a::RAW_DATA_RESOURCE, true);
+""")
 
 
 def test_unsigned_enum_is_declared_correctly():
@@ -213,7 +186,7 @@ def test_unsigned_enum_is_declared_correctly():
         B = 0x42
     }
     }""", RustGenerator, """
-///  enum doc
+/// enum doc
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum Variant {
@@ -238,7 +211,7 @@ def test_signed_enum_is_declared_correctly():
         B = 0x42
     }
     }""", RustGenerator, """
-///  enum doc
+/// enum doc
 #[derive(Debug, PartialEq, Eq)]
 #[repr(i64)]
 pub enum Variant {
