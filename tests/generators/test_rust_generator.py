@@ -201,3 +201,54 @@ def _test_optional_resource_is_declared_correctly():
         raw_data_resource : raw_data;
     }
     }""", RustGenerator, "NOT_YET_SUPPORTED")
+
+
+def test_unsigned_enum_is_declared_correctly():
+    generate_and_assert_in("""
+    namespace n{
+    /* enum doc */
+    enum Variant : u32 {
+        // A doc
+        A = 42,
+        // B doc
+        B = 0x42
+    }
+    }""", RustGenerator, """
+///  enum doc
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u32)]
+pub enum Variant {
+    // A doc
+    A = 42,
+    // B doc
+    B = 66,
+}
+
+impl Int for Variant {
+    const IS_SIGNED: bool = false;
+}""")
+
+def test_signed_enum_is_declared_correctly():
+    generate_and_assert_in("""
+    namespace n{
+    /* enum doc */
+    enum Variant : i64 {
+        // A doc
+        A = 42,
+        // B doc
+        B = 0x42
+    }
+    }""", RustGenerator, """
+///  enum doc
+#[derive(Debug, PartialEq, Eq)]
+#[repr(i64)]
+pub enum Variant {
+    // A doc
+    A = 42,
+    // B doc
+    B = 66,
+}
+
+impl Int for Variant {
+    const IS_SIGNED: bool = true;
+}""")
