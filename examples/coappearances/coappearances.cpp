@@ -196,6 +196,11 @@ convert( const char* json_path, const char* archive_path )
 
     // create new flatdata archive
     auto storage = flatdata::FileResourceStorage::create( archive_path );
+    if ( !storage )
+    {
+        throw std::runtime_error( std::string( "Could not initialize storage at: " )
+                                  + archive_path );
+    }
     auto builder = co::GraphBuilder::open( std::move( storage ) );
 
     // container holding a list of zero-terminated strings

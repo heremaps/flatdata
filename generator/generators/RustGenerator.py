@@ -41,16 +41,16 @@ class RustGenerator(BaseGenerator):
 
         def _rust_doc(s):
             lines = [
-                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)(.*?)(\*/)?$', r"/// \2", line).strip()
+                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)(.*?)(\*/)?$', r"\2", line).strip()
                 for line in s.split('\n')
             ]
             start = 0
             end = len(lines)
-            if lines[0] == "///":
+            if lines[0] == "":
                 start = 1
-            if lines[-1] == "///":
+            if lines[-1] == "":
                 end = -1;
-            return "\n".join(lines[start:end])
+            return "\n".join(("/// {}".format(l) for l in lines[start:end]))
 
         env.filters["rust_doc"] = _rust_doc
 
@@ -61,16 +61,6 @@ class RustGenerator(BaseGenerator):
 
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
 
-        def _relative_namespace_prefix(node):
-            """Return prefix of [super::]+ namespaces to relative to the node.
-
-            Used for refering from one node in a nested namespace to another node in a different
-            nested namespace both namespaces starting at the root namespace.
-            """
-            return "::".join("super" for _ in SyntaxTree.namespaces(node))
-
-        env.filters["relative_namespace_prefix"] = _relative_namespace_prefix
-
         env.filters['instance_resources'] = lambda ls: [
             x for x in ls if isinstance(x, Instance)]
         env.filters['vector_resources'] = lambda ls: [
@@ -80,7 +70,7 @@ class RustGenerator(BaseGenerator):
         env.filters['rawdata_resources'] = lambda ls: [
             x for x in ls if isinstance(x, RawData)]
         env.filters['subarchive_resources'] = lambda ls: [
-            x for x in ls if isinstance(x, ArchiveResource) and not x.optional]
+            x for x in ls if isinstance(x, ArchiveResource)]
 
         env.filters["supported_resources"] = lambda l: [
             x for x in l if not isinstance(x, BoundResource)]

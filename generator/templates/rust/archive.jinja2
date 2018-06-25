@@ -6,7 +6,7 @@
 {% for r in archive.resources | multivector_resources %}
 /// Builtin union type of {{ r.types | join(', ') }}.
 define_variadic_struct!({{ r.name | snake_to_upper_camel_case }}, {{ r.name | snake_to_upper_camel_case }}ItemBuilder,
-    {{ index.relative_path( r ) }},
+    {{ r.index_reference.node.name }},
 {% for type in r.types %}
     {{ loop.index0 }} => ({{ type }}, add_{{ type | camel_to_snake_case }})
     {%- if not loop.last %},
@@ -37,7 +37,7 @@ define_archive!({{archive.name}}, {{archive.name}}Builder,
     {% for r in archive.resources | multivector_resources %}
     ({{ r.name }}, start_{{ r.name }},
         {{ r.name | snake_to_upper_camel_case }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }},
-        {{ r.name }}_index, {{ index.relative_path( r ) }}, {{ r.optional | lower }})
+        {{ r.name }}_index, {{ r.index_reference.node.name }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
@@ -51,7 +51,7 @@ define_archive!({{archive.name}}, {{archive.name}}Builder,
     // subarchives
     {% for r in archive.resources | subarchive_resources %}
     ({{ r.name }},
-        {{ r.name }}, {{ r.name }}Builder,
+        {{ r.name | snake_to_upper_camel_case }}, {{ r.name | snake_to_upper_camel_case }}Builder,
         schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}

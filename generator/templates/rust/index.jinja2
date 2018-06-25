@@ -9,8 +9,3 @@ define_index!(
     {{ index.fields[0].type.width }}
 );
 {% endmacro %}
-
-{% macro relative_path(multivector) %}
-{{ multivector | relative_namespace_prefix }}::{{ multivector.index_reference.node | namespaces | join("::", attribute="name") }}::{{ multivector.index_reference.node.name }}
-{%- endmacro %}
-
