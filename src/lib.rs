@@ -44,6 +44,7 @@
 //! [`MultiArrayView`]: struct.MultiArrayView.html
 
 #![deny(missing_docs, missing_debug_implementations, warnings)]
+// #![allow(intra_doc_link_resolution_failure)]
 
 extern crate diff;
 extern crate memmap;

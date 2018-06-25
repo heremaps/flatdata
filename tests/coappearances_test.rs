@@ -285,27 +285,27 @@ fn read_write_coappearances() {
 }
 
 #[test]
-fn read_non_existent_calculated_data_subarchive() {
+fn read_non_existent_statistics_subarchive() {
     let (archive_path, _) = copy_coappearances_archive(
         "tests/coappearances/karenina.archive",
-        "read_non_existent_calculated_data_subarchive/karenina.archive",
+        "read_non_existent_statistics_subarchive/karenina.archive",
     );
 
     let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
         archive_path,
     )));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
-    assert!(g.calculated_data().is_none());
+    assert!(g.statistics().is_none());
 }
 
 #[test]
-fn read_write_calculated_data_subarchive() {
+fn read_write_statistics_subarchive() {
     let (archive_path, mut gb) = copy_coappearances_archive(
         "tests/coappearances/karenina.archive",
-        "read_write_calculated_data_subarchive/karenina.archive",
+        "read_write_statistics_subarchive/karenina.archive",
     );
 
-    let mut builder = gb.calculated_data().expect("calculated_data failed");
+    let mut builder = gb.statistics().expect("statistics failed");
     let mut inv = flatdata::StructBuf::<coappearances::Invariants>::new();
     inv.set_max_degree(71);
     inv.set_max_degree_ref(46);
@@ -339,24 +339,18 @@ fn read_write_calculated_data_subarchive() {
     )));
     let copy = coappearances::Graph::open(storage).expect("invalid archive");
 
-    let orig_calc_data = orig
-        .calculated_data()
-        .as_ref()
-        .expect("orig calculated_data failed");
-    let copy_calc_data = copy
-        .calculated_data()
-        .as_ref()
-        .expect("copy calculated_data failed");
+    let orig_stats = orig.statistics().as_ref().expect("orig statistics failed");
+    let copy_stats = copy.statistics().as_ref().expect("copy statistics failed");
 
-    assert_eq!(orig_calc_data.invariants(), copy_calc_data.invariants());
+    assert_eq!(orig_stats.invariants(), copy_stats.invariants());
     assert_eq!(
-        orig_calc_data.vertex_degrees().len(),
-        copy_calc_data.vertex_degrees().len()
+        orig_stats.vertex_degrees().len(),
+        copy_stats.vertex_degrees().len()
     );
-    for i in 0..orig_calc_data.vertex_degrees().len() {
+    for i in 0..orig_stats.vertex_degrees().len() {
         assert_eq!(
-            orig_calc_data.vertex_degrees().at(i),
-            copy_calc_data.vertex_degrees().at(i)
+            orig_stats.vertex_degrees().at(i),
+            copy_stats.vertex_degrees().at(i)
         );
     }
 }
@@ -364,12 +358,12 @@ fn read_write_calculated_data_subarchive() {
 #[test]
 fn read_and_validate_calculate_data_subarchive() {
     let storage = Rc::new(RefCell::new(flatdata::FileResourceStorage::new(
-        path::PathBuf::from("tests/coappearances/karenina.archive/calculated_data"),
+        path::PathBuf::from("tests/coappearances/karenina.archive/statistics"),
     )));
-    let calc_data = coappearances::CalculatedData::open(storage).expect("invalid archive");
-    println!("{:?}", calc_data);
+    let stats = coappearances::Statistics::open(storage).expect("invalid archive");
+    println!("{:?}", stats);
 
-    let inv = calc_data.invariants();
+    let inv = stats.invariants();
     assert_eq!(inv.max_degree(), 71);
     assert_eq!(inv.max_degree_ref(), 46);
     assert_eq!(inv.min_degree(), 1);
@@ -383,7 +377,7 @@ fn read_and_validate_calculate_data_subarchive() {
         6, 10, 7, 6, 3, 1, 27, 18, 8, 3, 3, 2, 4, 2, 1, 10, 3, 4, 2, 9, 3, 6, 4, 1, 6, 50, 1, 15,
         2, 14, 1, 7, 1, 12, 15, 3, 3, 2, 1, 6, 15, 4, 7, 47, 6, 14, 3, 2, 1, 7, 10, 13,
     ];
-    for (index, deg) in calc_data.vertex_degrees().iter().enumerate() {
+    for (index, deg) in stats.vertex_degrees().iter().enumerate() {
         assert_eq!(deg.value(), expected_degrees[index]);
     }
 }

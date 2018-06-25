@@ -306,7 +306,7 @@ macro_rules! define_index {
 /// and `MultiArrayView`.
 #[macro_export]
 macro_rules! define_variadic_struct {
-    ($name:ident, $item_builder_name:ident, $index_type:tt,
+    ($name:ident, $item_builder_name:ident, $index_type:path,
         $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
     {
         #[derive(Clone, PartialEq)]

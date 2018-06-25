@@ -1,2 +1,2 @@
-namespace coappearances { // All strings contained in the data separated by `\0`.
+namespace coappearances { // All strings contained in the data separated by '\0'.
     strings: raw_data; }

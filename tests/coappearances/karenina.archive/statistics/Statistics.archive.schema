@@ -8,7 +8,10 @@ namespace coappearances { struct Invariants {
 namespace coappearances { struct Degree {
     value : u32 : 16;
 } }
-namespace coappearances { archive CalculatedData {
+namespace coappearances { @bound_implicitly( characters: Graph.vertices, vertex_degrees )
+archive Statistics {
     invariants : Invariants;
+
+    // indexed by `vertices`
     vertex_degrees : vector< Degree >;
 } }
