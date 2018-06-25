@@ -75,7 +75,7 @@ define_archive!(A, ABuilder,
     schema::structs::A;
     // struct resources
     (r0, set_r0,
-        S, schema::resources::a::R0);
+        S, schema::resources::a::R0, false);
     // vector resources
 ;
     // multivector resources
@@ -83,8 +83,6 @@ define_archive!(A, ABuilder,
     // raw data resources
 ;
     // subarchives
-;
-    // optional subarchives
 );
 """)
 
@@ -101,7 +99,7 @@ def test_object_resource_is_represented_correctly():
     }
 """, RustGenerator, """
 (object_resource, set_object_resource,
-    S, schema::resources::a::OBJECT_RESOURCE);""")
+    S, schema::resources::a::OBJECT_RESOURCE, false);""")
 
 
 def test_vector_resource_is_declared_correctly():
@@ -115,7 +113,7 @@ def test_vector_resource_is_declared_correctly():
     }
     }""", RustGenerator, """
 (vector_resource, set_vector_resource, start_vector_resource,
-        T, schema::resources::a::VECTOR_RESOURCE);""")
+        T, schema::resources::a::VECTOR_RESOURCE, false);""")
 
 
 def test_multi_vector_resource_is_declared_correctly():
@@ -128,16 +126,19 @@ def test_multi_vector_resource_is_declared_correctly():
         f0 : u8 : 3;
     }
     archive A {
-        multivector_resource_a : multivector< 33, T, U >;
-        multivector_resource_b : multivector< 33, T, U >;
+        multivector_resource : multivector< 33, T, U >;
+        @optional
+        opt_multivector_resource : multivector< 33, T, U >;
     }
     }""", RustGenerator, """
 /// Builtin union type of T, U.
-define_variadic_struct!(MultivectorResourceA, MultivectorResourceAItemBuilder, super::_builtin::multivector::IndexType33,
+define_variadic_struct!(MultivectorResource, MultivectorResourceItemBuilder,
+    super::_builtin::multivector::IndexType33,
     0 => (T, add_t),
     1 => (U, add_u));
 /// Builtin union type of T, U.
-define_variadic_struct!(MultivectorResourceB, MultivectorResourceBItemBuilder, super::_builtin::multivector::IndexType33,
+define_variadic_struct!(OptMultivectorResource, OptMultivectorResourceItemBuilder,
+    super::_builtin::multivector::IndexType33,
     0 => (T, add_t),
     1 => (U, add_u));
 
@@ -148,17 +149,15 @@ define_archive!(A, ABuilder,
     // vector resources
 ;
     // multivector resources
-    (multivector_resource_a, start_multivector_resource_a,
-        MultivectorResourceA, schema::resources::a::MULTIVECTOR_RESOURCE_A,
-        multivector_resource_a_index, super::_builtin::multivector::IndexType33),
-    (multivector_resource_b, start_multivector_resource_b,
-        MultivectorResourceB, schema::resources::a::MULTIVECTOR_RESOURCE_B,
-        multivector_resource_b_index, super::_builtin::multivector::IndexType33);
+    (multivector_resource, start_multivector_resource,
+        MultivectorResource, schema::resources::a::MULTIVECTOR_RESOURCE,
+        multivector_resource_index, super::_builtin::multivector::IndexType33, false),
+    (opt_multivector_resource, start_opt_multivector_resource,
+        OptMultivectorResource, schema::resources::a::OPT_MULTIVECTOR_RESOURCE,
+        opt_multivector_resource_index, super::_builtin::multivector::IndexType33, true);
     // raw data resources
 ;
     // subarchives
-;
-    // optional subarchives
 );
 
 }
@@ -175,7 +174,7 @@ define_index!(
 );
 
 }
-}""")
+}""", debug=True)
 
 
 def test_raw_data_resource_is_declared_correctly():
@@ -183,14 +182,14 @@ def test_raw_data_resource_is_declared_correctly():
     namespace n{
     archive A {
         raw_data_resource_a : raw_data;
+        @optional
         raw_data_resource_b : raw_data;
     }
     }""", RustGenerator, """
 (raw_data_resource_a, set_raw_data_resource_a,
-    schema::resources::a::RAW_DATA_RESOURCE_A),
+    schema::resources::a::RAW_DATA_RESOURCE_A, false),
 (raw_data_resource_b, set_raw_data_resource_b,
-    schema::resources::a::RAW_DATA_RESOURCE_B);""")
-
+    schema::resources::a::RAW_DATA_RESOURCE_B, true);""")
 
 # TODO: Enable when optional resources are supported
 def _test_optional_resource_is_declared_correctly():

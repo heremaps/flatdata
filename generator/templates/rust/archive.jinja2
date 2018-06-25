@@ -22,14 +22,14 @@ define_archive!({{archive.name}}, {{archive.name}}Builder,
     // struct resources
     {% for r in archive.resources | instance_resources %}
     ({{ r.name }}, set_{{ r.name }},
-        {{r.type}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {{r.type}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
     // vector resources
     {% for r in archive.resources | vector_resources %}
     ({{ r.name }}, set_{{ r.name }}, start_{{ r.name }},
-        {{ r.referenced_structures[0].node.name }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        {{ r.referenced_structures[0].node.name }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
@@ -37,14 +37,14 @@ define_archive!({{archive.name}}, {{archive.name}}Builder,
     {% for r in archive.resources | multivector_resources %}
     ({{ r.name }}, start_{{ r.name }},
         {{ r.name | snake_to_upper_camel_case }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }},
-        {{ r.name }}_index, {{ index.relative_path( r ) }})
+        {{ r.name }}_index, {{ index.relative_path( r ) }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
     // raw data resources
     {% for r in archive.resources | rawdata_resources %}
     ({{ r.name }}, set_{{ r.name }},
-        schema::resources::{{ archive_ns }}::{{ r.name | upper }})
+        schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
@@ -52,15 +52,7 @@ define_archive!({{archive.name}}, {{archive.name}}Builder,
     {% for r in archive.resources | subarchive_resources %}
     ({{ r.name }},
         {{ r.name }}, {{ r.name }}Builder,
-        schema::resources::{{ archive_ns }}::{{ r.name | upper }})
-        {%- if not loop.last %},
-        {% endif %}
-    {% endfor %};
-    // optional subarchives
-    {% for r in archive.resources | optional_subarchive_resources %}
-    ({{ r.name }},
-        {{ r.target.node.name }}, {{ r.target.node.name }}Builder,
-        schema::resources::{{ archive_ns }}::{{ r.target.node.name | camel_to_snake_case | upper }})
+        schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %}

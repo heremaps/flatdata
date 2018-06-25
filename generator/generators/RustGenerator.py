@@ -81,8 +81,6 @@ class RustGenerator(BaseGenerator):
             x for x in ls if isinstance(x, RawData)]
         env.filters['subarchive_resources'] = lambda ls: [
             x for x in ls if isinstance(x, ArchiveResource) and not x.optional]
-        env.filters['optional_subarchive_resources'] = lambda ls: [
-            x for x in ls if isinstance(x, ArchiveResource) and x.optional]
 
         env.filters["supported_resources"] = lambda l: [
             x for x in l if not isinstance(x, BoundResource)]
