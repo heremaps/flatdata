@@ -12,7 +12,6 @@ class Multivector(ResourceBase):
         if types is not None:
             self._types = types
         self._width = width
-        self._index_type = None
 
     @staticmethod
     def create(properties, own_schema):
@@ -42,8 +41,7 @@ class Multivector(ResourceBase):
 
     @property
     def builtins(self):
-        StructProperties = namedtuple(
-            "Properties", ["name", "schema", "doc", "fields"])
+        StructProperties = namedtuple("Properties", ["name", "schema", "doc", "fields"])
         FieldProperties = namedtuple("Properties", ["name", "width", "type"])
         properties = StructProperties(
             name="IndexType{width}".format(width=self._width),
@@ -52,5 +50,4 @@ class Multivector(ResourceBase):
             fields=[FieldProperties(name="value", width=self._width, type="u64")])
         index_type = Structure.create(properties=properties, own_schema=properties.schema,
                                       definition="")
-        self._index_type = index_type
         return [index_type]
