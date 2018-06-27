@@ -3,7 +3,7 @@ from .field import Field
 
 
 class Structure(Node):
-    def __init__(self, name, properties=None, own_schema=None, size_in_bits=None):
+    def __init__(self, name, properties=None, own_schema=None):
         """
         Use to instantiate empty structure.
         No special properties are evaluated.
@@ -13,7 +13,6 @@ class Structure(Node):
         """
         super(Structure, self).__init__(name=name, properties=properties)
         self._own_schema = own_schema
-        self._size_in_bits = size_in_bits
 
     @staticmethod
     def create(properties, own_schema, definition):

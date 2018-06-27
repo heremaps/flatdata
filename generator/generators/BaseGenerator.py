@@ -39,6 +39,8 @@ class BaseGenerator:
         env.filters['is_bound_resource'] = lambda n: isinstance(n, BoundResource)
         env.filters['is_vector'] = lambda n: isinstance(n, Vector)
         env.filters['is_multivector'] = lambda n: isinstance(n, Multivector)
+        env.filters['is_multivector_index'] = lambda n: (isinstance(n, Structure) and
+            "_builtin.multivector" in SyntaxTree.namespace_path(n))
         env.filters['namespaces'] = SyntaxTree.namespaces
         self._populate_environment(env)
         template = env.get_template(self._template)

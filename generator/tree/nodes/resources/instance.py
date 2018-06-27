@@ -16,3 +16,8 @@ class Instance(ResourceBase):
 
     def _create_references(self):
         return [StructureReference(name=self._type)]
+
+    @property
+    def type(self):
+        return self._type
+

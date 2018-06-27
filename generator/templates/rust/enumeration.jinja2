@@ -1,0 +1,21 @@
+{% macro declaration(enum) %}
+
+{% if enum.doc %}
+{{ enum.doc | rust_doc }}
+{% endif %}
+#[derive(Debug, PartialEq, Eq)]
+#[repr({{ enum.type.name }})]
+pub enum {{ enum.name }} {
+    {% for value in enum.values %}
+    {% if value.doc %}
+    {{ value.doc | rust_doc }}
+    {% endif %}
+    {{ value.name }} = {{ value.value }},
+    {% endfor %}
+}
+
+impl Int for {{ enum.name }} {
+    const IS_SIGNED: bool = {{ enum.type.is_signed | lower }};
+}
+
+{%- endmacro %}

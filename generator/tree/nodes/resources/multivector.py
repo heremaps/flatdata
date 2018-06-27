@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from .base import ResourceBase
-from generator.tree.nodes.references import StructureReference
+from generator.tree.nodes.references import StructureReference, BuiltinStructureReference
 from generator.tree.nodes.trivial import Structure
 
 
@@ -25,8 +25,19 @@ class Multivector(ResourceBase):
         return [StructureReference(name=t) for t in self._types]
 
     @property
+    def types(self):
+        return self._types
+
+    @property
     def width(self):
         return self._width
+
+    @property
+    def index_reference(self):
+        builtin_refs =  [
+            node for node in self.children if isinstance(node, BuiltinStructureReference)]
+        assert len(builtin_refs) == 1, "multivector has exactly one builtin ref which is its index"
+        return builtin_refs[0]
 
     @property
     def builtins(self):
