@@ -176,7 +176,14 @@ template < typename ArchiveType >
 void
 Archive::load_archive( bool& is_open, ArchiveType& archive, const char* name )
 {
-    auto result = ArchiveType::open( storage( ).directory( name ) );
+    auto archive_storage = storage( ).directory( name );
+    if ( !archive_storage )
+    {
+        is_open = false;
+        return;
+    }
+
+    auto result = ArchiveType::open( std::move( archive_storage ) );
     if ( !result )
     {
         is_open = false;
@@ -187,9 +194,16 @@ Archive::load_archive( bool& is_open, ArchiveType& archive, const char* name )
 
 template < typename ArchiveType >
 void
-Archive::load_archive( bool& /*is_open*/, boost::optional< ArchiveType >& archive, const char* name )
+Archive::load_archive( bool& /*is_open*/,
+                       boost::optional< ArchiveType >& archive,
+                       const char* name )
 {
-    auto result = ArchiveType::open( storage( ).directory( name ) );
+    auto archive_storage = storage( ).directory( name );
+    if ( !archive_storage )
+    {
+        return;
+    }
+    auto result = ArchiveType::open( std::move( archive_storage ) );
     if ( result )
     {
         archive = result;
