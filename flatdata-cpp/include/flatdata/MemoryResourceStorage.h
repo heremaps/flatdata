@@ -10,6 +10,7 @@
 #include <bitset>
 #include <iomanip>
 #include <map>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 
@@ -21,11 +22,13 @@ class MemoryResourceStorage : public ResourceStorage
     {
         std::map< std::string, std::shared_ptr< std::stringstream > > streams;
         std::map< std::string, std::shared_ptr< std::string > > resources;
+        std::set< std::string > created_directories;
     };
 
 public:
     static std::unique_ptr< MemoryResourceStorage > create( );
     bool exists( const char* key ) override;
+    std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
 
     std::string hexdump( bool dump_schemas = false ) const;
@@ -118,10 +121,24 @@ MemoryResourceStorage::assign_value( const char* key, const char* value )
 }
 
 inline std::unique_ptr< ResourceStorage >
+MemoryResourceStorage::create_directory( const char* key )
+{
+    const auto new_path = get_path( key ) + "/";
+    m_storage->created_directories.insert( new_path );
+    return std::unique_ptr< MemoryResourceStorage >(
+        new MemoryResourceStorage( m_storage, new_path ) );
+}
+
+inline std::unique_ptr< ResourceStorage >
 MemoryResourceStorage::directory( const char* key )
 {
+    const auto new_path = get_path( key ) + "/";
+    if ( m_storage->created_directories.find( new_path ) == m_storage->created_directories.end( ) )
+    {
+        return nullptr;
+    }
     return std::unique_ptr< MemoryResourceStorage >(
-        new MemoryResourceStorage( m_storage, get_path( key ) + "/" ) );
+        new MemoryResourceStorage( m_storage, new_path ) );
 }
 
 namespace helpers
@@ -201,8 +218,7 @@ template < typename ResourceSerializer >
 std::string
 MemoryResourceStorage::dump_resources( bool dump_schemas, ResourceSerializer&& f ) const
 {
-    auto is_schema = []( const std::string& key )
-    {
+    auto is_schema = []( const std::string& key ) {
         return key.size( ) > 7 && key.substr( key.size( ) - 7 ) == ".schema";
     };
 
@@ -228,26 +244,21 @@ MemoryResourceStorage::dump_resources( bool dump_schemas, ResourceSerializer&& f
 inline std::string
 MemoryResourceStorage::bindump( bool dump_schemas ) const
 {
-    auto dump_binary = []( const std::string& key, const std::string& contents, std::ostream& out )
-    {
-        helpers::dump_resource( key, contents, 4,
-                                []( std::ostream& out, uint8_t ch )
-                                {
-                                    out << std::bitset< 8 >( ch );
-                                },
-                                8, out );
-    };
+    auto dump_binary
+        = []( const std::string& key, const std::string& contents, std::ostream& out ) {
+              helpers::dump_resource(
+                  key, contents, 4,
+                  []( std::ostream& out, uint8_t ch ) { out << std::bitset< 8 >( ch ); }, 8, out );
+          };
     return dump_resources( dump_schemas, dump_binary );
 }
 
 inline std::string
 MemoryResourceStorage::hexdump( bool dump_schemas ) const
 {
-    auto dump_hex = []( const std::string& key, const std::string& contents, std::ostream& out )
-    {
+    auto dump_hex = []( const std::string& key, const std::string& contents, std::ostream& out ) {
         helpers::dump_resource( key, contents, 16,
-                                []( std::ostream& out, uint8_t ch )
-                                {
+                                []( std::ostream& out, uint8_t ch ) {
                                     out << std::setw( 2 ) << std::setfill( '0' ) << std::hex
                                         << static_cast< uint32_t >( ch );
                                 },

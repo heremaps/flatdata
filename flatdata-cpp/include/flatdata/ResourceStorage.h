@@ -81,6 +81,12 @@ public:
 
 public:
     /**
+     * @brief Create a directory by given key. Succeeds if directory already exists.
+     * @return ResourceStorage corresponding to the directory or nullptr on error
+     */
+    virtual std::unique_ptr< ResourceStorage > create_directory( const char* key ) = 0;
+
+    /**
      * @brief Get a directory by given key
      * @return ResourceStorage corresponding to the directory or nullptr on error
      */

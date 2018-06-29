@@ -233,7 +233,7 @@ inline auto
 {
     if ( !m_{{ r.name }}.is_open( ) )
     {
-        m_{{ r.name }} = {{ r|typedef_name }}::open( this->storage( ).directory("{{ r.name }}" ) );
+        m_{{ r.name }} = {{ r|typedef_name }}::open( this->storage( ).create_directory( "{{ r.name }}" ) );
     }
     return m_{{ r.name }};
 }

@@ -18,12 +18,27 @@ class FileResourceStorage : public ResourceStorage
 {
 public:
     /**
-     * @brief Open archive at a given path.
-     * @return FileArchive or nullptr on error
+     * @brief Create resource storage at a given path
+     * @return FileResourceStorage or nullptr on error
      */
     static std::unique_ptr< FileResourceStorage > create( const char* path );
 
+    /**
+     * @brief Open resource storage at a given path
+     * @return FileResourceStorage or nullptr on error
+     */
+    static std::unique_ptr< FileResourceStorage > open( const char* path );
+
+    /**
+     * @brief Creates a directory at a given key and returns it as a resource storage
+     */
+    std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
+
+    /**
+     * @brief Opens a directory at a given key and returns it as a resource storage
+     */
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
+
     bool exists( const char* key ) override;
 
 protected:
@@ -31,6 +46,8 @@ protected:
     MemoryDescriptor read_resource( const char* key ) override;
 
 private:
+    static std::unique_ptr< FileResourceStorage > create( const char* path,
+                                                          bool create_on_missing );
     explicit FileResourceStorage( const std::string& path );
     std::string get_path( const char* key ) const;
 
@@ -44,6 +61,18 @@ private:
 inline std::unique_ptr< FileResourceStorage >
 FileResourceStorage::create( const char* path )
 {
+    return FileResourceStorage::create( path, /*create_on_missing*/ true );
+}
+
+inline std::unique_ptr< FileResourceStorage >
+FileResourceStorage::open( const char* path )
+{
+    return FileResourceStorage::create( path, /*create_on_missing*/ false );
+}
+
+inline std::unique_ptr< FileResourceStorage >
+FileResourceStorage::create( const char* path, bool create_on_missing )
+{
     boost::filesystem::path p( path );
     if ( p.filename( ).string( ) != "." )
     {
@@ -54,6 +83,11 @@ FileResourceStorage::create( const char* path )
     boost::filesystem::is_directory( p, ec );
     if ( ec )
     {
+        if ( !create_on_missing )
+        {
+            return nullptr;
+        }
+
         boost::filesystem::create_directory( p, ec );
         if ( ec )
         {
@@ -94,9 +128,15 @@ FileResourceStorage::read_resource( const char* key )
 }
 
 inline std::unique_ptr< ResourceStorage >
-FileResourceStorage::directory( const char* key )
+FileResourceStorage::create_directory( const char* key )
 {
     return FileResourceStorage::create( std::string( m_path + key ).c_str( ) );
+}
+
+inline std::unique_ptr< ResourceStorage >
+FileResourceStorage::directory( const char* key )
+{
+    return FileResourceStorage::open( std::string( m_path + key ).c_str( ) );
 }
 
 inline bool
