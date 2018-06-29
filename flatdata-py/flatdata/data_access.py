@@ -10,44 +10,22 @@ _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
 
 
 def read_value(data, offset_bits, num_bits, is_signed):
-    """
-    Reads numeric value from a stream of bytes, at the given bit-offset, with given length.
-    :param data: Array of bytes
-    :param offset_bits: Offset of the value in bits
-    :param num_bits: Number of bits in the value
-    :param is_signed: Interpret the value as a signed numeric value or unsigned.
-    """
+    offset_bytes, offset_extra_bits = divmod(offset_bits, 8)
+    total_bytes = (num_bits + 7) // 8
 
-    current_index = offset_bits // 8
-    current_byte = data[current_index]
+    if num_bits == 1:
+        return int((data[offset_bytes] & (1 << offset_extra_bits)) != 0)
 
-    bits_left = num_bits
-    local_offset = offset_bits % 8
+    result = int.from_bytes(data[offset_bytes: offset_bytes + total_bytes], byteorder="little")
+    result >>= offset_extra_bits
+    if (total_bytes * 8 - offset_extra_bits) < num_bits:
+        remainder = data[offset_bytes + total_bytes]
+        result |= remainder << (total_bytes * 8 - offset_extra_bits)
 
-    result = 0
-    if local_offset != 0:
-        result = current_byte >> local_offset
-        if bits_left <= (8 - local_offset):
-            result &= (1 << bits_left) - 1
-            return result
-        bits_left -= 8 - local_offset
-        current_index += 1
-        current_byte = data[current_index]
-
-    while bits_left >= 8:
-        temp = current_byte
-        temp <<= num_bits - bits_left
-        result |= temp
-
-        bits_left -= 8
-        current_index += 1
-        current_byte = data[current_index]
-
-    if bits_left != 0:
-        temp = current_byte & ((1 << bits_left) - 1)
-        temp <<= num_bits - bits_left
-        result |= temp
+    if num_bits < 64:
+        result = result & ((1 << num_bits) - 1)
 
     if not is_signed:
         return result
+
     return (result & (_SIGN_BITS[num_bits] - 1)) - (result & _SIGN_BITS[num_bits])

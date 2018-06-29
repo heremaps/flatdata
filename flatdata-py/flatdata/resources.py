@@ -4,8 +4,10 @@
 '''
 
 import json
+import itertools
 
 import pandas as pd
+import numpy as np
 
 from .data_access import read_value
 from .errors import CorruptResourceError
@@ -34,7 +36,7 @@ class ResourceBase(object):
 
     def _get_item(self, index):
         offset = self._item_offset(index)
-        return self._element_type(self._mem[offset:offset + self._type_size_in_bytes + 1], offset)
+        return self._element_type(self._mem, offset)
 
     def _repr_attributes(self):
         return {
@@ -59,19 +61,30 @@ class ResourceBase(object):
         """
         Necessary to distinguish between archive and normal resources in a reliable manner.
         isinstance fails to do the check with current module structure.
-        https://stackoverflow.com/questions/38514730/isinstance-returns-false-when-the-fully-qualified-object-class-differs-from-th
+        https://stackoverflow.com/questions/38514730/isinstance-returns-false-when-the-fully
+        -qualified-object-class-differs-from-th
         """
         return False
+
 
 class _VectorSlice(object):
     def __init__(self, s, sequence):
         self._slice = s
         self._sequence = sequence
 
-    def to_data_frame(self):
-        return pd.DataFrame(data=[list(item) for item in self],
-                            columns=[member for member in
-                                     self._sequence._element_type._FIELD_KEYS])
+    def to_numpy(self, limit=None):
+        indices = self._slice.indices(len(self._sequence))
+        num_items = len(range(*indices)) if not limit else limit
+        result = np.empty(
+            shape=num_items,
+            dtype=self._sequence._element_type.dtype()
+        )
+        for index, item in self:
+            result[index] = item.as_tuple()
+        return result
+
+    def to_data_frame(self, limit=None):
+        return pd.DataFrame(data=self.to_numpy(limit))
 
     def __iter__(self):
         for i in range(*self._slice.indices(len(self._sequence))):
@@ -81,7 +94,7 @@ class _VectorSlice(object):
         return pd.DataFrame(data=[[getattr(item, name)] for item in self], columns=[name])
 
     def __repr__(self):
-        return self.to_data_frame().__repr__()
+        return "Displaying first 100 records:\n" + self.to_data_frame(limit=100).__repr__()
 
 
 class Vector(ResourceBase):
@@ -143,7 +156,7 @@ class Multivector(ResourceBase):
             type_index = read_value(self._mem, offset * 8, 8, False)
             offset += 1
             element_type = self._element_types[type_index]
-            element = element_type(self._mem[offset:offset + element_type._SIZE_IN_BYTES + 1], offset)
+            element = element_type(self._mem, offset)
             elements.append(element)
             offset += element_type._SIZE_IN_BYTES
         return elements
@@ -164,19 +177,18 @@ class RawData(ResourceBase):
 
     def __getitem__(self, item):
         if type(item) == slice:
-            return self._mem[slice(item.start + SIZE_OFFSET_IN_BYTES,
-                                   (item.stop + SIZE_OFFSET_IN_BYTES) if item.stop is not None else None,
-                                   item.step)]
+            return self._mem[
+                slice(item.start + SIZE_OFFSET_IN_BYTES,
+                      (item.stop + SIZE_OFFSET_IN_BYTES) if item.stop is not None else None,
+                      item.step)
+            ]
         return self._mem[item + SIZE_OFFSET_IN_BYTES:item + SIZE_OFFSET_IN_BYTES + 1]
 
 
 class Instance(ResourceBase):
     def __getattr__(self, name):
         offset = self._item_offset(0)
-        return getattr(
-            self._element_type(self._mem[offset:offset + self._element_type._SIZE_IN_BYTES + 1],
-                               offset),
-            name)
+        return getattr(self._element_type(self._mem, offset), name)
 
     def __len__(self):
         return 1

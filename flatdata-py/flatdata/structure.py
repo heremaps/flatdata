@@ -2,7 +2,9 @@ from .data_access import read_value
 from collections import namedtuple
 import json
 
-FieldSignature = namedtuple("FieldSignature", ["offset", "width", "is_signed"])
+import numpy as np
+
+FieldSignature = namedtuple("FieldSignature", ["offset", "width", "is_signed", "dtype"])
 
 
 class Structure(object):
@@ -15,7 +17,10 @@ class Structure(object):
             field = self._FIELDS[name]
         except KeyError:
             raise AttributeError("Field %s not found in structure" % name)
-        return read_value(self._mem, field.offset, field.width, field.is_signed)
+        return self._get_value(field)
+
+    def _get_value(self, field):
+        return read_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed)
 
     def __dir__(self):
         return self._FIELD_KEYS
@@ -25,10 +30,21 @@ class Structure(object):
             yield getattr(self, name)
 
     def as_dict(self):
-        return dict([(name, getattr(self, name)) for name in self._FIELD_KEYS])
+        return dict([(name, self._get_value(field)) for name, field in self._FIELDS.items()])
 
     def as_list(self):
-        return [getattr(self, name) for name in self._FIELD_KEYS]
+        return [self._get_value(field) for field in self._FIELDS.values()]
+
+    def as_tuple(self):
+        return tuple(self._get_value(field) for field in self._FIELDS.values())
+
+    @classmethod
+    def dtype(cls):
+        return [(name, np.dtype(field.dtype)) for name, field in cls._FIELDS.items()]
+
+    def as_nparray(self):
+        return np.array([tuple(self._get_value(field) for name, field in self._FIELDS.items())],
+                        dtype=self.dtype())
 
     def schema(self):
         return self._SCHEMA
@@ -37,6 +53,7 @@ class Structure(object):
     def _repr_attributes(cls):
         return {
             "name": cls.__name__,
+            "doc": cls.__doc__,
             "attributes": [
                 {
                     "name": name,

@@ -10,7 +10,7 @@ import pandas as pd
 from .errors import SchemaMismatchError
 
 ResourceSignature = namedtuple("ResourceSignature",
-                               ["container", "initializer", "schema", "is_optional"])
+                               ["container", "initializer", "schema", "is_optional", "doc"])
 
 _SCHEMA_EXT = ".schema"
 
@@ -88,9 +88,14 @@ class Archive(object):
         return len(self._RESOURCES)
 
     def _open_resource(self, name):
-        resource = self._RESOURCES[name]
-        self._check_non_subarchive_schema(name, resource)
-        return resource.container.open(self._resource_storage, name, resource.initializer, resource.is_optional)
+        resource_signature = self._RESOURCES[name]
+        self._check_non_subarchive_schema(name, resource_signature)
+        resource = resource_signature.container.open(storage=self._resource_storage,
+                                                     name=name,
+                                                     initializer=resource_signature.initializer,
+                                                     is_optional=resource_signature.is_optional)
+        resource.__doc__ = resource_signature.doc
+        return resource
 
     @staticmethod
     def _is_archive():
