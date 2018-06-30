@@ -367,21 +367,34 @@ macro_rules! define_variadic_struct {
     }
 }
 
-/// Depending on the provided flag return the type or wrap it in `Option`.
+/// Depending on the provided flag returns the type or wrap it in `Option`.
 ///
 /// The flag is `true`, if the resource is optional.
 #[doc(hidden)]
 #[macro_export]
-macro_rules! resource_type {
-    ($type:tt, false) => {
+macro_rules! opt {
+    ($type:ty, false) => {
         $type
     };
-    ($type:tt, true) => {
+    ($type:ty, true) => {
         Option<$type>
     };
 }
 
-/// Depending on the provided flag return the result or make it an `Option`.
+/// Depending on whether the first argument is `true` or `false` returns the
+/// first block or the second, resp.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! static_if {
+    (true, $true_block:block, $false_block:block) => {
+        $true_block
+    };
+    (false, $true_block:block, $false_block:block) => {
+        $false_block
+    };
+}
+
+/// Depending on the provided flag returns the result or make it an `Option`.
 ///
 /// The flag is `true`, if the resource is optional.
 #[doc(hidden)]
@@ -399,36 +412,38 @@ macro_rules! check_resource {
 /// archive builder.
 #[macro_export]
 macro_rules! define_archive {
-    ($name:ident, $builder_name:ident, $archive_schema:path;
+    ($name:ident, $builder_name:ident, $archive_schema:expr;
         // struct resources
-        $(($struct_resource:ident,
-            $struct_setter:ident, $struct_type:tt, $struct_schema:path, $is_optional_struct:ident)),*;
+        $(($struct_resource:ident, $struct_setter:ident, $struct_type:tt, $struct_schema:expr,
+            $is_optional_struct:ident)),*;
         // vector resources
-        $(($vector_resource:ident,
-            $vector_setter:ident, $vector_start:ident,
-            $element_type:tt, $element_schema:path, $is_optional_vector:ident)),*;
+        $(($vector_resource:ident, $vector_setter:ident, $vector_start:ident,
+            $element_type:tt, $element_schema:expr, $is_optional_vector:ident)),*;
         // multivector resources
         $(($multivector_resource:ident,
             $multivector_start:ident,
-            $variadic_type:tt, $variadic_type_schema:path,
-            $multivector_resource_index:ident, $index_type:path, $is_optional_multivector:ident)),*;
+            $variadic_type:tt, $variadic_type_schema:expr,
+            $multivector_resource_index:ident, $index_type:path,
+            $is_optional_multivector:ident)),*;
         // raw data resources
-        $(($raw_data_resource:ident,
-            $raw_data_resource_setter:ident, $raw_data_schema:path, $is_optional_raw_data:ident)),*;
+        $(($raw_data_resource:ident, $raw_data_resource_setter:ident,
+            $raw_data_schema:expr, $is_optional_raw_data:ident)),*;
         // subarchive resources
         $(($subarchive_resource:ident,
-            $subarchive_type:tt, $subarchive_builder_type:tt, $subarchive_schema:path,
+            $subarchive_type:tt, $subarchive_builder_type:tt, $subarchive_schema:expr,
             $is_optional_subarchive:ident)),*
     ) => {
 
         #[derive(Clone)]
         pub struct $name {
             _storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>
-            $(,$struct_resource: $crate::MemoryDescriptor)*
-            $(,$vector_resource: $crate::MemoryDescriptor)*
-            $(,$multivector_resource: ($crate::MemoryDescriptor, $crate::MemoryDescriptor))*
-            $(,$raw_data_resource: $crate::MemoryDescriptor)*
-            $(,$subarchive_resource: resource_type!($subarchive_type, $is_optional_subarchive))*
+            $(,$struct_resource: opt!($crate::MemoryDescriptor, $is_optional_struct))*
+            $(,$vector_resource: opt!($crate::MemoryDescriptor, $is_optional_vector))*
+            $(,$multivector_resource: (
+                opt!($crate::MemoryDescriptor, $is_optional_multivector),
+                opt!($crate::MemoryDescriptor, $is_optional_multivector)))*
+            $(,$raw_data_resource: opt!($crate::MemoryDescriptor, $is_optional_raw_data))*
+            $(,$subarchive_resource: opt!($subarchive_type, $is_optional_subarchive))*
         }
 
         impl $name {
@@ -443,31 +458,70 @@ macro_rules! define_archive {
                 storage.read(name, schema).map(R::from)
             }
 
-            $(pub fn $struct_resource(&self) -> $crate::Handle<$struct_type> {
-                $crate::Handle::new($struct_type::from(self.$struct_resource.data()))
+            $(pub fn $struct_resource(&self) -> opt!(
+                $crate::Handle<$struct_type>, $is_optional_struct)
+            {
+                static_if!($is_optional_struct, {
+                    self.$struct_resource.as_ref().map(|mem_desc| {
+                        $crate::Handle::new($struct_type::from(mem_desc.data()))
+                    })
+                }, {
+                    $crate::Handle::new($struct_type::from(self.$struct_resource.data()))
+                })
             })*
 
-            $(pub fn $vector_resource(&self) -> $crate::ArrayView<$element_type> {
-                $crate::ArrayView::new(&self.$vector_resource)
+            $(pub fn $vector_resource(&self) -> opt!(
+                $crate::ArrayView<$element_type>, $is_optional_vector)
+            {
+                static_if!($is_optional_vector, {
+                    self.$vector_resource.as_ref().map($crate::ArrayView::new)
+                }, {
+                    $crate::ArrayView::new(&self.$vector_resource)
+                })
             })*
 
-            $(pub fn $multivector_resource(&self)
-                    -> $crate::MultiArrayView<$index_type, $variadic_type> {
-                $crate::MultiArrayView::new(
-                    $crate::ArrayView::new(&self.$multivector_resource.0),
-                    &self.$multivector_resource.1,
-                )
+            $(pub fn $multivector_resource(&self) -> opt!(
+                $crate::MultiArrayView<$index_type, $variadic_type>, $is_optional_multivector)
+            {
+                static_if!($is_optional_multivector, {
+                    let index_mem_desc = &self.$multivector_resource.0.as_ref();
+                    let res_mem_desc = &self.$multivector_resource.1.as_ref();
+                    index_mem_desc
+                        .map($crate::ArrayView::new)
+                        .and_then(move |index| {
+                            res_mem_desc.map(move |mem_desc| {
+                                $crate::MultiArrayView::new(index, mem_desc)
+                            })
+                        })
+                }, {
+                    $crate::MultiArrayView::new(
+                        $crate::ArrayView::new(&self.$multivector_resource.0),
+                        &self.$multivector_resource.1,
+                    )
+                })
             })*
 
-            $(pub fn $raw_data_resource(&self) -> &[u8] {
-                unsafe {
-                    ::std::slice::from_raw_parts(
-                        self.$raw_data_resource.data(),
-                        self.$raw_data_resource.size_in_bytes())
-                }
+            $(pub fn $raw_data_resource(&self) -> opt!(&[u8], $is_optional_raw_data) {
+                static_if!($is_optional_raw_data, {
+                    self.$raw_data_resource.as_ref().map(|mem_desc| {
+                        unsafe {
+                            ::std::slice::from_raw_parts(
+                                mem_desc.data(),
+                                mem_desc.size_in_bytes())
+                        }
+                    })
+                }, {
+                    unsafe {
+                        ::std::slice::from_raw_parts(
+                            self.$raw_data_resource.data(),
+                            self.$raw_data_resource.size_in_bytes())
+                    }
+                })
             })*
 
-            $(pub fn $subarchive_resource(&self) -> &resource_type!($subarchive_type, $is_optional_subarchive) {
+            $(pub fn $subarchive_resource(&self) -> &opt!(
+                $subarchive_type, $is_optional_subarchive)
+            {
                 &self.$subarchive_resource
             })*
 
@@ -719,4 +773,51 @@ mod test {
     define_enum_test!(test_enum_i32_2, i32, true, 0, -1);
     define_enum_test!(test_enum_i64_1, i64, true, 0, 1);
     define_enum_test!(test_enum_i64_2, i64, true, 0, -1);
+
+    #[test]
+    #[allow(warnings)]
+    fn test_archive_compilation() {
+        // This test checks that the archive definition below compiles.
+        use super::Struct;
+
+        define_struct!(
+            A,
+            AMut,
+            "no_schema",
+            4,
+            (x, set_x, u32, 0, 16),
+            (y, set_y, u32, 16, 16)
+        );
+
+        define_index!(IndexType32, IndexType32Mut, "IndexType32 schema", 4, 32);
+
+        define_variadic_struct!(Ts, TsBuilder, IndexType32,
+            0 => (A, add_a));
+
+        define_archive!(SubArch, SubArchBuilder, "SubArch schema";
+            ;  // struct resources
+            ;  // vector resources
+            ;  // multivector resources
+            (raw, set_raw, "raw schema", false) // raw data resources
+            ; // subarchive resources
+        );
+
+        define_archive!(Arch, ArchBuilder, "Arch schema";
+            // struct resources
+            (a, set_a, A, "a schema", false),
+            (b, set_b, A, "b schema", true);
+            // vector resources
+            (v, set_v, start_v, A, "v schema", false),
+            (w, set_w, start_w, A, "w schema", true);
+            // multivector resources
+            (mv, start_mv, Ts, "mv schema", mv_index, IndexType32, false),
+            (mw, start_mw, Ts, "mw schema", mw_index, IndexType32, true);
+            // raw data resources
+            (r, set_r, "r schema", false),
+            (s, set_s, "s schema", true);
+            // subarchive resources
+            (arch, SubArch, SubArchBuilder, "arch schema", false),
+            (opt_arch, SubArch, SubArchBuilder, "opt_arch schema", true)
+        );
+    }
 }
