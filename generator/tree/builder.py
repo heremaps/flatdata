@@ -91,7 +91,6 @@ def _build_node_tree(definition):
         for collection, cls in parsed_items:
             for start, item, end in collection:
                 target_namespace.insert(cls.create(properties=item,
-                                                   own_schema=definition[start:end],
                                                    definition=definition))
 
         roots.append(root_namespace)

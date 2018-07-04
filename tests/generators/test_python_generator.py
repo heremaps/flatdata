@@ -14,14 +14,16 @@ class foo_S(flatdata.structure.Structure):
     \"\"\"/**
  * This is S
  */\"\"\"
-    _SCHEMA = \"\"\"namespace foo { /**
- * This is S
- */
-struct S {
+    _SCHEMA = \"\"\"namespace foo {
+struct S
+{
     member1 : u8 : 3;
     member2 : u64 : 17;
     member3 : i32 : 11;
-} }\"\"\"
+}
+}
+
+\"\"\"
     _SIZE_IN_BITS = 31
     _SIZE_IN_BYTES = 4
     _FIELDS = {
@@ -50,16 +52,36 @@ def test_archives_are_defined_correctly():
     expectation = [
         """
 class foo_A(flatdata.archive.Archive):
-    _SCHEMA = \"\"\"namespace foo { struct S {
+    _SCHEMA = \"\"\"namespace foo {
+struct S
+{
     f1 : u8 : 3;
-} }
-namespace foo { archive A {
-    r0 : S;
-} }\"\"\"
-    _R0_SCHEMA = \"\"\"namespace foo { struct S {
+}
+}
+
+namespace foo {
+archive A
+{
+    r0 : .foo.S;
+}
+}
+
+\"\"\"
+    _R0_SCHEMA = \"\"\"namespace foo {
+struct S
+{
     f1 : u8 : 3;
-} }
-namespace foo { r0 : S; }\"\"\"
+}
+}
+
+namespace foo {
+archive A
+{
+    r0 : .foo.S;
+}
+}
+
+\"\"\"
     _R0_DOC = \"\"\"\"\"\"
     _NAME = "A"
     _RESOURCES = {
@@ -78,6 +100,7 @@ namespace foo { r0 : S; }\"\"\"
 
     def __init__(self, path):
         flatdata.archive.Archive.__init__(self, path)
+
         """
     ]
     generate_and_assert_in("""

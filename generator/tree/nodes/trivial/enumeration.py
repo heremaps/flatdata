@@ -5,17 +5,16 @@ from .enumeration_value import EnumerationValue
 from generator.tree.helpers.basictype import BasicType
 
 class Enumeration(Node):
-    def __init__(self, name, properties=None, own_schema=None, type=None):
+    def __init__(self, name, properties=None, type=None):
         super(Enumeration, self).__init__(name=name, properties=properties)
-        self._own_schema = own_schema
         self._type=type
 
         if self._type is not None:
             self._type = BasicType(name=self._type)
 
     @staticmethod
-    def create(properties, own_schema, definition):
-        result = Enumeration(name=properties.name, properties=properties, own_schema=own_schema, type=properties.type)
+    def create(properties, definition):
+        result = Enumeration(name=properties.name, properties=properties, type=properties.type)
 
         current_assigned_value = 0
         unique_values = set();
