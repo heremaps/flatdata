@@ -1,6 +1,6 @@
 .PHONY: all run-ci clean lint test deps generate
 
-all: clean lint generate test
+all: clean generate lint test
 
 run-ci: deps lint test
 
