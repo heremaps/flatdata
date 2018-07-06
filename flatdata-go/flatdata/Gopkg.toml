@@ -28,3 +28,8 @@
 [[constraint]]
   branch = "master"
   name = "golang.org/x/exp"
+  
+[prune]
+  go-tests = true
+  non-go = true
+  unused-packages = true
