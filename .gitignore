@@ -8,3 +8,4 @@ venv*
 **/coverage.out
 **/flatdata-fuzz.zip
 **/corpus/**
+**/vendor/**

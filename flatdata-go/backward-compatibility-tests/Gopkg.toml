@@ -25,3 +25,8 @@ ignored = ["github.com/heremaps/flatdata/flatdata-go/flatdata"]
 [[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.0"
+
+[prune]
+  go-tests = true
+  non-go = true
+  unused-packages = true

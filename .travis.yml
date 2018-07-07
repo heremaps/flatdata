@@ -32,9 +32,9 @@ matrix:
             -w /build \
             boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
 
-    # go 1.9
+    # go 
     - language: go
-      go: 1.9
+      go: 1.x
       install: true
       before_script:
         - go get github.com/golang/dep/cmd/dep
