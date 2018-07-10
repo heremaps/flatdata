@@ -89,7 +89,6 @@ convert_characters( const picojson::object& characters,
 
     for ( const auto& kv : characters )
     {
-        const auto& id = kv.first;
         const auto& data = kv.second.get< picojson::object >( );
 
         auto character = vertices.grow( );
