@@ -79,23 +79,22 @@ class Archive(object):
         return initializer(nested_storage)
 
     def size_in_bytes(self):
-        return sum(
-            self.__getattr__(resource).size_in_bytes()
-            for resource in self._RESOURCES.keys()
-        )
+        return sum( resource_value.size_in_bytes() for resource_value in  ( self.__getattr__(resource)
+            for resource in self._RESOURCES.keys() if resource ) if resource_value )
 
     def __len__(self):
         return len(self._RESOURCES)
 
     def _open_resource(self, name):
         resource_signature = self._RESOURCES[name]
-        self._check_non_subarchive_schema(name, resource_signature)
-        resource = resource_signature.container.open(storage=self._resource_storage,
-                                                     name=name,
-                                                     initializer=resource_signature.initializer,
-                                                     is_optional=resource_signature.is_optional)
-        resource.__doc__ = resource_signature.doc
-        return resource
+        if self._check_non_subarchive_schema(name, resource_signature):
+            resource = resource_signature.container.open(storage=self._resource_storage,
+                                                         name=name,
+                                                         initializer=resource_signature.initializer,
+                                                         is_optional=resource_signature.is_optional)
+            resource.__doc__ = resource_signature.doc
+            return resource
+        return None
 
     @staticmethod
     def _is_archive():
@@ -108,7 +107,14 @@ class Archive(object):
 
     def _check_non_subarchive_schema(self, name, resource):
         if resource.container._is_archive():
-            return
-        actual_schema = self._resource_storage.get(name + _SCHEMA_EXT).read().decode()
+            return True
+
+        storage = self._resource_storage.get(name + _SCHEMA_EXT, resource.is_optional)
+        if not storage:
+            return False
+
+        actual_schema = storage.read().decode()
         if actual_schema != resource.schema:
             raise SchemaMismatchError(name, resource.schema.splitlines(), actual_schema.splitlines())
+
+        return True
