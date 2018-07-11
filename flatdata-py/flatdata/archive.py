@@ -107,7 +107,6 @@ class Archive(object):
             resource.__doc__ = resource_signature.doc
             return resource
 
-
     @staticmethod
     def _is_archive():
         """
