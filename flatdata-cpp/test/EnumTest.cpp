@@ -41,7 +41,7 @@ TEST( EnumTest, StructWithEnum )
 
     const uint8_t* data = x.data( );
     StructWithEnum reader{data};
-    ASSERT_EQ( 0x789ab, uint32_t( reader.a ) );
+    ASSERT_EQ( 0x789abu, uint32_t( reader.a ) );
     Enum1 b = reader.b;
     ASSERT_EQ( Enum1::VALUE_1, b );
     Enum1 c = reader.c;
