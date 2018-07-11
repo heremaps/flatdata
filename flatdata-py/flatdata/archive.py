@@ -94,7 +94,8 @@ class Archive(object):
                                                      name=name,
                                                      initializer=resource_signature.initializer,
                                                      is_optional=resource_signature.is_optional)
-        resource.__doc__ = resource_signature.doc
+        if resource:
+            resource.__doc__ = resource_signature.doc
         return resource
 
     @staticmethod
