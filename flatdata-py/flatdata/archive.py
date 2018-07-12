@@ -96,16 +96,15 @@ class Archive(object):
 
     def _open_resource(self, name):
         resource_signature = self._schema_validated_resource_signature(name)
-        if not resource_signature:
-            return None
-
-        resource = resource_signature.container.open(storage=self._resource_storage,
-                                                     name=name,
-                                                     initializer=resource_signature.initializer,
-                                                     is_optional=resource_signature.is_optional)
-        if resource:
-            resource.__doc__ = resource_signature.doc
-            return resource
+        if resource_signature:
+            resource = resource_signature.container.open(storage=self._resource_storage,
+                                                         name=name,
+                                                         initializer=resource_signature.initializer,
+                                                         is_optional=resource_signature.is_optional)
+            if resource:
+                resource.__doc__ = resource_signature.doc
+                return resource
+        return None
 
     @staticmethod
     def _is_archive():
