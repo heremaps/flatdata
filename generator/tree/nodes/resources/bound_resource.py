@@ -3,16 +3,15 @@ from generator.tree.nodes.references import ResourceReference
 
 
 class BoundResource(ResourceBase):
-    def __init__(self, name, properties=None, resources=None, own_schema=None):
-        super(BoundResource, self).__init__(name=name, properties=properties, own_schema=own_schema)
+    def __init__(self, name, properties=None, resources=None):
+        super(BoundResource, self).__init__(name=name, properties=properties)
         self._resources = resources
 
     @staticmethod
-    def create(properties, own_schema):
+    def create(properties):
         return BoundResource(name=properties.name,
                              properties=properties,
-                             resources=[r for r in properties.resources],
-                             own_schema=own_schema)
+                             resources=[r for r in properties.resources])
 
     def _create_references(self):
         return [ResourceReference(name=r) for r in self._resources]

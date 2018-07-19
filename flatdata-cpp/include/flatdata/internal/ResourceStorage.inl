@@ -142,6 +142,7 @@ ResourceStorage::read_and_check_schema( const char* resource_name, const char* e
 
     std::string stored_schema( reinterpret_cast< const char* >( schema.data( ) ),
                                schema.size_in_bytes( ) );
+
     if ( stored_schema != expected_schema )
     {
         return MemoryDescriptor( );

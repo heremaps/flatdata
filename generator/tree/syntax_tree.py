@@ -9,7 +9,6 @@ from generator.tree.nodes.resources import ResourceBase, BoundResource
 from generator.tree.nodes.archive import Archive
 from generator.tree.nodes.references import ResourceReference
 
-
 class SyntaxTree(object):
     """
     Flatdata Syntax Tree.
@@ -65,11 +64,12 @@ class SyntaxTree(object):
 
     @staticmethod
     def schema(node):
-        nodes = SyntaxTree.dependent_types(node)
-        nodes.append(node)
-        schemas = ['namespace {path} {{ {schema} }}'.format(path=SyntaxTree.namespace_path(n),
-                                                            schema=n._own_schema) for n in nodes]
-        return '\n'.join(schemas)
+        from ..generators.FlatdataGenerator import FlatdataGenerator
+        generator = FlatdataGenerator()
+
+        # extract subtree from syntax tree
+        subtree = node.extract_subtree()
+        return generator.render(subtree)
 
     @staticmethod
     def namespaces(node):

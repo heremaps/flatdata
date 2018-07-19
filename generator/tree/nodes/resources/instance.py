@@ -3,16 +3,15 @@ from generator.tree.nodes.references import StructureReference
 
 
 class Instance(ResourceBase):
-    def __init__(self, name, properties=None, type=None, own_schema=None):
-        super(Instance, self).__init__(name=name, properties=properties, own_schema=own_schema)
+    def __init__(self, name, properties=None, type=None):
+        super(Instance, self).__init__(name=name, properties=properties)
         self._type = type
 
     @staticmethod
-    def create(properties, own_schema):
+    def create(properties):
         return Instance(name=properties.name,
                         properties=properties,
-                        type=properties.type.object.type,
-                        own_schema=own_schema)
+                        type=properties.type.object.type)
 
     def _create_references(self):
         return [StructureReference(name=self._type)]

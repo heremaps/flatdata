@@ -87,5 +87,5 @@ TEST( SerializedStructTest, SignedStructWorks )
 
 TEST( SerializedStructTest, Schema )
 {
-    ASSERT_TRUE( SimpleStruct::schema( ) != OtherSimpleStruct::schema( ) );
+    ASSERT_STRNE( SimpleStruct::schema( ).c_str( ), OtherSimpleStruct::schema( ).c_str( ) );
 }

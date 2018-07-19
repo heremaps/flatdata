@@ -1,9 +1,8 @@
 from generator.tree.nodes.node import Node
 
 class EnumerationValue(Node):
-    def __init__(self, name, value, properties=None, own_schema=None):
+    def __init__(self, name, value, properties=None):
         super(EnumerationValue, self).__init__(name=name, properties=properties)
-        self._own_schema = own_schema
         self._value = value
 
     @staticmethod

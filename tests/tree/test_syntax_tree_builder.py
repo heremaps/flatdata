@@ -234,11 +234,70 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
     }, tree.symbols(include_types=True))
 
 
-def test_tree_with_all_features_schema_results_in_the_same_tree():
-    expected_tree = SyntaxTreeBuilder.build(TREE_WITH_ALL_FEATURES)
-    schema = expected_tree.schema(expected_tree.find('.ns.A1'))
-    actual_tree = SyntaxTreeBuilder.build(schema)
-    assert_equal(expected_tree.symbols(include_types=True), actual_tree.symbols(include_types=True))
+def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
+    tree = SyntaxTreeBuilder.build(TREE_WITH_ALL_FEATURES)
+    schema = tree.schema(tree.find('.ns.A1'))
+    generated_tree = SyntaxTreeBuilder.build(schema)
+    assert_equal({
+        '._builtin': Namespace,
+        '._builtin.multivector': Namespace,
+        '._builtin.multivector.IndexType14': Structure,
+        '._builtin.multivector.IndexType14.value': Field,
+        '.ns': Namespace,
+        '.ns.A0': Archive,
+        '.ns.A0.@@ns@C': ConstantReference,
+        '.ns.A0.b': BoundResource,
+        '.ns.A0.b.@@ns@A0@v0': ResourceReference,
+        '.ns.A0.b.@@ns@A0@v1': ResourceReference,
+        '.ns.A0.v0': Vector,
+        '.ns.A0.v0.@@ns@S1': StructureReference,
+        '.ns.A0.v1': Multivector,
+        '.ns.A0.v1.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
+        '.ns.A0.v1.@@ns@S1': StructureReference,
+        '.ns.A1': Archive,
+        '.ns.A1.@@ns@C': ConstantReference,
+        '.ns.A1.a': res.Archive,
+        '.ns.A1.a.@@ns@A0': ArchiveReference,
+        '.ns.A1.i': Instance,
+        '.ns.A1.i.@@ns@S0': StructureReference,
+        '.ns.A1.mv': Multivector,
+        '.ns.A1.mv.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
+        '.ns.A1.mv.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er__ns_S0_f0__ns_A1_v0': ExplicitReference,
+        '.ns.A1.mv.er__ns_S0_f0__ns_A1_v0.@@ns@A1@v0': ResourceReference,
+        '.ns.A1.mv.er__ns_S0_f0__ns_A1_v0.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er__ns_S0_f0__ns_A1_v0.@@ns@S0@f0': FieldReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v0': ExplicitReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v0.@@ns@A1@v0': ResourceReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v0.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v0.@@ns@S0@f1': FieldReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v1': ExplicitReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v1.@@ns@A1@v1': ResourceReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v1.@@ns@S0': StructureReference,
+        '.ns.A1.mv.er__ns_S0_f1__ns_A1_v1.@@ns@S0@f1': FieldReference,
+        '.ns.A1.rd': RawData,
+        '.ns.A1.v0': Vector,
+        '.ns.A1.v0.@@ns@S1': StructureReference,
+        '.ns.A1.v1': Vector,
+        '.ns.A1.v1.@@ns@S1': StructureReference,
+        '.ns.A1.v2': Vector,
+        '.ns.A1.v2.@@ns@XXX': StructureReference,
+        '.ns.C': Constant,
+        '.ns.S0': Structure,
+        '.ns.S0.f0': Field,
+        '.ns.S0.f1': Field,
+        '.ns.S1': Structure,
+        '.ns.S1.f0': Field,
+        '.ns.Enum1': Enumeration,
+        '.ns.Enum1.A': EnumerationValue,
+        '.ns.Enum1.B': EnumerationValue,
+        '.ns.Enum1.C': EnumerationValue,
+        '.ns.XXX': Structure,
+        '.ns.XXX.e': Field,
+        '.ns.XXX.e.@@ns@Enum1': EnumerationReference,
+        '.ns.XXX.f': Field,
+        '.ns.XXX.f.@@ns@Enum1': EnumerationReference,
+    }, generated_tree.symbols(include_types=True))
 
 
 def test_resource_types_are_populated_from_structure_references():

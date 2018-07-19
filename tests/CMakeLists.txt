@@ -10,9 +10,10 @@ if(NOT HAS_FLATDATA_PY_PKGS)
 endif()
 
 find_program(NOSETESTS nosetests)
+find_program(PYTHON3_EXECUTABLE python3)
 
 if(NOSETESTS)
-    add_test(NAME flatdata_py_test COMMAND ${NOSETESTS} ${CMAKE_CURRENT_LIST_DIR})
+    add_test(NAME flatdata_py_test COMMAND ${PYTHON3_EXECUTABLE} -m nose ${CMAKE_CURRENT_LIST_DIR})
     set_property(TEST flatdata_py_test PROPERTY
         ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_LIST_DIR}/../flatdata-py")
 else()

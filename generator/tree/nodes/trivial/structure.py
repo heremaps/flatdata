@@ -3,7 +3,7 @@ from .field import Field
 
 
 class Structure(Node):
-    def __init__(self, name, properties=None, own_schema=None):
+    def __init__(self, name, properties=None):
         """
         Use to instantiate empty structure.
         No special properties are evaluated.
@@ -12,11 +12,10 @@ class Structure(Node):
         :param properties: properties. can be missing.
         """
         super(Structure, self).__init__(name=name, properties=properties)
-        self._own_schema = own_schema
 
     @staticmethod
-    def create(properties, own_schema, definition):
-        result = Structure(name=properties.name, properties=properties, own_schema=own_schema)
+    def create(properties, definition):
+        result = Structure(name=properties.name, properties=properties)
 
         for field in properties.fields:
             result.insert(Field.create(properties=field))

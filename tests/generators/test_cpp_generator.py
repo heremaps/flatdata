@@ -284,10 +284,14 @@ def test_structures_are_defined_correctly():
 namespace n {
 namespace internal
 {
-    const char* const S__schema__ = R"schema(namespace n { struct S {
+    const char* const S__schema__ = R"schema(namespace n {
+    struct S
+    {
         f0 : u8 : 7;
         f1 : i16 : 13;
-    } })schema";
+    }
+    }
+    )schema";
 }
 
 template< template < typename, int, int > class Member >
@@ -386,6 +390,7 @@ std::string STemplate< Member >::describe( ) const
     ss << "Structure of size " << size_in_bytes( );
     return ss.str( );
 }
+
 } // namespace n
 """)
 
@@ -401,21 +406,41 @@ def test_archives_are_defined_correctly():
     }
     }
     """, CppGenerator, """
-namespace n {
+namespace n { 
 namespace internal
 {
 const char* const A__schema__ =
-"namespace n { struct S {\\n"
-    "        f0 : u8 : 7;\\n"
-    "    } }\\n"
-    "namespace n { archive A {\\n"
-    "        r : S;\\n"
-    "    } }";
+"namespace n {\\n"
+    "struct S\\n"
+    "{\\n"
+    "    f0 : u8 : 7;\\n"
+    "}\\n"
+    "}\\n"
+    "\\n"
+    "namespace n {\\n"
+    "archive A\\n"
+    "{\\n"
+    "    r : .n.S;\\n"
+    "}\\n"
+    "}\\n"
+    "\\n"
+    "";
 const char* const A__r__schema__ =
-"namespace n { struct S {\\n"
-    "        f0 : u8 : 7;\\n"
-    "    } }\\n"
-    "namespace n { r : S; }";
+"namespace n {\\n"
+    "struct S\\n"
+    "{\\n"
+    "    f0 : u8 : 7;\\n"
+    "}\\n"
+    "}\\n"
+    "\\n"
+    "namespace n {\\n"
+    "archive A\\n"
+    "{\\n"
+    "    r : .n.S;\\n"
+    "}\\n"
+    "}\\n"
+    "\\n"
+    "";
 }
 // -------------------------------------------------------------------------------------------------
 
@@ -522,9 +547,10 @@ ABuilder::set_r( RReaderType data )
 {
     check_created( );
     return storage( ).write< RReaderType >( "r", internal::A__r__schema__, data );
-
 }
+
 } // namespace n
+
 """)
 
 

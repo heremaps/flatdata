@@ -3,16 +3,15 @@ from generator.tree.nodes.references import ArchiveReference
 
 
 class Archive(ResourceBase):
-    def __init__(self, name, properties=None, target=None, own_schema=None):
-        super(Archive, self).__init__(name=name, properties=properties, own_schema=own_schema)
+    def __init__(self, name, properties=None, target=None):
+        super(Archive, self).__init__(name=name, properties=properties)
         self._target = target
 
     @staticmethod
-    def create(properties, own_schema):
+    def create(properties):
         return Archive(name=properties.name,
                        properties=properties,
-                       target=properties.type.archive.name,
-                       own_schema=own_schema)
+                       target=properties.type.archive.name)
 
     @property
     def target(self):
