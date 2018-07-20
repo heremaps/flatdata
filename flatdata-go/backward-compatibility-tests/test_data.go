@@ -41,13 +41,24 @@ func getVectorPayload() []byte {
 }
 
 func getVectorSchema() string {
-	return `namespace backwardcompatibility { struct SignedStruct {
-        a : i16 : 5;
-        b : u32 : 32;
-        c : i32 : 7;
-        d : u32 : 32;
-    } }
-namespace backwardcompatibility { resource_b: vector< SignedStruct >; }`
+	return `namespace backwardcompatibility {
+struct SignedStruct
+{
+    a : i16 : 5;
+    b : u32 : 32;
+    c : i32 : 7;
+    d : u32 : 32;
+}
+}
+
+namespace backwardcompatibility {
+archive BackwardCompatibilityTest
+{
+    resource_b : vector< .backwardcompatibility.SignedStruct >;
+}
+}
+
+`
 }
 
 func getMultivectorResourcePayload() []byte {
@@ -74,18 +85,32 @@ func getMultivectorIndexPayload() []byte {
 }
 
 func getMultivectorSchema() string {
-	return `namespace backwardcompatibility { struct SimpleStruct {
-        a : u32 : 32;
-        b : u32 : 32;
-    } }
-namespace backwardcompatibility { struct SignedStruct {
-        a : i16 : 5;
-        b : u32 : 32;
-        c : i32 : 7;
-        d : u32 : 32;
-    } }
-namespace _builtin.multivector { struct IndexType33 { value : u64 : 33; } }
-namespace backwardcompatibility { resource_c: multivector< 33, SimpleStruct, SignedStruct >; }`
+	return `namespace backwardcompatibility {
+struct SignedStruct
+{
+    a : i16 : 5;
+    b : u32 : 32;
+    c : i32 : 7;
+    d : u32 : 32;
+}
+}
+
+namespace backwardcompatibility {
+struct SimpleStruct
+{
+    a : u32 : 32;
+    b : u32 : 32;
+}
+}
+
+namespace backwardcompatibility {
+archive BackwardCompatibilityTest
+{
+    resource_c : multivector< 33, .backwardcompatibility.SimpleStruct, .backwardcompatibility.SignedStruct >;
+}
+}
+
+`
 }
 
 func getRawDataPayload() []byte {
@@ -97,7 +122,14 @@ func getRawDataPayload() []byte {
 }
 
 func getRawDataSchema() string {
-	return "namespace backwardcompatibility { resource_d: raw_data; }"
+	return `namespace backwardcompatibility {
+archive BackwardCompatibilityTest
+{
+    resource_d : raw_data;
+}
+}
+
+`
 }
 
 func getInstanceDataPayload() []byte {
@@ -110,11 +142,22 @@ func getInstanceDataPayload() []byte {
 }
 
 func getInstanceSchema() string {
-	return `namespace backwardcompatibility { struct SignedStruct {
-        a : i16 : 5;
-        b : u32 : 32;
-        c : i32 : 7;
-        d : u32 : 32;
-    } }
-namespace backwardcompatibility { resource_a: SignedStruct; }`
+	return `namespace backwardcompatibility {
+struct SignedStruct
+{
+    a : i16 : 5;
+    b : u32 : 32;
+    c : i32 : 7;
+    d : u32 : 32;
+}
+}
+
+namespace backwardcompatibility {
+archive BackwardCompatibilityTest
+{
+    resource_a : .backwardcompatibility.SignedStruct;
+}
+}
+
+`
 }

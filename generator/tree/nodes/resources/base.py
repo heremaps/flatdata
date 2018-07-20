@@ -4,10 +4,9 @@ from generator.tree.nodes.references import BuiltinStructureReference, Structure
 
 
 class ResourceBase(Node):
-    def __init__(self, name, properties=None, own_schema=None):
+    def __init__(self, name, properties=None,):
         super(ResourceBase, self).__init__(name=name, properties=properties)
         self._decorations = []
-        self._own_schema = own_schema
         if properties is not None and 'decorations' in properties:
             self._decorations = properties.decorations
             for d in self._decorations:

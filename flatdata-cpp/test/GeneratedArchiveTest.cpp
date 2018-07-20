@@ -416,22 +416,36 @@ TEST( GeneratedArchiveTest, describe_mismatch_schema )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     storage->assign_value( "OutermostArchive.archive.schema",
-                           R"(namespace test_structures { struct AStruct {
+                           R"(namespace test_structures {
+struct AStruct
+{
     value : u64 : 8;
-} }
-namespace test_structures { archive OuterArchive {
-    outer1: AStruct;
-    outer2: AStruct; // THIS LINE WAS MODIFIED
-    inner: archive InnerArchive;
-} }
-namespace test_structures { archive InnerArchive {
-    inner : AStruct;
-} }
-namespace test_structures { archive OutermostArchive {
-    outermost: AStruct;
-    // THIS LINE WAS ADDED
-    // THIS LINE WAS ADDED TOO AND THE NEXT REMOVED
-} }
+}
+}
+
+namespace test_structures {
+archive InnerArchive
+{
+    inner : .test_structures.AStruct; // THIS LINE WAS MODIFIED
+}
+}
+
+namespace test_structures {
+archive OuterArchive
+{
+    outer1 : .test_structures.AStruct;
+    outer2 : .test_structures.AStruct;
+    inner : archive .test_structures.InnerArchive;
+}
+}
+
+namespace test_structures {
+archive OutermostArchive
+{
+    outermost : .test_structures.AStruct; // THIS LINE WAS MODIFIED AND THE NEXT REMOVED
+}
+}
+
 )" );
 
     std::string description = OutermostArchive::open( storage ).describe( );
@@ -441,20 +455,22 @@ Flatdata Archive: OutermostArchive
 ================================================================================
   FATAL: Archive signature does not match software expectations.
 ================================================================================
- "} }"
- "namespace test_structures { archive OuterArchive {"
- "    outer1: AStruct;"
-+"    outer2: AStruct; // THIS LINE WAS MODIFIED"
--"    outer2: AStruct;"
- "    inner: archive InnerArchive;"
- "} }"
+ "namespace test_structures {"
+ "archive InnerArchive"
+ "{"
++"    inner : .test_structures.AStruct; // THIS LINE WAS MODIFIED"
+-"    inner : .test_structures.AStruct;"
+ "}"
+ "}"
 ...
- "} }"
- "namespace test_structures { archive OutermostArchive {"
- "    outermost: AStruct;"
-+"    // THIS LINE WAS ADDED"
-+"    // THIS LINE WAS ADDED TOO AND THE NEXT REMOVED"
--"    outer: archive OuterArchive;"
+ "namespace test_structures {"
+ "archive OutermostArchive"
+ "{"
++"    outermost : .test_structures.AStruct; // THIS LINE WAS MODIFIED AND THE NEXT REMOVED"
+-"    outermost : .test_structures.AStruct;"
+-"    outer : archive .test_structures.OuterArchive;"
+ "}"
+ "}"
 ...
   FATAL: Archive initialization failed. Failed loading mandatory resources.
 

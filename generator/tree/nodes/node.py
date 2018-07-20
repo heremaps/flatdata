@@ -5,6 +5,7 @@
 
 from collections import OrderedDict
 from generator.tree.errors import SymbolRedefinition
+from copy import copy
 
 
 class Node(object):
@@ -178,6 +179,21 @@ class Node(object):
         while result.parent is not None:
             result = result._parent
         return result
+
+    def extract_subtree(self):
+        """
+        Extract the subtree of node (some nodes are copied)
+        Also copies the path to the root of the tree
+        """
+
+        new_root = copy(self)
+        while new_root._parent != None:
+            parent = copy(new_root._parent)
+            parent._children = OrderedDict()
+            new_root._parent = parent;
+            parent._children[new_root.name] = new_root
+            new_root = parent
+        return new_root
 
     def insert(self, *nodes):
         """
