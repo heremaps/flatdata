@@ -38,7 +38,7 @@ class Archive(Node):
     @staticmethod
     def create(properties, definition):
         result = Archive(name=properties.name, properties=properties)
-        for start, r, end in properties.resources:
+        for r in properties.resources:
             result.insert(_ResourceFactory.create_resource(r))
 
         for d in properties.decorations:

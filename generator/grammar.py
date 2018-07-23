@@ -3,9 +3,11 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from pyparsing import Word, alphas, alphanums, nums, cppStyleComment, Keyword, Group, Optional, \
-    Or, OneOrMore, originalTextFor, delimitedList, ZeroOrMore, hexnums, Combine, FollowedBy, \
-    ParseException as pyparsingParseException
+from pyparsing import (
+    Word, alphas, alphanums, nums, cppStyleComment,
+    Keyword, Group, Optional, Or, OneOrMore, delimitedList, ZeroOrMore,
+    hexnums, Combine, FollowedBy, ParseException as pyparsingParseException
+)
 
 ParseException = pyparsingParseException
 
@@ -24,54 +26,52 @@ signed_literal = Combine(Optional('-') + (dec_literal ^ hex_literal))
 comment = cppStyleComment
 
 enumValue = Group(
-    Optional(comment).setResultsName("doc") +
-    identifier.setResultsName("name") + 
-    Optional( '=' + signed_literal.setResultsName("constant") )
+    Optional(comment)("doc") +
+    identifier("name") +
+    Optional('=' + signed_literal("constant"))
 )
 
-enum = originalTextFor(
-    Group(
-        Optional(comment).setResultsName("doc") +
-        Keyword("enum") +
-        identifier.setResultsName("name") +
-        ':' +
-        basic_type.setResultsName("type") +
-        '{' +
-        delimitedList(enumValue.setResultsName("enum_values", listAllMatches=True), ",") +
-        Optional(',') +
-        '}'
-    ), asString=False
+enum = Group(
+    Optional(comment)("doc") +
+    Keyword("enum") +
+    identifier("name") + ':' + basic_type("type") +
+    '{' +
+    delimitedList(enumValue, ",")("enum_values") +
+    Optional(',') +
+    '}'
 )
 
 field = Group(
-    Optional(comment).setResultsName("doc") +
-    identifier.setResultsName("name") + ':' +
-    qualified_identifier.setResultsName("type") +
-    Optional(':' + bit_width.setResultsName("width")) +
+    Optional(comment)("doc") +
+    identifier("name") +':' +
+    qualified_identifier("type") +
+    Optional(':' + bit_width("width")) +
     ';'
 )
 
-struct = originalTextFor(
-    Group(
-        Optional(comment).setResultsName("doc") +
-        Keyword("struct") +
-        identifier.setResultsName("name") + "{" +
-        OneOrMore(field.setResultsName("fields", listAllMatches=True)) + "}"
-    ), asString=False
+struct = Group(
+    Optional(comment)("doc") +
+    Keyword("struct") +
+    identifier("name") +
+    "{" +
+    OneOrMore(field)("fields") +
+    "}"
 )
 
 vector = Group(
-    Keyword("vector") + "<" + qualified_identifier.setResultsName("type") + ">"
+    Keyword("vector") + "<" + qualified_identifier("type") + ">"
 )
 
 multivector = Group(
-    Keyword("multivector") + "<" +
-    bit_width.setResultsName("width") + "," +
-    delimitedList(qualified_identifier.setResultsName("type", listAllMatches=True), ",") + ">"
+    Keyword("multivector") +
+    "<" +
+    bit_width("width") + "," +
+    delimitedList(qualified_identifier, ",")("type") +
+    ">"
 )
 
 single_object = Group(
-    qualified_identifier.setResultsName("type")
+    qualified_identifier("type")
 )
 
 raw_data = Group(
@@ -79,34 +79,39 @@ raw_data = Group(
 )
 
 archive_resource = Group(
-    Keyword("archive") + qualified_identifier.setResultsName("name")
+    Keyword("archive") + qualified_identifier("name")
 )
 
 resource_type = Group(
-    raw_data.setResultsName("raw_data") ^
-    single_object.setResultsName("object") ^
-    vector.setResultsName("vector") ^
-    multivector.setResultsName("multivector") ^
-    archive_resource.setResultsName("archive")
+    raw_data("raw_data") ^
+    single_object("object") ^
+    vector("vector") ^
+    multivector("multivector") ^
+    archive_resource("archive")
 )
 
 def combine_list(t):
     return "".join(t[0].asList())
 
 explicit_field_reference_prefix = Group(
-    OneOrMore((Optional( "." ) + identifier + ~FollowedBy(',')))
-)
+    OneOrMore((Optional(".") + identifier + ~FollowedBy(',')))
+).setParseAction(combine_list)
 
 explicit_reference = Group(
-    Keyword("@explicit_reference") + "(" +
-    explicit_field_reference_prefix.setParseAction(combine_list).setResultsName("source_type") + "." +
-    identifier.setResultsName("source_field") + "," + qualified_identifier.setResultsName(
-        "destination") + ")"
+    Keyword("@explicit_reference") +
+    "(" +
+    explicit_field_reference_prefix("source_type") +
+    "." +
+    identifier("source_field") + "," + qualified_identifier("destination") +
+    ")"
 )
 
 bound_implicitly = Group(
-    Keyword("@bound_implicitly") + "(" + identifier.setResultsName("name") + ":" +
-    delimitedList(qualified_identifier).setResultsName("resources") + ")"
+    Keyword("@bound_implicitly") +
+    "(" +
+    identifier("name") + ":" +
+    delimitedList(qualified_identifier)("resources") +
+    ")"
 )
 
 optional_decoration = Group(
@@ -114,44 +119,38 @@ optional_decoration = Group(
 )
 
 resource_decorations = Group(
-    explicit_reference.setResultsName("explicit_reference") ^
-    optional_decoration.setResultsName("optional")
+    explicit_reference("explicit_reference") ^
+    optional_decoration("optional")
 )
 
 archive_decorations = Group(
-    bound_implicitly.setResultsName("bound_implicitly")
+    bound_implicitly("bound_implicitly")
 )
 
-resource = originalTextFor(
-    Group(
-        Optional(comment).setResultsName("doc") +
-        ZeroOrMore(resource_decorations).setResultsName("decorations") +
-        identifier.setResultsName("name") + ':' +
-        resource_type.setResultsName("type") + ';'
-    ), asString=False
+resource = Group(
+    Optional(comment)("doc") +
+    ZeroOrMore(resource_decorations)("decorations") +
+    identifier("name") + ':' +
+    resource_type("type") + ';'
 )
 
-archive = originalTextFor(
-    Group(
-        Optional(comment).setResultsName("doc") +
-        ZeroOrMore(archive_decorations).setResultsName("decorations") +
-        Keyword("archive") +
-        identifier.setResultsName("name") +
-        "{" +
-        OneOrMore(resource.setResultsName("resources", listAllMatches=True)) +
-        "}"
-    ), asString=False
+archive = Group(
+    Optional(comment)("doc") +
+    ZeroOrMore(archive_decorations)("decorations") +
+    Keyword("archive") +
+    identifier("name") +
+    "{" +
+    OneOrMore(resource)("resources") +
+    "}"
 )
 
-constant = originalTextFor(
-    Group(
-        Optional(comment).setResultsName("doc") +
-        Keyword("const") +
-        basic_type.setResultsName("type") +
-        identifier.setResultsName("name") + "=" +
-        signed_literal.setResultsName("value") +
-        ";"
-    ), asString=False
+constant = Group(
+    Optional(comment)("doc") +
+    Keyword("const") +
+    basic_type("type") +
+    identifier("name") + "=" +
+    signed_literal("value") +
+    ";"
 )
 
 flatdata_entry = (
@@ -162,15 +161,16 @@ flatdata_entry = (
     comment.setResultsName("comment", listAllMatches=True)
 )
 
-free_comments = Optional(OneOrMore(comment).setResultsName("comment", listAllMatches=True))
+free_comments = Optional(OneOrMore(comment)("comment"))
 
 namespace = Group(
     Keyword("namespace") +
-    qualified_identifier.setResultsName("name") + "{"
-    + ZeroOrMore(flatdata_entry)
-    + "}" + Optional(comment)
+    qualified_identifier("name") +
+    "{" +
+    ZeroOrMore(flatdata_entry) + "}" +
+    Optional(comment)
 )
 
 flatdata_grammar = Group(free_comments +
-                         OneOrMore(namespace.setResultsName("namespace", listAllMatches=True))
-                         ).setResultsName("flatdata")
+                         OneOrMore(namespace)("namespace")
+                         )("flatdata")
