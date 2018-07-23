@@ -76,6 +76,8 @@ class CppGenerator(BaseGenerator):
                 return True
             elif isinstance(resource, RawData):
                 return False
+            elif isinstance(resource, Bitset):
+                return True
             assert False, "Unknown resource type %s" % (resource.__class__)
 
         env.filters[
@@ -90,6 +92,8 @@ class CppGenerator(BaseGenerator):
             elif isinstance(resource, Multivector):
                 return False
             elif isinstance(resource, RawData):
+                return True
+            elif isinstance(resource, Bitset):
                 return True
             assert False, "Unknown resource type %s" % (resource.__class__)
 

@@ -69,3 +69,8 @@ TEST( VectorTest, slowly_growing_data )
         ASSERT_EQ( i, new_item.value );
     }
 }
+
+// force compilation of the full template
+template class Vector< AStruct >;
+template class ArrayView< AStruct >;
+template class ArrayViewIterator< AStruct >;

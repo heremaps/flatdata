@@ -5,3 +5,4 @@ from .instance import Instance
 from .rawdata import RawData
 from .vector import Vector
 from .bound_resource import BoundResource
+from .bitset import Bitset

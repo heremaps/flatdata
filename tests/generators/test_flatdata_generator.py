@@ -81,6 +81,7 @@ archive A1
     mv : multivector< 14, .ns.S0 >;
     rd : raw_data;
     a : archive .ns.A0;
+    x : bitset;
 }
 }
 
@@ -139,6 +140,8 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
         mv : multivector< 14, S0 >;
         rd : raw_data;
         a : archive A0;
+
+        x:bitset;
     }
 } // ns
 """, FlatdataGenerator, expected_lines)

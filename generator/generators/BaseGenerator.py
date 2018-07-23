@@ -8,7 +8,7 @@ from jinja2 import Environment, PackageLoader
 from generator.tree.nodes.archive import Archive
 from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Namespace
 from generator.tree.nodes.resources import ResourceBase, BoundResource, Archive as \
-    ArchiveResource, Vector, Multivector, Instance, RawData
+    ArchiveResource, Vector, Multivector, Instance, RawData, Bitset
 from generator.tree.syntax_tree import SyntaxTree
 from generator.tree.traversal import DfsTraversal
 from .RaiseExtension import RaiseExtension
@@ -38,6 +38,7 @@ class BaseGenerator:
         env.filters['is_resource'] = lambda n: isinstance(n, ResourceBase)
         env.filters['is_bound_resource'] = lambda n: isinstance(n, BoundResource)
         env.filters['is_vector'] = lambda n: isinstance(n, Vector)
+        env.filters['is_bitset'] = lambda n: isinstance(n, Bitset)
         env.filters['is_multivector'] = lambda n: isinstance(n, Multivector)
         env.filters['is_multivector_index'] = lambda n: (isinstance(n, Structure) and
             "_builtin.multivector" in SyntaxTree.namespace_path(n))

@@ -13,6 +13,7 @@
 #include "Archive.h"
 #include "ArchiveBuilder.h"
 #include "ArrayView.h"
+#include "Bitset.h"
 #include "Copy.h"
 #include "ExternalVector.h"
 #include "FileResourceStorage.h"

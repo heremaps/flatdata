@@ -34,7 +34,7 @@ ArrayViewIterator< T >& ArrayViewIterator< T >::operator++( )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator++( int )
+ArrayViewIterator< T > ArrayViewIterator< T >::operator++( int )
 {
     auto copy = *this;
     operator++( );
@@ -49,7 +49,7 @@ ArrayViewIterator< T >& ArrayViewIterator< T >::operator--( )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator--( int )
+ArrayViewIterator< T > ArrayViewIterator< T >::operator--( int )
 {
     auto copy = *this;
     operator--( );

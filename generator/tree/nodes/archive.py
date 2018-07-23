@@ -17,6 +17,8 @@ class _ResourceFactory(object):
             cls = resources.RawData
         elif 'archive' in type:
             cls = resources.Archive
+        elif 'bitset' in type:
+            cls = resources.Bitset
         else:
             raise UnexpectedResourceType(properties.type)
 

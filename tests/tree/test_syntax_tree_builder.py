@@ -163,6 +163,8 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
         mv : multivector< 14, S0 >;
         rd : raw_data;
         a : archive A0;
+
+        x : bitset;
     }
 } // ns
 """
@@ -192,6 +194,7 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A1.@@ns@C': ConstantReference,
         '.ns.A1.a': res.Archive,
         '.ns.A1.a.@@ns@A0': ArchiveReference,
+        '.ns.A1.x': res.Bitset,
         '.ns.A1.i': Instance,
         '.ns.A1.i.@@ns@S0': StructureReference,
         '.ns.A1.mv': Multivector,
@@ -258,6 +261,7 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.A1.@@ns@C': ConstantReference,
         '.ns.A1.a': res.Archive,
         '.ns.A1.a.@@ns@A0': ArchiveReference,
+        '.ns.A1.x': res.Bitset,
         '.ns.A1.i': Instance,
         '.ns.A1.i.@@ns@S0': StructureReference,
         '.ns.A1.mv': Multivector,

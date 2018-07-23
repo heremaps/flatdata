@@ -82,8 +82,13 @@ archive_resource = Group(
     Keyword("archive") + qualified_identifier("name")
 )
 
+bitset = Group(
+    Keyword("bitset")
+)
+
 resource_type = Group(
     raw_data("raw_data") ^
+    bitset("bitset") ^
     single_object("object") ^
     vector("vector") ^
     multivector("multivector") ^

@@ -10,6 +10,8 @@
         raw_data
     {%- elif r|is_archive_resource -%}
         archive {{ r.target.node.path_with(".") }}
+    {%- elif r|is_bitset -%}
+        bitset
     {%- else -%}
         {% raise "Unsupported resource type" %}
     {%- endif -%}
