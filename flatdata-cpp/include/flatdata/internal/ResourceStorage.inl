@@ -23,7 +23,8 @@ template < typename T >
 struct ValueCreator
 {
     template < typename Loader >
-    boost::optional< T > operator( )( const char* resource, const char* schema, Loader&& loader )
+    boost::optional< T >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto data = loader( resource, schema );
         if ( !data )
@@ -38,9 +39,8 @@ template < typename T >
 struct ValueCreator< ArrayView< T > >
 {
     template < typename Loader >
-    boost::optional< ArrayView< T > > operator( )( const char* resource,
-                                                   const char* schema,
-                                                   Loader&& loader )
+    boost::optional< ArrayView< T > >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto data = loader( resource, schema );
         if ( !data )
@@ -55,9 +55,8 @@ template < typename IndexType, typename... Args >
 struct ValueCreator< MultiArrayView< IndexType, Args... > >
 {
     template < typename Loader >
-    boost::optional< MultiArrayView< IndexType, Args... > > operator( )( const char* resource,
-                                                                         const char* schema,
-                                                                         Loader&& loader )
+    boost::optional< MultiArrayView< IndexType, Args... > >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto index = ValueCreator< ArrayView< IndexType > >( )(
             ( std::string( resource ) + INDEX_SUFFIX ).c_str( ),
@@ -75,9 +74,8 @@ template <>
 struct ValueCreator< MemoryDescriptor >
 {
     template < typename Loader >
-    boost::optional< MemoryDescriptor > operator( )( const char* resource,
-                                                     const char* schema,
-                                                     Loader&& loader )
+    boost::optional< MemoryDescriptor >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto data = loader( resource, schema );
         if ( !data )
@@ -88,14 +86,29 @@ struct ValueCreator< MemoryDescriptor >
     }
 };
 
-} // namespace internal
+template <>
+struct ValueCreator< BitsetView >
+{
+    template < typename Loader >
+    boost::optional< BitsetView >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
+    {
+        auto data = loader( resource, schema );
+        if ( !data )
+        {
+            return boost::none;
+        }
+        return BitsetView{data.data( ), data.data( ) + data.size_in_bytes( )};
+    }
+};
+
+}  // namespace internal
 
 template < typename T >
 boost::optional< T >
 ResourceStorage::read( const char* resource_name, const char* schema )
 {
-    auto loader = [this]( const char* name, const char* schema )
-    {
+    auto loader = [this]( const char* name, const char* schema ) {
         return read_and_check_schema( name, schema );
     };
     return internal::ValueCreator< T >( )( resource_name, schema, loader );
@@ -167,6 +180,14 @@ ResourceStorage::create_external_vector( const char* resource_name, const char* 
     return ExternalVector< T >( ResourceHandle::create( std::move( data_stream ) ) );
 }
 
+inline ExternalBitset
+ResourceStorage::create_external_bitset( const char* resource_name, const char* schema )
+{
+    write_schema( resource_name, schema );
+    auto data_stream = create_output_stream( resource_name );
+    return ExternalBitset( ResourceHandle::create( std::move( data_stream ) ) );
+}
+
 template < typename IndexType, typename... Args >
 MultiVector< IndexType, Args... >
 ResourceStorage::create_multi_vector( const char* resource_name, const char* schema )
@@ -182,4 +203,4 @@ ResourceStorage::create_multi_vector( const char* resource_name, const char* sch
                                               ResourceHandle::create( std::move( data_stream ) ) );
 }
 
-} // namespace flatdata
+}  // namespace flatdata

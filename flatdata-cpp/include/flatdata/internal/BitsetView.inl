@@ -7,6 +7,25 @@
 
 namespace flatdata
 {
+inline BitsetView::BitsetView( ConstStreamType data_begin, ConstStreamType data_end )
+    : m_data( data_begin )
+    , m_begin( 0 )
+    , m_end( ( data_end - data_begin ) * 8 )
+{
+    if ( data_end > data_begin )
+    {
+        // inspect last byte to find sentinel
+        CharType last_byte = *( data_end - 1 );
+        CharType bit = 0x80;
+        while ( ( last_byte & bit ) != 0 )
+        {
+            bit >>= 1;
+            m_end--;
+        }
+        m_end--;
+    }
+}
+
 inline BitsetView::BitsetView( ConstStreamType data_begin, size_t begin, size_t end )
     : m_data( data_begin )
     , m_begin( begin )

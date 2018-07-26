@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ArrayView.h"
+#include "ExternalBitset.h"
 #include "ExternalVector.h"
 #include "internal/Writer.h"
 #include "internal/ResourceStorageCommon.h"
@@ -56,12 +57,16 @@ public:
 
     /**
      * @brief Creates managed external vector, allowing to conserve memory usage
-     *        by flushing data to the resource storage from time to time, in case
-     *        it is not memory-based.
-     * @return growable array or nullptr on error
+     *        by flushing data to the resource storage from time to time.
      */
     template < typename T >
     ExternalVector< T > create_external_vector( const char* resource_name, const char* schema );
+
+    /**
+     * @brief Creates managed external bitset, allowing to conserve memory usage
+     *        by flushing data to the resource storage from time to time.
+     */
+    ExternalBitset create_external_bitset( const char* resource_name, const char* schema );
 
     /**
      * @brief Creates managed multi-vector, allowing to conserve memory usage

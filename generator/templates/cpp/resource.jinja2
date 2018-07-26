@@ -5,6 +5,8 @@
         {{ type_params }}
     {%- elif r|is_vector -%}
         flatdata::ArrayView< {{ type_params }} >
+    {%- elif r|is_bitset -%}
+        flatdata::BitsetView
     {%- elif r|is_multivector -%}
         flatdata::MultiArrayView< {{ type_params }} >
     {%- elif r|is_raw_data -%}
@@ -23,6 +25,8 @@
         {{ type_params }}
     {%- elif r|is_vector -%}
         flatdata::ExternalVector< {{ type_params }} >
+    {%- elif r|is_bitset -%}
+        flatdata::ExternalBitset
     {%- elif r|is_multivector -%}
         flatdata::MultiVector< {{ type_params }} >
     {%- elif r|is_raw_data -%}
@@ -39,6 +43,8 @@
 
     {%- if r|is_vector -%}
         create_external_vector< {{ type_params }} >
+    {%- elif r|is_bitset -%}
+        create_external_bitset
     {%- elif r|is_multivector -%}
         create_multi_vector< {{ type_params }} >
     {%- elif r|is_archive_resource -%}

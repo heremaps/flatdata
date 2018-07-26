@@ -27,6 +27,7 @@ public:
     using const_iterator = BitsetViewIterator;
 
 public:
+    BitsetView( ConstStreamType data_begin, ConstStreamType data_end );
     explicit BitsetView( ConstStreamType data_begin = nullptr, size_t begin = 0, size_t end = 0 );
 
     ConstValueType operator[]( size_t i ) const;

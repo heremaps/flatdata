@@ -4,7 +4,7 @@
 '''
 
 from generator.tree.nodes.resources import Vector, Multivector, Instance, RawData, BoundResource, \
-    ResourceBase, Archive as ArchiveResource
+    ResourceBase, Bitset, Archive as ArchiveResource
 from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
 from generator.tree.nodes.archive import Archive
 from .BaseGenerator import BaseGenerator

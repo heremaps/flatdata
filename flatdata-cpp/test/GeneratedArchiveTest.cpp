@@ -188,9 +188,12 @@ TEST_P( GeneratedArchiveTestWithStorage, describe_outputs_resources_as_expected 
         flatdata::Struct< AStruct > astruct;
         builder.set_object_resource( *astruct );
         flatdata::Vector< AStruct > avector( 11 );
+        flatdata::Bitset abitset( 42 );
         builder.set_vector_resource( avector );
         builder.set_optional_resource( flatdata::MemoryDescriptor( "opt", 3 ) );
         builder.set_raw_data_resource( flatdata::MemoryDescriptor( "raw_data", 8 ) );
+        builder.set_bits( abitset.finalize( ) );
+        std::cout << "abitset : " << abitset.size( ) << " " << abitset.size_in_bytes() << " "<< std::endl;
 
         auto mv = builder.start_multivector_resource( );
         auto list = mv.grow( );
@@ -212,6 +215,7 @@ vector_resource                      NO        YES       Array of size: 11 in 11
 multivector_resource                 NO        YES       MultiArray of size 1, with index: Array of size: 2 in 10 bytes
 raw_data_resource                    NO        YES       Raw data of size 8
 optional_resource                    YES       YES       Raw data of size 3
+bits                                 NO        YES       Bitset of size: 42 in 6 bytes
 ================================================================================
 )data";
     ASSERT_EQ( expected, archive.describe( ) );
@@ -242,6 +246,7 @@ vector_resource                      NO        NO        N/A
 multivector_resource                 NO        NO        N/A
 raw_data_resource                    NO        NO        N/A
 optional_resource                    YES       YES       Raw data of size 3
+bits                                 NO        NO        N/A
 ================================================================================
 )data";
     ASSERT_EQ( expected, archive.describe( ) );

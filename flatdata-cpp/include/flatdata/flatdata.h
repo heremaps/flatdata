@@ -15,6 +15,7 @@
 #include "ArrayView.h"
 #include "Bitset.h"
 #include "Copy.h"
+#include "ExternalBitset.h"
 #include "ExternalVector.h"
 #include "FileResourceStorage.h"
 #include "Hash.h"

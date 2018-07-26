@@ -37,6 +37,7 @@ public:
 
     size_t size_in_bytes( ) const;
     size_t size( ) const;
+    bool empty( ) const;
 
     ConstStreamType data( ) const;
     StreamType data( );
@@ -46,7 +47,8 @@ public:
     ValueType grow( );
     void pop_back( );
 
-    operator BitsetView( ) const;
+    // appends sentinel and returns a view for the data
+    BitsetView finalize( );
 
 private:
     std::vector< CharType > m_data;
@@ -119,6 +121,12 @@ Bitset::size( ) const
     return m_size;
 }
 
+inline bool
+Bitset::empty( ) const
+{
+    return m_size == 0;
+}
+
 inline void
 Bitset::resize( size_t size )
 {
@@ -145,9 +153,16 @@ Bitset::pop_back( )
     resize( m_size - 1 );
 }
 
-inline Bitset::operator BitsetView( ) const
+inline BitsetView
+Bitset::finalize( )
 {
-    return BitsetView( m_data.data( ), 0, m_size );
+    // add trailing 0 and fill up remaining bits with 1
+    grow( ) = false;
+    while ( ( m_size % BITS_PER_CHAR ) != 0 )
+    {
+        grow( ) = true;
+    }
+    return BitsetView( m_data.data( ), m_data.data( ) + m_data.size( ) );
 }
 
 }  // namespace flatdata

@@ -85,6 +85,7 @@ archive SimpleResources {
     raw_data_resource: raw_data;
     @optional
     optional_resource: raw_data;
+    bits: bitset;
 }
 
 archive OnlyOptional {

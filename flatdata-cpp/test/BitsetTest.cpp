@@ -94,9 +94,10 @@ TEST( BitsetTest, iterators )
     data.grow( ) = true;
     data.grow( ) = false;
 
-    BitsetView view = data;
+    BitsetView view = data.finalize( );
     bool value = true;
     size_t i = 0;
+    ASSERT_EQ( 4u, view.size( ) );
     for ( auto it = view.begin( ); it != view.end( ); ++it )
     {
         ASSERT_EQ( value, *it ) << "value " << i;

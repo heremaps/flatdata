@@ -28,3 +28,22 @@ TEST( ExternalVectorTest, FillingData )
     EXPECT_EQ( uint64_t( 11 ), view[ 1 ].value );
     EXPECT_EQ( uint64_t( 12 ), view[ 2 ].value );
 }
+
+TEST( ExternalVectorTest, Flush )
+{
+    auto storage = MemoryResourceStorage::create( );
+    auto data = storage->create_external_vector< CStruct >( "data", "foo" );
+    for ( size_t i = 0; i < 32 * 1024 * 1024; i++ )
+    {
+        ASSERT_EQ( i, data.size( ) );
+        data.grow( ).value = i;
+    }
+
+    data.close( );
+
+    auto view = *storage->read< ArrayView< CStruct > >( "data", "foo" );
+    for ( size_t i = 0; i < 32 * 1024 * 1024; i++ )
+    {
+        ASSERT_EQ( i, view[ i ].value );
+    }
+}
