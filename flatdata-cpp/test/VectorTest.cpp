@@ -70,7 +70,10 @@ TEST( VectorTest, slowly_growing_data )
     }
 }
 
+namespace flatdata
+{
 // force compilation of the full template
 template class Vector< AStruct >;
 template class ArrayView< AStruct >;
 template class ArrayViewIterator< AStruct >;
+}
