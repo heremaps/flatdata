@@ -33,6 +33,7 @@ public:
     ConstValueType operator[]( size_t i ) const;
     const_iterator begin( ) const;
     const_iterator end( ) const;
+    /// Can fail to expose data if the view is sliced
     ConstStreamType data( ) const;
 
     BitsetView slice( size_t pos, size_t length ) const;
@@ -49,6 +50,7 @@ public:
 
 private:
     ConstStreamType m_data;
+    ConstStreamType m_data_end;
     size_t m_begin;
     size_t m_end;
 };

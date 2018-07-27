@@ -31,6 +31,7 @@ namespace tbi = test_structures::backward_compatibility::internal;
  * These tests freeze binary layout of flatdata resources:
  * - Instance
  * - Vector
+ * - Bitset
  * - Multivector
  * - RawData
  *
@@ -100,6 +101,31 @@ check_simple_struct( SimpleStruct s )
     EXPECT_EQ( 0xDEADBEEFu, s.b );
 }
 
+std::vector< bool >
+bitset_data( )
+{
+    std::vector< bool > data;
+    auto byte = [&]( bool value ) {
+        for ( size_t i = 0; i < 8; i++ )
+        {
+            data.emplace_back( value );
+        }
+    };
+    byte( false );
+    byte( true );
+    byte( false );
+    byte( true );
+    byte( false );
+    byte( true );
+    byte( false );
+    // some trailing data
+    data.emplace_back( false );
+    data.emplace_back( false );
+    data.emplace_back( false );
+    data.emplace_back( false );
+    return data;
+}
+
 template < typename Archive >
 std::shared_ptr< MemoryResourceStorage >
 openable_storage( )
@@ -126,6 +152,11 @@ std::array< uint8_t, 37 > expected_vector_binary
        "\xff\xac\x68\x24\x00\x0b\x00\x00"    // Payload
        "\x00\x00\xff\xac\x68\x24\x00\x0b"    // Payload
        "\x00\x00\x00\x00"                    // Payload
+       "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
+
+std::array< uint8_t, 25 > expected_bitset_binary
+    = {"\x08\x00\x00\x00\x00\x00\x00\x00"    // Payload size in bytes
+       "\x00\xff\x00\xff\x00\xff\x00\xe0"    // Payload + Sentinel
        "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
 
 std::array< uint8_t, 66 > expected_multivector_data
@@ -219,6 +250,45 @@ TEST( BackwardCompatibilityTest, reading_vector_resources_layout )
     check_signed_struct( archive.vector_resource( )[ 1 ] );
 }
 
+TEST( BackwardCompatibilityTest, writing_bitset_resources_layout )
+{
+    std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
+    auto builder = TestBitsetBuilder::open( storage );
+    EXPECT_TRUE( builder.is_open( ) );
+
+    Bitset bitset;
+    for ( bool value : bitset_data( ) )
+    {
+        bitset.grow( ) = value;
+    }
+    builder.set_bitset_resource( bitset.finalize( ) );
+
+    ASSERT_STREQ( tbi::TestBitset__bitset_resource__schema__,
+                  storage->read_resource( "bitset_resource.schema" ).char_ptr( ) );
+    compare_byte_arrays( expected_bitset_binary, storage->read_resource( "bitset_resource" ),
+                         *storage );
+}
+
+TEST( BackwardCompatibilityTest, reading_bitset_resources_layout )
+{
+    std::shared_ptr< MemoryResourceStorage > storage = openable_storage< TestBitset >( );
+    storage->assign_value(
+        "bitset_resource",
+        MemoryDescriptor( expected_bitset_binary.data( ), expected_bitset_binary.size( ) - 1 ) );
+    storage->assign_value( "bitset_resource.schema", tbi::TestBitset__bitset_resource__schema__ );
+
+    auto archive = TestBitset::open( storage );
+    ASSERT_TRUE( archive.is_open( ) ) << archive.describe( );
+
+    auto data = bitset_data( );
+    auto view = archive.bitset_resource( );
+    ASSERT_EQ( data.size( ), view.size( ) );
+    for ( size_t i = 0; i < data.size( ); i++ )
+    {
+        ASSERT_EQ( data[ i ], view[ i ] );
+    }
+}
+
 TEST( BackwardCompatibilityTest, writing_multivector_resources_layout )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
@@ -230,7 +300,7 @@ TEST( BackwardCompatibilityTest, writing_multivector_resources_layout )
     fill_signed_struct( list.add< SignedStruct >( ) );
     fill_simple_struct( list.add< SimpleStruct >( ) );
 
-    mv.grow( ); // no data
+    mv.grow( );  // no data
     list = mv.grow( );
     fill_simple_struct( list.add< SimpleStruct >( ) );
     fill_signed_struct( list.add< SignedStruct >( ) );
@@ -270,49 +340,34 @@ TEST( BackwardCompatibilityTest, reading_multivector_resources_layout )
     auto mv = archive.multivector_resource( );
     size_t number_of_expected_structs = 0;
     mv.for_each( 0, make_overload(
-                        [&]( SimpleStruct s )
-                        {
+                        [&]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct s )
-                        {
+                        [&]( SignedStruct s ) {
                             check_signed_struct( s );
                             number_of_expected_structs++;
                         } ) );
 
-    mv.for_each( 1, make_overload(
-                        [&]( SimpleStruct )
-                        {
-                            FAIL( );
-                        },
-                        [&]( SignedStruct )
-                        {
-                            FAIL( );
-                        } ) );
+    mv.for_each(
+        1, make_overload( [&]( SimpleStruct ) { FAIL( ); }, [&]( SignedStruct ) { FAIL( ); } ) );
 
     mv.for_each( 2, make_overload(
-                        [&]( SimpleStruct s )
-                        {
+                        [&]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct s )
-                        {
+                        [&]( SignedStruct s ) {
                             check_signed_struct( s );
                             number_of_expected_structs++;
                         } ) );
 
     mv.for_each( 3, make_overload(
-                        [&]( SimpleStruct s )
-                        {
+                        [&]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct )
-                        {
-                            FAIL( );
-                        } ) );
+                        [&]( SignedStruct ) { FAIL( ); } ) );
     EXPECT_EQ( 5u, number_of_expected_structs ) << "Found less data than expected";
 }
 

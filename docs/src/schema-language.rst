@@ -111,6 +111,7 @@ Archive resources can be one of following types:
 
 -  ``T`` - a single structure of given type
 -  ``vector< T >`` - a vector of structures of a given type.
+-  ``bitset`` - a vector of bits
 -  ``multivector< IndexSize, T1, T2, ... >`` - a heterogenuous
    associative container for storing multiple properties for a single
    entity. Allows efficient storage of the data whose properties are

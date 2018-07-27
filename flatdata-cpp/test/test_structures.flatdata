@@ -137,4 +137,8 @@ archive TestRawData {
     raw_data_resource : raw_data;
 }
 
+archive TestBitset {
+    bitset_resource: bitset;
+}
+
 } // namespace backward_compatibility

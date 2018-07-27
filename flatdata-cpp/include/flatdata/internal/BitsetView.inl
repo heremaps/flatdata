@@ -9,6 +9,7 @@ namespace flatdata
 {
 inline BitsetView::BitsetView( ConstStreamType data_begin, ConstStreamType data_end )
     : m_data( data_begin )
+    , m_data_end( data_end )
     , m_begin( 0 )
     , m_end( ( data_end - data_begin ) * 8 )
 {
@@ -28,6 +29,7 @@ inline BitsetView::BitsetView( ConstStreamType data_begin, ConstStreamType data_
 
 inline BitsetView::BitsetView( ConstStreamType data_begin, size_t begin, size_t end )
     : m_data( data_begin )
+    , m_data_end( data_begin ) // slicing will make it impossible to expose data ptr
     , m_begin( begin )
     , m_end( end )
 {
@@ -41,13 +43,13 @@ inline typename BitsetView::ConstValueType BitsetView::operator[]( size_t i ) co
 inline size_t
 BitsetView::size_in_bytes( ) const
 {
-    return ( m_end + ( BITS_PER_CHAR - 1 ) ) / BITS_PER_CHAR - m_begin / BITS_PER_CHAR;
+    return m_data_end - m_data;
 }
 
 inline typename BitsetView::ConstStreamType
 BitsetView::data( ) const
 {
-    return m_data + m_begin / BITS_PER_CHAR;
+    return m_data;
 }
 
 inline size_t

@@ -105,3 +105,33 @@ TEST( BitsetTest, iterators )
         i++;
     }
 }
+
+TEST( BitsetTest, slicing )
+{
+    Bitset data( 2 );
+    data.front( ) = true;
+    data.back( ) = false;
+    data.grow( ) = true;
+    data.grow( ) = false;
+
+    auto view = data.finalize( );
+    {
+        auto subview = view.slice( 1, 2 );
+        ASSERT_EQ( 2u, subview.size( ) );
+        ASSERT_FALSE( subview[ 0 ] );
+        ASSERT_TRUE( subview[ 1 ] );
+    }
+    {
+        auto subview = view.slice_after( 1 );
+        ASSERT_EQ( 3u, subview.size( ) );
+        ASSERT_FALSE( subview[ 0 ] );
+        ASSERT_TRUE( subview[ 1 ] );
+        ASSERT_FALSE( subview[ 2 ] );
+    }
+    {
+        auto subview = view.slice_before( 2 );
+        ASSERT_EQ( 2u, subview.size( ) );
+        ASSERT_TRUE( subview[ 0 ] );
+        ASSERT_FALSE( subview[ 1 ] );
+    }
+}
