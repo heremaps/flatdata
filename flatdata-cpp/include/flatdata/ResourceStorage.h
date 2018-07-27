@@ -8,10 +8,10 @@
 #include "ArrayView.h"
 #include "ExternalBitset.h"
 #include "ExternalVector.h"
-#include "internal/Writer.h"
-#include "internal/ResourceStorageCommon.h"
 #include "MemoryDescriptor.h"
 #include "MultiVector.h"
+#include "internal/ResourceStorageCommon.h"
+#include "internal/Writer.h"
 
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -60,13 +60,17 @@ public:
      *        by flushing data to the resource storage from time to time.
      */
     template < typename T >
-    ExternalVector< T > create_external_vector( const char* resource_name, const char* schema );
+    ExternalVector< T > create_external_vector( const char* resource_name,
+                                                const char* schema,
+                                                size_t flush_size_bytes );
 
     /**
      * @brief Creates managed external bitset, allowing to conserve memory usage
      *        by flushing data to the resource storage from time to time.
      */
-    ExternalBitset create_external_bitset( const char* resource_name, const char* schema );
+    ExternalBitset create_external_bitset( const char* resource_name,
+                                           const char* schema,
+                                           size_t flush_size_bytes );
 
     /**
      * @brief Creates managed multi-vector, allowing to conserve memory usage
@@ -76,7 +80,8 @@ public:
      */
     template < typename IndexType, typename... Args >
     MultiVector< IndexType, Args... > create_multi_vector( const char* resource_name,
-                                                           const char* schema );
+                                                           const char* schema,
+                                                           size_t flush_size_bytes );
 
     /**
      * @brief Provides memory descriptor for a resource schema associated with the given key

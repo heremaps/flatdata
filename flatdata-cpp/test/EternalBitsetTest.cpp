@@ -11,7 +11,7 @@ using namespace flatdata;
 TEST( ExernalBitsetTest, FillingData )
 {
     auto storage = MemoryResourceStorage::create( );
-    auto data = storage->create_external_bitset( "data", "foo" );
+    auto data = storage->create_external_bitset( "data", "foo", 1024 );
     ASSERT_EQ( size_t( 0 ), data.size( ) );
     data.grow( ) = true;
     data.grow( ) = false;
@@ -29,8 +29,8 @@ TEST( ExernalBitsetTest, FillingData )
 TEST( ExernalBitsetTest, Flush )
 {
     auto storage = MemoryResourceStorage::create( );
-    auto data = storage->create_external_bitset( "data", "foo" );
-    for ( size_t i = 0; i < 33 * 1024 * 1024 * 8; i++ )
+    auto data = storage->create_external_bitset( "data", "foo", 1 );
+    for ( size_t i = 0; i < 1024; i++ )
     {
         ASSERT_EQ( i, data.size( ) );
         data.grow( ) = ( i % 2 ) == 0;
@@ -39,7 +39,7 @@ TEST( ExernalBitsetTest, Flush )
     data.close( );
 
     auto view = *storage->read< BitsetView >( "data", "foo" );
-    for ( size_t i = 0; i < 33 * 1024 * 1024 * 8; i++ )
+    for ( size_t i = 0; i < 1024; i++ )
     {
         ASSERT_EQ( ( i % 2 ) == 0, view[ i ] );
     }

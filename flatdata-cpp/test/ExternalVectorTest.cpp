@@ -14,7 +14,7 @@ using namespace test_structures;
 TEST( ExternalVectorTest, FillingData )
 {
     auto storage = MemoryResourceStorage::create( );
-    auto data = storage->create_external_vector< AStruct >( "data", "foo" );
+    auto data = storage->create_external_vector< AStruct >( "data", "foo", 1024 );
     ASSERT_EQ( size_t( 0 ), data.size( ) );
     data.grow( ).value = 10;
     data.grow( ).value = 11;
@@ -32,8 +32,8 @@ TEST( ExternalVectorTest, FillingData )
 TEST( ExternalVectorTest, Flush )
 {
     auto storage = MemoryResourceStorage::create( );
-    auto data = storage->create_external_vector< CStruct >( "data", "foo" );
-    for ( size_t i = 0; i < 32 * 1024 * 1024; i++ )
+    auto data = storage->create_external_vector< CStruct >( "data", "foo", 1 );
+    for ( size_t i = 0; i < 1024; i++ )
     {
         ASSERT_EQ( i, data.size( ) );
         data.grow( ).value = i;
@@ -42,7 +42,7 @@ TEST( ExternalVectorTest, Flush )
     data.close( );
 
     auto view = *storage->read< ArrayView< CStruct > >( "data", "foo" );
-    for ( size_t i = 0; i < 32 * 1024 * 1024; i++ )
+    for ( size_t i = 0; i < 1024; i++ )
     {
         ASSERT_EQ( i, view[ i ].value );
     }

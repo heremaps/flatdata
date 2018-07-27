@@ -50,6 +50,8 @@ private:
 class {{ builder_name }} : public flatdata::ArchiveBuilder
 {
 public:
+    static constexpr size_t DEFAULT_FLUSH_SIZE_BYTES = 32 * 1024 * 1024;
+public:
     /// Creates Archive builder
     static {{ builder_name }} open( std::shared_ptr< flatdata::ResourceStorage > storage );
     /// Archive schema
@@ -65,7 +67,7 @@ public:  /// Resources
     using {{ r|typedef_name }} = {{ resource.writer_type(r) }};
     using {{ r|typedef_name("Reader") }} = {{ resource.reader_type(r) }};
     {% if r|resource_provides_incremental_builder %}
-    {{ r|typedef_name }} start_{{ r.name }}( );
+    {{ r|typedef_name }} start_{{ r.name }}( size_t flush_size_bytes = DEFAULT_FLUSH_SIZE_BYTES );
     {% endif %}
     {% if r|provides_setter %}
     bool set_{{ r.name }}( {{ r|typedef_name("Reader") }} data );
@@ -211,10 +213,10 @@ inline {{ builder_name }}
 
 {% for r in archive.resources|simple_resources %}
 {%  if r|resource_provides_incremental_builder %}
-inline auto {{ builder_name }}::start_{{ r.name }}( ) -> {{ r|typedef_name }}
+inline auto {{ builder_name }}::start_{{ r.name }}( size_t flush_size_bytes ) -> {{ r|typedef_name }}
 {
     check_created( );
-    return storage( ).{{ resource.incremental_write_call(r) }}( "{{ r.name }}", internal::{{ archive.name }}__{{ r.name }}__schema__ );
+    return storage( ).{{ resource.incremental_write_call(r) }}( "{{ r.name }}", internal::{{ archive.name }}__{{ r.name }}__schema__, flush_size_bytes );
 }
 {% endif %}
 {% if r|provides_setter %}

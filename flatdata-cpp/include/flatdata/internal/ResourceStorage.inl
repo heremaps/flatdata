@@ -173,34 +173,42 @@ ResourceStorage::write( const char* resource_name, const char* schema, T data )
 
 template < typename T >
 ExternalVector< T >
-ResourceStorage::create_external_vector( const char* resource_name, const char* schema )
+ResourceStorage::create_external_vector( const char* resource_name,
+                                         const char* schema,
+                                         size_t flush_size_bytes )
 {
     write_schema( resource_name, schema );
     auto data_stream = create_output_stream( resource_name );
-    return ExternalVector< T >( ResourceHandle::create( std::move( data_stream ) ) );
+    return ExternalVector< T >( ResourceHandle::create( std::move( data_stream ) ),
+                                flush_size_bytes );
 }
 
 inline ExternalBitset
-ResourceStorage::create_external_bitset( const char* resource_name, const char* schema )
+ResourceStorage::create_external_bitset( const char* resource_name,
+                                         const char* schema,
+                                         size_t flush_size_bytes )
 {
     write_schema( resource_name, schema );
     auto data_stream = create_output_stream( resource_name );
-    return ExternalBitset( ResourceHandle::create( std::move( data_stream ) ) );
+    return ExternalBitset( ResourceHandle::create( std::move( data_stream ) ), flush_size_bytes );
 }
 
 template < typename IndexType, typename... Args >
 MultiVector< IndexType, Args... >
-ResourceStorage::create_multi_vector( const char* resource_name, const char* schema )
+ResourceStorage::create_multi_vector( const char* resource_name,
+                                      const char* schema,
+                                      size_t flush_size_bytes )
 {
     std::string index_name = std::string( resource_name ) + internal::INDEX_SUFFIX;
     auto index = create_external_vector< IndexType >(
-        index_name.c_str( ), internal::multivector_index_schema( schema ).c_str( ) );
+        index_name.c_str( ), internal::multivector_index_schema( schema ).c_str( ),
+        flush_size_bytes );
 
     write_schema( resource_name, schema );
 
     auto data_stream = create_output_stream( resource_name );
-    return MultiVector< IndexType, Args... >( std::move( index ),
-                                              ResourceHandle::create( std::move( data_stream ) ) );
+    return MultiVector< IndexType, Args... >(
+        std::move( index ), ResourceHandle::create( std::move( data_stream ) ), flush_size_bytes );
 }
 
 }  // namespace flatdata

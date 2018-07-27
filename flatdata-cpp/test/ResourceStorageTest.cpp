@@ -22,12 +22,11 @@ const char* const incorrect_schema = "bar";
 TEST( ResourceStorageTest, schema_is_checked_for_multi_vector )
 {
     std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
-    EXPECT_NO_THROW( (
-        {
-            auto v = a->create_multi_vector< TestIndexType32, AStruct >( resource_name,
-                                                                         correct_schema );
-            v.close( );
-        } ) );
+    EXPECT_NO_THROW( ( {
+        auto v = a->create_multi_vector< TestIndexType32, AStruct >( resource_name, correct_schema,
+                                                                     1024 );
+        v.close( );
+    } ) );
 
     ASSERT_FALSE(
         ( a->read< MultiArrayView< TestIndexType32, AStruct > >( resource_name, incorrect_schema )
@@ -40,11 +39,10 @@ TEST( ResourceStorageTest, schema_is_checked_for_multi_vector )
 TEST( ResourceStorageTest, schema_is_checked_for_external_vector )
 {
     std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
-    EXPECT_NO_THROW( (
-        {
-            auto v = a->create_external_vector< AStruct >( resource_name, correct_schema );
-            v.close( );
-        } ) );
+    EXPECT_NO_THROW( ( {
+        auto v = a->create_external_vector< AStruct >( resource_name, correct_schema, 1024 );
+        v.close( );
+    } ) );
 
     ASSERT_FALSE(
         ( a->read< ArrayView< AStruct > >( resource_name, incorrect_schema ).is_initialized( ) ) );

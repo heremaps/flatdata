@@ -25,7 +25,7 @@ public:
     using ConstStreamType = typename T::AccessorType::StreamType;
 
 public:
-    explicit ExternalVector( std::unique_ptr< ResourceHandle > impl );
+    explicit ExternalVector( std::unique_ptr< ResourceHandle > impl, size_t flush_size_bytes );
 
     size_t size( ) const;
 
@@ -47,13 +47,16 @@ private:
     std::vector< typename std::remove_pointer< StreamType >::type > m_data;
     std::unique_ptr< ResourceHandle > m_array;
     size_t m_size = 0;
+    size_t m_flush_size_bytes;
 };
 
 // -----------------------------------------------------------------------------
 
 template < typename T >
-ExternalVector< T >::ExternalVector( std::unique_ptr< ResourceHandle > impl )
+ExternalVector< T >::ExternalVector( std::unique_ptr< ResourceHandle > impl,
+                                     size_t flush_size_bytes )
     : m_array( std::move( impl ) )
+    , m_flush_size_bytes( flush_size_bytes )
 {
     m_data.resize( PADDING_SIZE );
 }
@@ -65,7 +68,8 @@ ExternalVector< T >::size( ) const
     return m_size;
 }
 
-template< typename T > bool
+template < typename T >
+bool
 ExternalVector< T >::empty( ) const
 {
     return m_size == 0;
@@ -75,7 +79,7 @@ template < typename T >
 typename ExternalVector< T >::ValueType
 ExternalVector< T >::grow( )
 {
-    if ( m_data.size( ) > 1024 * 1024 * 32 )
+    if ( m_data.size( ) > m_flush_size_bytes )
     {
         flush( );
     }

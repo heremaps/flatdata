@@ -59,7 +59,9 @@ public:
 public:
     using View = MultiArrayView< IndexType, Args... >;
 
-    MultiVector( ExternalVector< IndexType > index, std::unique_ptr< ResourceHandle > data_handle );
+    MultiVector( ExternalVector< IndexType > index,
+                 std::unique_ptr< ResourceHandle > data_handle,
+                 size_t flush_size_bytes );
 
     ListBuilder grow( );
 
@@ -76,6 +78,7 @@ private:
 
     std::unique_ptr< ResourceHandle > m_handle;
     size_t m_size_flushed = 0;
+    size_t m_flush_size_bytes = 0;
 };
 
 // -------------------------------------------------------------------------------------------------
@@ -105,9 +108,11 @@ MultiVector< IndexType, Args... >::ListBuilder::add( )
 
 template < typename IndexType, typename... Args >
 MultiVector< IndexType, Args... >::MultiVector( ExternalVector< IndexType > index,
-                                                std::unique_ptr< ResourceHandle > data_handle )
+                                                std::unique_ptr< ResourceHandle > data_handle,
+                                                size_t flush_size_bytes )
     : m_index( std::move( index ) )
     , m_handle( std::move( data_handle ) )
+    , m_flush_size_bytes( flush_size_bytes )
 {
     m_data.resize( PADDING_SIZE );
 }
@@ -116,7 +121,7 @@ template < typename IndexType, typename... Args >
 typename MultiVector< IndexType, Args... >::ListBuilder
 MultiVector< IndexType, Args... >::grow( )
 {
-    if ( m_data.size( ) > 1024 * 1024 * 32 )
+    if ( m_data.size( ) > m_flush_size_bytes )
     {
         flush( );
     }

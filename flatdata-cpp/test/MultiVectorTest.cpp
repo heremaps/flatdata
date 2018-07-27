@@ -11,11 +11,10 @@
 using namespace flatdata;
 using namespace test_structures;
 
-static auto create_storage_with_3_items = []( )
-{
+static auto create_storage_with_3_items = []( ) {
     auto storage = MemoryResourceStorage::create( );
     auto vector = storage->create_multi_vector< TestIndexType48, AStruct, BStructMutator, CStruct >(
-        "data", "foo" );
+        "data", "foo", 1024 );
     {
         auto list = vector.grow( );
         auto a1 = list.add< AStruct >( );
@@ -43,8 +42,7 @@ static auto create_storage_with_3_items = []( )
     return storage;
 };
 
-static auto create_view_with_3_items = []( )
-{
+static auto create_view_with_3_items = []( ) {
     auto storage = create_storage_with_3_items( );
 
     auto view
@@ -53,14 +51,12 @@ static auto create_view_with_3_items = []( )
     return std::make_pair( std::move( storage ), std::move( view ) );
 };
 
-static const size_t NUM_ITEMS_TO_CAUSE_FLUSH
-    = 32 * 1024 * 1024 / 4 + 1024;  // enough to flush, and them some
+static const size_t NUM_ITEMS_TO_CAUSE_FLUSH = 1024;  // enough to flush, and them some
 
-static auto create_storage_with_enough_items_to_flush = []( )
-{
+static auto create_storage_with_enough_items_to_flush = []( ) {
     auto storage = MemoryResourceStorage::create( );
     auto vector = storage->create_multi_vector< TestIndexType48, AStruct, BStruct, CStruct >(
-        "data", "foo" );
+        "data", "foo", 1 );
     for ( size_t i = 0; i < NUM_ITEMS_TO_CAUSE_FLUSH; i++ )
     {
         auto list = vector.grow( );
@@ -70,13 +66,11 @@ static auto create_storage_with_enough_items_to_flush = []( )
     return storage;
 };
 
-static auto create_view_with_enough_items_to_flush = []( )
-{
+static auto create_view_with_enough_items_to_flush = []( ) {
     auto storage = create_storage_with_enough_items_to_flush( );
 
-    auto view
-        = *storage->read< MultiArrayView< TestIndexType48, AStruct, BStruct, CStruct > >(
-            "data", "foo" );
+    auto view = *storage->read< MultiArrayView< TestIndexType48, AStruct, BStruct, CStruct > >(
+        "data", "foo" );
     return std::make_pair( std::move( storage ), std::move( view ) );
 };
 
@@ -85,15 +79,18 @@ TEST( MultiVectorTest, TestVariousDataFunctor )
     auto view = create_view_with_3_items( );
     struct Reader
     {
-        void operator( )( AStruct x )
+        void
+        operator( )( AStruct x )
         {
             has_a |= x.value == 8;
         }
-        void operator( )( BStruct x )
+        void
+        operator( )( BStruct x )
         {
             has_b |= x.value == 1000;
         }
-        void operator( )( CStruct x )
+        void
+        operator( )( CStruct x )
         {
             has_c |= x.value == 1000000;
         }
@@ -159,26 +156,15 @@ TEST( MultiVectorTest, TestVariousDataOverloadedLambda )
     bool has_b = false;
     bool has_c = false;
 
-    auto reset = [&]( )
-    {
+    auto reset = [&]( ) {
         has_a = false;
         has_b = false;
         has_c = false;
     };
 
-    auto reader = flatdata::make_overload(
-        [&]( AStruct x )
-        {
-            has_a |= x.value == 8;
-        },
-        [&]( BStruct x )
-        {
-            has_b |= x.value == 1000;
-        },
-        [&]( CStruct x )
-        {
-            has_c |= x.value == 1000000;
-        } );
+    auto reader = flatdata::make_overload( [&]( AStruct x ) { has_a |= x.value == 8; },
+                                           [&]( BStruct x ) { has_b |= x.value == 1000; },
+                                           [&]( CStruct x ) { has_c |= x.value == 1000000; } );
 
     reset( );
     view.second.for_each( 0, reader );
@@ -208,7 +194,8 @@ TEST( MultiVectorTest, ConstFunctor )
     {
         // required for const initialization
         NoReader( ) = default;
-        void operator( )( const AStruct& ) const
+        void
+        operator( )( const AStruct& ) const
         {
         }
     };
@@ -222,10 +209,7 @@ TEST( MultiVectorTest, LambdaExplicit )
 
     // also check that lambda works with explicit for_each
     bool has_b = false;
-    view.second.for_each< BStruct >( 0, [&]( BStruct x )
-                                     {
-                                         has_b = x.value == 1000;
-                                     } );
+    view.second.for_each< BStruct >( 0, [&]( BStruct x ) { has_b = x.value == 1000; } );
     ASSERT_TRUE( has_b );
 }
 
@@ -235,10 +219,7 @@ TEST( MultiVectorTest, LambdaImplicit )
 
     // also check that lambda works with implicit for_each
     bool has_b = false;
-    view.second.for_each( 0, make_overload( [&]( BStruct x )
-                                            {
-                                                has_b = x.value == 1000;
-                                            } ) );
+    view.second.for_each( 0, make_overload( [&]( BStruct x ) { has_b = x.value == 1000; } ) );
     ASSERT_TRUE( has_b );
 }
 
@@ -296,12 +277,8 @@ TEST( MultiVectorTest, StaticTest )
 {
     auto view = create_view_with_3_items( );
 
-    auto accepted_lambda = []( const BStruct& )
-    {
-    };
-    auto not_accepted_lambda = []( int )
-    {
-    };
+    auto accepted_lambda = []( const BStruct& ) {};
+    auto not_accepted_lambda = []( int ) {};
     auto overloded_lambda = make_overload( accepted_lambda, not_accepted_lambda );
 
     static_assert(

@@ -25,7 +25,7 @@ public:
     using ConstValueType = ConstBitProxy;
 
 public:
-    explicit ExternalBitset( std::unique_ptr< ResourceHandle > impl );
+    ExternalBitset( std::unique_ptr< ResourceHandle > impl, size_t flush_size_bytes );
 
     size_t size_in_bytes( ) const;
     size_t size( ) const;
@@ -43,6 +43,7 @@ private:
     std::unique_ptr< ResourceHandle > m_array;
     size_t m_size = 0;
     size_t m_pos = 0;
+    size_t m_flush_size_bytes;
 };
 
 // -----------------------------------------------------------------------------
@@ -68,8 +69,10 @@ ExternalBitset::close( )
     return m_array->close( );
 }
 
-inline ExternalBitset::ExternalBitset( std::unique_ptr< ResourceHandle > impl )
+inline ExternalBitset::ExternalBitset( std::unique_ptr< ResourceHandle > impl,
+                                       size_t flush_size_bytes )
     : m_array( std::move( impl ) )
+    , m_flush_size_bytes( flush_size_bytes )
 {
 }
 
@@ -94,7 +97,7 @@ ExternalBitset::empty( ) const
 inline typename ExternalBitset::ValueType
 ExternalBitset::grow( )
 {
-    if ( m_pos + 1 > 1024 * 1024 * 32 * 8 )
+    if ( m_pos + 1 > m_flush_size_bytes * 8 )
     {
         flush( );
     }

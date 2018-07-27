@@ -165,6 +165,8 @@ private:
 class ABuilder : public flatdata::ArchiveBuilder
 {
 public:
+    static constexpr size_t DEFAULT_FLUSH_SIZE_BYTES = 32 * 1024 * 1024;
+public:
     /// Creates Archive builder
     static ABuilder open( std::shared_ptr< flatdata::ResourceStorage > storage );
     /// Archive schema
@@ -217,7 +219,7 @@ def test_vector_resource_is_declared_correctly():
         """using VectorResourceType = flatdata::ExternalVector< ::n::T >;""",
         """using VectorResourceReaderType = flatdata::ArrayView< ::n::T >; """,
         """const VectorResourceType& vector_resource( ) const;""",
-        """VectorResourceType start_vector_resource( );""",
+        """VectorResourceType start_vector_resource( size_t flush_size_bytes = DEFAULT_FLUSH_SIZE_BYTES );""",
         """bool set_vector_resource( VectorResourceReaderType data );"""
     ]
     generate_and_assert_in("""
@@ -236,7 +238,7 @@ def test_bitset_resource_is_declared_correctly():
         """using BitsetResourceType = flatdata::ExternalBitset;""",
         """using BitsetResourceReaderType = flatdata::BitsetView; """,
         """const BitsetResourceType& bitset_resource( ) const;""",
-        """BitsetResourceType start_bitset_resource( );""",
+        """BitsetResourceType start_bitset_resource( size_t flush_size_bytes = DEFAULT_FLUSH_SIZE_BYTES );""",
         """bool set_bitset_resource( BitsetResourceReaderType data );"""
     ]
     generate_and_assert_in("""
@@ -253,9 +255,9 @@ def test_multi_vector_resource_is_declared_correctly():
         """using MultivectorResourceType = flatdata::MultiVector<
         ::_builtin::multivector::IndexType33, ::n::T, ::n::U >; """,
         """const MultivectorResourceType& multivector_resource( ) const;""",
-        """MultivectorResourceType start_multivector_resource( );""",
+        """MultivectorResourceType start_multivector_resource( size_t flush_size_bytes = DEFAULT_FLUSH_SIZE_BYTES );""",
         """return storage( ).create_multi_vector< ::_builtin::multivector::IndexType33,
-        ::n::T, ::n::U >( "multivector_resource", internal::A__multivector_resource__schema__ );"""
+        ::n::T, ::n::U >( "multivector_resource", internal::A__multivector_resource__schema__, flush_size_bytes );"""
     ]
     generate_and_assert_in("""
     namespace n{
