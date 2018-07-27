@@ -230,6 +230,21 @@ def test_vector_resource_is_declared_correctly():
     }
     }""", CppGenerator, *expected_lines)
 
+def test_bitset_resource_is_declared_correctly():
+    expected_lines = [
+        """using BitsetResourceType = flatdata::BitsetView; """,
+        """using BitsetResourceType = flatdata::ExternalBitset;""",
+        """using BitsetResourceReaderType = flatdata::BitsetView; """,
+        """const BitsetResourceType& bitset_resource( ) const;""",
+        """BitsetResourceType start_bitset_resource( );""",
+        """bool set_bitset_resource( BitsetResourceReaderType data );"""
+    ]
+    generate_and_assert_in("""
+    namespace n{
+    archive A {
+        bitset_resource : bitset;
+    }
+    }""", CppGenerator, *expected_lines)
 
 def test_multi_vector_resource_is_declared_correctly():
     expected_lines = [

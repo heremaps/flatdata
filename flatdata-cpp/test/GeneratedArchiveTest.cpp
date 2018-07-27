@@ -156,6 +156,48 @@ TEST_P( GeneratedArchiveTestWithStorage, raw_data_can_be_read_and_written )
     ASSERT_EQ( 4u, archive.raw_data_resource( ).size_in_bytes( ) );
 }
 
+TEST_P( GeneratedArchiveTestWithStorage, bitset_can_be_read_and_written )
+{
+    auto builder = SimpleResourcesBuilder::open( storage );
+
+    EXPECT_TRUE( builder.is_open( ) );
+    flatdata::Bitset abitset( 65 );
+    abitset.grow( ) = true;
+    builder.set_bits( abitset.finalize( ) );
+
+    auto archive = SimpleResources::open( storage );
+    EXPECT_FALSE( archive.is_open( ) );
+    auto view = archive.bits( );
+    for ( size_t i = 0; i < 65; i++ )
+    {
+        ASSERT_FALSE( view[ i ] ) << "value " << i;
+    }
+    ASSERT_TRUE( view[ 65 ] );
+}
+
+TEST_P( GeneratedArchiveTestWithStorage, bitset_can_be_created_incrementally )
+{
+    auto builder = SimpleResourcesBuilder::open( storage );
+
+    EXPECT_TRUE( builder.is_open( ) );
+    auto abitset = builder.start_bits( );
+    for ( size_t i = 0; i < 65; i++ )
+    {
+        abitset.grow( ) = false;
+    }
+    abitset.grow( ) = true;
+    abitset.close( );
+
+    auto archive = SimpleResources::open( storage );
+    EXPECT_FALSE( archive.is_open( ) );
+    auto view = archive.bits( );
+    for ( size_t i = 0; i < 65; i++ )
+    {
+        ASSERT_FALSE( view[ i ] ) << "value " << i;
+    }
+    ASSERT_TRUE( view[ 65 ] );
+}
+
 TEST_P( GeneratedArchiveTestWithStorage, optional_resource_is_correct_when_available )
 {
     auto builder = OnlyOptionalBuilder::open( storage );
@@ -193,7 +235,8 @@ TEST_P( GeneratedArchiveTestWithStorage, describe_outputs_resources_as_expected 
         builder.set_optional_resource( flatdata::MemoryDescriptor( "opt", 3 ) );
         builder.set_raw_data_resource( flatdata::MemoryDescriptor( "raw_data", 8 ) );
         builder.set_bits( abitset.finalize( ) );
-        std::cout << "abitset : " << abitset.size( ) << " " << abitset.size_in_bytes() << " "<< std::endl;
+        std::cout << "abitset : " << abitset.size( ) << " " << abitset.size_in_bytes( ) << " "
+                  << std::endl;
 
         auto mv = builder.start_multivector_resource( );
         auto list = mv.grow( );
