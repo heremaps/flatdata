@@ -7,10 +7,10 @@
 
 #include "ArrayView.h"
 #include "ExternalVector.h"
-#include "internal/Writer.h"
-#include "internal/ResourceStorageCommon.h"
 #include "MemoryDescriptor.h"
 #include "MultiVector.h"
+#include "internal/ResourceStorageCommon.h"
+#include "internal/Writer.h"
 
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -21,7 +21,6 @@
 namespace flatdata
 {
 class MemoryMappedFileStorage;
-class ResourceHandle;
 
 /**
  * @brief Hierarchical Resource Storage.

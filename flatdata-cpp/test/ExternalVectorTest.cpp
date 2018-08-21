@@ -20,11 +20,18 @@ TEST( ExternalVectorTest, FillingData )
     data.grow( ).value = 11;
     data.grow( ).value = 12;
     ASSERT_EQ( size_t( 3 ), data.size( ) );
-    data.close( );
 
-    auto view = *storage->read< ArrayView< AStruct > >( "data", "foo" );
-    ASSERT_EQ( size_t( 3 ), view.size( ) );
-    EXPECT_EQ( uint64_t( 10 ), view[ 0 ].value );
-    EXPECT_EQ( uint64_t( 11 ), view[ 1 ].value );
-    EXPECT_EQ( uint64_t( 12 ), view[ 2 ].value );
+    boost::optional< ArrayView< AStruct > > view_from_close = data.close( );
+    ASSERT_TRUE( view_from_close );
+    ASSERT_EQ( size_t( 3 ), view_from_close->size( ) );
+    EXPECT_EQ( uint64_t( 10 ), ( *view_from_close )[ 0 ].value );
+    EXPECT_EQ( uint64_t( 11 ), ( *view_from_close )[ 1 ].value );
+    EXPECT_EQ( uint64_t( 12 ), ( *view_from_close )[ 2 ].value );
+
+    auto view_from_storage = storage->read< ArrayView< AStruct > >( "data", "foo" );
+    ASSERT_TRUE( view_from_storage );
+    ASSERT_EQ( size_t( 3 ), view_from_storage->size( ) );
+    EXPECT_EQ( uint64_t( 10 ), ( *view_from_storage )[ 0 ].value );
+    EXPECT_EQ( uint64_t( 11 ), ( *view_from_storage )[ 1 ].value );
+    EXPECT_EQ( uint64_t( 12 ), ( *view_from_storage )[ 2 ].value );
 }

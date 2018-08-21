@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace flatdata
 {
@@ -38,7 +39,7 @@ public:
      */
     ValueType grow( );
 
-    bool close( );
+    boost::optional< ArrayView< T > > close( );
 
 private:
     void flush( );
@@ -65,7 +66,8 @@ ExternalVector< T >::size( ) const
     return m_size;
 }
 
-template< typename T > bool
+template < typename T >
+bool
 ExternalVector< T >::empty( ) const
 {
     return m_size == 0;
@@ -95,11 +97,17 @@ ExternalVector< T >::flush( )
 }
 
 template < typename T >
-bool
+boost::optional< ArrayView< T > >
 ExternalVector< T >::close( )
 {
     flush( );
-    return m_array->close( );
+    boost::optional< MemoryDescriptor > data = m_array->close( );
+    if ( !data )
+    {
+        return boost::none;
+    }
+
+    return ArrayView< T >{data->data( ), data->data( ) + data->size_in_bytes( )};
 }
 
 }  // namespace flatdata
