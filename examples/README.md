@@ -28,7 +28,7 @@ The idea of this example to show how to convert a nested data format to a flat r
 
 The examples also contains a simple reader which dumps the flatdata archive to terminal.
 
-The data [karenina.json](karenina.json) is based on characters coappearance in Leo Tolstoy's "_Anna
+The data [karenina.json](coappearances/karenina.json) is based on characters coappearance in Leo Tolstoy's "_Anna
 Karenina_", compiled by [Donald Knuth][1].
 
 [1]: https://www-cs-faculty.stanford.edu/~knuth/sgb.html
