@@ -5,12 +5,15 @@
 
 #pragma once
 
+#include "../MemoryDescriptor.h"
 #include "ResourceStorageCommon.h"
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 #include <exception>
 #include <fstream>
+#include <functional>
 #include <memory>
 
 namespace flatdata
@@ -21,12 +24,15 @@ public:
     ~ResourceHandle( ) noexcept( false );
     template < typename T >
     void write( T* data, size_t size_in_bytes );
-    bool close( );
+    MemoryDescriptor close( );
 
-    static std::unique_ptr< ResourceHandle > create( std::shared_ptr< std::ostream > stream );
+    static std::unique_ptr< ResourceHandle > create(
+        std::shared_ptr< std::ostream > stream,
+        std::function< MemoryDescriptor( ) > resource_reader );
 
 private:
     std::shared_ptr< std::ostream > m_stream;
+    std::function< MemoryDescriptor( ) > m_resource_reader;
     resource_storage::size_type m_size_in_bytes = 0;
 };
 
@@ -50,7 +56,8 @@ ResourceHandle::write( T* data, size_t size_in_bytes )
 }
 
 inline std::unique_ptr< ResourceHandle >
-ResourceHandle::create( std::shared_ptr< std::ostream > stream )
+ResourceHandle::create( std::shared_ptr< std::ostream > stream,
+                        std::function< MemoryDescriptor( ) > resource_reader )
 {
     std::unique_ptr< ResourceHandle > result( new ResourceHandle( ) );
     result->m_stream = std::move( stream );
@@ -59,16 +66,18 @@ ResourceHandle::create( std::shared_ptr< std::ostream > stream )
         return std::unique_ptr< ResourceHandle >( );
     }
 
+    result->m_resource_reader = std::move( resource_reader );
+
     resource_storage::write_to_stream< resource_storage::size_type >( *result->m_stream, 0 );
     return result;
 }
 
-inline bool
+inline MemoryDescriptor
 ResourceHandle::close( )
 {
     if ( m_stream == nullptr )
     {
-        return false;
+        return {};
     }
     resource_storage::write_padding( *m_stream );
 
@@ -78,7 +87,12 @@ ResourceHandle::close( )
     m_stream->flush( );
     bool success = static_cast< bool >( *m_stream );
     m_stream.reset( );
-    return success;
+    if ( !success )
+    {
+        return {};
+    }
+
+    return m_resource_reader( );
 }
 
 }  // namespace flatdata

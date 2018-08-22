@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <boost/noncopyable.hpp>
+#include <boost/optional.hpp>
 
 namespace flatdata
 {
@@ -38,7 +39,13 @@ public:
      */
     ValueType grow( );
 
-    bool close( );
+    /**
+     * @brief Flushes remaining elements in buffer to disk and closes the vector.
+     *        After the vector is closed, no elements can be added to it anymore.
+     * @return ArrayView to the written data. May fail, in this case ArrayView is
+     *         invalid (cf. bool operator of ArrayView).
+     */
+    ArrayView< T > close( );
 
 private:
     void flush( );
@@ -65,7 +72,8 @@ ExternalVector< T >::size( ) const
     return m_size;
 }
 
-template< typename T > bool
+template < typename T >
+bool
 ExternalVector< T >::empty( ) const
 {
     return m_size == 0;
@@ -95,11 +103,13 @@ ExternalVector< T >::flush( )
 }
 
 template < typename T >
-bool
+ArrayView< T >
 ExternalVector< T >::close( )
 {
     flush( );
-    return m_array->close( );
+    MemoryDescriptor data = m_array->close( );
+    return data ? ArrayView< T >{data.data( ), data.data( ) + data.size_in_bytes( )}
+                : ArrayView< T >{};
 }
 
 }  // namespace flatdata

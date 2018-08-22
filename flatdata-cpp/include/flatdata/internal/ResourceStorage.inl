@@ -23,7 +23,8 @@ template < typename T >
 struct ValueCreator
 {
     template < typename Loader >
-    boost::optional< T > operator( )( const char* resource, const char* schema, Loader&& loader )
+    boost::optional< T >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto data = loader( resource, schema );
         if ( !data )
@@ -38,9 +39,8 @@ template < typename T >
 struct ValueCreator< ArrayView< T > >
 {
     template < typename Loader >
-    boost::optional< ArrayView< T > > operator( )( const char* resource,
-                                                   const char* schema,
-                                                   Loader&& loader )
+    boost::optional< ArrayView< T > >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto data = loader( resource, schema );
         if ( !data )
@@ -55,9 +55,8 @@ template < typename IndexType, typename... Args >
 struct ValueCreator< MultiArrayView< IndexType, Args... > >
 {
     template < typename Loader >
-    boost::optional< MultiArrayView< IndexType, Args... > > operator( )( const char* resource,
-                                                                         const char* schema,
-                                                                         Loader&& loader )
+    boost::optional< MultiArrayView< IndexType, Args... > >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto index = ValueCreator< ArrayView< IndexType > >( )(
             ( std::string( resource ) + INDEX_SUFFIX ).c_str( ),
@@ -75,9 +74,8 @@ template <>
 struct ValueCreator< MemoryDescriptor >
 {
     template < typename Loader >
-    boost::optional< MemoryDescriptor > operator( )( const char* resource,
-                                                     const char* schema,
-                                                     Loader&& loader )
+    boost::optional< MemoryDescriptor >
+    operator( )( const char* resource, const char* schema, Loader&& loader )
     {
         auto data = loader( resource, schema );
         if ( !data )
@@ -88,14 +86,38 @@ struct ValueCreator< MemoryDescriptor >
     }
 };
 
-} // namespace internal
+class ResourceReader
+{
+public:
+    ResourceReader( ResourceStorage* storage,
+                    std::string resource_name,
+                    std::string resource_schema )
+        : m_storage( storage )
+        , m_resource_name( std::move( resource_name ) )
+        , m_resource_schema( std::move( resource_schema ) )
+    {
+    }
+
+    MemoryDescriptor
+    operator( )( ) const
+    {
+        boost::optional< MemoryDescriptor > data = m_storage->read< MemoryDescriptor >(
+            m_resource_name.c_str( ), m_resource_schema.c_str( ) );
+        return data ? *data : MemoryDescriptor( );
+    }
+
+private:
+    ResourceStorage* m_storage;
+    std::string m_resource_name;
+    std::string m_resource_schema;
+};
+}  // namespace internal
 
 template < typename T >
 boost::optional< T >
 ResourceStorage::read( const char* resource_name, const char* schema )
 {
-    auto loader = [this]( const char* name, const char* schema )
-    {
+    auto loader = [this]( const char* name, const char* schema ) {
         return read_and_check_schema( name, schema );
     };
     return internal::ValueCreator< T >( )( resource_name, schema, loader );
@@ -164,7 +186,8 @@ ResourceStorage::create_external_vector( const char* resource_name, const char* 
 {
     write_schema( resource_name, schema );
     auto data_stream = create_output_stream( resource_name );
-    return ExternalVector< T >( ResourceHandle::create( std::move( data_stream ) ) );
+    return ExternalVector< T >( ResourceHandle::create(
+        std::move( data_stream ), internal::ResourceReader( this, resource_name, schema ) ) );
 }
 
 template < typename IndexType, typename... Args >
@@ -178,8 +201,10 @@ ResourceStorage::create_multi_vector( const char* resource_name, const char* sch
     write_schema( resource_name, schema );
 
     auto data_stream = create_output_stream( resource_name );
-    return MultiVector< IndexType, Args... >( std::move( index ),
-                                              ResourceHandle::create( std::move( data_stream ) ) );
+    return MultiVector< IndexType, Args... >(
+        std::move( index ),
+        ResourceHandle::create( std::move( data_stream ),
+                                internal::ResourceReader( this, resource_name, schema ) ) );
 }
 
-} // namespace flatdata
+}  // namespace flatdata
