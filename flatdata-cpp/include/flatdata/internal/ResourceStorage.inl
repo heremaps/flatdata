@@ -163,7 +163,9 @@ ResourceStorage::create_external_vector( const char* resource_name, const char* 
     auto data_stream = create_output_stream( resource_name );
     return ExternalVector< T >(
         ResourceHandle::create( std::move( data_stream ), [this, resource_name, schema] {
-            return this->read< MemoryDescriptor >( resource_name, schema );
+            boost::optional< MemoryDescriptor > data
+                = this->read< MemoryDescriptor >( resource_name, schema );
+            return data ? *data : MemoryDescriptor( );
         } ) );
 }
 
@@ -181,7 +183,9 @@ ResourceStorage::create_multi_vector( const char* resource_name, const char* sch
     return MultiVector< IndexType, Args... >(
         std::move( index ),
         ResourceHandle::create( std::move( data_stream ), [this, resource_name, schema] {
-            return this->read< MemoryDescriptor >( resource_name, schema );
+            boost::optional< MemoryDescriptor > data
+                = this->read< MemoryDescriptor >( resource_name, schema );
+            return data ? *data : MemoryDescriptor( );
         } ) );
 }
 

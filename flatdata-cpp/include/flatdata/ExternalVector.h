@@ -39,7 +39,13 @@ public:
      */
     ValueType grow( );
 
-    boost::optional< ArrayView< T > > close( );
+    /**
+     * @brief Flushes remaining elements in buffer to disk and closes the vector.
+     *        After the vector is closed, no elements can be added to it anymore.
+     * @return ArrayView to the written data. May fail, in this case ArrayView is
+     *         invalid (cf. bool operator of ArrayView).
+     */
+    ArrayView< T > close( );
 
 private:
     void flush( );
@@ -97,17 +103,13 @@ ExternalVector< T >::flush( )
 }
 
 template < typename T >
-boost::optional< ArrayView< T > >
+ArrayView< T >
 ExternalVector< T >::close( )
 {
     flush( );
-    boost::optional< MemoryDescriptor > data = m_array->close( );
-    if ( !data )
-    {
-        return boost::none;
-    }
-
-    return ArrayView< T >{data->data( ), data->data( ) + data->size_in_bytes( )};
+    MemoryDescriptor data = m_array->close( );
+    return data ? ArrayView< T >{data.data( ), data.data( ) + data.size_in_bytes( )}
+                : ArrayView< T >{};
 }
 
 }  // namespace flatdata
