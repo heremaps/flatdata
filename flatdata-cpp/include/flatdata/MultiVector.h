@@ -63,7 +63,13 @@ public:
 
     ListBuilder grow( );
 
-    bool close( );
+    /**
+     * @brief Flushes remaining elements in buffer to disk and closes the multivector.
+     *        After the multivector is closed, no elements can be added to it anymore.
+     * @return MultiArrayView to the written data. May fail, in this case the view is
+     *         invalid (cf. bool operator of MultiArrayView).
+     */
+    View close( );
 
 private:
     void add_to_index( );
@@ -126,12 +132,20 @@ MultiVector< IndexType, Args... >::grow( )
 }
 
 template < typename IndexType, typename... Args >
-bool
+typename MultiVector< IndexType, Args... >::View
 MultiVector< IndexType, Args... >::close( )
 {
     add_to_index( );  // sentinel for last item
     flush( );
-    return m_handle->close( ) && m_index.close( );
+
+    MemoryDescriptor data = m_handle->close( );
+    ArrayView< IndexType > index_view = m_index.close( );
+    if ( !data || !index_view )
+    {
+        return {};
+    }
+
+    return {index_view, data.data( )};
 }
 
 template < typename IndexType, typename... Args >
