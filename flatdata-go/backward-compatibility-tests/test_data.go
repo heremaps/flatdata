@@ -86,20 +86,20 @@ func getMultivectorIndexPayload() []byte {
 
 func getMultivectorSchema() string {
 	return `namespace backwardcompatibility {
+struct SimpleStruct
+{
+    a : u32 : 32;
+    b : u32 : 32;
+}
+}
+
+namespace backwardcompatibility {
 struct SignedStruct
 {
     a : i16 : 5;
     b : u32 : 32;
     c : i32 : 7;
     d : u32 : 32;
-}
-}
-
-namespace backwardcompatibility {
-struct SimpleStruct
-{
-    a : u32 : 32;
-    b : u32 : 32;
 }
 }
 

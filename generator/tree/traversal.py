@@ -30,6 +30,8 @@ class BfsTraversal(_Traversal):
             if node in processed:
                 continue
             yield node, Attr(distance=distance)
+            # We want to preserve original order if possible, and traverse
+            # children in *original* order: That way they are popped in order
             for child in _Traversal.children(node):
                 if child not in processed:
                     queue.append((child, distance + 1))
@@ -60,7 +62,9 @@ class DfsTraversal(_Traversal):
                 discovered.add(node)
                 stack.append(State(node=node, processed=True))
 
-                for child in _Traversal.children(node):
+                # We want to preserve original order if possible, and traverse
+                # children in *reverse* order: That way they are popped in order
+                for child in reversed(_Traversal.children(node)):
                     if child not in discovered and child not in processed:
                         stack.append(State(node=child, processed=False))
                     elif child not in processed:
