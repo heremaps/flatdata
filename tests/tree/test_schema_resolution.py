@@ -59,16 +59,16 @@ archive A
 """)
     assert_equal(SyntaxTree.schema(root.find(".n.A.c")),
                  """namespace n {
-struct V
+struct U
 {
-    v : u8 : 7;
+    u : u8 : 7;
 }
 }
 
 namespace n {
-struct U
+struct V
 {
-    u : u8 : 7;
+    v : u8 : 7;
 }
 }
 
@@ -159,14 +159,14 @@ archive A {
         """)
     resolve_references(root)
     expected = """namespace foo {
-const u8 C = 42;
-}
-
-namespace foo {
 struct T
 {
     f : u8 : 7;
 }
+}
+
+namespace foo {
+const u8 C = 42;
 }
 
 namespace foo {

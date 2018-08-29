@@ -38,8 +38,8 @@ const (
 def test_constants_are_declared_correctly():
     generate_and_assert_in("""
         namespace n{
-        const i8 foo = 17;
         const u16 bar = 0x42;
+        const i8 foo = 17;
         }
     """, GoGenerator, """
     Bar uint16 = 66

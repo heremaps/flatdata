@@ -77,23 +77,23 @@ def test_bfs_traversal_basic_ordering():
 def test_dfs_traversal_basic_ordering():
     _check_traversal_order(create_basic_tree(), DfsTraversal, [
         "a",
+        "a.b",
+        "a.b.c",
+        "a.b.d",
+        "a.b.e",
         "a.f",
         "a.f.g",
-        "a.f.g.h",
-        "a.b",
-        "a.b.e",
-        "a.b.d",
-        "a.b.c"
+        "a.f.g.h"
     ])
 
 
 def test_dfs_traversal_expands_type_references():
     _check_traversal_order(create_tree_with_type_refs(), DfsTraversal, [
         "a",
-        "a.c",
+        "a.b",
         "a.b.d",
         "a.c.e",
-        "a.b"
+        "a.c"
     ])
 
 
@@ -116,10 +116,10 @@ def test_dfs_traversal_reports_cyclic_references():
 def test_dfs_traversal_provides_topological_ordering():
     assert_equal(
         [
-            "ns.A1",
             "ns.S0",
-            "ns.A0.R1",
+            "ns.A1",
             "ns.A0.R0",
+            "ns.A0.R1",
             "ns.A0",
             "ns"
         ],

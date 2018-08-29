@@ -60,7 +60,7 @@ class DfsTraversal(_Traversal):
                 discovered.add(node)
                 stack.append(State(node=node, processed=True))
 
-                for child in _Traversal.children(node):
+                for child in reversed(_Traversal.children(node)):
                     if child not in discovered and child not in processed:
                         stack.append(State(node=child, processed=False))
                     elif child not in processed:

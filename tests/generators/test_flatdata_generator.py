@@ -14,30 +14,13 @@ def generate_and_compare(definition, generator, expectation):
     assert_equal.__self__.maxDiff = None
     assert_equal(expectation, contents);
 
-
-def test_normalization():
-    expected_lines = """namespace ns {
-const i32 D = -10;
-}
-
-namespace ns {
+def expected_schema():
+    return """namespace ns {
 const u32 C = 268435455;
 }
 
 namespace ns {
-struct S1
-{
-    f0 : u64 : 64;
-}
-}
-
-namespace ns {
-@bound_implicitly( b : .ns.A0.v0, .ns.A0.v1 )
-archive A0
-{
-    v0 : vector< .ns.S1 >;
-    v1 : multivector< 14, .ns.S1 >;
-}
+const i32 D = -10;
 }
 
 namespace ns {
@@ -45,6 +28,13 @@ struct S0
 {
     f0 : u64 : 64;
     f1 : u64 : 64;
+}
+}
+
+namespace ns {
+struct S1
+{
+    f0 : u64 : 64;
 }
 }
 
@@ -62,6 +52,15 @@ struct XXX
 {
     e : .ns.Enum1 : 16;
     f : .ns.Enum1 : 4;
+}
+}
+
+namespace ns {
+@bound_implicitly( b : .ns.A0.v0, .ns.A0.v1 )
+archive A0
+{
+    v0 : vector< .ns.S1 >;
+    v1 : multivector< 14, .ns.S1 >;
 }
 }
 
@@ -85,7 +84,9 @@ archive A1
 }
 
 """
-    generate_and_compare("""
+
+def input_schema():
+    return """
 namespace ns{
     // Comment A
     struct S0 {
@@ -141,4 +142,10 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
         a : archive A0;
     }
 } // ns
-""", FlatdataGenerator, expected_lines)
+"""
+
+def test_normalization():
+    generate_and_compare(input_schema(), FlatdataGenerator, expected_schema())
+
+def test_normalization_is_fixed_point():
+    generate_and_compare(expected_schema(), FlatdataGenerator, expected_schema())

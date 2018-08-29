@@ -19,20 +19,20 @@ def test_constants_are_declared_correctly():
         }
     """, CppGenerator, """
 namespace n {
-enum : uint16_t
-{
-    // Comment
-    bar = 66
-};
-} // namespace n
-
-namespace n {
 enum : int8_t
 {
     /**
      * There is some documentation about foo.
      */
     foo = 17
+};
+} // namespace n
+
+namespace n {
+enum : uint16_t
+{
+    // Comment
+    bar = 66
 };
 } // namespace n""")
 
