@@ -326,7 +326,7 @@ TEST( MultiVectorTest, CloseViewIsSameAsStorageView )
     std::vector< size_t > values_view_from_storage;
 
     ASSERT_EQ( view_from_close.size( ), view_from_storage.size( ) );
-    for ( int i = 0; i < view_from_close.size( ); ++i )
+    for ( size_t i = 0; i < view_from_close.size( ); ++i )
     {
         view_from_close.for_each(
             i, flatdata::make_overload(
@@ -341,7 +341,7 @@ TEST( MultiVectorTest, CloseViewIsSameAsStorageView )
     };
 
     ASSERT_EQ( values_view_from_close.size( ), values_view_from_storage.size( ) );
-    for ( int i = 0; i < values_view_from_close.size( ); ++i )
+    for ( size_t i = 0; i < values_view_from_close.size( ); ++i )
     {
         ASSERT_EQ( values_view_from_close[ i ], values_view_from_storage[ i ] );
     }
