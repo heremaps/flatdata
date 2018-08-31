@@ -70,7 +70,7 @@ MemoryResourceStorage::create_output_stream( const char* key )
     std::shared_ptr< std::stringstream > result(
         new std::stringstream( std::ofstream::out | std::ofstream::binary ) );
 
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     m_storage->streams[ get_path( key ) ] = result;
 
     return result;
@@ -95,7 +95,7 @@ MemoryResourceStorage::read_resource( const char* key )
 {
     const auto path = get_path( key );
 
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     if ( m_storage->resources.count( path ) == 0 )
     {
         auto found = m_storage->streams.find( path );
@@ -114,7 +114,7 @@ MemoryResourceStorage::read_resource( const char* key )
 inline void
 MemoryResourceStorage::assign_value( const char* key, MemoryDescriptor value )
 {
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     m_storage->resources.insert( std::make_pair(
         std::string( key ),
         std::make_shared< std::string >( value.char_ptr( ), value.size_in_bytes( ) ) ) );
@@ -123,7 +123,7 @@ MemoryResourceStorage::assign_value( const char* key, MemoryDescriptor value )
 inline void
 MemoryResourceStorage::assign_value( const char* key, const char* value )
 {
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     m_storage->resources.insert(
         std::make_pair( std::string( key ), std::make_shared< std::string >( value ) ) );
 }
@@ -132,7 +132,7 @@ inline std::unique_ptr< ResourceStorage >
 MemoryResourceStorage::create_directory( const char* key )
 {
     const auto new_path = get_path( key ) + "/";
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     m_storage->created_directories.insert( new_path );
     return std::unique_ptr< MemoryResourceStorage >(
         new MemoryResourceStorage( m_storage, new_path ) );
@@ -142,7 +142,7 @@ inline std::unique_ptr< ResourceStorage >
 MemoryResourceStorage::directory( const char* key )
 {
     const auto new_path = get_path( key ) + "/";
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     if ( m_storage->created_directories.find( new_path ) == m_storage->created_directories.end( ) )
     {
         return nullptr;
@@ -219,7 +219,7 @@ inline bool
 MemoryResourceStorage::exists( const char* key )
 {
     auto path = get_path( key );
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     return m_storage->resources.count( path ) != 0 || m_storage->streams.count( path ) != 0
            || helpers::prefix_exists( m_storage->resources, path + "/" )
            || helpers::prefix_exists( m_storage->streams, path + "/" );
@@ -234,7 +234,7 @@ MemoryResourceStorage::dump_resources( bool dump_schemas, ResourceSerializer&& f
     };
 
     std::ostringstream ss;
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     for ( auto& resource : m_storage->resources )
     {
         if ( !is_schema( resource.first ) || dump_schemas )

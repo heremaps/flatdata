@@ -126,7 +126,7 @@ FileResourceStorage::read_resource( const char* key )
     {
         return MemoryDescriptor( );
     }
-    std::lock_guard<std::mutex> lock(m_storage_mutex);
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
     return m_storage->read( get_path( key ).c_str( ) );
 }
 
