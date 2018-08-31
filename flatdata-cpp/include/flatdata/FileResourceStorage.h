@@ -11,6 +11,7 @@
 #include <boost/filesystem.hpp>
 
 #include <fstream>
+#include <mutex>
 
 namespace flatdata
 {
@@ -53,6 +54,7 @@ private:
 
 private:
     std::unique_ptr< MemoryMappedFileStorage > m_storage;
+    std::mutex m_storage_mutex;
     std::string m_path;
 };
 
@@ -124,6 +126,7 @@ FileResourceStorage::read_resource( const char* key )
     {
         return MemoryDescriptor( );
     }
+    std::lock_guard<std::mutex> lock(m_storage_mutex);
     return m_storage->read( get_path( key ).c_str( ) );
 }
 
