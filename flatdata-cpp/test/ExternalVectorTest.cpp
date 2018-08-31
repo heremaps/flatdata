@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
 
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -55,6 +56,7 @@ public:
         : m_count{count}
     {
     }
+
     void
     wait( )
     {
@@ -76,11 +78,8 @@ run_close_in_loop( std::unique_ptr< ResourceStorage > storage )
 {
     for ( size_t i = 0; i < 1000; ++i )
     {
-        auto storage = MemoryResourceStorage::create( );
-
         constexpr size_t NUM_THREADS = 4;
         std::vector< std::thread > threads;
-        uint32_t thread_id = 0;
         Barrier barrier( NUM_THREADS );
         for ( uint32_t thread_id = 0; thread_id < NUM_THREADS; ++thread_id )
         {
