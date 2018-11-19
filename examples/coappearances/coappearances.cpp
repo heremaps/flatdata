@@ -289,7 +289,9 @@ calculate( const char* archive_path )
     auto builder = co::GraphBuilder::open( storage ).statistics( );
 
     flatdata::Vector< co::Degree > vertex_degrees( graph.vertices( ).size( ) );
-    for ( auto e : graph.edges( ) )
+    auto edges = graph.edges( );
+    edges = edges.slice_before( edges.size( ) - 1 );  // skip sentinel
+    for ( auto e : edges )
     {
         vertex_degrees[ e.a_ref ].value = vertex_degrees[ e.a_ref ].value + 1;
         vertex_degrees[ e.b_ref ].value = vertex_degrees[ e.b_ref ].value + 1;
