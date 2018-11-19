@@ -7,7 +7,6 @@
 
 namespace flatdata
 {
-
 template < typename T >
 ArrayView< T >::ArrayView( ConstStreamType data_begin, ConstStreamType data_end )
     : m_data( data_begin )
@@ -19,6 +18,20 @@ template < typename T >
 typename ArrayView< T >::ConstValueType ArrayView< T >::operator[]( size_t i ) const
 {
     return ConstValueType{m_data + T::size_in_bytes( ) * i};
+}
+
+template < typename T >
+typename ArrayView< T >::ConstValueType
+ArrayView< T >::front( ) const
+{
+    return ( *this )[ 0 ];
+}
+
+template < typename T >
+typename ArrayView< T >::ConstValueType
+ArrayView< T >::back( ) const
+{
+    return ( *this )[ size( ) - 1 ];
 }
 
 template < typename T >
@@ -69,11 +82,25 @@ ArrayView< T >
 ArrayView< T >::slice_after( size_t pos ) const
 {
     return ArrayView( m_data + pos * T::size_in_bytes( ),
-                      m_data + ( m_size - pos ) * T::size_in_bytes( ) );
+                      m_data + m_size * T::size_in_bytes( ) );
 }
 
-template< typename T >
-ArrayView< T >::operator bool() const
+template < typename T >
+ArrayView< T >
+ArrayView< T >::skip( size_t count ) const
+{
+    return slice_after( count );
+}
+
+template < typename T >
+ArrayView< T >
+ArrayView< T >::skip_last( size_t count ) const
+{
+    return slice_before( size( ) - count );
+}
+
+template < typename T >
+ArrayView< T >::operator bool( ) const
 {
     return m_data != nullptr;
 }
@@ -93,7 +120,8 @@ ArrayView< T >::end( ) const
 }
 
 template < typename T >
-std::string ArrayView< T >::describe( ) const
+std::string
+ArrayView< T >::describe( ) const
 {
     std::ostringstream ss;
     ss << "Array of size: " << size( ) << " in " << size_in_bytes( ) << " bytes";
