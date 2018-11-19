@@ -29,9 +29,15 @@ public:
     const_iterator end( ) const;
     ConstStreamType data( ) const;
 
+    ConstValueType front( ) const;
+    ConstValueType back( ) const;
+
     ArrayView slice( size_t pos, size_t length ) const;
     ArrayView slice_before( size_t pos ) const;
     ArrayView slice_after( size_t pos ) const;
+
+    ArrayView skip( size_t count ) const;
+    ArrayView skip_last( size_t count ) const;
 
     explicit operator bool( ) const;
 
