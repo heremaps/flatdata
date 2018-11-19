@@ -37,7 +37,8 @@ def test_structures_are_declared_correctly():
     """, RustGenerator, """
 define_struct!(
     S,
-    SMut,
+    RefS,
+    RefMutS,
     schema::structs::S,
     3,
     (f0, set_f0, u8, 0, 3),
@@ -119,19 +120,20 @@ def test_multi_vector_resource_is_declared_correctly():
 /// Builtin type to for MultiVector index
 define_index!(
     IndexType33,
-    IndexType33Mut,
+    RefIndexType33,
+    RefMutIndexType33,
     schema::structs::INDEX_TYPE33,
     5,
     33
 );""",
 """
 /// Builtin union type of T, U.
-define_variadic_struct!(MultivectorResource, MultivectorResourceItemBuilder,
+define_variadic_struct!(MultivectorResource, RefMultivectorResource, BuilderMultivectorResource,
     IndexType33,
     0 => (T, add_t),
     1 => (U, add_u));
 /// Builtin union type of T, U.
-define_variadic_struct!(OptMultivectorResource, OptMultivectorResourceItemBuilder,
+define_variadic_struct!(OptMultivectorResource, RefOptMultivectorResource, BuilderOptMultivectorResource,
     IndexType33,
     0 => (T, add_t),
     1 => (U, add_u));

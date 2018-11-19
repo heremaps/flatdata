@@ -2,7 +2,8 @@
 {{ struct.doc | rust_doc }}
 define_struct!(
     {{ struct.name }},
-    {{ struct.name }}Mut,
+    Ref{{ struct.name }},
+    RefMut{{ struct.name }},
     schema::structs::{{ struct.name | camel_to_snake_case | upper }},
     {{ struct.size_in_bytes }},
     {% for field in struct.fields %}

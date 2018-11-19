@@ -5,7 +5,7 @@
 {# variadic structs #}
 {% for r in archive.resources | multivector_resources %}
 /// Builtin union type of {{ r.types | join(', ') }}.
-define_variadic_struct!({{ r.name | snake_to_upper_camel_case }}, {{ r.name | snake_to_upper_camel_case }}ItemBuilder,
+define_variadic_struct!({{ r.name | snake_to_upper_camel_case }}, Ref{{ r.name | snake_to_upper_camel_case }}, Builder{{ r.name | snake_to_upper_camel_case }},
     {{ r.index_reference.node.name }},
 {% for type in r.types %}
     {{ loop.index0 }} => ({{ type }}, add_{{ type | camel_to_snake_case }})
