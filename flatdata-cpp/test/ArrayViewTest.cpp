@@ -11,6 +11,22 @@
 using namespace flatdata;
 using namespace test_structures;
 
+TEST( VectorTest, reading )
+{
+    Vector< AStruct > data( 10 );
+    for ( size_t i = 0; i < 10; i++ )
+    {
+        data[ i ].value = i;
+    }
+
+    ArrayView< AStruct > view = data;
+    for ( size_t i = 0; i < 10; i++ )
+    {
+        ASSERT_EQ( i , data[ i ].value );
+    }
+}
+
+
 TEST( VectorTest, slicing )
 {
     Vector< AStruct > data( 10 );
