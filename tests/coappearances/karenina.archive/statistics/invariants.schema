@@ -1,8 +1,18 @@
-namespace coappearances { struct Invariants {
+namespace coappearances {
+struct Invariants
+{
     max_degree : u32 : 16;
     max_degree_ref : u32 : 16;
     min_degree : u32 : 16;
     min_degree_ref : u32 : 16;
     num_connected_components : u32 : 16;
-} }
-namespace coappearances { invariants : Invariants; }
+}
+}
+
+namespace coappearances {
+archive Statistics
+{
+    invariants : .coappearances.Invariants;
+}
+}
+

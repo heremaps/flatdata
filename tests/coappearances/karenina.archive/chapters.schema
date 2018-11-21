@@ -1,8 +1,15 @@
-namespace coappearances { /**
- * A chapter in the book.
- */
-struct Chapter {
-    major: u8 : 4;
-    minor: u8 : 7;
-} }
-namespace coappearances { chapters : vector< Chapter >; }
+namespace coappearances {
+struct Chapter
+{
+    major : u8 : 4;
+    minor : u8 : 7;
+}
+}
+
+namespace coappearances {
+archive Graph
+{
+    chapters : vector< .coappearances.Chapter >;
+}
+}
+

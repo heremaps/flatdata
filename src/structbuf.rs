@@ -5,8 +5,7 @@ use archive::Struct;
 use memory;
 
 use std::fmt;
-use std::ops;
-use std::slice;
+use std::marker;
 
 /// A container holding a single flatdata struct in memory, and providing read
 /// and write access to it.
@@ -25,102 +24,128 @@ use std::slice;
 /// # fn main() {
 /// use flatdata::StructBuf;
 ///
-/// define_struct!(A, AMut, "no_schema", 4,
+/// define_struct!(
+///     A,
+///     RefA,
+///     RefMutA,
+///     "no_schema",
+///     4,
 ///     (x, set_x, u32, 0, 16),
 ///     (y, set_y, u32, 16, 16)
 /// );
 ///
 /// let mut a = StructBuf::<A>::new();
-/// a.set_x(1);
-/// a.set_y(2);
-/// assert_eq!(a.x(), 1);
-/// assert_eq!(a.y(), 2);
+/// a.get_mut().set_x(1);
+/// a.get_mut().set_y(2);
+/// assert_eq!(a.get().x(), 1);
+/// assert_eq!(a.get().y(), 2);
 /// # }
 /// ```
 ///
 /// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
 /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L183
-pub struct StructBuf<T: Struct> {
-    buffer: Vec<u8>,
-    data: T::Mut,
+pub struct StructBuf<T>
+where
+    T: for<'a> Struct<'a>,
+{
+    data: Vec<u8>,
+    _phantom: marker::PhantomData<T>,
 }
 
-impl<T: Struct> StructBuf<T> {
+impl<T> StructBuf<T>
+where
+    T: for<'a> Struct<'a>,
+{
     /// Creates an empty struct buffer.
     ///
     /// All fields are set to 0.
     pub fn new() -> Self {
-        let mut buffer = vec![0; T::SIZE_IN_BYTES + memory::PADDING_SIZE];
-        let ptr = buffer.as_mut_ptr();
+        let data = vec![0; <T as Struct>::SIZE_IN_BYTES + memory::PADDING_SIZE];
         Self {
-            buffer,
-            data: T::Mut::from(ptr),
+            data,
+            _phantom: marker::PhantomData,
         }
+    }
+
+    /// Get the stored object
+    pub fn get(&self) -> <T as Struct>::Item {
+        <T as Struct>::create(&self.data)
+    }
+
+    /// Get the mutable version of the stored object
+    pub fn get_mut(&mut self) -> <T as Struct>::ItemMut {
+        <T as Struct>::create_mut(&mut self.data)
     }
 
     /// Returns a raw bytes representation of the buffer.
     pub fn as_bytes(&self) -> &[u8] {
-        unsafe { slice::from_raw_parts(self.buffer.as_ptr(), T::SIZE_IN_BYTES) }
+        &self.data[0..<T as Struct>::SIZE_IN_BYTES]
     }
 }
 
-impl<T: Struct> fmt::Debug for StructBuf<T> {
+impl<T> fmt::Debug for StructBuf<T>
+where
+    T: for<'a> Struct<'a>,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "StructBuf {{ resource: {:?} }}", self.data)
+        write!(f, "StructBuf {{ resource: {:?} }}", self.get())
     }
 }
 
-impl<T: Struct> Default for StructBuf<T> {
+impl<T> Default for StructBuf<T>
+where
+    T: for<'a> Struct<'a>,
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Struct> ops::Deref for StructBuf<T> {
-    type Target = T::Mut;
-    fn deref(&self) -> &Self::Target {
-        &self.data
-    }
-}
-
-impl<T: Struct> ops::DerefMut for StructBuf<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.data
-    }
-}
-
-impl<T: Struct> AsRef<[u8]> for StructBuf<T> {
+impl<T> AsRef<[u8]> for StructBuf<T>
+where
+    T: for<'a> Struct<'a>,
+{
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod test {
-    use super::super::test_structs::A;
     use super::*;
+
+    define_struct!(
+        A,
+        RefA,
+        RefMutA,
+        "no_schema",
+        4,
+        (x, set_x, u32, 0, 16),
+        (y, set_y, u32, 16, 16)
+    );
 
     #[test]
     fn test_new() {
         let a = StructBuf::<A>::new();
         let b = StructBuf::<A>::default();
-        assert_eq!(a.as_ref(), b.as_ref());
+        assert_eq!(a.get(), b.get());
     }
 
     #[test]
     fn test_setter_getter() {
         let mut a = StructBuf::<A>::new();
-        a.set_x(1);
-        a.set_y(2);
-        assert_eq!(a.x(), 1);
-        assert_eq!(a.y(), 2);
-        a.set_x(3);
-        assert_eq!(a.x(), 3);
-        assert_eq!(a.y(), 2);
-        a.set_y(4);
-        assert_eq!(a.x(), 3);
-        assert_eq!(a.y(), 4);
-        let a_ref = (*a).as_ref();
+        a.get_mut().set_x(1);
+        a.get_mut().set_y(2);
+        assert_eq!(a.get().x(), 1);
+        assert_eq!(a.get().y(), 2);
+        a.get_mut().set_x(3);
+        assert_eq!(a.get().x(), 3);
+        assert_eq!(a.get().y(), 2);
+        a.get_mut().set_y(4);
+        assert_eq!(a.get().x(), 3);
+        assert_eq!(a.get().y(), 4);
+        let a_ref = a.get();
         assert_eq!(a_ref.x(), 3);
         assert_eq!(a_ref.y(), 4);
     }

@@ -1,17 +1,27 @@
-namespace coappearances { struct Invariants {
+namespace coappearances {
+struct Invariants
+{
     max_degree : u32 : 16;
     max_degree_ref : u32 : 16;
     min_degree : u32 : 16;
     min_degree_ref : u32 : 16;
     num_connected_components : u32 : 16;
-} }
-namespace coappearances { struct Degree {
-    value : u32 : 16;
-} }
-namespace coappearances { @bound_implicitly( characters: Graph.vertices, vertex_degrees )
-archive Statistics {
-    invariants : Invariants;
+}
+}
 
-    // indexed by `vertices`
-    vertex_degrees : vector< Degree >;
-} }
+namespace coappearances {
+struct Degree
+{
+    value : u32 : 16;
+}
+}
+
+namespace coappearances {
+@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Statistics.vertex_degrees )
+archive Statistics
+{
+    invariants : .coappearances.Invariants;
+    vertex_degrees : vector< .coappearances.Degree >;
+}
+}
+

@@ -1,4 +1,4 @@
-use storage::{MemoryDescriptor, ResourceStorage, Stream};
+use storage::{ResourceStorage, Stream};
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -6,14 +6,15 @@ use std::fmt;
 use std::io::{self, Cursor};
 use std::path;
 use std::rc::Rc;
+use std::slice;
 
 /// Internal storage of data in memory.
 #[derive(Default)]
 struct MemoryStorage {
     // Streams of resources that were written.
-    streams: BTreeMap<path::PathBuf, Rc<RefCell<Cursor<Vec<u8>>>>>,
+    streams: RefCell<BTreeMap<path::PathBuf, Rc<RefCell<Cursor<Vec<u8>>>>>>,
     // Data of resources that were opened for reading.
-    resources: BTreeMap<path::PathBuf, Rc<Vec<u8>>>,
+    resources: RefCell<BTreeMap<path::PathBuf, Rc<Vec<u8>>>>,
 }
 
 impl fmt::Debug for MemoryStorage {
@@ -21,8 +22,8 @@ impl fmt::Debug for MemoryStorage {
         write!(
             f,
             "MemoryStorage {{ num_streams: {}, num_resources: {} }}",
-            self.streams.len(),
-            self.resources.len(),
+            self.streams.borrow().len(),
+            self.resources.borrow().len(),
         )
     }
 }
@@ -53,20 +54,24 @@ impl ResourceStorage for MemoryResourceStorage {
 
     fn exists(&self, resource_name: &str) -> bool {
         let resource_path = self.path.join(resource_name);
-        self.storage.resources.contains_key(&resource_path)
-            || self.storage.streams.contains_key(&resource_path)
+        self.storage.resources.borrow().contains_key(&resource_path)
+            || self.storage.streams.borrow().contains_key(&resource_path)
     }
 
-    fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error> {
+    fn read_resource(&self, resource_name: &str) -> Result<&[u8], io::Error> {
         let resource_path = self.path.join(resource_name);
-        if !self.storage.resources.contains_key(&resource_path) {
-            let stream = self.storage.streams.get(&resource_path);
+        if !self.storage.resources.borrow().contains_key(&resource_path) {
+            let streams = self.storage.streams.borrow();
+            let stream = streams.get(&resource_path);
             match stream {
                 Some(stream) => {
                     // Resource is not yet opened, but there is a stream it was written to
                     // => copy the stream as resource data.
                     let data = Rc::new(stream.borrow().get_ref().clone());
-                    self.storage.resources.insert(resource_path.clone(), data);
+                    self.storage
+                        .resources
+                        .borrow_mut()
+                        .insert(resource_path.clone(), data);
                 }
                 None => {
                     return Err(io::Error::new(
@@ -76,20 +81,22 @@ impl ResourceStorage for MemoryResourceStorage {
                 }
             }
         }
-        let data: &[u8] = &self.storage.resources[&resource_path];
-        Ok(MemoryDescriptor::new(&data[0], data.len()))
+        let data = &self.storage.resources.borrow()[&resource_path];
+        // We cannot prove to Rust that the buffer will live as long as the storage
+        // (we never delete mappings), so we need to manually extend lifetime
+        let extended_lifetime_data = unsafe { slice::from_raw_parts(data.as_ptr(), data.len()) };
+        Ok(&extended_lifetime_data)
     }
 
-    fn create_output_stream(
-        &mut self,
-        resource_name: &str,
-    ) -> Result<Rc<RefCell<Stream>>, io::Error> {
+    fn create_output_stream(&self, resource_name: &str) -> Result<Rc<RefCell<Stream>>, io::Error> {
         let resource_path = self.path.join(resource_name);
         let stream = self
             .storage
             .streams
+            .borrow_mut()
             .entry(resource_path)
-            .or_insert_with(|| Rc::new(RefCell::new(Cursor::new(Vec::new()))));
-        Ok(stream.clone())
+            .or_insert_with(|| Rc::new(RefCell::new(Cursor::new(Vec::new()))))
+            .clone();
+        Ok(stream)
     }
 }

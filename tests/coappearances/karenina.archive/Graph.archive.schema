@@ -1,110 +1,119 @@
-namespace coappearances { /**
- * Meta information about the book.
- */
-struct Meta {
+namespace coappearances {
+struct Meta
+{
     title_ref : u32 : 32;
     author_ref : u32 : 32;
-} }
-namespace coappearances { /**
- * A character.
- */
-struct Character {
+}
+}
+
+namespace coappearances {
+struct Character
+{
     name_ref : u32 : 32;
-} }
-namespace coappearances { /**
- * An appearance of two characters in the same scene.
- *
- * count - multiplicity of the coappearance.
- * first_chapter_ref - a reference to the first chapter in which characters appear. How to get the
- * full range of chapters is described in 'coappearances.cpp:read'.
- */
-struct Coappearance {
+}
+}
+
+namespace coappearances {
+struct Coappearance
+{
     a_ref : u32 : 16;
     b_ref : u32 : 16;
     count : u32 : 16;
-    first_chapter_ref: u32 : 16;
-} }
-namespace coappearances { /**
- * A nickname or an alternative name of a character.
- */
-struct Nickname {
-    ref: u32 : 32;
-} }
-namespace coappearances { /**
- * A description of a character.
- */
-struct Description {
-    ref: u32 : 32;
-} }
-namespace coappearances { /**
- * A relation of a character to another one.
- */
-struct UnaryRelation {
-    kind_ref: u32 : 32;
-    to_ref: u32 : 16;
-} }
-namespace coappearances { /**
- * A relation of a character to two other characters.
- */
-struct BinaryRelation {
-    kind_ref: u32 : 32;
-    to_a_ref: u32 : 16;
-    to_b_ref: u32 : 16;
-} }
-namespace _builtin.multivector { struct IndexType32 { value : u64 : 32; } }
-namespace coappearances { /**
- * A chapter in the book.
- */
-struct Chapter {
-    major: u8 : 4;
-    minor: u8 : 7;
-} }
-namespace coappearances { @bound_implicitly( characters: Graph.vertices, vertex_degrees )
-archive Statistics {
-    invariants : Invariants;
+    first_chapter_ref : u32 : 16;
+}
+}
 
-    // indexed by `vertices`
-    vertex_degrees : vector< Degree >;
-} }
-namespace coappearances { struct Invariants {
+namespace coappearances {
+struct Nickname
+{
+    ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct Description
+{
+    ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct UnaryRelation
+{
+    kind_ref : u32 : 32;
+    to_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct BinaryRelation
+{
+    kind_ref : u32 : 32;
+    to_a_ref : u32 : 16;
+    to_b_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct Chapter
+{
+    major : u8 : 4;
+    minor : u8 : 7;
+}
+}
+
+namespace coappearances {
+struct Invariants
+{
     max_degree : u32 : 16;
     max_degree_ref : u32 : 16;
     min_degree : u32 : 16;
     min_degree_ref : u32 : 16;
     num_connected_components : u32 : 16;
-} }
-namespace coappearances { struct Degree {
+}
+}
+
+namespace coappearances {
+struct Degree
+{
     value : u32 : 16;
-} }
-namespace coappearances { @bound_implicitly( characters: vertices, vertices_data )
-archive Graph {
-    @explicit_reference( Meta.title_ref, strings )
-    @explicit_reference( Meta.author_ref, strings )
-    meta : Meta;
+}
+}
 
-    @explicit_reference( Character.name_ref, strings )
-    vertices : vector< Character >;
+namespace coappearances {
+@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Statistics.vertex_degrees )
+archive Statistics
+{
+    invariants : .coappearances.Invariants;
+    vertex_degrees : vector< .coappearances.Degree >;
+}
+}
 
-    @explicit_reference( Coappearance.a_ref, vertices )
-    @explicit_reference( Coappearance.b_ref, vertices )
-    @explicit_reference( Coappearance.first_chapter_ref, chapters )
-    edges : vector< Coappearance >;
-
-    @explicit_reference( Nickname.ref, strings )
-    @explicit_reference( Description.ref, strings )
-    @explicit_reference( UnaryRelation.kind_ref, strings )
-    @explicit_reference( UnaryRelation.to_ref, vertices )
-    @explicit_reference( BinaryRelation.kind_ref, strings )
-    @explicit_reference( BinaryRelation.to_a_ref, vertices )
-    @explicit_reference( BinaryRelation.to_b_ref, vertices )
-    vertices_data: multivector< 32, Nickname, Description, UnaryRelation, BinaryRelation >;
-
-    chapters : vector< Chapter >;
-
-    // All strings contained in the data separated by '\0'.
-    strings: raw_data;
-
-    // Optional archive containing calculated statistics.
+namespace coappearances {
+@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Graph.vertices_data )
+archive Graph
+{
+    @explicit_reference( .coappearances.Meta.title_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.Meta.author_ref, .coappearances.Graph.strings )
+    meta : .coappearances.Meta;
+    @explicit_reference( .coappearances.Character.name_ref, .coappearances.Graph.strings )
+    vertices : vector< .coappearances.Character >;
+    @explicit_reference( .coappearances.Coappearance.a_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.Coappearance.b_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.Coappearance.first_chapter_ref, .coappearances.Graph.chapters )
+    edges : vector< .coappearances.Coappearance >;
+    @explicit_reference( .coappearances.Nickname.ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.Description.ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.UnaryRelation.kind_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.UnaryRelation.to_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.BinaryRelation.kind_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.BinaryRelation.to_a_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.BinaryRelation.to_b_ref, .coappearances.Graph.vertices )
+    vertices_data : multivector< 32, .coappearances.Nickname, .coappearances.Description, .coappearances.UnaryRelation, .coappearances.BinaryRelation >;
+    chapters : vector< .coappearances.Chapter >;
+    strings : raw_data;
     @optional
-    statistics : archive Statistics;
-} }
+    statistics : archive .coappearances.Statistics;
+}
+}
+

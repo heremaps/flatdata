@@ -64,7 +64,6 @@ mod archive;
 mod arrayview;
 mod error;
 mod filestorage;
-mod handle;
 mod memory;
 mod memstorage;
 mod multiarrayview;
@@ -73,13 +72,10 @@ mod storage;
 mod structbuf;
 mod vector;
 
-mod test_structs;
-
 pub use archive::*;
 pub use arrayview::ArrayView;
 pub use error::*;
 pub use filestorage::FileResourceStorage;
-pub use handle::*;
 pub use memory::PADDING_SIZE;
 pub use memstorage::MemoryResourceStorage;
 pub use multiarrayview::MultiArrayView;

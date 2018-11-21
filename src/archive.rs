@@ -10,10 +10,10 @@
 //! ## Structs
 //!
 //! A flatdata struct, let's say `SomeData`, is introduced by macro
-//! `define_struct` which defines two  Rust struct types: `SomeData` and
-//! `SomeDataMut`. The former type is used to read data from a serialized
-//! archive, the second to write data to archive. Both refer to each other
-//! through  the trait `Struct`.
+//! `define_struct` which defines three Rust struct types: `SomeData` and
+//! `RefSomeData` and `RefMutSomeData`. The former type is used to to create the
+//! latter two. `RefSomeData` is used to read data from a serialized
+//! archive, `RefMutSomeData` to write data to archive.
 //!
 //! ## Indexes and variadic types
 //!
@@ -35,48 +35,62 @@ use error::ResourceStorageError;
 use storage::ResourceStorage;
 
 use std::cell::RefCell;
-use std::convert::From;
+
 use std::fmt::Debug;
 use std::rc::Rc;
 
+pub use std::marker;
+
 /// A type in flatdata used for reading data.
 ///
-/// Each struct in generated code implements this trait.
-pub trait Struct: Clone + Debug + PartialEq + From<*const u8> {
+/// Each struct reference in generated code implements this trait.
+pub trait Ref: Clone + Debug + PartialEq {}
+
+/// A mutable type in flatdata used for writing data.
+///
+/// Each struct reference in generated code has a corresponding type with suffix
+/// `Mut` which implements this trait.
+pub trait RefMut: Debug {}
+
+/// A factory trait used to bind lifetime to Ref implementations.
+///
+/// Vector/ArrayView-like classes cannot be directly implemented over the
+/// structs since that binds lifetime too early. Instead this generic factory
+/// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
+pub trait Struct<'a> {
     /// Schema of the type. Used only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
-    /// Corresponding mutable type used for writing data.
-    type Mut: StructMut + AsRef<Self>;
-    /// Raw pointer to the data.
-    fn as_ptr(&self) -> *const u8;
+
+    /// Item this factory will produce.
+    type Item: Ref;
+
+    /// Creates a new item from a slice.
+    fn create(&'a [u8]) -> Self::Item;
+
+    /// Item this factory will produce.
+    type ItemMut: RefMut;
+
+    /// Creates a new item from a slice.
+    fn create_mut(&'a mut [u8]) -> Self::ItemMut;
 }
 
-/// A mutable type in flatdata used for writing data.
-///
-/// Each struct in generated code has a corresponding type with suffix `Mut`
-/// which implements this trait.
-pub trait StructMut: Debug + From<*mut u8> {
-    /// Corresponding mutable type used for reading data.
-    type Const: Struct;
-    /// Raw pointer to the mutable data.
-    fn as_mut_ptr(&mut self) -> *mut u8;
+/// A specialized Struct factory producing Index items.
+/// Used primarily by the MultiVector/MultiArrayView.
+pub trait IndexStruct<'a>: Struct<'a> {
+    /// Provide getter for index
+    fn index(data: Self::Item) -> usize;
+
+    /// Provide setter for index
+    fn set_index(data: Self::ItemMut, value: usize);
 }
 
 /// A type in archive used as index of a `MultiArrayView`.
-pub trait Index: Struct {
-    /// Corresponding mutable index type used for writing an index.
-    type IndexMut: IndexMut;
-    /// Returns the index value.
-    fn value(&self) -> usize;
-}
+pub trait Index: Ref {}
 
 /// A type in archive used as mutable index of a `MultiVector`.
-pub trait IndexMut: StructMut {
-    /// Sets index value.
-    fn set_value(&mut self, value: usize);
-}
+pub trait IndexMut: RefMut {}
 
 /// Index specifying a variadic type of `MultiArrayView`.
 pub type TypeIndex = u8;
@@ -84,7 +98,26 @@ pub type TypeIndex = u8;
 /// A type used as element of `MultiArrayView`.
 ///
 /// Implemented by an enum type.
-pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8)> {
+pub trait VariadicRef: Clone + Debug + PartialEq {
+    /// Returns size in bytes of the current variant type.
+    ///
+    /// Since a variadic struct can contain types of different sized, this is a
+    /// method based on the current value type.
+    fn size_in_bytes(&self) -> usize;
+}
+
+/// A type used to create VariadicStructs.
+///
+/// Vector/ArrayView-like classes cannot be directly implemented over the
+/// structs since that binds lifetime too early. Instead this generic factory
+/// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
+pub trait VariadicStruct<'a> {
+    /// Reader type
+    type Item: VariadicRef;
+
+    /// Creates a reader for specific type of data.
+    fn create(TypeIndex, &'a [u8]) -> Self::Item;
+
     /// Associated type used for building an item in `MultiVector` based on
     /// this variadic type.
     ///
@@ -92,12 +125,10 @@ pub trait VariadicStruct: Clone + Debug + PartialEq + From<(TypeIndex, *const u8
     /// [`MultiVector::grow`](struct.MultiVector.html#method.grow)
     /// method. It provides convenient methods `add_{variant_name}` for each
     /// enum variant.
-    type ItemBuilder: From<*mut Vec<u8>>;
-    /// Returns size in bytes of the current variant type.
-    ///
-    /// Since a variadic struct can contain types of different sized, this is a
-    /// method based on the current value type.
-    fn size_in_bytes(&self) -> usize;
+    type ItemMut;
+
+    /// Creates a builder for a list of VariadicRef.
+    fn create_mut(&'a mut Vec<u8>) -> Self::ItemMut;
 }
 
 /// A flatdata archive representing serialized data.
@@ -165,70 +196,73 @@ pub trait ArchiveBuilder: Clone {
 /// Macro used by generator to define a flatdata struct.
 #[macro_export]
 macro_rules! define_struct {
+
     // Simpler case where type and primitive_type coincide.
-    ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
+    ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) => {
-        define_struct!($name, $name_mut, $schema, $size_in_bytes
+        define_struct!($factory, $name, $name_mut, $schema, $size_in_bytes
             $(,($field, $field_setter, $type: $type, $offset, $bit_size))*
         );
     };
-    ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
+    ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $field_setter:ident, $type:tt: $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
     {
-        // TODO: We cannot store `&u8` here, since then we need to annotate the type with a
-        // lifetime, which would enforce an annotation in the trait, and this would bind the
-        // lifetime at the creating of containers as ArrayView, etc... When meta-types are
-        // introduced (i.e. when we can express that a container is parametrized over a meta-type
-        // with a lifetime bound later), we can refactor this and get rid of Handle and HandleMut.
         #[derive(Clone)]
-        pub struct $name {
+        pub struct $name<'a> {
             data: *const u8,
+            _phantom: $crate::marker::PhantomData<&'a u8>,
         }
 
-        impl $name {
+        pub struct $factory{}
+
+        impl<'a> $crate::Struct<'a> for $factory
+        {
+            const SCHEMA: &'static str = $schema;
+            const SIZE_IN_BYTES: usize = $size_in_bytes;
+
+            type Item = $name<'a>;
+            fn create(data : &'a[u8]) -> Self::Item
+            {
+                Self::Item{ data : data.as_ptr(), _phantom : $crate::marker::PhantomData }
+            }
+
+            type ItemMut = $name_mut<'a>;
+            fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+            {
+                Self::ItemMut{ data : data.as_mut_ptr(), _phantom : $crate::marker::PhantomData }
+            }
+        }
+
+        impl<'a> $name<'a> {
             $(pub fn $field(&self) -> $type {
                 let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
         }
 
-        impl ::std::fmt::Debug for $name {
+        impl<'a> ::std::fmt::Debug for $name<'a> {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
-                    concat!(stringify!($name), " {{ ",
+                    concat!(stringify!($factory), " {{ ",
                         intersperse!($(concat!( stringify!($field), ": {:?}")), *), " }}"),
                     $(self.$field(),)*)
             }
         }
 
-        impl ::std::cmp::PartialEq for $name {
+        impl<'a> ::std::cmp::PartialEq for $name<'a> {
             fn eq(&self, other: &$name) -> bool {
                 $(self.$field() == other.$field()) && *
             }
         }
 
-        impl ::std::convert::From<*const u8> for $name {
-            fn from(data: *const u8) -> Self {
-                Self { data }
-            }
-        }
+        impl<'a> $crate::Ref for $name<'a> {}
 
-        impl $crate::Struct for $name {
-            const SCHEMA: &'static str = $schema;
-            const SIZE_IN_BYTES: usize = $size_in_bytes;
-
-            type Mut = $name_mut;
-
-            fn as_ptr(&self) -> *const u8 {
-                self.data
-            }
-        }
-
-        pub struct $name_mut {
+        pub struct $name_mut<'a> {
             data: *mut u8,
+            _phantom: $crate::marker::PhantomData<&'a u8>,
         }
 
-        impl $name_mut {
+        impl<'a> $name_mut<'a> {
             $(pub fn $field(&self) -> $type {
                 let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
@@ -244,42 +278,29 @@ macro_rules! define_struct {
             pub fn fill_from(&mut self, other: &$name) {
                 $(self.$field_setter(other.$field());)*
             }
+
+            pub fn into_ref(self) -> $name<'a> {
+                $name{ data : self.data, _phantom : $crate::marker::PhantomData }
+            }
         }
 
-        impl ::std::fmt::Debug for $name_mut {
+        impl<'a> ::std::fmt::Debug for $name_mut<'a> {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                self.as_ref().fmt(f)
+                $name{ data : self.data, _phantom : $crate::marker::PhantomData }.fmt( f )
             }
         }
 
-        impl ::std::convert::From<*mut u8> for $name_mut {
-            fn from(data: *mut u8) -> Self {
-                Self { data }
-            }
-        }
-
-        impl $crate::StructMut for $name_mut {
-            type Const = $name;
-
-            fn as_mut_ptr(&mut self) -> *mut u8 {
-                self.data
-            }
-        }
-
-        impl ::std::convert::AsRef<$name> for $name_mut {
-            fn as_ref(&self) -> &$name {
-                unsafe { &*(self as *const $name_mut as *const $name) }
-            }
-        }
+        impl<'a> $crate::RefMut for $name_mut<'a> {}
     };
 }
 
 /// Macro used by generator to define a flatdata index.
 #[macro_export]
 macro_rules! define_index {
-    ($name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr, $size_in_bits:expr) => {
+    ($factory:ident,$name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr, $size_in_bits:expr) => {
         // TODO: Find a way to put this definition into an internal submodule.
         define_struct!(
+            $factory,
             $name,
             $name_mut,
             $schema,
@@ -287,16 +308,13 @@ macro_rules! define_index {
             (value, set_value, u64, 0, $size_in_bits)
         );
 
-        impl $crate::Index for $name {
-            type IndexMut = $name_mut;
-            fn value(&self) -> usize {
-                self.value() as usize
+        impl<'a> $crate::IndexStruct<'a> for $factory {
+            fn index(data: Self::Item) -> usize {
+                data.value() as usize
             }
-        }
 
-        impl $crate::IndexMut for $name_mut {
-            fn set_value(&mut self, value: usize) {
-                self.set_value(value as u64);
+            fn set_index(mut data: Self::ItemMut, value: usize) {
+                data.set_value(value as u64);
             }
         }
     };
@@ -306,25 +324,15 @@ macro_rules! define_index {
 /// and `MultiArrayView`.
 #[macro_export]
 macro_rules! define_variadic_struct {
-    ($name:ident, $item_builder_name:ident, $index_type:path,
+    ($factory:ident, $name:ident, $item_builder_name:ident, $index_type:path,
         $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
     {
         #[derive(Clone, PartialEq)]
-        pub enum $name {
-            $($type($type),)*
+        pub enum $name<'a> {
+            $($type(<$type as $crate::Struct<'a>>::Item),)*
         }
 
-        impl ::std::convert::From<($crate::TypeIndex, *const u8)> for $name {
-            fn from((type_index, data): ($crate::TypeIndex, *const u8)) -> Self {
-                match type_index {
-                    $($type_index => $name::$type($type::from(data))),+,
-                    _ => panic!(concat!(
-                        "invalid type index {} for type ", stringify!($name)), type_index),
-                }
-            }
-        }
-
-        impl ::std::fmt::Debug for $name {
+        impl<'a> ::std::fmt::Debug for $name<'a> {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 match *self {
                     $($name::$type(ref inner) => write!(f, "{:?}", inner)),+
@@ -332,36 +340,49 @@ macro_rules! define_variadic_struct {
             }
         }
 
-        impl $crate::VariadicStruct for $name {
-            type ItemBuilder = $item_builder_name;
-
+        impl<'a> $crate::VariadicRef for $name<'a> {
             fn size_in_bytes(&self) -> usize {
                 match *self {
-                    $($name::$type(_) => $type::SIZE_IN_BYTES),+
+                    $($name::$type(_) => <$type as $crate::Struct<'a>>::SIZE_IN_BYTES),+
                 }
             }
         }
 
-        pub struct $item_builder_name {
-            data: *mut Vec<u8>
+        pub struct $item_builder_name<'a> {
+            data: &'a mut Vec<u8>
         }
 
-        impl $item_builder_name {
-            $(pub fn $add_type_fn(&mut self) -> $crate::HandleMut<<$type as $crate::Struct>::Mut> {
-                let data = unsafe { &mut *self.data };
-                let old_len = data.len();
-                let increment = 1 + $type::SIZE_IN_BYTES;
-                data.resize(old_len + increment, 0);
-                data[old_len - $crate::PADDING_SIZE] = $type_index;
-                $crate::HandleMut::new(<$type as $crate::Struct>::Mut::from(
-                    &mut data[1 + old_len - $crate::PADDING_SIZE] as *mut _
-                ))
+        impl<'a> $item_builder_name<'a> {
+            $(pub fn $add_type_fn<'b>(&'b mut self) -> <$type as $crate::Struct<'b>>::ItemMut {
+                let old_len = self.data.len();
+                let increment = 1 + <$type as $crate::Struct<'b>>::SIZE_IN_BYTES;
+                self.data.resize(old_len + increment, 0);
+                self.data[old_len - $crate::PADDING_SIZE] = $type_index;
+                <$type as $crate::Struct<'b>>::create_mut(
+                    &mut self.data[1 + old_len - $crate::PADDING_SIZE..]
+                )
             })*
         }
 
-        impl<'a> ::std::convert::From<*mut Vec<u8>> for $item_builder_name {
-            fn from(data: *mut Vec<u8>) -> Self {
-                Self { data }
+        pub struct $factory{}
+
+        impl<'a> $crate::VariadicStruct<'a> for $factory {
+            type Item = $name<'a>;
+
+            fn create(index : $crate::TypeIndex, data : &'a [u8]) -> Self::Item
+            {
+                match index {
+                    $($type_index => $name::$type(<$type as $crate::Struct<'a>>::create(data))),+,
+                    _ => panic!(concat!(
+                        "invalid type index {} for type ", stringify!($name)), index),
+                }
+            }
+
+            type ItemMut = $item_builder_name<'a>;
+
+            fn create_mut(data : &'a mut Vec<u8>) -> Self::ItemMut
+            {
+                $item_builder_name{data}
             }
         }
     }
@@ -455,18 +476,18 @@ macro_rules! define_archive {
             where
                 R: From<$crate::MemoryDescriptor>,
             {
-                storage.read(name, schema).map(R::from)
+                storage.read(name, schema).map(|x|R::from($crate::MemoryDescriptor::new(&x)))
             }
 
             $(pub fn $struct_resource(&self) -> opt!(
-                $crate::Handle<$struct_type>, $is_optional_struct)
+                <$struct_type as $crate::Struct>::Item, $is_optional_struct)
             {
                 static_if!($is_optional_struct, {
                     self.$struct_resource.as_ref().map(|mem_desc| {
-                        $crate::Handle::new($struct_type::from(mem_desc.data()))
+                        <$struct_type as $crate::Struct>::create(&unsafe{mem_desc.as_bytes()})
                     })
                 }, {
-                    $crate::Handle::new($struct_type::from(self.$struct_resource.data()))
+                    <$struct_type as $crate::Struct>::create(&unsafe{self.$struct_resource.as_bytes()})
                 })
             })*
 
@@ -474,9 +495,9 @@ macro_rules! define_archive {
                 $crate::ArrayView<$element_type>, $is_optional_vector)
             {
                 static_if!($is_optional_vector, {
-                    self.$vector_resource.as_ref().map($crate::ArrayView::new)
+                    self.$vector_resource.as_ref().map(|x|$crate::ArrayView::new(unsafe{x.as_bytes()}))
                 }, {
-                    $crate::ArrayView::new(&self.$vector_resource)
+                    $crate::ArrayView::new(&unsafe{self.$vector_resource.as_bytes()})
                 })
             })*
 
@@ -487,16 +508,16 @@ macro_rules! define_archive {
                     let index_mem_desc = &self.$multivector_resource.0.as_ref();
                     let res_mem_desc = &self.$multivector_resource.1.as_ref();
                     index_mem_desc
-                        .map($crate::ArrayView::new)
+                        .map(|x|$crate::ArrayView::new(unsafe{x.as_bytes()}))
                         .and_then(move |index| {
                             res_mem_desc.map(move |mem_desc| {
-                                $crate::MultiArrayView::new(index, mem_desc)
+                                $crate::MultiArrayView::new(index, unsafe{mem_desc.as_bytes()})
                             })
                         })
                 }, {
                     $crate::MultiArrayView::new(
-                        $crate::ArrayView::new(&self.$multivector_resource.0),
-                        &self.$multivector_resource.1,
+                        $crate::ArrayView::new(&unsafe{self.$multivector_resource.0.as_bytes()}),
+                        &unsafe{self.$multivector_resource.1.as_bytes()},
                     )
                 })
             })*
@@ -504,17 +525,11 @@ macro_rules! define_archive {
             $(pub fn $raw_data_resource(&self) -> opt!(&[u8], $is_optional_raw_data) {
                 static_if!($is_optional_raw_data, {
                     self.$raw_data_resource.as_ref().map(|mem_desc| {
-                        unsafe {
-                            ::std::slice::from_raw_parts(
-                                mem_desc.data(),
-                                mem_desc.size_in_bytes())
-                        }
+                        unsafe { mem_desc.as_bytes() }
                     })
                 }, {
                     unsafe {
-                        ::std::slice::from_raw_parts(
-                            self.$raw_data_resource.data(),
-                            self.$raw_data_resource.size_in_bytes())
+                        self.$raw_data_resource.as_bytes()
                     }
                 })
             })*
@@ -629,10 +644,10 @@ macro_rules! define_archive {
         impl $builder_name {
             $(pub fn $struct_setter(
                 &mut self,
-                resource: &<$struct_type as $crate::Struct>::Mut,
+                resource: <$struct_type as $crate::Struct>::Item,
             ) -> ::std::io::Result<()> {
                 let data = unsafe {
-                    ::std::slice::from_raw_parts(resource.data, $struct_type::SIZE_IN_BYTES)
+                    ::std::slice::from_raw_parts(resource.data, <$struct_type as $crate::Struct>::SIZE_IN_BYTES)
                 };
                 self.storage
                     .borrow_mut()
@@ -712,7 +727,8 @@ mod test {
     fn test_debug() {
         define_struct!(
             A,
-            AMut,
+            RefA,
+            RefMutA,
             "no_schema",
             4,
             (x, set_x, u32, 0, 16),
@@ -739,12 +755,19 @@ mod test {
                     const IS_SIGNED: bool = $is_signed;
                 }
 
-                define_struct!(A, AMut, "no_schema", 1, (x, set_x, Variant: $type, 0, 2));
+                define_struct!(
+                    A,
+                    RefA,
+                    RefMutA,
+                    "no_schema",
+                    1,
+                    (x, set_x, Variant: $type, 0, 2)
+                );
                 let mut a = StructBuf::<A>::new();
                 let output = format!("{:?}", a);
                 assert_eq!(output, "StructBuf { resource: A { x: X } }");
 
-                a.set_x(Variant::Y);
+                a.get_mut().set_x(Variant::Y);
                 let output = format!("{:?}", a);
                 assert_eq!(output, "StructBuf { resource: A { x: Y } }");
             }
@@ -778,21 +801,40 @@ mod test {
     #[allow(warnings)]
     fn test_archive_compilation() {
         // This test checks that the archive definition below compiles.
-        use super::Struct;
+        use super::Ref;
 
         define_struct!(
             A,
-            AMut,
+            RefA,
+            RefMutA,
             "no_schema",
             4,
             (x, set_x, u32, 0, 16),
             (y, set_y, u32, 16, 16)
         );
 
-        define_index!(IndexType32, IndexType32Mut, "IndexType32 schema", 4, 32);
+        define_struct!(
+            B,
+            RefB,
+            RefMutB,
+            "no_schema",
+            4,
+            (x, set_x, u32, 0, 16),
+            (y, set_y, u32, 16, 16)
+        );
 
-        define_variadic_struct!(Ts, TsBuilder, IndexType32,
-            0 => (A, add_a));
+        define_index!(
+            IndexType32,
+            RefIndexType32,
+            RefMutIndexType32,
+            "IndexType32 schema",
+            4,
+            32
+        );
+
+        define_variadic_struct!(Ts, RefTs, BuilderTs, IndexType32,
+            0 => (A, add_a),
+            1 => (B, add_b));
 
         define_archive!(SubArch, SubArchBuilder, "SubArch schema";
             ;  // struct resources

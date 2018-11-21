@@ -1,8 +1,8 @@
 use archive::Struct;
 use arrayview::ArrayView;
-use handle::{Handle, HandleMut};
+
 use memory;
-use storage::{MemoryDescriptor, ResourceHandle};
+use storage::ResourceHandle;
 
 use std::borrow::{Borrow, BorrowMut};
 use std::fmt;
@@ -29,7 +29,12 @@ use std::marker;
 /// # fn main() {
 /// use flatdata::Vector;
 ///
-/// define_struct!(A, AMut, "no_schema", 4,
+/// define_struct!(
+///     A,
+///     RefA,
+///     RefMutA,
+///     "no_schema",
+///     4,
 ///     (x, set_x, u32, 0, 16),
 ///     (y, set_y, u32, 16, 16)
 /// );
@@ -62,7 +67,7 @@ pub struct Vector<T> {
 
 impl<T> Vector<T>
 where
-    T: Struct,
+    T: for<'b> Struct<'b>,
 {
     /// Creates an empty `Vector<T>`.
     #[inline]
@@ -93,7 +98,7 @@ where
     /// Number of elements in the vector.
     #[inline]
     pub fn len(&self) -> usize {
-        self.size_in_bytes() / T::SIZE_IN_BYTES
+        self.size_in_bytes() / <T as Struct>::SIZE_IN_BYTES
     }
 
     /// Returns `true` if the vector has a length 0.
@@ -116,7 +121,7 @@ where
     /// Returns an `ArrayView` to this vector.
     #[inline]
     pub fn as_view(&self) -> ArrayView<T> {
-        ArrayView::new(&MemoryDescriptor::new(&self.data[0], self.size_in_bytes()))
+        ArrayView::new(&self.data[..self.size_in_bytes()])
     }
 
     /// Returns the contents of this vector as slice of bytes.
@@ -128,43 +133,49 @@ where
     /// Appends an element to the end of this vector and returns a mutable
     /// handle to it.
     #[inline]
-    pub fn grow(&mut self) -> HandleMut<T::Mut> {
+    pub fn grow(&mut self) -> <T as Struct>::ItemMut {
         let old_size = self.data.len();
-        self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
+        self.data.resize(old_size + <T as Struct>::SIZE_IN_BYTES, 0);
         let last_index = self.len() - 1;
-        HandleMut::new(T::Mut::from(&mut self.data[last_index * T::SIZE_IN_BYTES]))
+        T::create_mut(&mut self.data[last_index * <T as Struct>::SIZE_IN_BYTES..])
     }
 
     /// Return an accessor handle to the element at position `index` in the
     /// vector.
     #[inline]
-    pub fn at(&self, index: usize) -> Handle<T> {
-        Handle::new(T::from(&self.data[index * T::SIZE_IN_BYTES]))
+    pub fn at(&self, index: usize) -> <T as Struct>::Item {
+        T::create(&self.data[index * <T as Struct>::SIZE_IN_BYTES..])
     }
 
     /// Return a mutable handle to the element at position `index` in the
     /// vector.
     #[inline]
-    pub fn at_mut(&mut self, index: usize) -> HandleMut<T::Mut> {
-        HandleMut::new(T::Mut::from(&mut self.data[index * T::SIZE_IN_BYTES]))
+    pub fn at_mut(&mut self, index: usize) -> <T as Struct>::ItemMut {
+        T::create_mut(&mut self.data[index * <T as Struct>::SIZE_IN_BYTES..])
     }
 
     /// Calculates size in bytes (with padding) needed to store `len` many
     /// elements.
     #[inline]
     fn calc_size(len: usize) -> usize {
-        len * T::SIZE_IN_BYTES + memory::PADDING_SIZE
+        len * <T as Struct>::SIZE_IN_BYTES + memory::PADDING_SIZE
     }
 }
 
-impl<T: Struct> Default for Vector<T> {
+impl<T> Default for Vector<T>
+where
+    T: for<'b> Struct<'b>,
+{
     /// Creates an empty `Vector<T>`.
     fn default() -> Self {
         Vector::new()
     }
 }
 
-impl<T: Struct> AsRef<[u8]> for Vector<T> {
+impl<T> AsRef<[u8]> for Vector<T>
+where
+    T: for<'b> Struct<'b>,
+{
     /// Returns the content of this vector as slice of bytes. Equivalent to
     /// [`as_bytes`].
     ///
@@ -174,7 +185,10 @@ impl<T: Struct> AsRef<[u8]> for Vector<T> {
     }
 }
 
-impl<T: Struct> fmt::Debug for Vector<T> {
+impl<T> fmt::Debug for Vector<T>
+where
+    T: for<'b> Struct<'b>,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let view = self.as_view();
         let preview: Vec<_> = view.iter().take(super::DEBUG_PREVIEW_LEN).collect();
@@ -210,19 +224,23 @@ impl<T: Struct> fmt::Debug for Vector<T> {
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
 /// use flatdata::{
-/// create_external_vector, ArrayView, ExternalVector,
-/// MemoryResourceStorage, ResourceStorage, };
+///     create_external_vector, ArrayView, ExternalVector, MemoryResourceStorage, ResourceStorage,
+/// };
 ///
-/// define_struct!(A, AMut, "no_schema", 4,
+/// define_struct!(
+///     A,
+///     RefA,
+///     RefMutA,
+///     "no_schema",
+///     4,
 ///     (x, set_x, u32, 0, 16),
 ///     (y, set_y, u32, 16, 16)
 /// );
 ///
 /// let mut storage = MemoryResourceStorage::new("/root/extvec".into());
 /// {
-/// let mut v = create_external_vector::<A>(
-///         &mut storage, "vector", "Some schema content")
-///     .expect("failed to create ExternalVector");
+///     let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
+///         .expect("failed to create ExternalVector");
 ///     {
 ///         let mut a = v.grow().expect("grow failed");
 ///         a.set_x(0);
@@ -258,7 +276,10 @@ pub struct ExternalVector<T> {
     _phantom: marker::PhantomData<T>,
 }
 
-impl<T: Struct> ExternalVector<T> {
+impl<T> ExternalVector<T>
+where
+    T: for<'b> Struct<'b>,
+{
     /// Creates an empty `ExternalVector<T>` in the given resource storage.
     pub fn new(resource_handle: ResourceHandle) -> Self {
         Self {
@@ -286,16 +307,16 @@ impl<T: Struct> ExternalVector<T> {
     /// may fail due to different IO reasons.
     ///
     /// [`flush`]: #method.flush
-    pub fn grow(&mut self) -> io::Result<HandleMut<T::Mut>> {
+    pub fn grow(&mut self) -> io::Result<<T as Struct>::ItemMut> {
         if self.data.len() > 1024 * 1024 * 32 {
             self.flush()?;
         }
         let old_size = self.data.len();
-        self.data.resize(old_size + T::SIZE_IN_BYTES, 0);
+        self.data.resize(old_size + <T as Struct>::SIZE_IN_BYTES, 0);
         self.len += 1;
-        Ok(HandleMut::new(T::Mut::from(
-            &mut self.data[old_size - memory::PADDING_SIZE],
-        )))
+        Ok(T::create_mut(
+            &mut self.data[old_size - memory::PADDING_SIZE..],
+        ))
     }
 
     /// Flushes the not yet flushed content in this vector to storage.
@@ -332,18 +353,31 @@ impl<T> Drop for ExternalVector<T> {
     }
 }
 
-impl<T: Struct> fmt::Debug for ExternalVector<T> {
+impl<T> fmt::Debug for ExternalVector<T>
+where
+    T: for<'b> Struct<'b>,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ExternalVector {{ len: {} }}", self.len())
     }
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod tests {
     // Note: ExternalVector is tested in the corresponding example.
 
     use super::*;
-    use test_structs::*;
+
+    define_struct!(
+        A,
+        RefA,
+        RefMutA,
+        "no_schema",
+        4,
+        (x, set_x, u32, 0, 16),
+        (y, set_y, u32, 16, 16)
+    );
 
     #[test]
     fn test_vector_new() {

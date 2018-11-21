@@ -1,4 +1,4 @@
-use storage::{MemoryDescriptor, ResourceStorage, Stream};
+use storage::{ResourceStorage, Stream};
 
 use memmap::Mmap;
 
@@ -8,26 +8,26 @@ use std::fs::{self, File};
 use std::io;
 use std::path;
 use std::rc::Rc;
+use std::slice;
 
 /// Internal storage of data as files.
 #[derive(Debug, Default)]
 struct MemoryMappedFileStorage {
-    maps: BTreeMap<String, Mmap>,
+    maps: RefCell<BTreeMap<String, Mmap>>,
 }
 
 impl MemoryMappedFileStorage {
-    pub fn read(&mut self, path: &str) -> Result<MemoryDescriptor, io::Error> {
-        if let Some(mapping) = self.maps.get(path) {
-            return Ok(MemoryDescriptor::new(mapping.as_ptr(), mapping.len()));
+    pub fn read(&self, path: &str) -> Result<&[u8], io::Error> {
+        if !self.maps.borrow().contains_key(path) {
+            let file = File::open(path)?;
+            let file_mmap = unsafe { Mmap::map(&file)? };
+            self.maps.borrow_mut().insert(path.into(), file_mmap);
         }
-
-        let file = File::open(path)?;
-        let file_mmap = unsafe { Mmap::map(&file)? };
-
-        let mem_descr = MemoryDescriptor::new(file_mmap.as_ptr(), file_mmap.len());
-        self.maps.insert(path.into(), file_mmap);
-
-        Ok(mem_descr)
+        let data = &self.maps.borrow()[path];
+        // We cannot prove to Rust that the buffer will live as long as the storage
+        // (we never delete mappings), so we need to manually extend lifetime
+        let extended_lifetime_data = unsafe { slice::from_raw_parts(data.as_ptr(), data.len()) };
+        Ok(&extended_lifetime_data)
     }
 }
 
@@ -59,7 +59,7 @@ impl ResourceStorage for FileResourceStorage {
         self.path.join(resource_name).exists()
     }
 
-    fn read_resource(&mut self, resource_name: &str) -> Result<MemoryDescriptor, io::Error> {
+    fn read_resource(&self, resource_name: &str) -> Result<&[u8], io::Error> {
         let resource_path = self.path.join(resource_name);
         if !resource_path.exists() {
             return Err(io::Error::new(
@@ -77,10 +77,7 @@ impl ResourceStorage for FileResourceStorage {
         }
     }
 
-    fn create_output_stream(
-        &mut self,
-        resource_name: &str,
-    ) -> Result<Rc<RefCell<Stream>>, io::Error> {
+    fn create_output_stream(&self, resource_name: &str) -> Result<Rc<RefCell<Stream>>, io::Error> {
         if !self.path.exists() {
             fs::create_dir_all(self.path.clone())?;
         }
