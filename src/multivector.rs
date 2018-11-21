@@ -193,20 +193,12 @@ where
     /// Flushes the remaining not yet flushed elements in this multivector and
     /// finalizes the data inside the storage.
     ///
-    /// After this method is called, more data cannot be written into this
-    /// multivector. A multivector *must* be closed, otherwise it will
-    /// panic on drop (in debug mode).
-    pub fn close(&mut self) -> io::Result<()> {
+    /// A multivector *must* be closed, otherwise it will panic on drop
+    pub fn close(mut self) -> io::Result<()> {
         self.add_to_index()?; // sentinel for last item
-        self.index.close()?;
         self.flush()?;
+        self.index.close()?;
         self.data_handle.borrow_mut().close()
-    }
-}
-
-impl<Idx, Ts> Drop for MultiVector<Idx, Ts> {
-    fn drop(&mut self) {
-        debug_assert!(!self.data_handle.is_open(), "MultiVector not closed")
     }
 }
 

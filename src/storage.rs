@@ -13,6 +13,7 @@ use std::ptr;
 use std::rc::Rc;
 use std::slice;
 use std::str;
+use std::thread;
 
 pub trait Stream: Write + Seek {}
 
@@ -315,6 +316,15 @@ impl ResourceHandle {
     }
 }
 
+impl Drop for ResourceHandle {
+    fn drop(&mut self) {
+        if !thread::panicking() {
+            // Only panic in case we are dropping the handle normally
+            assert!(!self.is_open(), "Resource not closed");
+        }
+    }
+}
+
 impl fmt::Debug for ResourceHandle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -363,4 +373,25 @@ fn write_size(value: SizeType, stream: &mut Stream) -> io::Result<()> {
 fn write_padding(stream: &mut Stream) -> io::Result<()> {
     let zeroes: [u8; PADDING_SIZE] = [0; PADDING_SIZE];
     stream.write_all(&zeroes)
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::io::Cursor;
+
+    #[test]
+    #[should_panic]
+    fn test_panick_on_leak() {
+        let stream = Rc::new(RefCell::new(Cursor::new(Vec::new())));
+        let _h = ResourceHandle::new(stream);
+        // leak h without closing it -> should panic
+    }
+
+    #[test]
+    fn test_not_panick_on_close() -> io::Result<()> {
+        let stream = Rc::new(RefCell::new(Cursor::new(Vec::new())));
+        let mut h = ResourceHandle::new(stream)?;
+        h.close()
+    }
 }

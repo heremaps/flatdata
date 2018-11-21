@@ -338,18 +338,10 @@ where
     /// Flushes the remaining not yet flushed elements in this vector and
     /// finalizes the data inside the storage.
     ///
-    /// After this method is called, more data cannot be written into this
-    /// vector. An external vector *must* be closed, otherwise it will
-    /// panic on drop (in debug mode).
-    pub fn close(&mut self) -> io::Result<()> {
+    /// An external vector *must* be closed, otherwise it will panic on drop
+    pub fn close(mut self) -> io::Result<()> {
         self.flush()?;
         self.resource_handle.borrow_mut().close()
-    }
-}
-
-impl<T> Drop for ExternalVector<T> {
-    fn drop(&mut self) {
-        debug_assert!(!self.resource_handle.is_open(), "ExternalVector not closed")
     }
 }
 
