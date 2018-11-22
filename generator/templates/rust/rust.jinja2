@@ -22,7 +22,7 @@ pub mod schema {
         {% if node | is_archive %}
         {% set archive_ns = node.name | camel_to_snake_case %}
         pub mod {{ archive_ns }} {
-            {% for r in node.resources -%}
+            {% for r in node.resources | supported_resources -%}
             pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
             {% endfor %}
         }
