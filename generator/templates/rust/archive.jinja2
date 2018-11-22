@@ -4,11 +4,11 @@
 
 {# variadic structs #}
 {% for r in archive.resources | multivector_resources %}
-/// Builtin union type of {{ r.types | join(', ') }}.
+/// Builtin union type of {% for type in r.referenced_structures | structure_references %}{{ type.node.name }}{%- if not loop.last %}, {% endif %}{% endfor %}.
 define_variadic_struct!({{ r.name | snake_to_upper_camel_case }}, {{ r.name | snake_to_upper_camel_case }}ItemBuilder,
     {{ r.index_reference.node.name }},
-{% for type in r.types %}
-    {{ loop.index0 }} => ({{ type }}, add_{{ type | camel_to_snake_case }})
+{% for type in r.referenced_structures | structure_references %}
+    {{ loop.index0 }} => ({{ type.node.name }}, add_{{ type.node.name | camel_to_snake_case }})
     {%- if not loop.last %},
     {% endif %}
 {% endfor %}
@@ -22,7 +22,7 @@ define_archive!({{archive.name}}, {{archive.name}}Builder,
     // struct resources
     {% for r in archive.resources | instance_resources %}
     ({{ r.name }}, set_{{ r.name }},
-        {{r.type}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
+        {{r.referenced_structures[0].node.name}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
