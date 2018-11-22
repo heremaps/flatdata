@@ -44,7 +44,7 @@ pub use std::marker;
 /// A type in flatdata used for reading data.
 ///
 /// Each struct reference in generated code implements this trait.
-pub trait Ref: Clone + Debug + PartialEq {}
+pub trait Ref: Clone + Copy + Debug + PartialEq {}
 
 /// A mutable type in flatdata used for writing data.
 ///
@@ -207,7 +207,7 @@ macro_rules! define_struct {
     ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
         $(,($field:ident, $field_setter:ident, $type:tt: $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
     {
-        #[derive(Clone)]
+        #[derive(Clone, Copy)]
         pub struct $name<'a> {
             data: *const u8,
             _phantom: $crate::marker::PhantomData<&'a u8>,
