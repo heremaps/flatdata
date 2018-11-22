@@ -3,6 +3,9 @@ sudo: required
 services:
   - docker
 
+before_install:
+  - docker build -t boxdot/flatdata-dev ci
+
 matrix:
   include:
 
@@ -17,7 +20,7 @@ matrix:
             -e CXX_COMPILER=${CXX_COMPILER} \
             -v $(pwd):/src \
             -w /build \
-            boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
+            boxdot/flatdata-dev /src/ci/build-and-test-cpp.sh
 
     # clang
     - language: cpp
@@ -30,9 +33,9 @@ matrix:
             -e CXX_COMPILER=${CXX_COMPILER} \
             -v $(pwd):/src \
             -w /build \
-            boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
+            boxdot/flatdata-dev /src/ci/build-and-test-cpp.sh
 
-    # go 
+    # go
     - language: go
       go: 1.x
       install: true
@@ -43,7 +46,7 @@ matrix:
         - |
           set -ex
           pushd flatdata-go/flatdata; make run-ci; popd
-          docker run -t --user `id -u $USER` -v $(pwd):/src -w /src boxdot/flatdata-dev:15 \
+          docker run -t --user `id -u $USER` -v $(pwd):/src -w /src boxdot/flatdata-dev \
             generator/app.py -v -g go \
               -s flatdata-go/backward-compatibility-tests/test_backward_compatibility.schema \
               -O flatdata-go/backward-compatibility-tests/test_backward_compatibility_generated.go
