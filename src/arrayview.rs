@@ -86,16 +86,16 @@ where
     /// # Panics
     ///
     /// Panics if index is greater than or equal to `ArrayView::len()`.
-    pub fn at(&self, index: usize) -> <T as Struct>::Item {
+    pub fn at(&self, index: usize) -> <T as Struct<'a>>::Item {
         let index = index * <T as Struct>::SIZE_IN_BYTES;
         assert!(index + <T as Struct>::SIZE_IN_BYTES <= self.data.len());
         T::create(&self.data[index..])
     }
 
     /// Returns an iterator to the elements of the array.
-    pub fn iter(&'a self) -> ArrayViewIter<T> {
+    pub fn iter(&self) -> ArrayViewIter<'a, T> {
         ArrayViewIter {
-            view: self,
+            view: self.clone(),
             next_pos: 0,
         }
     }
@@ -137,11 +137,11 @@ where
 
 /// Iterator through elements of `ArrayView`.
 #[derive(Clone)]
-pub struct ArrayViewIter<'a, T: 'a>
+pub struct ArrayViewIter<'a, T>
 where
     T: for<'b> Struct<'b>,
 {
-    view: &'a ArrayView<'a, T>,
+    view: ArrayView<'a, T>,
     next_pos: usize,
 }
 
@@ -224,6 +224,20 @@ mod test {
             assert_eq!(0, x.y());
         }
 
-        let _view_copy = view.clone();
+        let x = {
+            // test clone and lifetime of returned reference
+            let view_copy = view.clone();
+            view_copy.at(0)
+        };
+        assert_eq!(65535, x.x());
+        assert_eq!(65535, x.y());
+
+        let x = {
+            // test clone and lifetime of returned reference
+            let view_copy = view.clone();
+            view_copy.iter().next().unwrap()
+        };
+        assert_eq!(65535, x.x());
+        assert_eq!(65535, x.y());
     }
 }

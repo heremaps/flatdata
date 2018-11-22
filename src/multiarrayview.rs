@@ -68,9 +68,9 @@ where
     }
 
     /// Returns an iterator through the indexed items of the array.
-    pub fn iter(&'a self) -> MultiArrayViewIter<Idx, Ts> {
+    pub fn iter(&self) -> MultiArrayViewIter<'a, Idx, Ts> {
         MultiArrayViewIter {
-            view: self,
+            view: self.clone(),
             next_pos: 0,
         }
     }
@@ -88,7 +88,7 @@ where
     _phantom: marker::PhantomData<&'a Ts>,
 }
 
-impl<'a, Ts> iter::Iterator for MultiArrayViewItemIter<'a, Ts>
+impl<'a, Ts: 'a> iter::Iterator for MultiArrayViewItemIter<'a, Ts>
 where
     Ts: for<'b> VariadicStruct<'b>,
 {
@@ -139,11 +139,11 @@ where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
 {
-    view: &'a MultiArrayView<'a, Idx, Ts>,
+    view: MultiArrayView<'a, Idx, Ts>,
     next_pos: usize,
 }
 
-impl<'a, Idx, Ts> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Idx: 'a, Ts: 'a> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
@@ -160,7 +160,7 @@ where
     }
 }
 
-impl<'a, Idx, Ts> iter::ExactSizeIterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Idx: 'a, Ts: 'a> iter::ExactSizeIterator for MultiArrayViewIter<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,

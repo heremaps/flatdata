@@ -288,6 +288,28 @@ mod tests {
             }
         }
 
-        let _mv_copy = mv.clone();
+        let x = {
+            // test clone and lifetime of returned reference
+            let mv_copy = mv.clone();
+            mv_copy.at(0).next().unwrap()
+        };
+        match x {
+            RefVariant::A(ref a) => {
+                assert_eq!(a.x(), 1);
+                assert_eq!(a.y(), 2);
+            }
+        }
+
+        let x = {
+            // test clone and lifetime of returned reference
+            let mv_copy = mv.clone();
+            mv_copy.iter().next().unwrap().next().unwrap()
+        };
+        match x {
+            RefVariant::A(ref a) => {
+                assert_eq!(a.x(), 1);
+                assert_eq!(a.y(), 2);
+            }
+        }
     }
 }
