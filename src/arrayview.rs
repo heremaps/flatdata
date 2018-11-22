@@ -223,5 +223,7 @@ mod test {
             assert_eq!(0, x.x());
             assert_eq!(0, x.y());
         }
+
+        let _view_copy = view.clone();
     }
 }

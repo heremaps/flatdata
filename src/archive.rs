@@ -57,7 +57,7 @@ pub trait RefMut: Debug {}
 /// Vector/ArrayView-like classes cannot be directly implemented over the
 /// structs since that binds lifetime too early. Instead this generic factory
 /// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
-pub trait Struct<'a> {
+pub trait Struct<'a>: Clone {
     /// Schema of the type. Used only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
@@ -111,7 +111,7 @@ pub trait VariadicRef: Clone + Debug + PartialEq {
 /// Vector/ArrayView-like classes cannot be directly implemented over the
 /// structs since that binds lifetime too early. Instead this generic factory
 /// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
-pub trait VariadicStruct<'a> {
+pub trait VariadicStruct<'a>: Clone {
     /// Reader type
     type Item: VariadicRef;
 
@@ -213,6 +213,7 @@ macro_rules! define_struct {
             _phantom: $crate::marker::PhantomData<&'a u8>,
         }
 
+        #[derive(Clone)]
         pub struct $factory{}
 
         impl<'a> $crate::Struct<'a> for $factory
@@ -364,6 +365,7 @@ macro_rules! define_variadic_struct {
             })*
         }
 
+        #[derive(Clone)]
         pub struct $factory{}
 
         impl<'a> $crate::VariadicStruct<'a> for $factory {

@@ -287,5 +287,7 @@ mod tests {
                 assert_eq!(a.y(), 4);
             }
         }
+
+        let _mv_copy = mv.clone();
     }
 }
