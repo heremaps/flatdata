@@ -1,5 +1,6 @@
 use archive::Struct;
 use arrayview::ArrayView;
+use error::ResourceStorageError;
 
 use memory;
 use storage::ResourceHandle;
@@ -251,7 +252,14 @@ where
 ///         a.set_x(2);
 ///         a.set_y(3);
 ///     }
-///     v.close().expect("close failed");
+///     let view = v.close().expect("close failed");
+///
+///     // data can also be inspected directly after closing
+///     assert_eq!(view.len(), 2);
+///     assert_eq!(view.at(0).x(), 0);
+///     assert_eq!(view.at(0).y(), 1);
+///     assert_eq!(view.at(1).x(), 2);
+///     assert_eq!(view.at(1).y(), 3);
 /// }
 ///
 /// let resource = storage
@@ -339,9 +347,13 @@ where
     /// finalizes the data inside the storage.
     ///
     /// An external vector *must* be closed, otherwise it will panic on drop
-    pub fn close(mut self) -> io::Result<()> {
-        self.flush()?;
-        self.resource_handle.borrow_mut().close()
+    pub fn close(mut self) -> Result<ArrayView<'a, T>, ResourceStorageError> {
+        self.flush().map_err(|e| {
+            ResourceStorageError::from_io_error(e, self.resource_handle.name().into())
+        })?;
+        self.resource_handle
+            .close()
+            .map(|data| ArrayView::new(data))
     }
 }
 

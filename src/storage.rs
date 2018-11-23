@@ -309,22 +309,35 @@ impl<'a> ResourceHandle<'a> {
 
     /// Close the underlying stream and write the header containing the size in
     /// bytes of written data.
-    pub fn close(&mut self) -> io::Result<()> {
+    pub fn close(&mut self) -> Result<&'a [u8], ResourceStorageError> {
         {
-            let stream = self
-                .stream
-                .as_ref()
-                .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "stream closed"))?;
+            let resource_name = self.name.clone();
+            let into_storage_error =
+                |e| ResourceStorageError::from_io_error(e, resource_name.clone());
+            let stream = self.stream.as_ref().ok_or_else(|| {
+                into_storage_error(io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "stream closed",
+                ))
+            })?;
 
             let mut mut_stream = stream.borrow_mut();
-            write_padding(mut_stream.deref_mut())?;
+            write_padding(mut_stream.deref_mut()).map_err(into_storage_error)?;
 
             // Update size in the beginning of the file
-            mut_stream.seek(io::SeekFrom::Start(0u64))?;
-            write_size(self.size_in_bytes as u64, mut_stream.deref_mut())?;
+            mut_stream
+                .seek(io::SeekFrom::Start(0u64))
+                .map_err(into_storage_error)?;
+            write_size(self.size_in_bytes as u64, mut_stream.deref_mut())
+                .map_err(into_storage_error)?;
         }
         self.stream = None;
-        Ok(())
+        // return underlying memory descriptor to the written data
+        self.storage.read(&self.name, &self.schema)
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
     }
 }
 
@@ -391,22 +404,51 @@ fn write_padding(stream: &mut Stream) -> io::Result<()> {
 mod test {
     use super::*;
     use memstorage::MemoryResourceStorage;
-    use std::io::Cursor;
 
     #[test]
     #[should_panic]
     fn test_panick_on_leak() {
-        let stream = Rc::new(RefCell::new(Cursor::new(Vec::new())));
         let storage = MemoryResourceStorage::new("/root/extvec".into());
-        let _h = ResourceHandle::new(&*storage, "".into(), "".into(), stream);
+
+        let stream = storage
+            .create_output_stream("/root/extvec/blubb.schema")
+            .unwrap();
+        stream
+            .borrow_mut()
+            .write_all("myschema".as_bytes())
+            .unwrap();
+
+        let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
+        let _h = ResourceHandle::new(
+            &*storage,
+            "/root/extvec/blubb".into(),
+            "myschema".into(),
+            stream,
+        )
+        .unwrap();
         // leak h without closing it -> should panic
     }
 
     #[test]
-    fn test_not_panick_on_close() -> io::Result<()> {
-        let stream = Rc::new(RefCell::new(Cursor::new(Vec::new())));
+    fn test_not_panick_on_close() -> Result<(), ResourceStorageError> {
         let storage = MemoryResourceStorage::new("/root/extvec".into());
-        let mut h = ResourceHandle::new(&*storage, "".into(), "".into(), stream)?;
-        h.close()
+
+        let stream = storage
+            .create_output_stream("/root/extvec/blubb.schema")
+            .unwrap();
+        stream
+            .borrow_mut()
+            .write_all("myschema".as_bytes())
+            .unwrap();
+
+        let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
+        let mut h = ResourceHandle::new(
+            &*storage,
+            "/root/extvec/blubb".into(),
+            "myschema".into(),
+            stream,
+        )
+        .unwrap();
+        h.close().map(|_| ())
     }
 }

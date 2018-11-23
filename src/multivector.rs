@@ -1,5 +1,7 @@
 use archive::{IndexStruct, VariadicRef, VariadicStruct};
+use error::ResourceStorageError;
 use memory;
+use multiarrayview::MultiArrayView;
 use storage::ResourceHandle;
 use vector::ExternalVector;
 
@@ -194,11 +196,14 @@ where
     /// finalizes the data inside the storage.
     ///
     /// A multivector *must* be closed, otherwise it will panic on drop
-    pub fn close(mut self) -> io::Result<()> {
-        self.add_to_index()?; // sentinel for last item
-        self.flush()?;
-        self.index.close()?;
-        self.data_handle.borrow_mut().close()
+    pub fn close(mut self) -> Result<MultiArrayView<'a, Idx, Ts>, ResourceStorageError> {
+        let name: String = self.data_handle.name().into();
+        let into_storage_error = |e| ResourceStorageError::from_io_error(e, name.clone());
+        self.add_to_index().map_err(into_storage_error)?; // sentinel for last item
+        self.flush().map_err(into_storage_error)?;
+        let index_view = self.index.close()?;
+        let data = self.data_handle.close()?;
+        Ok(MultiArrayView::new(index_view, data))
     }
 }
 
@@ -259,7 +264,18 @@ mod tests {
                     assert_eq!(b.y(), 4);
                 }
             }
-            mv.close().expect("close failed");
+            let view = mv.close().expect("close failed");
+
+            // view can also be used directly after closing
+            assert_eq!(view.len(), 1);
+            let mut item = view.at(0);
+            let a = item.next().unwrap();
+            match a {
+                RefVariant::A(ref a) => {
+                    assert_eq!(a.x(), 1);
+                    assert_eq!(a.y(), 2);
+                }
+            }
         }
 
         let index_resource = storage
