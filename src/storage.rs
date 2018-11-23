@@ -55,7 +55,7 @@ pub trait ResourceStorage {
     //
 
     /// Creates a resource storage at a given subdirectory.
-    fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>>;
+    fn subdir(&self, dir: &str) -> Rc<ResourceStorage>;
 
     /// Returns `true` if resource exists in the storage.
     fn exists(&self, resource_name: &str) -> bool;
@@ -133,11 +133,14 @@ pub trait ResourceStorage {
 /// Creates a new resource with given name and schema in storage, and returns
 /// an [`ExternalVector`] using this resource for writing and flushing data to
 /// storage.
-pub fn create_external_vector<T: for<'a> Struct<'a>>(
-    storage: &ResourceStorage,
+pub fn create_external_vector<'a, T>(
+    storage: &'a ResourceStorage,
     resource_name: &str,
     schema: &str,
-) -> io::Result<ExternalVector<T>> {
+) -> io::Result<ExternalVector<'a, T>>
+where
+    T: for<'b> Struct<'b>,
+{
     // write schema
     let schema_name = format!("{}.schema", resource_name);
     let stream = storage.create_output_stream(&schema_name)?;
@@ -145,7 +148,7 @@ pub fn create_external_vector<T: for<'a> Struct<'a>>(
 
     // create external vector
     let data_writer = storage.create_output_stream(resource_name)?;
-    let handle = ResourceHandle::new(data_writer)?;
+    let handle = ResourceHandle::new(storage, resource_name.into(), schema.into(), data_writer)?;
     Ok(ExternalVector::new(handle))
 }
 
@@ -154,11 +157,11 @@ pub fn create_external_vector<T: for<'a> Struct<'a>>(
 /// Creates a new resource with given name and schema in storage, and returns
 /// an [`MultiVector`] using this resource for writing and flushing data to
 /// storage.
-pub fn create_multi_vector<Idx, Ts>(
-    storage: &ResourceStorage,
+pub fn create_multi_vector<'a, Idx, Ts>(
+    storage: &'a ResourceStorage,
     resource_name: &str,
     schema: &str,
-) -> io::Result<MultiVector<Idx, Ts>>
+) -> io::Result<MultiVector<'a, Idx, Ts>>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
@@ -175,7 +178,7 @@ where
 
     // create multi vector
     let data_writer = storage.create_output_stream(resource_name)?;
-    let handle = ResourceHandle::new(data_writer)?;
+    let handle = ResourceHandle::new(storage, resource_name.into(), schema.into(), data_writer)?;
     Ok(MultiVector::new(index, handle))
 }
 
@@ -191,12 +194,11 @@ where
 ///
 /// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
 pub fn create_archive<T: ArchiveBuilder>(
-    storage: &Rc<RefCell<ResourceStorage>>,
+    storage: &Rc<ResourceStorage>,
 ) -> Result<(), ResourceStorageError> {
     let signature_name = format!("{}.archive", T::NAME);
     {
         // existing archive yields an error
-        let storage = storage.borrow();
         if storage.exists(&signature_name) {
             return Err(ResourceStorageError::from_io_error(
                 io::Error::new(io::ErrorKind::AlreadyExists, signature_name.clone()),
@@ -206,8 +208,7 @@ pub fn create_archive<T: ArchiveBuilder>(
     }
     {
         // write empty signature and schema
-        let mut_storage = storage.borrow();
-        mut_storage
+        storage
             .write(&signature_name, T::SCHEMA, &[])
             .map_err(|e| ResourceStorageError::from_io_error(e, signature_name))?;
     }
@@ -256,14 +257,22 @@ impl MemoryDescriptor {
 ///
 /// [`create_output_stream`]: trait.ResourceStorage.html#tycreate_output_stream
 #[derive(Clone)]
-pub struct ResourceHandle {
+pub struct ResourceHandle<'a> {
     stream: Option<Rc<RefCell<Stream>>>,
     size_in_bytes: usize,
+    storage: &'a ResourceStorage,
+    name: String,
+    schema: String,
 }
 
-impl ResourceHandle {
+impl<'a> ResourceHandle<'a> {
     /// Create a new resource handle from a stream.
-    pub fn new(stream: Rc<RefCell<Stream>>) -> io::Result<Self> {
+    pub fn new(
+        storage: &'a ResourceStorage,
+        name: String,
+        schema: String,
+        stream: Rc<RefCell<Stream>>,
+    ) -> io::Result<Self> {
         // Reserve space for size in the beginning of the stream, which will be updated
         // later.
         {
@@ -273,6 +282,9 @@ impl ResourceHandle {
         Ok(Self {
             stream: Some(stream),
             size_in_bytes: 0,
+            storage,
+            name,
+            schema,
         })
     }
 
@@ -316,7 +328,7 @@ impl ResourceHandle {
     }
 }
 
-impl Drop for ResourceHandle {
+impl<'a> Drop for ResourceHandle<'a> {
     fn drop(&mut self) {
         if !thread::panicking() {
             // Only panic in case we are dropping the handle normally
@@ -325,7 +337,7 @@ impl Drop for ResourceHandle {
     }
 }
 
-impl fmt::Debug for ResourceHandle {
+impl<'a> fmt::Debug for ResourceHandle<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -378,20 +390,23 @@ fn write_padding(stream: &mut Stream) -> io::Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use memstorage::MemoryResourceStorage;
     use std::io::Cursor;
 
     #[test]
     #[should_panic]
     fn test_panick_on_leak() {
         let stream = Rc::new(RefCell::new(Cursor::new(Vec::new())));
-        let _h = ResourceHandle::new(stream);
+        let storage = MemoryResourceStorage::new("/root/extvec".into());
+        let _h = ResourceHandle::new(&*storage, "".into(), "".into(), stream);
         // leak h without closing it -> should panic
     }
 
     #[test]
     fn test_not_panick_on_close() -> io::Result<()> {
         let stream = Rc::new(RefCell::new(Cursor::new(Vec::new())));
-        let mut h = ResourceHandle::new(stream)?;
+        let storage = MemoryResourceStorage::new("/root/extvec".into());
+        let mut h = ResourceHandle::new(&*storage, "".into(), "".into(), stream)?;
         h.close()
     }
 }

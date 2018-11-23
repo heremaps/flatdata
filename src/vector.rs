@@ -237,9 +237,9 @@ where
 ///     (y, set_y, u32, 16, 16)
 /// );
 ///
-/// let mut storage = MemoryResourceStorage::new("/root/extvec".into());
+/// let storage = MemoryResourceStorage::new("/root/extvec".into());
 /// {
-///     let mut v = create_external_vector::<A>(&mut storage, "vector", "Some schema content")
+///     let mut v = create_external_vector::<A>(&*storage, "vector", "Some schema content")
 ///         .expect("failed to create ExternalVector");
 ///     {
 ///         let mut a = v.grow().expect("grow failed");
@@ -269,19 +269,19 @@ where
 /// ```
 ///
 /// [`grow`]: #method.grow
-pub struct ExternalVector<T> {
+pub struct ExternalVector<'a, T> {
     data: Vec<u8>,
     len: usize,
-    resource_handle: ResourceHandle,
+    resource_handle: ResourceHandle<'a>,
     _phantom: marker::PhantomData<T>,
 }
 
-impl<T> ExternalVector<T>
+impl<'a, T> ExternalVector<'a, T>
 where
     T: for<'b> Struct<'b>,
 {
     /// Creates an empty `ExternalVector<T>` in the given resource storage.
-    pub fn new(resource_handle: ResourceHandle) -> Self {
+    pub fn new(resource_handle: ResourceHandle<'a>) -> Self {
         Self {
             data: vec![0; memory::PADDING_SIZE],
             len: 0,
@@ -345,7 +345,7 @@ where
     }
 }
 
-impl<T> fmt::Debug for ExternalVector<T>
+impl<'a, T> fmt::Debug for ExternalVector<'a, T>
 where
     T: for<'b> Struct<'b>,
 {

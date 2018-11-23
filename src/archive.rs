@@ -34,8 +34,6 @@
 use error::ResourceStorageError;
 use storage::ResourceStorage;
 
-use std::cell::RefCell;
-
 use std::fmt::Debug;
 use std::rc::Rc;
 
@@ -155,7 +153,7 @@ pub trait Archive: Debug + Clone {
     /// verified. If any non-optional resource is missing or has a wrong
     /// signature (unexpected schema), the operation will fail. Therefore,
     /// it is not possible to open partially written archive.
-    fn open(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
+    fn open(storage: Rc<ResourceStorage>) -> Result<Self, ResourceStorageError>;
 }
 
 /// A flatdata archive builder for serializing data.
@@ -186,7 +184,7 @@ pub trait ArchiveBuilder: Clone {
     /// [coappearances] example.
     ///
     /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
-    fn new(storage: Rc<RefCell<ResourceStorage>>) -> Result<Self, ResourceStorageError>;
+    fn new(storage: Rc<ResourceStorage>) -> Result<Self, ResourceStorageError>;
 }
 
 //
@@ -459,7 +457,7 @@ macro_rules! define_archive {
 
         #[derive(Clone)]
         pub struct $name {
-            _storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>
+            _storage: ::std::rc::Rc<$crate::ResourceStorage>
             $(,$struct_resource: opt!($crate::MemoryDescriptor, $is_optional_struct))*
             $(,$vector_resource: opt!($crate::MemoryDescriptor, $is_optional_vector))*
             $(,$multivector_resource: (
@@ -471,7 +469,7 @@ macro_rules! define_archive {
 
         impl $name {
             fn read_resource<R>(
-                storage: &mut $crate::ResourceStorage,
+                storage: &$crate::ResourceStorage,
                 name: &str,
                 schema: &str,
             ) -> Result<R, $crate::ResourceStorageError>
@@ -572,7 +570,7 @@ macro_rules! define_archive {
             const NAME: &'static str = stringify!($name);
             const SCHEMA: &'static str = $archive_schema;
 
-            fn open(storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>)
+            fn open(storage: ::std::rc::Rc<$crate::ResourceStorage>)
                 -> ::std::result::Result<Self, $crate::ResourceStorageError>
             {
                 $(let $struct_resource;)*
@@ -581,12 +579,11 @@ macro_rules! define_archive {
                   let $multivector_resource;)*
                 $(let $raw_data_resource;)*
                 {
-                    let res_storage = &mut *storage.borrow_mut();
-                    res_storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+                    storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
                     $($struct_resource = check_resource!(
                         Self::read_resource(
-                            res_storage,
+                            &*storage,
                             stringify!($struct_resource),
                             $struct_schema
                         ), $is_optional_struct);
@@ -594,27 +591,27 @@ macro_rules! define_archive {
 
                     $($vector_resource = check_resource!(
                         Self::read_resource(
-                            res_storage,
+                            &*storage,
                             stringify!($vector_resource),
                             $element_schema), $is_optional_vector);
                     )*
 
                     $($multivector_resource_index = check_resource!(
                         Self::read_resource(
-                            res_storage,
+                            &*storage,
                             stringify!($multivector_resource_index),
                             &format!("index({})", $variadic_type_schema)),
                         $is_optional_multivector);
                     $multivector_resource = check_resource!(
                         Self::read_resource(
-                            res_storage,
+                            &*storage,
                             stringify!($multivector_resource),
                             $variadic_type_schema), $is_optional_multivector);
                     )*
 
                     $($raw_data_resource = check_resource!(
                         Self::read_resource(
-                            res_storage,
+                            &*storage,
                             stringify!($raw_data_resource),
                             $raw_data_schema), $is_optional_raw_data);
                     )*
@@ -622,7 +619,7 @@ macro_rules! define_archive {
                 $(
                 let $subarchive_resource = check_resource!(
                     $subarchive_type::open(
-                        storage.borrow().subdir(&stringify!($subarchive_resource))),
+                        storage.subdir(&stringify!($subarchive_resource))),
                     $is_optional_subarchive
                 );)*
                 Ok(Self {
@@ -640,55 +637,53 @@ macro_rules! define_archive {
 
         #[derive(Clone)]
         pub struct $builder_name {
-            storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>
+            storage: ::std::rc::Rc<$crate::ResourceStorage>
         }
 
         impl $builder_name {
             $(pub fn $struct_setter(
-                &mut self,
+                &self,
                 resource: <$struct_type as $crate::Struct>::Item,
             ) -> ::std::io::Result<()> {
                 let data = unsafe {
                     ::std::slice::from_raw_parts(resource.data, <$struct_type as $crate::Struct>::SIZE_IN_BYTES)
                 };
                 self.storage
-                    .borrow_mut()
                     .write(stringify!($struct_resource), $struct_schema, data)
             })*
 
             $(pub fn $vector_setter(
-                &mut self,
+                &self,
                 vector: &$crate::ArrayView<$element_type>,
             ) -> ::std::io::Result<()> {
                 self.storage
-                    .borrow_mut()
                     .write(stringify!($vector_resource), $element_schema, vector.as_ref())
             }
 
             pub fn $vector_start(
-                &mut self,
+                &self,
             ) -> ::std::io::Result<$crate::ExternalVector<$element_type>> {
                 $crate::create_external_vector(
-                    &mut *self.storage.borrow_mut(),
+                    &*self.storage,
                     stringify!($vector_resource),
                     $element_schema,
                 )
             })*
 
             $(pub fn $multivector_start(
-                &mut self,
+                &self,
             ) -> ::std::io::Result<
                 $crate::MultiVector<$index_type, $variadic_type>
             > {
                 $crate::create_multi_vector(
-                    &mut *self.storage.borrow_mut(),
+                    &*self.storage,
                     stringify!($multivector_resource),
                     $variadic_type_schema,
                 )
             })*
 
-            $(pub fn $raw_data_resource_setter(&mut self, data: &[u8]) -> ::std::io::Result<()> {
-                self.storage.borrow_mut().write(
+            $(pub fn $raw_data_resource_setter(&self, data: &[u8]) -> ::std::io::Result<()> {
+                self.storage.write(
                     stringify!($raw_data_resource),
                     $raw_data_schema,
                     data,
@@ -696,10 +691,10 @@ macro_rules! define_archive {
             })*
 
             $(pub fn $subarchive_resource(
-                &mut self,
+                &self,
             ) -> Result<$subarchive_builder_type, $crate::ResourceStorageError> {
                 use $crate::ArchiveBuilder;
-                let storage = self.storage.borrow().subdir(stringify!($subarchive_resource));
+                let storage = self.storage.subdir(stringify!($subarchive_resource));
                 $subarchive_builder_type::new(storage)
             }
             )*
@@ -710,7 +705,7 @@ macro_rules! define_archive {
             const SCHEMA: &'static str = $archive_schema;
 
             fn new(
-                storage: ::std::rc::Rc<::std::cell::RefCell<$crate::ResourceStorage>>,
+                storage: ::std::rc::Rc<$crate::ResourceStorage>,
             ) -> Result<Self, $crate::ResourceStorageError> {
                 $crate::create_archive::<Self>(&storage)?;
                 Ok(Self { storage })

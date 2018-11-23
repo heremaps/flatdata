@@ -74,7 +74,7 @@ use std::marker;
 /// let mut storage = MemoryResourceStorage::new("/root/multivec".into());
 /// {
 ///     let mut mv = create_multi_vector::<Idx, AB>(
-///             &mut storage, "multivector", "some schema")
+///             &*storage, "multivector", "some schema")
 ///         .expect("failed to create MultiVector");
 ///     {
 ///         let mut item = mv.grow().expect("grow failed");
@@ -126,21 +126,21 @@ use std::marker;
 /// [`ExternalVector`]: struct.ExternalVector.html
 /// [`Vector`]: struct.Vector.html
 /// [`MultiArrayView`]: struct.MultiArrayView.html
-pub struct MultiVector<Idx, Ts> {
-    index: ExternalVector<Idx>,
+pub struct MultiVector<'a, Idx, Ts> {
+    index: ExternalVector<'a, Idx>,
     data: Vec<u8>,
-    data_handle: ResourceHandle,
+    data_handle: ResourceHandle<'a>,
     size_flushed: usize,
     _phantom: marker::PhantomData<Ts>,
 }
 
-impl<Idx, Ts> MultiVector<Idx, Ts>
+impl<'a, Idx, Ts> MultiVector<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
 {
     /// Creates an empty multivector.
-    pub fn new(index: ExternalVector<Idx>, data_handle: ResourceHandle) -> Self {
+    pub fn new(index: ExternalVector<'a, Idx>, data_handle: ResourceHandle<'a>) -> Self {
         Self {
             index,
             data: vec![0; memory::PADDING_SIZE],
@@ -202,7 +202,7 @@ where
     }
 }
 
-impl<Idx, Ts: VariadicRef> fmt::Debug for MultiVector<Idx, Ts>
+impl<'a, Idx, Ts: VariadicRef> fmt::Debug for MultiVector<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
@@ -237,10 +237,10 @@ mod tests {
 
     #[test]
     fn test_multi_vector() {
-        let mut storage = MemoryResourceStorage::new("/root/resources".into());
+        let storage = MemoryResourceStorage::new("/root/resources".into());
         {
             let mut mv =
-                create_multi_vector::<Idx, Variant>(&mut storage, "multivector", "Some schema")
+                create_multi_vector::<Idx, Variant>(&*storage, "multivector", "Some schema")
                     .expect("failed to create MultiVector");
             {
                 let mut item = mv.grow().expect("grow failed");

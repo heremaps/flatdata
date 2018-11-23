@@ -42,17 +42,17 @@ pub struct FileResourceStorage {
 
 impl FileResourceStorage {
     /// Create an empty memory mapped file storage.
-    pub fn new(path: path::PathBuf) -> Self {
-        Self {
+    pub fn new(path: path::PathBuf) -> Rc<Self> {
+        Rc::new(Self {
             storage: MemoryMappedFileStorage::default(),
             path,
-        }
+        })
     }
 }
 
 impl ResourceStorage for FileResourceStorage {
-    fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>> {
-        Rc::new(RefCell::new(Self::new(self.path.join(dir))))
+    fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {
+        Self::new(self.path.join(dir))
     }
 
     fn exists(&self, resource_name: &str) -> bool {

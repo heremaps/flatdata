@@ -37,19 +37,19 @@ pub struct MemoryResourceStorage {
 
 impl MemoryResourceStorage {
     /// Create an empty memory resource storage.
-    pub fn new(path: path::PathBuf) -> Self {
-        Self {
+    pub fn new(path: path::PathBuf) -> Rc<Self> {
+        Rc::new(Self {
             storage: MemoryStorage::default(),
             path,
-        }
+        })
     }
 }
 
 impl Stream for Cursor<Vec<u8>> {}
 
 impl ResourceStorage for MemoryResourceStorage {
-    fn subdir(&self, dir: &str) -> Rc<RefCell<ResourceStorage>> {
-        Rc::new(RefCell::new(Self::new(self.path.join(dir))))
+    fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {
+        Self::new(self.path.join(dir))
     }
 
     fn exists(&self, resource_name: &str) -> bool {
