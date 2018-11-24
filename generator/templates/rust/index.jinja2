@@ -3,7 +3,8 @@
 {{ index.doc | rust_doc }}
 define_index!(
     {{ index.name }},
-    {{ index.name }}Mut,
+    Ref{{ index.name }},
+    RefMut{{ index.name }},
     schema::structs::{{ index.name | camel_to_snake_case | upper }},
     {{ index.size_in_bytes }},
     {{ index.fields[0].type.width }}

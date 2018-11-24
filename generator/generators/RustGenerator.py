@@ -60,7 +60,9 @@ class RustGenerator(BaseGenerator):
             return s
 
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
-
+        env.filters['structure_references'] = lambda ls: [
+            x for x in ls if (isinstance(x.node, Structure)
+                and not "_builtin.multivector" in SyntaxTree.namespace_path(x.node) )]
         env.filters['instance_resources'] = lambda ls: [
             x for x in ls if isinstance(x, Instance)]
         env.filters['vector_resources'] = lambda ls: [
