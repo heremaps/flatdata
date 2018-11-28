@@ -238,7 +238,7 @@ where
 ///     (y, set_y, u32, 16, 16)
 /// );
 ///
-/// let storage = MemoryResourceStorage::new("/root/extvec".into());
+/// let storage = MemoryResourceStorage::new("/root/extvec");
 /// {
 ///     let mut v = create_external_vector::<A>(&*storage, "vector", "Some schema content")
 ///         .expect("failed to create ExternalVector");

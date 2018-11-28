@@ -408,7 +408,7 @@ mod test {
     #[test]
     #[should_panic]
     fn test_panick_on_leak() {
-        let storage = MemoryResourceStorage::new("/root/extvec".into());
+        let storage = MemoryResourceStorage::new("/root/extvec");
 
         let stream = storage
             .create_output_stream("/root/extvec/blubb.schema")
@@ -431,7 +431,7 @@ mod test {
 
     #[test]
     fn test_not_panick_on_close() -> Result<(), ResourceStorageError> {
-        let storage = MemoryResourceStorage::new("/root/extvec".into());
+        let storage = MemoryResourceStorage::new("/root/extvec");
 
         let stream = storage
             .create_output_stream("/root/extvec/blubb.schema")

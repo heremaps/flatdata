@@ -6,7 +6,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io;
-use std::path;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::slice;
 
@@ -37,15 +37,15 @@ impl Stream for File {}
 #[derive(Debug)]
 pub struct FileResourceStorage {
     storage: MemoryMappedFileStorage,
-    path: path::PathBuf,
+    path: PathBuf,
 }
 
 impl FileResourceStorage {
-    /// Create an empty memory mapped file storage.
-    pub fn new(path: path::PathBuf) -> Rc<Self> {
+    /// Create an empty memory mapped file storage at a given path.
+    pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
         Rc::new(Self {
             storage: MemoryMappedFileStorage::default(),
-            path,
+            path: path.into(),
         })
     }
 }

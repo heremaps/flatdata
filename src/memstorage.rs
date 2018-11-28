@@ -4,7 +4,7 @@ use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fmt;
 use std::io::{self, Cursor};
-use std::path;
+use std::path::PathBuf;
 use std::rc::Rc;
 use std::slice;
 
@@ -12,9 +12,9 @@ use std::slice;
 #[derive(Default)]
 struct MemoryStorage {
     // Streams of resources that were written.
-    streams: RefCell<BTreeMap<path::PathBuf, Rc<RefCell<Cursor<Vec<u8>>>>>>,
+    streams: RefCell<BTreeMap<PathBuf, Rc<RefCell<Cursor<Vec<u8>>>>>>,
     // Data of resources that were opened for reading.
-    resources: RefCell<BTreeMap<path::PathBuf, Rc<Vec<u8>>>>,
+    resources: RefCell<BTreeMap<PathBuf, Rc<Vec<u8>>>>,
 }
 
 impl fmt::Debug for MemoryStorage {
@@ -32,15 +32,18 @@ impl fmt::Debug for MemoryStorage {
 #[derive(Debug)]
 pub struct MemoryResourceStorage {
     storage: MemoryStorage,
-    path: path::PathBuf,
+    path: PathBuf,
 }
 
 impl MemoryResourceStorage {
-    /// Create an empty memory resource storage.
-    pub fn new(path: path::PathBuf) -> Rc<Self> {
+    /// Create an empty memory resource storage at a given virtual path.
+    ///
+    /// Resources will be placed in ephemeral memory with prefix `path`. A path
+    /// has to be provided to unify the interface with `FileResourceStorage`.
+    pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
         Rc::new(Self {
             storage: MemoryStorage::default(),
-            path,
+            path: path.into(),
         })
     }
 }

@@ -73,7 +73,7 @@ use std::marker;
 ///
 /// // create multivector and serialize some data
 ///
-/// let mut storage = MemoryResourceStorage::new("/root/multivec".into());
+/// let mut storage = MemoryResourceStorage::new("/root/multivec");
 /// {
 ///     let mut mv = create_multi_vector::<Idx, AB>(
 ///             &*storage, "multivector", "some schema")
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_multi_vector() {
-        let storage = MemoryResourceStorage::new("/root/resources".into());
+        let storage = MemoryResourceStorage::new("/root/resources");
         {
             let mut mv =
                 create_multi_vector::<Idx, Variant>(&*storage, "multivector", "Some schema")

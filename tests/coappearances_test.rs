@@ -332,7 +332,7 @@ fn read_write_statistics_subarchive() {
     vertex_degrees.close().expect("close failed");
 
     // compare
-    let storage = flatdata::FileResourceStorage::new("tests/coappearances/karenina.archive".into());
+    let storage = flatdata::FileResourceStorage::new("tests/coappearances/karenina.archive");
     let orig = coappearances::Graph::open(storage).expect("invalid archive");
     let storage = flatdata::FileResourceStorage::new(archive_path);
     let copy = coappearances::Graph::open(storage).expect("invalid archive");
