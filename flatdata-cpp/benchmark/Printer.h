@@ -3,6 +3,7 @@
 #include <iostream>
 #include "GraphGenerator.h"
 
+/// Prints the contents of a graph to the console
 template < typename Graph >
 void
 print_graph( const Graph& graph )

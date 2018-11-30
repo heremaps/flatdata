@@ -3,6 +3,8 @@
 #include <iostream>
 #include "GraphGenerator.h"
 
+/// Performance search for edges in the graph by their id. Essentially runs one binary search for
+/// each edge in the graph in each iteration.
 template < typename Graph >
 void
 lookup( const Graph& graph, uint32_t num_iterations )

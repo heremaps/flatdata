@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <vector>
 
+/// A graph that simple reinterpret_casts C++'s internal data representation to byte streams
+/// This is not very portable (different compiler, ABI, target can produce different results), but
+/// are golden standard for performance
 class StructGraph
 {
     struct InternalEdgeData

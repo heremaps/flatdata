@@ -12,6 +12,9 @@
         return variable_prefix##_pos;          \
     return variable_prefix##_neg;
 
+/// This class implements a graph on top of a flatdata archive
+/// Data structure design is identical StructGraph, to enable measuring flatdata's performance
+/// impact
 class FlatdataGraph
 {
 public:
