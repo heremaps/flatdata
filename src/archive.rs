@@ -220,12 +220,16 @@ macro_rules! define_struct {
             const SIZE_IN_BYTES: usize = $size_in_bytes;
 
             type Item = $name<'a>;
+
+            #[inline]
             fn create(data : &'a[u8]) -> Self::Item
             {
                 Self::Item{ data : data.as_ptr(), _phantom : $crate::marker::PhantomData }
             }
 
             type ItemMut = $name_mut<'a>;
+
+            #[inline]
             fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
             {
                 Self::ItemMut{ data : data.as_mut_ptr(), _phantom : $crate::marker::PhantomData }
@@ -233,6 +237,7 @@ macro_rules! define_struct {
         }
 
         impl<'a> $name<'a> {
+            #[inline]
             $(pub fn $field(&self) -> $type {
                 let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
@@ -249,6 +254,7 @@ macro_rules! define_struct {
         }
 
         impl<'a> ::std::cmp::PartialEq for $name<'a> {
+            #[inline]
             fn eq(&self, other: &$name) -> bool {
                 $(self.$field() == other.$field()) && *
             }
@@ -262,11 +268,13 @@ macro_rules! define_struct {
         }
 
         impl<'a> $name_mut<'a> {
+            #[inline]
             $(pub fn $field(&self) -> $type {
                 let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
 
+            #[inline]
             $(pub fn $field_setter(&mut self, value: $type) {
                 let buffer = unsafe {
                     ::std::slice::from_raw_parts_mut(self.data, $size_in_bytes)
@@ -274,10 +282,12 @@ macro_rules! define_struct {
                 write_bytes!($type; value, buffer, $offset, $bit_size)
             })*
 
+            #[inline]
             pub fn fill_from(&mut self, other: &$name) {
                 $(self.$field_setter(other.$field());)*
             }
 
+            #[inline]
             pub fn into_ref(self) -> $name<'a> {
                 $name{ data : self.data, _phantom : $crate::marker::PhantomData }
             }
@@ -308,10 +318,12 @@ macro_rules! define_index {
         );
 
         impl<'a> $crate::IndexStruct<'a> for $factory {
+            #[inline]
             fn index(data: Self::Item) -> usize {
                 data.value() as usize
             }
 
+            #[inline]
             fn set_index(mut data: Self::ItemMut, value: usize) {
                 data.set_value(value as u64);
             }
@@ -340,6 +352,7 @@ macro_rules! define_variadic_struct {
         }
 
         impl<'a> $crate::VariadicRef for $name<'a> {
+            #[inline]
             fn size_in_bytes(&self) -> usize {
                 match *self {
                     $($name::$type(_) => <$type as $crate::Struct<'a>>::SIZE_IN_BYTES),+
@@ -352,6 +365,7 @@ macro_rules! define_variadic_struct {
         }
 
         impl<'a> $item_builder_name<'a> {
+            #[inline]
             $(pub fn $add_type_fn<'b>(&'b mut self) -> <$type as $crate::Struct<'b>>::ItemMut {
                 let old_len = self.data.len();
                 let increment = 1 + <$type as $crate::Struct<'b>>::SIZE_IN_BYTES;
@@ -369,6 +383,7 @@ macro_rules! define_variadic_struct {
         impl<'a> $crate::VariadicStruct<'a> for $factory {
             type Item = $name<'a>;
 
+            #[inline]
             fn create(index : $crate::TypeIndex, data : &'a [u8]) -> Self::Item
             {
                 match index {
@@ -380,6 +395,7 @@ macro_rules! define_variadic_struct {
 
             type ItemMut = $item_builder_name<'a>;
 
+            #[inline]
             fn create_mut(data : &'a mut Vec<u8>) -> Self::ItemMut
             {
                 $item_builder_name{data}
