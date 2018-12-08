@@ -1,8 +1,8 @@
-use archive::{ArchiveBuilder, IndexStruct, Struct, VariadicStruct};
-use error::ResourceStorageError;
-use memory::{SizeType, PADDING_SIZE};
-use multivector::MultiVector;
-use vector::ExternalVector;
+use crate::archive::{ArchiveBuilder, IndexStruct, Struct, VariadicStruct};
+use crate::error::ResourceStorageError;
+use crate::memory::{SizeType, PADDING_SIZE};
+use crate::multivector::MultiVector;
+use crate::vector::ExternalVector;
 
 use std::cell::RefCell;
 use std::fmt;
@@ -14,6 +14,8 @@ use std::rc::Rc;
 use std::slice;
 use std::str;
 use std::thread;
+
+use diff;
 
 pub trait Stream: Write + Seek {}
 
@@ -116,7 +118,7 @@ pub trait ResourceStorage {
         if stored_schema != expected_schema {
             return Err(ResourceStorageError::WrongSignature {
                 resource_name: resource_name.into(),
-                diff: diff(stored_schema, expected_schema),
+                diff: compute_diff(stored_schema, expected_schema),
             });
         }
 
@@ -361,8 +363,7 @@ impl<'a> fmt::Debug for ResourceHandle<'a> {
     }
 }
 
-fn diff(left: &str, right: &str) -> String {
-    use diff;
+fn compute_diff(left: &str, right: &str) -> String {
     diff::lines(left, right)
         .into_iter()
         .map(|l| match l {
@@ -403,7 +404,7 @@ fn write_padding(stream: &mut Stream) -> io::Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use memstorage::MemoryResourceStorage;
+    use crate::memstorage::MemoryResourceStorage;
 
     #[test]
     #[should_panic]

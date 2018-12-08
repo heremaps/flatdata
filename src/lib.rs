@@ -72,16 +72,16 @@ mod storage;
 mod structbuf;
 mod vector;
 
-pub use archive::*;
-pub use arrayview::ArrayView;
-pub use error::*;
-pub use filestorage::FileResourceStorage;
-pub use memory::PADDING_SIZE;
-pub use memstorage::MemoryResourceStorage;
-pub use multiarrayview::MultiArrayView;
-pub use multivector::MultiVector;
-pub use storage::{
+pub use crate::archive::*;
+pub use crate::arrayview::ArrayView;
+pub use crate::error::*;
+pub use crate::filestorage::FileResourceStorage;
+pub use crate::memory::PADDING_SIZE;
+pub use crate::memstorage::MemoryResourceStorage;
+pub use crate::multiarrayview::MultiArrayView;
+pub use crate::multivector::MultiVector;
+pub use crate::storage::{
     create_archive, create_external_vector, create_multi_vector, MemoryDescriptor, ResourceStorage,
 };
-pub use structbuf::StructBuf;
-pub use vector::*;
+pub use crate::structbuf::StructBuf;
+pub use crate::vector::*;

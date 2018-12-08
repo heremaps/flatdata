@@ -1,5 +1,5 @@
-use archive::{IndexStruct, VariadicRef, VariadicStruct};
-use arrayview::ArrayView;
+use crate::archive::{IndexStruct, VariadicRef, VariadicStruct};
+use crate::arrayview::ArrayView;
 
 use std::fmt;
 use std::iter;
@@ -80,7 +80,7 @@ where
 ///
 /// An item may be empty.
 #[derive(Debug, Clone)]
-pub struct MultiArrayViewItemIter<'a, Ts: 'a>
+pub struct MultiArrayViewItemIter<'a, Ts>
 where
     Ts: for<'b> VariadicStruct<'b>,
 {
@@ -88,7 +88,7 @@ where
     _phantom: marker::PhantomData<&'a Ts>,
 }
 
-impl<'a, Ts: 'a> iter::Iterator for MultiArrayViewItemIter<'a, Ts>
+impl<'a, Ts> iter::Iterator for MultiArrayViewItemIter<'a, Ts>
 where
     Ts: for<'b> VariadicStruct<'b>,
 {
@@ -134,7 +134,7 @@ where
 
 /// Iterator through items of an multivector.
 #[derive(Debug, Clone)]
-pub struct MultiArrayViewIter<'a, Idx: 'a, Ts: 'a>
+pub struct MultiArrayViewIter<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
@@ -143,7 +143,7 @@ where
     next_pos: usize,
 }
 
-impl<'a, Idx: 'a, Ts: 'a> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Idx, Ts: 'a> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
@@ -160,7 +160,7 @@ where
     }
 }
 
-impl<'a, Idx: 'a, Ts: 'a> iter::ExactSizeIterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Idx, Ts: 'a> iter::ExactSizeIterator for MultiArrayViewIter<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,

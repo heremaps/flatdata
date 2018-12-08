@@ -1,9 +1,9 @@
-use archive::{IndexStruct, VariadicRef, VariadicStruct};
-use error::ResourceStorageError;
-use memory;
-use multiarrayview::MultiArrayView;
-use storage::ResourceHandle;
-use vector::ExternalVector;
+use crate::archive::{IndexStruct, VariadicRef, VariadicStruct};
+use crate::error::ResourceStorageError;
+use crate::memory;
+use crate::multiarrayview::MultiArrayView;
+use crate::storage::ResourceHandle;
+use crate::vector::ExternalVector;
 
 use std::borrow::BorrowMut;
 use std::fmt;
@@ -220,11 +220,11 @@ where
 #[cfg(test)]
 #[allow(dead_code)]
 mod tests {
-    use arrayview::ArrayView;
-    use memstorage::MemoryResourceStorage;
-    use multiarrayview::MultiArrayView;
-    use storage::create_multi_vector;
-    use storage::ResourceStorage;
+    use crate::arrayview::ArrayView;
+    use crate::memstorage::MemoryResourceStorage;
+    use crate::multiarrayview::MultiArrayView;
+    use crate::storage::create_multi_vector;
+    use crate::storage::ResourceStorage;
 
     define_index!(Idx, RefIdx, RefMutIdx, "some_idx_schema", 4, 32);
 

@@ -1,4 +1,4 @@
-use storage::{ResourceStorage, Stream};
+use crate::storage::{ResourceStorage, Stream};
 
 use memmap::Mmap;
 

@@ -1,4 +1,4 @@
-use archive::Struct;
+use crate::archive::Struct;
 
 use std::fmt;
 use std::iter;
@@ -195,8 +195,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use archive::Struct;
-    use memory;
+    use crate::archive::Struct;
+    use crate::memory;
 
     #[test]
     #[allow(dead_code)]

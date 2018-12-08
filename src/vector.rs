@@ -1,9 +1,9 @@
-use archive::Struct;
-use arrayview::ArrayView;
-use error::ResourceStorageError;
+use crate::archive::Struct;
+use crate::arrayview::ArrayView;
+use crate::error::ResourceStorageError;
 
-use memory;
-use storage::ResourceHandle;
+use crate::memory;
+use crate::storage::ResourceHandle;
 
 use std::borrow::{Borrow, BorrowMut};
 use std::fmt;
@@ -357,7 +357,7 @@ where
     }
 }
 
-impl<'a, T> fmt::Debug for ExternalVector<'a, T>
+impl<T> fmt::Debug for ExternalVector<'_, T>
 where
     T: for<'b> Struct<'b>,
 {

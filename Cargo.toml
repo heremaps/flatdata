@@ -8,6 +8,7 @@ repository = "https://github.com/boxdot/flatdata-rs"
 keywords = ["serialization", "flatdata", "mmap"]
 categories = ["encoding"]
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
 diff = "0.1"
