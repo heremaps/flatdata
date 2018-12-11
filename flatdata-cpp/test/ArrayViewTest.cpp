@@ -6,12 +6,12 @@
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include <gtest/gtest.h>
+#include "catch.hpp"
 
 using namespace flatdata;
 using namespace test_structures;
 
-TEST( VectorTest, reading )
+TEST_CASE( "Reading from ArrayView", "[ArrayView]" )
 {
     Vector< AStruct > data( 10 );
     for ( size_t i = 0; i < 10; i++ )
@@ -22,12 +22,11 @@ TEST( VectorTest, reading )
     ArrayView< AStruct > view = data;
     for ( size_t i = 0; i < 10; i++ )
     {
-        ASSERT_EQ( i , data[ i ].value );
+        REQUIRE( view[ i ].value == i );
     }
 }
 
-
-TEST( VectorTest, slicing )
+TEST_CASE( "Slicing ArrayView", "[ArrayView]" )
 {
     Vector< AStruct > data( 10 );
     for ( size_t i = 0; i < 10; i++ )
@@ -36,15 +35,15 @@ TEST( VectorTest, slicing )
     }
 
     ArrayView< AStruct > view = data;
-    ASSERT_TRUE( view.size( ) == 10 );
-    ASSERT_EQ( 8, view.slice_after( 2 ).size( ) );
-    ASSERT_EQ( 2, view.slice_after( 2 ).front( ).value );
-    ASSERT_EQ( 8, view.skip( 2 ).size( ) );
-    ASSERT_EQ( 2, view.skip( 2 ).front( ).value );
-    ASSERT_EQ( 8, view.skip_last( 2 ).size( ) );
-    ASSERT_EQ( 0, view.skip_last( 2 ).front( ).value );
-    ASSERT_EQ( 8, view.slice_before( 8 ).size( ) );
-    ASSERT_EQ( 0, view.slice_before( 8 ).front( ).value );
-    ASSERT_EQ( 6, view.slice( 2, 6 ).size( ) );
-    ASSERT_EQ( 2, view.slice( 2, 6 ).front( ).value );
+    REQUIRE( view.size( ) == 10 );
+    REQUIRE( view.slice_after( 2 ).size( ) == 8 );
+    REQUIRE( view.slice_after( 2 ).front( ).value == 2 );
+    REQUIRE( view.skip( 2 ).size( ) == 8 );
+    REQUIRE( view.skip( 2 ).front( ).value == 2 );
+    REQUIRE( view.skip_last( 2 ).size( ) == 8 );
+    REQUIRE( view.skip_last( 2 ).front( ).value == 0 );
+    REQUIRE( view.slice_before( 8 ).size( ) == 8 );
+    REQUIRE( view.slice_before( 8 ).front( ).value == 0 );
+    REQUIRE( view.slice( 2, 6 ).size( ) == 6 );
+    REQUIRE( view.slice( 2, 6 ).front( ).value == 2 );
 }

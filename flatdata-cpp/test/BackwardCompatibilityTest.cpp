@@ -1,13 +1,12 @@
 /**
- * Copyright (c) 2017 HERE Europe B.V.
+ * Copyright (c) 2018 HERE Europe B.V.
  * See the LICENSE file in the root of this project for license details.
  */
 
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-
-#include <gtest/gtest.h>
+#include "catch.hpp"
 
 #include <array>
 
@@ -41,7 +40,7 @@ namespace tbi = test_structures::backward_compatibility::internal;
  * If you have more questions, please contact flatdata maintainers, among which:
  * - Alexey Kolganov
  * - Christian Vetter
- * - Dimitri Wegner
+ * - boxdot <d@zerovolt.org>
  */
 
 namespace
@@ -52,22 +51,20 @@ compare_byte_arrays( const Array& expected,
                      const flatdata::MemoryDescriptor actual,
                      const Storage& storage )
 {
-    EXPECT_EQ( expected.size( ) - 1, actual.size_in_bytes( ) )
-        << "Sizes differ. Hexdump: " << std::endl
-        << storage.hexdump( );
+    INFO( "Sizes differ. Hexdump: \n" << storage.hexdump( ) );
+    CHECK( actual.size_in_bytes( ) + 1 == expected.size( ) );
 
     for ( size_t i = 0; i < actual.size_in_bytes( ); ++i )
     {
-        EXPECT_EQ( static_cast< uint8_t >( expected[ i ] ), actual.data( )[ i ] )
-            << "Difference at position " << i << ". Hexdump: " << std::endl
-            << storage.hexdump( );
+        INFO( "Difference at position " << i << ". Hexdump: \n" << storage.hexdump( ) );
+        CHECK( actual.data( )[ i ] == static_cast< uint8_t >( expected[ i ] ) );
     }
 }
 
 void
 fill_signed_struct( SignedStructMutator s )
 {
-    EXPECT_EQ( size_t( 10 ), s.size_in_bytes( ) );
+    REQUIRE( s.size_in_bytes( ) == size_t( 10 ) );
     s.a = -0x1;
     s.b = 0x01234567;
     s.c = -0x28;
@@ -77,7 +74,7 @@ fill_signed_struct( SignedStructMutator s )
 void
 fill_simple_struct( SimpleStructMutator s )
 {
-    EXPECT_EQ( size_t( 8 ), s.size_in_bytes( ) );
+    REQUIRE( s.size_in_bytes( ) == size_t( 8 ) );
     s.a = 0xFFFFFFFF;
     s.b = 0xDEADBEEF;
 }
@@ -85,19 +82,19 @@ fill_simple_struct( SimpleStructMutator s )
 void
 check_signed_struct( SignedStruct s )
 {
-    EXPECT_EQ( size_t( 10 ), s.size_in_bytes( ) );
-    EXPECT_EQ( -0x1, s.a );
-    EXPECT_EQ( 0x01234567u, s.b );
-    EXPECT_EQ( -0x28, s.c );
-    EXPECT_EQ( 0u, s.d );
+    REQUIRE( s.size_in_bytes( ) == size_t( 10 ) );
+    REQUIRE( s.a == -0x1 );
+    REQUIRE( s.b == 0x01234567u );
+    REQUIRE( s.c == -0x28 );
+    REQUIRE( s.d == 0u );
 }
 
 void
 check_simple_struct( SimpleStruct s )
 {
-    EXPECT_EQ( size_t( 8 ), s.size_in_bytes( ) );
-    EXPECT_EQ( 0xFFFFFFFFu, s.a );
-    EXPECT_EQ( 0xDEADBEEFu, s.b );
+    REQUIRE( s.size_in_bytes( ) == size_t( 8 ) );
+    REQUIRE( s.a == 0xFFFFFFFFu );
+    REQUIRE( s.b == 0xDEADBEEFu );
 }
 
 template < typename Archive >
@@ -156,23 +153,23 @@ const std::string multivector_index_schema = std::string( "index(" )
                                              + std::string( ")" );
 }  // namespace
 
-TEST( BackwardCompatibilityTest, writing_instance_resources_layout )
+TEST_CASE( "Writing instance resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestInstanceBuilder::open( storage );
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
 
     Struct< SignedStruct > v;
     fill_signed_struct( *v );
     builder.set_instance_resource( *v );
 
-    ASSERT_STREQ( tbi::TestInstance__instance_resource__schema__,
-                  storage->read_resource( "instance_resource.schema" ).char_ptr( ) );
+    REQUIRE( storage->read_resource( "instance_resource.schema" ).char_ptr( )
+             == std::string( tbi::TestInstance__instance_resource__schema__ ) );
     compare_byte_arrays( expected_instance_binary, storage->read_resource( "instance_resource" ),
                          *storage );
 }
 
-TEST( BackwardCompatibilityTest, reading_instance_resources_layout )
+TEST_CASE( "Reading instance resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = openable_storage< TestInstance >( );
     storage->assign_value( "instance_resource",
@@ -182,28 +179,28 @@ TEST( BackwardCompatibilityTest, reading_instance_resources_layout )
                            tbi::TestInstance__instance_resource__schema__ );
 
     auto archive = TestInstance::open( storage );
-    ASSERT_TRUE( archive.is_open( ) ) << archive.describe( );
+    REQUIRE( archive.is_open( ) );
     check_signed_struct( archive.instance_resource( ) );
 }
 
-TEST( BackwardCompatibilityTest, writing_vector_resources_layout )
+TEST_CASE( "Writing vector resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestVectorBuilder::open( storage );
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
 
     Vector< SignedStruct > v( 2 );
     fill_signed_struct( v[ 0 ] );
     fill_signed_struct( v[ 1 ] );
     builder.set_vector_resource( v );
 
-    ASSERT_STREQ( tbi::TestVector__vector_resource__schema__,
-                  storage->read_resource( "vector_resource.schema" ).char_ptr( ) );
+    REQUIRE( storage->read_resource( "vector_resource.schema" ).char_ptr( )
+             == std::string( tbi::TestVector__vector_resource__schema__ ) );
     compare_byte_arrays( expected_vector_binary, storage->read_resource( "vector_resource" ),
                          *storage );
 }
 
-TEST( BackwardCompatibilityTest, reading_vector_resources_layout )
+TEST_CASE( "Reading vector resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = openable_storage< TestVector >( );
     storage->assign_value(
@@ -212,25 +209,25 @@ TEST( BackwardCompatibilityTest, reading_vector_resources_layout )
     storage->assign_value( "vector_resource.schema", tbi::TestVector__vector_resource__schema__ );
 
     auto archive = TestVector::open( storage );
-    ASSERT_TRUE( archive.is_open( ) ) << archive.describe( );
+    REQUIRE( archive.is_open( ) );
 
-    ASSERT_EQ( 2u, archive.vector_resource( ).size( ) );
+    REQUIRE( archive.vector_resource( ).size( ) == 2u );
     check_signed_struct( archive.vector_resource( )[ 0 ] );
     check_signed_struct( archive.vector_resource( )[ 1 ] );
 }
 
-TEST( BackwardCompatibilityTest, writing_multivector_resources_layout )
+TEST_CASE( "Writing multivector resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestMultivectorBuilder::open( storage );
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
 
     auto mv = builder.start_multivector_resource( );
     auto list = mv.grow( );
     fill_signed_struct( list.add< SignedStruct >( ) );
     fill_simple_struct( list.add< SimpleStruct >( ) );
 
-    mv.grow( ); // no data
+    mv.grow( );  // no data
     list = mv.grow( );
     fill_simple_struct( list.add< SimpleStruct >( ) );
     fill_signed_struct( list.add< SignedStruct >( ) );
@@ -240,17 +237,17 @@ TEST( BackwardCompatibilityTest, writing_multivector_resources_layout )
 
     mv.close( );
 
-    ASSERT_STREQ( tbi::TestMultivector__multivector_resource__schema__,
-                  storage->read_resource( "multivector_resource.schema" ).char_ptr( ) );
-    ASSERT_STREQ( multivector_index_schema.c_str( ),
-                  storage->read_resource( "multivector_resource_index.schema" ).char_ptr( ) );
+    REQUIRE( storage->read_resource( "multivector_resource.schema" ).char_ptr( )
+             == std::string( tbi::TestMultivector__multivector_resource__schema__ ) );
+    REQUIRE( storage->read_resource( "multivector_resource_index.schema" ).char_ptr( )
+             == multivector_index_schema );
     compare_byte_arrays( expected_multivector_data,
                          storage->read_resource( "multivector_resource" ), *storage );
     compare_byte_arrays( expected_multivector_index,
                          storage->read_resource( "multivector_resource_index" ), *storage );
 }
 
-TEST( BackwardCompatibilityTest, reading_multivector_resources_layout )
+TEST_CASE( "Reading multivector resources layout", "[BackwardCompatibility]" )
 {
     auto storage = openable_storage< TestMultivector >( );
     storage->assign_value( "multivector_resource",
@@ -265,62 +262,47 @@ TEST( BackwardCompatibilityTest, reading_multivector_resources_layout )
     storage->assign_value( "multivector_resource_index.schema", multivector_index_schema.c_str( ) );
 
     auto archive = TestMultivector::open( storage );
-    ASSERT_TRUE( archive.is_open( ) ) << archive.describe( );
+    REQUIRE( archive.is_open( ) );
 
     auto mv = archive.multivector_resource( );
     size_t number_of_expected_structs = 0;
     mv.for_each( 0, make_overload(
-                        [&]( SimpleStruct s )
-                        {
+                        [&]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct s )
-                        {
+                        [&]( SignedStruct s ) {
                             check_signed_struct( s );
                             number_of_expected_structs++;
                         } ) );
 
-    mv.for_each( 1, make_overload(
-                        [&]( SimpleStruct )
-                        {
-                            FAIL( );
-                        },
-                        [&]( SignedStruct )
-                        {
-                            FAIL( );
-                        } ) );
+    mv.for_each(
+        1, make_overload( [&]( SimpleStruct ) { FAIL( ); }, [&]( SignedStruct ) { FAIL( ); } ) );
 
     mv.for_each( 2, make_overload(
-                        [&]( SimpleStruct s )
-                        {
+                        [&]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct s )
-                        {
+                        [&]( SignedStruct s ) {
                             check_signed_struct( s );
                             number_of_expected_structs++;
                         } ) );
 
     mv.for_each( 3, make_overload(
-                        [&]( SimpleStruct s )
-                        {
+                        [&]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct )
-                        {
-                            FAIL( );
-                        } ) );
-    EXPECT_EQ( 5u, number_of_expected_structs ) << "Found less data than expected";
+                        [&]( SignedStruct ) { FAIL( ); } ) );
+    REQUIRE( number_of_expected_structs == 5u );
 }
 
-TEST( BackwardCompatibilityTest, writing_raw_data_resources_layout )
+TEST_CASE( "Writing raw data resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestRawDataBuilder::open( storage );
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
 
     std::array< uint8_t, 6 > raw_data = {"\xff\xef\xbe\xad\xde"};
     builder.set_raw_data_resource(
@@ -330,7 +312,7 @@ TEST( BackwardCompatibilityTest, writing_raw_data_resources_layout )
                          *storage );
 }
 
-TEST( BackwardCompatibilityTest, reading_raw_data_resources_layout )
+TEST_CASE( "Reading raw data resources layout", "[BackwardCompatibility]" )
 {
     auto storage = openable_storage< TestRawData >( );
     storage->assign_value( "raw_data_resource",
@@ -340,7 +322,7 @@ TEST( BackwardCompatibilityTest, reading_raw_data_resources_layout )
                            tbi::TestRawData__raw_data_resource__schema__ );
 
     auto archive = TestRawData::open( storage );
-    ASSERT_TRUE( archive.is_open( ) ) << archive.describe( );
+    REQUIRE( archive.is_open( ) );
 
     std::array< uint8_t, 6 > expected = {"\xff\xef\xbe\xad\xde"};
     compare_byte_arrays( expected, archive.raw_data_resource( ), *storage );

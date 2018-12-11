@@ -9,8 +9,6 @@ RUN apk --no-cache add \
     doxygen \
     g++ \
     gfortran \
-    gtest \
-    gtest-dev \
     make \
     musl-dev \
     python3-dev \

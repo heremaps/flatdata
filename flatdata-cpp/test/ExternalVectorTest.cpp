@@ -1,13 +1,13 @@
 /**
- * Copyright (c) 2017 HERE Europe B.V.
+ * Copyright (c) 2018 HERE Europe B.V.
  * See the LICENSE file in the root of this project for license details.
  */
 
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
+#include "catch.hpp"
 
 #include <condition_variable>
 #include <mutex>
@@ -17,29 +17,29 @@
 using namespace flatdata;
 using namespace test_structures;
 
-TEST( ExternalVectorTest, FillingData )
+TEST_CASE( "FillingData", "[ExternalVector]" )
 {
     auto storage = MemoryResourceStorage::create( );
     auto data = storage->create_external_vector< AStruct >( "data", "foo" );
-    ASSERT_EQ( size_t( 0 ), data.size( ) );
+    REQUIRE( data.size( ) == size_t( 0 ) );
     data.grow( ).value = 10;
     data.grow( ).value = 11;
     data.grow( ).value = 12;
-    ASSERT_EQ( size_t( 3 ), data.size( ) );
+    REQUIRE( data.size( ) == size_t( 3 ) );
 
     boost::optional< ArrayView< AStruct > > view_from_close = data.close( );
-    ASSERT_TRUE( view_from_close );
-    ASSERT_EQ( size_t( 3 ), view_from_close->size( ) );
-    EXPECT_EQ( uint64_t( 10 ), ( *view_from_close )[ 0 ].value );
-    EXPECT_EQ( uint64_t( 11 ), ( *view_from_close )[ 1 ].value );
-    EXPECT_EQ( uint64_t( 12 ), ( *view_from_close )[ 2 ].value );
+    REQUIRE( static_cast< bool >( view_from_close ) );
+    REQUIRE( view_from_close->size( ) == size_t( 3 ) );
+    CHECK( ( *view_from_close )[ 0 ].value == uint64_t( 10 ) );
+    CHECK( ( *view_from_close )[ 1 ].value == uint64_t( 11 ) );
+    CHECK( ( *view_from_close )[ 2 ].value == uint64_t( 12 ) );
 
     auto view_from_storage = storage->read< ArrayView< AStruct > >( "data", "foo" );
-    ASSERT_TRUE( view_from_storage );
-    ASSERT_EQ( size_t( 3 ), view_from_storage->size( ) );
-    EXPECT_EQ( uint64_t( 10 ), ( *view_from_storage )[ 0 ].value );
-    EXPECT_EQ( uint64_t( 11 ), ( *view_from_storage )[ 1 ].value );
-    EXPECT_EQ( uint64_t( 12 ), ( *view_from_storage )[ 2 ].value );
+    REQUIRE( static_cast< bool >( view_from_storage ) );
+    REQUIRE( view_from_storage->size( ) == size_t( 3 ) );
+    CHECK( ( *view_from_storage )[ 0 ].value == uint64_t( 10 ) );
+    CHECK( ( *view_from_storage )[ 1 ].value == uint64_t( 11 ) );
+    CHECK( ( *view_from_storage )[ 2 ].value == uint64_t( 12 ) );
 }
 
 namespace
@@ -102,12 +102,12 @@ run_close_in_loop( std::unique_ptr< ResourceStorage > storage )
 }
 }  // namespace
 
-TEST( ExternalVectorTest, CloseIsThreadSafeForMemoryResourceStorage )
+TEST_CASE( "Close is thread safe for memory resource storage", "[ExternalVector]" )
 {
     run_close_in_loop( MemoryResourceStorage::create( ) );
 }
 
-TEST( ExternalVectorTest, CloseIsThreadSafeForFileResourceStorage )
+TEST_CASE( "Close is thread safe for file resource storage", "[ExternalVector]" )
 {
     auto tmpdir = boost::filesystem::temp_directory_path( ) / boost::filesystem::unique_path( );
     boost::filesystem::create_directory( tmpdir );

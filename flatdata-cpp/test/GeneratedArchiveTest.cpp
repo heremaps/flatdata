@@ -7,8 +7,9 @@
 
 #include <flatdata/FileResourceStorage.h>
 #include <flatdata/MemoryResourceStorage.h>
-#include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
+#include "catch.hpp"
+
 #include <type_traits>
 
 using test_structures::AStruct;
@@ -17,10 +18,10 @@ using test_structures::OnlyOptional;
 using test_structures::OnlyOptionalBuilder;
 using test_structures::OuterArchive;
 using test_structures::OuterArchiveBuilder;
-using test_structures::OuterWithOptional;
-using test_structures::OuterWithOptionalBuilder;
 using test_structures::OutermostArchive;
 using test_structures::OutermostArchiveBuilder;
+using test_structures::OuterWithOptional;
+using test_structures::OuterWithOptionalBuilder;
 using test_structures::SimpleResources;
 using test_structures::SimpleResourcesBuilder;
 
@@ -28,13 +29,12 @@ namespace flatdata
 {
 namespace test
 {
-class GeneratedArchiveTestWithStorage : public ::testing::TestWithParam< bool >
+template < typename UseMemoryResourceStorage >
+struct Fixture
 {
-public:
-    void
-    SetUp( )
+    Fixture( )
     {
-        if ( GetParam( ) )
+        if ( UseMemoryResourceStorage::value )
         {
             storage = MemoryResourceStorage::create( );
             return;
@@ -46,16 +46,15 @@ public:
         boost::filesystem::create_directory( temporary_path, ec );
         if ( ec )
         {
-            FAIL( ) << "Cannot create temporary directory to test FileResourceStorage at "
-                    << temporary_path;
+            FAIL( "Cannot create temporary directory to test FileResourceStorage at "
+                  << temporary_path );
         }
         storage = FileResourceStorage::create( temporary_path.c_str( ) );
     }
 
-    void
-    TearDown( )
+    ~Fixture( )
     {
-        if ( GetParam( ) )
+        if ( UseMemoryResourceStorage::value )
         {
             return;
         }
@@ -63,7 +62,7 @@ public:
         boost::filesystem::remove_all( temporary_path, ec );
         if ( ec )
         {
-            FAIL( ) << "Failed to remove temporary directory " << temporary_path;
+            FAIL( "Failed to remove temporary directory " << temporary_path );
         }
         temporary_path.clear( );
     }
@@ -72,119 +71,151 @@ public:
     boost::filesystem::path temporary_path;
 };
 
-TEST_P( GeneratedArchiveTestWithStorage, objects_can_be_read_and_written )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "objects_can_be_read_and_written",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = SimpleResourcesBuilder::open( storage );
+    auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
 
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
     std::vector< uint8_t > data( AStruct::size_in_bytes( ) );
     AStruct::MutatorType object( data.data( ) );
     object.value = 7;
     builder.set_object_resource( object );
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_FALSE( archive.is_open( ) );
-    ASSERT_EQ( 7u, archive.object_resource( ).value );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
+    REQUIRE( archive.object_resource( ).value == 7u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, vectors_can_be_read_and_written )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Vectors can be read and written",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = SimpleResourcesBuilder::open( storage );
+    auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
 
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
     flatdata::Vector< AStruct > v;
     v.grow( ).value = 17;
     v.grow( ).value = 42;
     builder.set_vector_resource( v );
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_FALSE( archive.is_open( ) );
-    ASSERT_EQ( 2u, archive.vector_resource( ).size( ) );
-    ASSERT_EQ( 17u, archive.vector_resource( )[ 0 ].value );
-    ASSERT_EQ( 42u, archive.vector_resource( )[ 1 ].value );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
+    REQUIRE( archive.vector_resource( ).size( ) == 2u );
+    REQUIRE( archive.vector_resource( )[ 0 ].value == 17u );
+    REQUIRE( archive.vector_resource( )[ 1 ].value == 42u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, vectors_can_be_created_incrementally )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Vectors can be created incrementally",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = SimpleResourcesBuilder::open( storage );
+    auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
 
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
     auto resource = builder.start_vector_resource( );
     resource.grow( ).value = 17;
     resource.grow( ).value = 42;
     resource.close( );
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_FALSE( archive.is_open( ) );
-    ASSERT_EQ( 2u, archive.vector_resource( ).size( ) );
-    ASSERT_EQ( 17u, archive.vector_resource( )[ 0 ].value );
-    ASSERT_EQ( 42u, archive.vector_resource( )[ 1 ].value );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
+    REQUIRE( archive.vector_resource( ).size( ) == 2u );
+    REQUIRE( archive.vector_resource( )[ 0 ].value == 17u );
+    REQUIRE( archive.vector_resource( )[ 1 ].value == 42u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, multivectors_can_be_created_incrementally )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Multivectors can be created incrementally",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = SimpleResourcesBuilder::open( storage );
+    auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
 
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
     auto resource = builder.start_multivector_resource( );
     auto list = resource.grow( );
-    list.add< AStruct >( ).value = 17;
+    list.template add< AStruct >( ).value = 17;
     list = resource.grow( );
-    list.add< AStruct >( ).value = 42;
+    list.template add< AStruct >( ).value = 42;
     resource.close( );
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_FALSE( archive.is_open( ) );
-    ASSERT_EQ( 2u, archive.multivector_resource( ).size( ) );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
+    REQUIRE( archive.multivector_resource( ).size( ) == 2u );
 
-    archive.multivector_resource( ).for_each< AStruct >(
-        0, [&]( const AStruct& s ) { EXPECT_EQ( 17u, s.value ); } );
-    archive.multivector_resource( ).for_each< AStruct >(
-        1, [&]( const AStruct& s ) { EXPECT_EQ( 42u, s.value ); } );
+    archive.multivector_resource( ).template for_each< AStruct >(
+        0, [&]( const AStruct& s ) { REQUIRE( s.value == 17u ); } );
+    archive.multivector_resource( ).template for_each< AStruct >(
+        1, [&]( const AStruct& s ) { REQUIRE( s.value == 42u ); } );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, raw_data_can_be_read_and_written )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Raw data can be read and written",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = SimpleResourcesBuilder::open( storage );
+    auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
 
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
     builder.set_raw_data_resource( MemoryDescriptor( "abc\0", 4 ) );
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_FALSE( archive.is_open( ) );
-    ASSERT_STREQ( "abc", archive.raw_data_resource( ).char_ptr( ) );
-    ASSERT_EQ( 4u, archive.raw_data_resource( ).size_in_bytes( ) );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
+    REQUIRE( archive.raw_data_resource( ).char_ptr( ) == std::string( "abc" ) );
+    REQUIRE( archive.raw_data_resource( ).size_in_bytes( ) == 4u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, optional_resource_is_correct_when_available )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Optional resource is correct when available",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = OnlyOptionalBuilder::open( storage );
+    auto builder = OnlyOptionalBuilder::open( Fixture< TestType >::storage );
 
-    EXPECT_TRUE( builder.is_open( ) );
+    CHECK( builder.is_open( ) );
     builder.set_optional_resource( MemoryDescriptor( "abc\0", 4 ) );
 
-    auto archive = OnlyOptional::open( storage );
-    EXPECT_TRUE( archive.is_open( ) );
-    ASSERT_TRUE( archive.optional_resource( ).is_initialized( ) );
-    ASSERT_STREQ( "abc", archive.optional_resource( )->char_ptr( ) );
-    ASSERT_EQ( 4u, archive.optional_resource( )->size_in_bytes( ) );
+    auto archive = OnlyOptional::open( Fixture< TestType >::storage );
+    CHECK( archive.is_open( ) );
+    REQUIRE( archive.optional_resource( ).is_initialized( ) );
+    REQUIRE( archive.optional_resource( )->char_ptr( ) == std::string( "abc" ) );
+    REQUIRE( archive.optional_resource( )->size_in_bytes( ) == 4u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, optional_resource_is_uninitialized_when_not_available )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Optional resource is uninitialized when not available",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto builder = OnlyOptionalBuilder::open( storage );
-    EXPECT_TRUE( builder.is_open( ) );
+    auto builder = OnlyOptionalBuilder::open( Fixture< TestType >::storage );
+    CHECK( builder.is_open( ) );
 
-    auto archive = OnlyOptional::open( storage );
-    EXPECT_TRUE( archive.is_open( ) );
-    ASSERT_TRUE( !archive.optional_resource( ).is_initialized( ) );
+    auto archive = OnlyOptional::open( Fixture< TestType >::storage );
+    CHECK( archive.is_open( ) );
+    REQUIRE( !archive.optional_resource( ).is_initialized( ) );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, describe_outputs_resources_as_expected )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Describe outputs resources as expected",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
     {
-        auto builder = SimpleResourcesBuilder::open( storage );
-        EXPECT_TRUE( builder.is_open( ) );
+        auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
+        CHECK( builder.is_open( ) );
         flatdata::Struct< AStruct > astruct;
         builder.set_object_resource( *astruct );
         flatdata::Vector< AStruct > avector( 11 );
@@ -194,12 +225,12 @@ TEST_P( GeneratedArchiveTestWithStorage, describe_outputs_resources_as_expected 
 
         auto mv = builder.start_multivector_resource( );
         auto list = mv.grow( );
-        list.add< AStruct >( ).value = 17;
+        list.template add< AStruct >( ).value = 17;
         mv.close( );
     }
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_TRUE( archive.is_open( ) );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK( archive.is_open( ) );
     const char* const expected =
         R"data(================================================================================
 Flatdata Archive: SimpleResources
@@ -214,21 +245,25 @@ raw_data_resource                    NO        YES       Raw data of size 8
 optional_resource                    YES       YES       Raw data of size 3
 ================================================================================
 )data";
-    ASSERT_EQ( expected, archive.describe( ) );
+    REQUIRE( archive.describe( ) == expected );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, describe_ouputs_resources_failed_to_load )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Describe ouputs resources failed to load",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
     {
-        auto builder = SimpleResourcesBuilder::open( storage );
-        EXPECT_TRUE( builder.is_open( ) );
+        auto builder = SimpleResourcesBuilder::open( Fixture< TestType >::storage );
+        CHECK( builder.is_open( ) );
         flatdata::Struct< AStruct > astruct;
         builder.set_object_resource( *astruct );
         builder.set_optional_resource( flatdata::MemoryDescriptor( "opt", 3 ) );
     }
 
-    auto archive = SimpleResources::open( storage );
-    EXPECT_FALSE( archive.is_open( ) );
+    auto archive = SimpleResources::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
     const char* const expected =
         R"data(================================================================================
 Flatdata Archive: SimpleResources
@@ -244,13 +279,17 @@ raw_data_resource                    NO        NO        N/A
 optional_resource                    YES       YES       Raw data of size 3
 ================================================================================
 )data";
-    ASSERT_EQ( expected, archive.describe( ) );
+    REQUIRE( archive.describe( ) == expected );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, archive_resources_can_be_created )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Archive resources can be created",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto outer_builder = OuterArchiveBuilder::open( storage );
-    EXPECT_TRUE( outer_builder );
+    auto outer_builder = OuterArchiveBuilder::open( Fixture< TestType >::storage );
+    CHECK( outer_builder );
 
     flatdata::Struct< AStruct > s;
     ( *s ).value = 17u;
@@ -264,64 +303,75 @@ TEST_P( GeneratedArchiveTestWithStorage, archive_resources_can_be_created )
         inner_builder.set_inner( *s );
     }
 
-    auto outer = OuterArchive::open( storage );
-    EXPECT_TRUE( outer.is_open( ) );
-    ASSERT_EQ( 17u, outer.outer1( ).value );
-    ASSERT_EQ( 17u, outer.outer2( ).value );
-    ASSERT_TRUE( outer.inner( ).is_open( ) );
-    ASSERT_EQ( 42u, outer.inner( ).inner( ).value );
+    auto outer = OuterArchive::open( Fixture< TestType >::storage );
+    CHECK( outer.is_open( ) );
+    REQUIRE( outer.outer1( ).value == 17u );
+    REQUIRE( outer.outer2( ).value == 17u );
+    REQUIRE( outer.inner( ).is_open( ) );
+    REQUIRE( outer.inner( ).inner( ).value == 42u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, archive_resources_wont_load_if_missing )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Archive resources wont load if missing",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto outer_builder = OuterArchiveBuilder::open( storage );
-    EXPECT_TRUE( outer_builder );
+    auto outer_builder = OuterArchiveBuilder::open( Fixture< TestType >::storage );
+    CHECK( outer_builder );
 
     flatdata::Struct< AStruct > o;
     ( *o ).value = 17u;
     outer_builder.set_outer1( *o );
     outer_builder.set_outer2( *o );
 
-    auto outer = OuterArchive::open( storage );
-    ASSERT_FALSE( outer.is_open( ) );
-    ASSERT_FALSE( outer.inner( ).is_open( ) );
+    auto outer = OuterArchive::open( Fixture< TestType >::storage );
+    REQUIRE_FALSE( outer.is_open( ) );
+    REQUIRE_FALSE( outer.inner( ).is_open( ) );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage,
-        only_archive_resources_can_be_incrementally_added_if_nonexisting )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Only archive resources can be incrementally added if nonexisting",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
     {
-        auto outer_builder = OuterArchiveBuilder::open( storage );
-        EXPECT_TRUE( outer_builder );
+        auto outer_builder = OuterArchiveBuilder::open( Fixture< TestType >::storage );
+        CHECK( outer_builder );
 
         flatdata::Struct< AStruct > o;
         ( *o ).value = 17u;
         outer_builder.set_outer1( *o );
     }
 
-    auto outer_builder = OuterArchiveBuilder::open( storage );
-    ASSERT_TRUE( outer_builder.is_open( ) );
+    auto outer_builder = OuterArchiveBuilder::open( Fixture< TestType >::storage );
+    REQUIRE( outer_builder.is_open( ) );
     flatdata::Struct< AStruct > o;
-    ASSERT_THROW( outer_builder.set_outer1( *o ), std::runtime_error );
-    ASSERT_THROW( outer_builder.set_outer2( *o ), std::runtime_error );
+    REQUIRE_THROWS_AS( outer_builder.set_outer1( *o ), std::runtime_error );
+    REQUIRE_THROWS_AS( outer_builder.set_outer2( *o ), std::runtime_error );
 
     auto inner_builder = outer_builder.inner( );
     flatdata::Struct< AStruct > i;
     ( *i ).value = 42u;
     inner_builder.set_inner( *i );
 
-    auto outer = OuterArchive::open( storage );
-    EXPECT_FALSE( outer.is_open( ) );
-    ASSERT_EQ( 17u, outer.outer1( ).value );
-    ASSERT_TRUE( outer.inner( ).is_open( ) );
-    ASSERT_EQ( 42u, outer.inner( ).inner( ).value );
+    auto outer = OuterArchive::open( Fixture< TestType >::storage );
+    CHECK_FALSE( outer.is_open( ) );
+    REQUIRE( outer.outer1( ).value == 17u );
+    REQUIRE( outer.inner( ).is_open( ) );
+    REQUIRE( outer.inner( ).inner( ).value == 42u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, optional_archive_resources_behave_as_others )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Optional archive resources behave as others",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
     {
-        auto outer_builder = OuterWithOptionalBuilder::open( storage );
-        EXPECT_TRUE( outer_builder );
+        auto outer_builder = OuterWithOptionalBuilder::open( Fixture< TestType >::storage );
+        CHECK( outer_builder );
 
         flatdata::Struct< AStruct > o;
         ( *o ).value = 17u;
@@ -329,79 +379,80 @@ TEST_P( GeneratedArchiveTestWithStorage, optional_archive_resources_behave_as_ot
     }
 
     {
-        auto outer = OuterWithOptional::open( storage );
-        EXPECT_TRUE( outer.is_open( ) );
-        ASSERT_FALSE( outer.archive_resource( ).is_initialized( ) );
-        ASSERT_EQ( 17u, outer.outer( ).value );
+        auto outer = OuterWithOptional::open( Fixture< TestType >::storage );
+        CHECK( outer.is_open( ) );
+        REQUIRE_FALSE( outer.archive_resource( ).is_initialized( ) );
+        REQUIRE( outer.outer( ).value == 17u );
     }
 
-    auto outer_builder = OuterWithOptionalBuilder::open( storage );
-    ASSERT_TRUE( outer_builder.is_open( ) );
+    auto outer_builder = OuterWithOptionalBuilder::open( Fixture< TestType >::storage );
+    REQUIRE( outer_builder.is_open( ) );
 
     auto inner_builder = outer_builder.archive_resource( );
     flatdata::Struct< AStruct > i;
     ( *i ).value = 42u;
     inner_builder.set_inner( *i );
 
-    auto outer = OuterWithOptional::open( storage );
-    EXPECT_TRUE( outer.is_open( ) );
-    ASSERT_EQ( 17u, outer.outer( ).value );
-    ASSERT_TRUE( outer.archive_resource( )->is_open( ) );
-    ASSERT_EQ( 42u, outer.archive_resource( )->inner( ).value );
+    auto outer = OuterWithOptional::open( Fixture< TestType >::storage );
+    CHECK( outer.is_open( ) );
+    REQUIRE( outer.outer( ).value == 17u );
+    REQUIRE( outer.archive_resource( )->is_open( ) );
+    REQUIRE( outer.archive_resource( )->inner( ).value == 42u );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, nested_archives_can_be_created_incrementally )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Nested archives can be created incrementally",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
     flatdata::Struct< AStruct > o;
     ( *o ).value = 17u;
     {
-        auto outermost_builder = OutermostArchiveBuilder::open( storage );
+        auto outermost_builder = OutermostArchiveBuilder::open( Fixture< TestType >::storage );
         outermost_builder.set_outermost( *o );
         auto outer_builder = outermost_builder.outer( );
         outer_builder.set_outer1( *o );
     }
 
-    auto outermost_builder = OutermostArchiveBuilder::open( storage );
-    ASSERT_THROW( outermost_builder.set_outermost( *o ), std::runtime_error );
+    auto outermost_builder = OutermostArchiveBuilder::open( Fixture< TestType >::storage );
+    REQUIRE_THROWS_AS( outermost_builder.set_outermost( *o ), std::runtime_error );
     auto outer_builder = outermost_builder.outer( );
-    ASSERT_THROW( outer_builder.set_outer1( *o ), std::runtime_error );
-    ASSERT_THROW( outer_builder.set_outer2( *o ), std::runtime_error );
+    REQUIRE_THROWS_AS( outer_builder.set_outer1( *o ), std::runtime_error );
+    REQUIRE_THROWS_AS( outer_builder.set_outer2( *o ), std::runtime_error );
 
     auto inner_builder = outer_builder.inner( );
     inner_builder.set_inner( *o );
 }
 
-TEST_P( GeneratedArchiveTestWithStorage, opening_archive_doesnt_create_waste_at_target_path )
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Opening archive doesn't create waste at target path",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
 {
-    auto outermost = OutermostArchive::open( storage );
-    EXPECT_FALSE( outermost.is_open( ) );
-    if ( !temporary_path.empty( ) )
+    auto outermost = OutermostArchive::open( Fixture< TestType >::storage );
+    CHECK_FALSE( outermost.is_open( ) );
+    if ( !Fixture< TestType >::temporary_path.empty( ) )
     {
-        ASSERT_TRUE( boost::filesystem::is_empty( temporary_path ) );
+        REQUIRE( boost::filesystem::is_empty( Fixture< TestType >::temporary_path ) );
     }
 }
 
-INSTANTIATE_TEST_CASE_P( TestWithMemoryResourceStorage,
-                         GeneratedArchiveTestWithStorage,
-                         ::testing::Values( true ) );
-INSTANTIATE_TEST_CASE_P( TestWithFileResourceStorage,
-                         GeneratedArchiveTestWithStorage,
-                         ::testing::Values( false ) );
-
-TEST( GeneratedArchiveTest, optional_resource_is_returned_by_reference )
+TEST_CASE( "Optional resource is returned by reference", "[GeneratedArchive]" )
 {
     static_assert(
         std::is_reference< decltype(
             std::declval< OnlyOptional >( ).optional_resource( ) ) >::value,
         "Optional members should be returned as references to avoid memory potential issues"
         " in release mode" );
-    ASSERT_TRUE( true );
+    REQUIRE( true );
 }
 
-TEST( GeneratedArchiveTest, describe_ouputs_fatal_errors )
+TEST_CASE( "Describe ouputs fatal errors", "[GeneratedArchive]" )
 {
     auto archive = SimpleResources::open( std::shared_ptr< flatdata::ResourceStorage >( ) );
-    EXPECT_FALSE( archive.is_open( ) );
+    CHECK_FALSE( archive.is_open( ) );
     const char* const expected =
         R"data(================================================================================
 Flatdata Archive: SimpleResources
@@ -409,10 +460,10 @@ Flatdata Archive: SimpleResources
   FATAL: Resource storage not initialized. Please check archive path.
 ================================================================================
 )data";
-    ASSERT_EQ( expected, archive.describe( ) );
+    REQUIRE( archive.describe( ) == expected );
 }
 
-TEST( GeneratedArchiveTest, describe_mismatch_schema )
+TEST_CASE( "Describe mismatch schema", "[GeneratedArchive]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     storage->assign_value( "OutermostArchive.archive.schema",
@@ -479,8 +530,8 @@ Resource                             Optional  Loaded    Details
 outermost                            NO        NO        N/A
 ================================================================================
 )";
-    ASSERT_EQ( expectation, description );
+    REQUIRE( description == expectation );
 }
 
-}  // test
-}  // flatdata
+}  // namespace test
+}  // namespace flatdata

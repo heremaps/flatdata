@@ -6,61 +6,61 @@
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include <gtest/gtest.h>
+#include "catch.hpp"
 
 using namespace flatdata;
 using namespace test_structures;
 
-TEST( SerializedStructTest, SimpleLayoutIsInLittleEndian )
+TEST_CASE( "Simple layout is in little endian", "[SerializedStruct]" )
 {
     Struct< SimpleStruct > v;
     SimpleStructMutator x = *v;
-    ASSERT_EQ( size_t( 8 ), x.size_in_bytes( ) );
+    REQUIRE( x.size_in_bytes( ) == size_t( 8 ) );
     x.a = 0x01234567;
     x.b = 0x89abcdef;
 
     const uint8_t* data = x.data( );
     SimpleStruct reader{data};
-    ASSERT_EQ( 0x01234567u, uint32_t( reader.a ) );
-    ASSERT_EQ( 0x89abcdefu, uint32_t( reader.b ) );
+    REQUIRE( uint32_t( reader.a ) == 0x01234567u );
+    REQUIRE( uint32_t( reader.b ) == 0x89abcdefu );
 
-    ASSERT_EQ( 0x67, data[ 0 ] );
-    ASSERT_EQ( 0x45, data[ 1 ] );
-    ASSERT_EQ( 0x23, data[ 2 ] );
-    ASSERT_EQ( 0x01, data[ 3 ] );
-    ASSERT_EQ( 0xef, data[ 4 ] );
-    ASSERT_EQ( 0xcd, data[ 5 ] );
-    ASSERT_EQ( 0xab, data[ 6 ] );
-    ASSERT_EQ( 0x89, data[ 7 ] );
+    REQUIRE( data[ 0 ] == 0x67 );
+    REQUIRE( data[ 1 ] == 0x45 );
+    REQUIRE( data[ 2 ] == 0x23 );
+    REQUIRE( data[ 3 ] == 0x01 );
+    REQUIRE( data[ 4 ] == 0xef );
+    REQUIRE( data[ 5 ] == 0xcd );
+    REQUIRE( data[ 6 ] == 0xab );
+    REQUIRE( data[ 7 ] == 0x89 );
 }
 
-TEST( SerializedStructTest, BitPackedWorks )
+TEST_CASE( "Bit packed works", "[SerializedStruct]" )
 {
     Struct< BitPackedStruct > v;
     BitPackedStructMutator x = *v;
-    ASSERT_EQ( size_t( 5 ), x.size_in_bytes( ) );
+    REQUIRE( x.size_in_bytes( ) == size_t( 5 ) );
     x.a = true;
     x.b = 0x01234567;
     x.c = 0x48;
 
     const uint8_t* data = x.data( );
     BitPackedStruct reader{data};
-    ASSERT_EQ( true, uint32_t( reader.a ) );
-    ASSERT_EQ( 0x01234567u, uint32_t( reader.b ) );
-    ASSERT_EQ( 0x48u, uint32_t( reader.c ) );
+    REQUIRE( uint32_t( reader.a ) == true );
+    REQUIRE( uint32_t( reader.b ) == 0x01234567u );
+    REQUIRE( uint32_t( reader.c ) == 0x48u );
 
-    ASSERT_EQ( 0xCF, data[ 0 ] );
-    ASSERT_EQ( 0x8A, data[ 1 ] );
-    ASSERT_EQ( 0x46, data[ 2 ] );
-    ASSERT_EQ( 0x02, data[ 3 ] );
-    ASSERT_EQ( 0x90, data[ 4 ] );
+    REQUIRE( data[ 0 ] == 0xCF );
+    REQUIRE( data[ 1 ] == 0x8A );
+    REQUIRE( data[ 2 ] == 0x46 );
+    REQUIRE( data[ 3 ] == 0x02 );
+    REQUIRE( data[ 4 ] == 0x90 );
 }
 
-TEST( SerializedStructTest, SignedStructWorks )
+TEST_CASE( "Signed struct works", "[SerializedStruct]" )
 {
     Struct< SignedStruct > v;
     SignedStructMutator x = *v;
-    ASSERT_EQ( size_t( 10 ), x.size_in_bytes( ) );
+    REQUIRE( x.size_in_bytes( ) == size_t( 10 ) );
     x.a = -0x1;
     x.b = 0x01234567;
     x.c = -0x28;
@@ -68,24 +68,25 @@ TEST( SerializedStructTest, SignedStructWorks )
 
     const uint8_t* data = x.data( );  // 17002468ACFF
     SignedStruct reader{data};
-    ASSERT_EQ( -0x1, int16_t( reader.a ) );
-    ASSERT_EQ( 0x01234567u, uint32_t( reader.b ) );
-    ASSERT_EQ( -0x28, int32_t( reader.c ) );
-    ASSERT_EQ( 0u, uint32_t( reader.d ) );
+    REQUIRE( int16_t( reader.a ) == -0x1 );
+    REQUIRE( uint32_t( reader.b ) == 0x01234567u );
+    REQUIRE( int32_t( reader.c ) == -0x28 );
+    REQUIRE( uint32_t( reader.d ) == 0u );
 
-    ASSERT_EQ( 0xFF, data[ 0 ] );
-    ASSERT_EQ( 0xAC, data[ 1 ] );
-    ASSERT_EQ( 0x68, data[ 2 ] );
-    ASSERT_EQ( 0x24, data[ 3 ] );
-    ASSERT_EQ( 0x00, data[ 4 ] );
-    ASSERT_EQ( 0x0B, data[ 5 ] );
-    ASSERT_EQ( 0x00, data[ 6 ] );
-    ASSERT_EQ( 0x00, data[ 7 ] );
-    ASSERT_EQ( 0x00, data[ 8 ] );
-    ASSERT_EQ( 0x00, data[ 9 ] );
+    REQUIRE( data[ 0 ] == 0xFF );
+    REQUIRE( data[ 1 ] == 0xAC );
+    REQUIRE( data[ 2 ] == 0x68 );
+    REQUIRE( data[ 3 ] == 0x24 );
+    REQUIRE( data[ 4 ] == 0x00 );
+    REQUIRE( data[ 5 ] == 0x0B );
+    REQUIRE( data[ 6 ] == 0x00 );
+    REQUIRE( data[ 7 ] == 0x00 );
+    REQUIRE( data[ 8 ] == 0x00 );
+    REQUIRE( data[ 9 ] == 0x00 );
 }
 
-TEST( SerializedStructTest, Schema )
+TEST_CASE( "Struct schemas are different", "[SerializedStruct]" )
 {
-    ASSERT_STRNE( SimpleStruct::schema( ).c_str( ), OtherSimpleStruct::schema( ).c_str( ) );
+    REQUIRE( std::string( SimpleStruct::schema( ).c_str( ) )
+             != OtherSimpleStruct::schema( ).c_str( ) );
 }
