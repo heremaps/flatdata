@@ -157,7 +157,7 @@ TEST_CASE( "Writing instance resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestInstanceBuilder::open( storage );
-    CHECK( builder.is_open( ) );
+    REQUIRE( builder.is_open( ) );
 
     Struct< SignedStruct > v;
     fill_signed_struct( *v );
@@ -179,6 +179,7 @@ TEST_CASE( "Reading instance resources layout", "[BackwardCompatibility]" )
                            tbi::TestInstance__instance_resource__schema__ );
 
     auto archive = TestInstance::open( storage );
+    INFO( archive.describe( ) );
     REQUIRE( archive.is_open( ) );
     check_signed_struct( archive.instance_resource( ) );
 }
@@ -187,7 +188,7 @@ TEST_CASE( "Writing vector resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestVectorBuilder::open( storage );
-    CHECK( builder.is_open( ) );
+    REQUIRE( builder.is_open( ) );
 
     Vector< SignedStruct > v( 2 );
     fill_signed_struct( v[ 0 ] );
@@ -209,6 +210,7 @@ TEST_CASE( "Reading vector resources layout", "[BackwardCompatibility]" )
     storage->assign_value( "vector_resource.schema", tbi::TestVector__vector_resource__schema__ );
 
     auto archive = TestVector::open( storage );
+    INFO( archive.describe( ) );
     REQUIRE( archive.is_open( ) );
 
     REQUIRE( archive.vector_resource( ).size( ) == 2u );
@@ -220,7 +222,7 @@ TEST_CASE( "Writing multivector resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestMultivectorBuilder::open( storage );
-    CHECK( builder.is_open( ) );
+    REQUIRE( builder.is_open( ) );
 
     auto mv = builder.start_multivector_resource( );
     auto list = mv.grow( );
@@ -262,6 +264,7 @@ TEST_CASE( "Reading multivector resources layout", "[BackwardCompatibility]" )
     storage->assign_value( "multivector_resource_index.schema", multivector_index_schema.c_str( ) );
 
     auto archive = TestMultivector::open( storage );
+    INFO( archive.describe( ) );
     REQUIRE( archive.is_open( ) );
 
     auto mv = archive.multivector_resource( );
@@ -302,7 +305,7 @@ TEST_CASE( "Writing raw data resources layout", "[BackwardCompatibility]" )
 {
     std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
     auto builder = TestRawDataBuilder::open( storage );
-    CHECK( builder.is_open( ) );
+    REQUIRE( builder.is_open( ) );
 
     std::array< uint8_t, 6 > raw_data = {"\xff\xef\xbe\xad\xde"};
     builder.set_raw_data_resource(
@@ -322,6 +325,7 @@ TEST_CASE( "Reading raw data resources layout", "[BackwardCompatibility]" )
                            tbi::TestRawData__raw_data_resource__schema__ );
 
     auto archive = TestRawData::open( storage );
+    INFO( archive.describe( ) );
     REQUIRE( archive.is_open( ) );
 
     std::array< uint8_t, 6 > expected = {"\xff\xef\xbe\xad\xde"};
