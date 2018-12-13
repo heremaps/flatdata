@@ -1,12 +1,12 @@
 /**
- * Copyright (c) 2017 HERE Europe B.V.
+ * Copyright (c) 2018 HERE Europe B.V.
  * See the LICENSE file in the root of this project for license details.
  */
 
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include <gtest/gtest.h>
+#include "catch.hpp"
 
 using namespace flatdata;
 using namespace test_structures;
@@ -58,7 +58,7 @@ static auto create_view_with_enough_items_to_flush = []( ) {
     return std::make_pair( std::move( storage ), std::move( view_from_close ) );
 };
 
-TEST( MultiVectorTest, TestVariousDataFunctor )
+TEST_CASE( "Test various data functor", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
     struct Reader
@@ -86,53 +86,53 @@ TEST( MultiVectorTest, TestVariousDataFunctor )
     {
         Reader reader;
         view.second.for_each( 0, reader );
-        ASSERT_TRUE( reader.has_a );
-        ASSERT_TRUE( reader.has_b );
-        ASSERT_TRUE( reader.has_c );
+        REQUIRE( reader.has_a );
+        REQUIRE( reader.has_b );
+        REQUIRE( reader.has_c );
     }
 
     {
         Reader reader;
         view.second.for_each< AStructMutator, BStruct, CStruct >( 0, reader );
-        ASSERT_TRUE( reader.has_a );
-        ASSERT_TRUE( reader.has_b );
-        ASSERT_TRUE( reader.has_c );
+        REQUIRE( reader.has_a );
+        REQUIRE( reader.has_b );
+        REQUIRE( reader.has_c );
     }
 
     {
         Reader reader;
         view.second.for_each( 1, reader );
-        ASSERT_FALSE( reader.has_a );
-        ASSERT_FALSE( reader.has_b );
-        ASSERT_TRUE( reader.has_c );
+        REQUIRE_FALSE( reader.has_a );
+        REQUIRE_FALSE( reader.has_b );
+        REQUIRE( reader.has_c );
     }
 
     {
         Reader reader;
         view.second.for_each< AStructMutator, BStruct, CStruct >( 1, reader );
-        ASSERT_FALSE( reader.has_a );
-        ASSERT_FALSE( reader.has_b );
-        ASSERT_TRUE( reader.has_c );
+        REQUIRE_FALSE( reader.has_a );
+        REQUIRE_FALSE( reader.has_b );
+        REQUIRE( reader.has_c );
     }
 
     {
         Reader reader;
         view.second.for_each( 2, reader );
-        ASSERT_TRUE( reader.has_a );
-        ASSERT_FALSE( reader.has_b );
-        ASSERT_FALSE( reader.has_c );
+        REQUIRE( reader.has_a );
+        REQUIRE_FALSE( reader.has_b );
+        REQUIRE_FALSE( reader.has_c );
     }
 
     {
         Reader reader;
         view.second.for_each< AStructMutator, BStruct, CStruct >( 2, reader );
-        ASSERT_TRUE( reader.has_a );
-        ASSERT_FALSE( reader.has_b );
-        ASSERT_FALSE( reader.has_c );
+        REQUIRE( reader.has_a );
+        REQUIRE_FALSE( reader.has_b );
+        REQUIRE_FALSE( reader.has_c );
     }
 }
 
-TEST( MultiVectorTest, TestVariousDataOverloadedLambda )
+TEST_CASE( "Test various data overloaded lambda", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
@@ -152,24 +152,24 @@ TEST( MultiVectorTest, TestVariousDataOverloadedLambda )
 
     reset( );
     view.second.for_each( 0, reader );
-    ASSERT_TRUE( has_a );
-    ASSERT_TRUE( has_b );
-    ASSERT_TRUE( has_c );
+    REQUIRE( has_a );
+    REQUIRE( has_b );
+    REQUIRE( has_c );
 
     reset( );
     view.second.for_each( 1, reader );
-    ASSERT_FALSE( has_a );
-    ASSERT_FALSE( has_b );
-    ASSERT_TRUE( has_c );
+    REQUIRE_FALSE( has_a );
+    REQUIRE_FALSE( has_b );
+    REQUIRE( has_c );
 
     reset( );
     view.second.for_each( 2, reader );
-    ASSERT_TRUE( has_a );
-    ASSERT_FALSE( has_b );
-    ASSERT_FALSE( has_c );
+    REQUIRE( has_a );
+    REQUIRE_FALSE( has_b );
+    REQUIRE_FALSE( has_c );
 }
 
-TEST( MultiVectorTest, ConstFunctor )
+TEST_CASE( "for_each with const functor", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
@@ -187,77 +187,77 @@ TEST( MultiVectorTest, ConstFunctor )
     view.second.for_each< AStruct >( 0, no_reader );
 }
 
-TEST( MultiVectorTest, LambdaExplicit )
+TEST_CASE( "for_each with explicit lambda", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
     // also check that lambda works with explicit for_each
     bool has_b = false;
     view.second.for_each< BStruct >( 0, [&]( BStruct x ) { has_b = x.value == 1000; } );
-    ASSERT_TRUE( has_b );
+    REQUIRE( has_b );
 }
 
-TEST( MultiVectorTest, LambdaImplicit )
+TEST_CASE( "for_each with implicit lambda", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
     // also check that lambda works with implicit for_each
     bool has_b = false;
     view.second.for_each( 0, make_overload( [&]( BStruct x ) { has_b = x.value == 1000; } ) );
-    ASSERT_TRUE( has_b );
+    REQUIRE( has_b );
 }
 
-TEST( MultiVectorTest, IterateOneTypeElementsContinuouslyPlaced )
+TEST_CASE( "Iterate one type elements continuously placed", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
     uint64_t index = 0;
     auto it = view.second.iterator< AStruct >( index );
-    ASSERT_TRUE( it.valid( ) );
+    REQUIRE( it.valid( ) );
     bool has_a1 = ( *it ).value == 7;
     ++it;
-    ASSERT_TRUE( it.valid( ) );
+    REQUIRE( it.valid( ) );
     bool has_a2 = ( *it ).value == 8;
     ++it;
-    ASSERT_FALSE( it.valid( ) );
+    REQUIRE_FALSE( it.valid( ) );
 
-    ASSERT_TRUE( has_a1 );
-    ASSERT_TRUE( has_a2 );
+    REQUIRE( has_a1 );
+    REQUIRE( has_a2 );
 }
 
-TEST( MultiVectorTest, IterateOneTypeElementsRandomlyPlaced )
+TEST_CASE( "Iterate one type elements randomly placed", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
     uint64_t index = 0;
     auto it = view.second.iterator< CStruct >( index );
-    ASSERT_TRUE( it.valid( ) );
+    REQUIRE( it.valid( ) );
     bool has_c1 = ( *it ).value == 1230000;
     ++it;
-    ASSERT_TRUE( it.valid( ) );
+    REQUIRE( it.valid( ) );
     bool has_c2 = ( *it ).value == 1000000;
     ++it;
-    ASSERT_FALSE( it.valid( ) );
+    REQUIRE_FALSE( it.valid( ) );
 
-    ASSERT_TRUE( has_c1 );
-    ASSERT_TRUE( has_c2 );
+    REQUIRE( has_c1 );
+    REQUIRE( has_c2 );
 }
 
-TEST( MultiVectorTest, FlushingWhileBuilding )
+TEST_CASE( "Flushing while building", "[MultiVector]" )
 {
     auto view = create_view_with_enough_items_to_flush( );
 
     for ( size_t i = 0; i < NUM_ITEMS_TO_CAUSE_FLUSH; i++ )
     {
         auto iter = view.second.iterator< CStruct >( i );
-        ASSERT_TRUE( iter.valid( ) ) << "Expected CStruct at index " << i;
-        ASSERT_EQ( i, ( *iter ).value ) << "Wrong data at index " << i;
+        REQUIRE( iter.valid( ) );
+        REQUIRE( ( *iter ).value == i );
         iter++;
-        ASSERT_FALSE( iter.valid( ) ) << "Expected at most one CStruct at index  " << i;
+        REQUIRE_FALSE( iter.valid( ) );
     }
 }
 
-TEST( MultiVectorTest, StaticTest )
+TEST_CASE( "Static test", "[MultiVector]" )
 {
     auto view = create_view_with_3_items( );
 
@@ -288,7 +288,7 @@ TEST( MultiVectorTest, StaticTest )
                    "lambda accepts a type not in the types of the containers" );
 }
 
-TEST( MultiVectorTest, CloseViewIsSameAsStorageView )
+TEST_CASE( "Close view is same as storage view", "[MultiVector]" )
 {
     auto storage = MemoryResourceStorage::create( );
     auto vector = storage->create_multi_vector< TestIndexType48, AStruct, BStructMutator, CStruct >(
@@ -325,7 +325,7 @@ TEST( MultiVectorTest, CloseViewIsSameAsStorageView )
     std::vector< size_t > values_view_from_close;
     std::vector< size_t > values_view_from_storage;
 
-    ASSERT_EQ( view_from_close.size( ), view_from_storage.size( ) );
+    REQUIRE( view_from_storage.size( ) == view_from_close.size( ) );
     for ( size_t i = 0; i < view_from_close.size( ); ++i )
     {
         view_from_close.for_each(
@@ -340,9 +340,9 @@ TEST( MultiVectorTest, CloseViewIsSameAsStorageView )
                    [&]( CStruct x ) { values_view_from_storage.push_back( x.value ); } ) );
     };
 
-    ASSERT_EQ( values_view_from_close.size( ), values_view_from_storage.size( ) );
+    REQUIRE( values_view_from_storage.size( ) == values_view_from_close.size( ) );
     for ( size_t i = 0; i < values_view_from_close.size( ); ++i )
     {
-        ASSERT_EQ( values_view_from_close[ i ], values_view_from_storage[ i ] );
+        REQUIRE( values_view_from_storage[ i ] == values_view_from_close[ i ] );
     }
 }

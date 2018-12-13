@@ -1,10 +1,10 @@
 /**
- * Copyright (c) 2017 HERE Europe B.V.
+ * Copyright (c) 2018 HERE Europe B.V.
  * See the LICENSE file in the root of this project for license details.
  */
 
 #include <flatdata/flatdata.h>
-#include <gtest/gtest.h>
+#include "catch.hpp"
 
 using namespace flatdata;
 
@@ -75,14 +75,15 @@ test_value( type value )
 
     Reader< type, offset, num_bits > reader{buffer.data( )};
     type result = reader;
-    ASSERT_EQ( value, result );
+    REQUIRE( result == value );
 }
 
 /// tests all possible num_bits
 template < template < typename, int, int > class Reader, typename type, int offset, int num_bits >
 struct TestBits
 {
-    void operator( )( )
+    void
+    operator( )( )
     {
         type value = 1;
 #if ( !GENERATE_PYTHON_READER_TESTS )
@@ -102,7 +103,8 @@ struct TestBits
 template < template < typename, int, int > class Reader, typename type, int offset >
 struct TestBits< Reader, type, offset, 0 >
 {
-    void operator( )( )
+    void
+    operator( )( )
     {
     }
 };
@@ -110,7 +112,8 @@ struct TestBits< Reader, type, offset, 0 >
 template < template < typename, int, int > class Reader, typename type, int offset >
 struct TestOffsets
 {
-    void operator( )( )
+    void
+    operator( )( )
     {
         TestBits< Reader, type, offset, sizeof( type ) * 8 >( )( );
         TestOffsets< Reader, type, offset - 1 >( )( );
@@ -120,35 +123,35 @@ struct TestOffsets
 template < template < typename, int, int > class Reader, typename type >
 struct TestOffsets< Reader, type, 0 >
 {
-    void operator( )( )
+    void
+    operator( )( )
     {
         TestBits< Reader, type, 0, sizeof( type ) * 8 >( )( );
     }
 };
+}  // namespace
 
-}  // anonymous namespace
-
-TEST( TestReader, TestUint8 )
+TEST_CASE( "Read uint8", "[Reader]" )
 {
     TestOffsets< Reader, uint8_t, 8 >( )( );
 }
 
-TEST( TestReader, TestUint16 )
+TEST_CASE( "Read uint16", "[Reader]" )
 {
     TestOffsets< Reader, uint16_t, 8 >( )( );
 }
 
-TEST( TestReader, TestUint32 )
+TEST_CASE( "Read uint32", "[Reader]" )
 {
     TestOffsets< Reader, uint32_t, 8 >( )( );
 }
 
-TEST( TestReader, TestUint64 )
+TEST_CASE( "Read uint64", "[Reader]" )
 {
     TestOffsets< Reader, uint64_t, 8 >( )( );
 }
 
-TEST( TestReader, TestNegativeNumberWithSignExtension )
+TEST_CASE( "Read negative number with sign extension", "[Reader]" )
 {
     int32_t value = -1;
     for ( int i = 0; i < 15; i++ )
@@ -159,7 +162,7 @@ TEST( TestReader, TestNegativeNumberWithSignExtension )
     }
 }
 
-TEST( TestReader, TestPositiveSignedNumberWithSignExtension )
+TEST_CASE( "Read positive signed number with sign extension", "[Reader]" )
 {
     int32_t value = 1;
     for ( int i = 0; i < 15; i++ )
@@ -170,17 +173,17 @@ TEST( TestReader, TestPositiveSignedNumberWithSignExtension )
     }
 }
 
-TEST( TestReader, TestEnum )
+TEST_CASE( "Read enum", "[Reader]" )
 {
     test_value< Reader, TestEnum, 3, 2, true >( TestEnum::Value_1 );
     test_value< Reader, TestEnum, 3, 2, false >( TestEnum::Value_1 );
 }
 
 #if ( GENERATE_PYTHON_READER_TESTS )
-TEST( TestReader, FailIfPythonTestOutputIsEnabled )
+TEST_CASE( "Fail if python test output is enabled", "[Reader]" )
 {
     // This test will fail if GENERATE_PYTHON_READER_TESTS is specified so that it cannot be
     // accidentally submitted.
-    FAIL( );
+    REQUIRE( false );
 }
 #endif  // GENERATE_PYTHON_READER_TESTS

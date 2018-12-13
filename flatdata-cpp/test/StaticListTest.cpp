@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017 HERE Europe B.V.
+ * Copyright (c) 2018 HERE Europe B.V.
  * See the LICENSE file in the root of this project for license details.
  */
 
@@ -67,24 +67,24 @@ static_assert(
                   std::false_type >::value,
     "reduce of a singleton list contains false with true accumulator and conjuction is false" );
 static_assert(
-    std::is_same< reduce< conjuction, std::true_type, list< std::false_type, std::false_type > >::
-                      type,
-                  std::false_type >::value,
+    std::is_same<
+        reduce< conjuction, std::true_type, list< std::false_type, std::false_type > >::type,
+        std::false_type >::value,
     "reduce of a constant false list with true accumulator and conjuction is false" );
 static_assert(
-    std::is_same< reduce< conjuction, std::true_type, list< std::true_type, std::false_type > >::
-                      type,
-                  std::false_type >::value,
+    std::is_same<
+        reduce< conjuction, std::true_type, list< std::true_type, std::false_type > >::type,
+        std::false_type >::value,
     "reduce of a mixed true/false list with true accumulator and conjuction is false" );
 static_assert(
-    std::
-        is_same< reduce< conjuction, std::true_type, list< std::true_type, std::true_type > >::type,
-                 std::true_type >::value,
+    std::is_same<
+        reduce< conjuction, std::true_type, list< std::true_type, std::true_type > >::type,
+        std::true_type >::value,
     "reduce of a constant true list with true accumulator and conjuction is true" );
 static_assert(
-    std::is_same< reduce< conjuction, std::false_type, list< std::true_type, std::true_type > >::
-                      type,
-                  std::false_type >::value,
+    std::is_same<
+        reduce< conjuction, std::false_type, list< std::true_type, std::true_type > >::type,
+        std::false_type >::value,
     "reduce of a constant true list with false accumulator and conjuction is false" );
 
 static_assert( is_subset< emptylist, emptylist >::value,

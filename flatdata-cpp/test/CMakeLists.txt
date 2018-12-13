@@ -1,13 +1,6 @@
-find_package(GTest QUIET)
-find_package(Threads)
-if(NOT GTest_FOUND)
-    set(USE_VENDOR_GTEST ON)
-    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../vendor/gtest ${CMAKE_CURRENT_BINARY_DIR}/gtest)
-endif()
-
 file(GLOB TEST_FLATDATA_SOURCES "*.cpp")
 
-include(flatdata/GenerateSource)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/flatdata/GenerateSource.cmake)
 flatdata_generate_source(generate_flatdata_test_code
     ${CMAKE_CURRENT_SOURCE_DIR}/../../generator
     ${CMAKE_CURRENT_SOURCE_DIR}/test_structures.flatdata
@@ -15,19 +8,14 @@ flatdata_generate_source(generate_flatdata_test_code
 
 add_executable(flatdata_test ${TEST_FLATDATA_SOURCES})
 add_dependencies(flatdata_test generate_flatdata_test_code)
-if(USE_VENDOR_GTEST)
-    add_dependencies(flatdata_test ext_gtest)
-endif()
 
 target_include_directories(flatdata_test
-    PRIVATE ${GTEST_INCLUDE_DIRS}
     PRIVATE ${Boost_INCLUDE_DIRS}
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
 target_link_libraries(flatdata_test
     flatdata
-    ${GTEST_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
 )
 

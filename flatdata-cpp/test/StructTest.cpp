@@ -1,33 +1,33 @@
 /**
- * Copyright (c) 2017 HERE Europe B.V.
+ * Copyright (c) 2018 HERE Europe B.V.
  * See the LICENSE file in the root of this project for license details.
  */
 
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include <gtest/gtest.h>
+#include "catch.hpp"
 
 using namespace flatdata;
 using namespace test_structures;
 
-TEST( StructTest, filling_data )
+TEST_CASE( "Filling data in struct", "[Struct]" )
 {
     Struct< AStruct > data;
     ( *data ).value = 10;
-    EXPECT_EQ( uint64_t( 10 ), ( *data ).value );
+    REQUIRE( ( *data ).value == uint64_t( 10 ) );
 }
 
-TEST( StructTest, copyable )
+TEST_CASE( "Struct is copyable", "[Struct]" )
 {
     Struct< AStruct > data;
     ( *data ).value = 10;
-    EXPECT_EQ( uint64_t( 10 ), ( *data ).value );
+    REQUIRE( ( *data ).value == uint64_t( 10 ) );
 
     // try to copy and make sure that they are not implicitly sharing storage
     auto copy = data;
-    EXPECT_EQ( uint64_t( 10 ), ( *copy ).value );
+    REQUIRE( ( *copy ).value == uint64_t( 10 ) );
     ( *copy ).value = 11;
-    EXPECT_EQ( uint64_t( 11 ), ( *copy ).value );
-    EXPECT_EQ( uint64_t( 10 ), ( *data ).value );
+    REQUIRE( ( *copy ).value == uint64_t( 11 ) );
+    REQUIRE( ( *data ).value == uint64_t( 10 ) );
 }
