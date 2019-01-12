@@ -59,6 +59,14 @@ class RustGenerator(BaseGenerator):
                 return "{}_".format(s)
             return s
 
+        def _format_numeric_literal(value):
+            try:
+                value = int(value)
+                value = "{:_d}".format(value)
+            except ValueError:
+                pass
+            return value
+
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
         env.filters['structure_references'] = lambda ls: [
             x for x in ls if (isinstance(x.node, Structure)
@@ -76,3 +84,5 @@ class RustGenerator(BaseGenerator):
 
         env.filters["supported_resources"] = lambda l: [
             x for x in l if not isinstance(x, BoundResource)]
+
+        env.filters["format_numeric_literal"] = _format_numeric_literal
