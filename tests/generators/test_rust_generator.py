@@ -16,6 +16,8 @@ def test_constants_are_declared_correctly():
         const i8 foo = 17;
         // Comment
         const u16 bar = 0x42;
+        // Large constant
+        const u64 foobar = 1000000000;
         }
     """, RustGenerator, """
 /// There is some documentation about foo.
@@ -24,7 +26,12 @@ pub const FOO: i8 = 17;
 """
 // Comment
 pub const BAR: u16 = 66;
+""",
+"""
+// Large constant
+pub const FOOBAR: u64 = 1_000_000_000;
 """)
+
 
 def test_structures_are_declared_correctly():
     generate_and_assert_in("""
