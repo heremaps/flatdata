@@ -23,11 +23,11 @@ def test_constants_are_declared_correctly():
 /// There is some documentation about foo.
 pub const FOO: i8 = 17;
 """,
-                           """
+"""
 // Comment
 pub const BAR: u16 = 66;
 """,
-                           """
+"""
 // Large constant
 pub const FOOBAR: u64 = 1_000_000_000;
 """)
