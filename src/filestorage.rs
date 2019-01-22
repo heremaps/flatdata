@@ -42,6 +42,7 @@ pub struct FileResourceStorage {
 
 impl FileResourceStorage {
     /// Create an empty memory mapped file storage at a given path.
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
         Rc::new(Self {
             storage: MemoryMappedFileStorage::default(),

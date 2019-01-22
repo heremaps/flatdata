@@ -8,11 +8,13 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::slice;
 
+type MemoryStorageStream = Rc<RefCell<Cursor<Vec<u8>>>>;
+
 /// Internal storage of data in memory.
 #[derive(Default)]
 struct MemoryStorage {
     // Streams of resources that were written.
-    streams: RefCell<BTreeMap<PathBuf, Rc<RefCell<Cursor<Vec<u8>>>>>>,
+    streams: RefCell<BTreeMap<PathBuf, MemoryStorageStream>>,
     // Data of resources that were opened for reading.
     resources: RefCell<BTreeMap<PathBuf, Rc<Vec<u8>>>>,
 }
@@ -40,6 +42,7 @@ impl MemoryResourceStorage {
     ///
     /// Resources will be placed in ephemeral memory with prefix `path`. A path
     /// has to be provided to unify the interface with `FileResourceStorage`.
+    #[allow(clippy::new_ret_no_self)]
     pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
         Rc::new(Self {
             storage: MemoryStorage::default(),

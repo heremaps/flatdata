@@ -150,7 +150,8 @@ where
 
     // create external vector
     let data_writer = storage.create_output_stream(resource_name)?;
-    let handle = ResourceHandle::new(storage, resource_name.into(), schema.into(), data_writer)?;
+    let handle =
+        ResourceHandle::try_new(storage, resource_name.into(), schema.into(), data_writer)?;
     Ok(ExternalVector::new(handle))
 }
 
@@ -180,7 +181,8 @@ where
 
     // create multi vector
     let data_writer = storage.create_output_stream(resource_name)?;
-    let handle = ResourceHandle::new(storage, resource_name.into(), schema.into(), data_writer)?;
+    let handle =
+        ResourceHandle::try_new(storage, resource_name.into(), schema.into(), data_writer)?;
     Ok(MultiVector::new(index, handle))
 }
 
@@ -268,8 +270,13 @@ pub struct ResourceHandle<'a> {
 }
 
 impl<'a> ResourceHandle<'a> {
-    /// Create a new resource handle from a stream.
-    pub fn new(
+    /// Try to create a new resource handle from a stream.
+    ///
+    /// ## Errors
+    ///
+    /// Resource storage will try to reserve space in the beginning of the
+    /// stream for the size of the resource, will may result in an `io::Error`.
+    pub fn try_new(
         storage: &'a ResourceStorage,
         name: String,
         schema: String,
@@ -420,7 +427,7 @@ mod test {
             .unwrap();
 
         let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
-        let _h = ResourceHandle::new(
+        let _h = ResourceHandle::try_new(
             &*storage,
             "/root/extvec/blubb".into(),
             "myschema".into(),
@@ -443,7 +450,7 @@ mod test {
             .unwrap();
 
         let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
-        let mut h = ResourceHandle::new(
+        let mut h = ResourceHandle::try_new(
             &*storage,
             "/root/extvec/blubb".into(),
             "myschema".into(),

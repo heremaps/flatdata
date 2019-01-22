@@ -94,7 +94,7 @@ where
 {
     type Item = <Ts as VariadicStruct<'a>>::Item;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.data.len() > 0 {
+        if !self.data.is_empty() {
             let type_index = self.data[0];
             self.data = &self.data[1..];
             let res = <Ts as VariadicStruct>::create(type_index, &self.data);

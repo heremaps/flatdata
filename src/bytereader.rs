@@ -27,7 +27,7 @@ macro_rules! read_bytes {
 
         let bytes: *const u8 = $data;
         debug_assert!(!bytes.is_null(), "Reading uninitialized structure");
-        let data: *const u8 = unsafe { bytes.offset(byte_offset as isize) };
+        let data: *const u8 = unsafe { bytes.add(byte_offset) };
 
         if $num_bits == 1 {
             (unsafe { *data } & (1 << bit_offset) != 0) as $T
@@ -39,7 +39,7 @@ macro_rules! read_bytes {
             result >>= bit_offset;
 
             if num_bytes * 8 - bit_offset < $num_bits {
-                let temp = u64::from(unsafe { *data.offset((byte_offset + num_bytes) as isize) });
+                let temp = u64::from(unsafe { *data.add(byte_offset + num_bytes) });
                 result |= temp << (num_bytes * 8 - bit_offset) % (num_bytes * 8);
             }
             result = masked!(result, $num_bits);
