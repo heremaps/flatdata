@@ -23,3 +23,4 @@ target_link_libraries(flatdata
   ${Boost_LIBRARIES})
 
 add_subdirectory(test)
+add_subdirectory(benchmark)
