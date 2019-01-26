@@ -7,7 +7,7 @@
 
 /// A graph that simple reinterpret_casts C++'s internal data representation to byte streams
 /// This is not very portable (different compiler, ABI, target can produce different results), but
-/// are golden standard for performance
+/// is a golden standard for performance.
 class StructGraph
 {
     struct InternalEdgeData
@@ -134,11 +134,13 @@ public:
             , m_graph( )
         {
         }
-        void operator++( )
+        void
+        operator++( )
         {
             m_current++;
         }
-        void operator++( int )
+        void
+        operator++( int )
         {
             m_current++;
         }
@@ -186,11 +188,13 @@ public:
             , m_graph( )
         {
         }
-        void operator++( )
+        void
+        operator++( )
         {
             m_current++;
         }
-        void operator++( int )
+        void
+        operator++( int )
         {
             m_current++;
         }

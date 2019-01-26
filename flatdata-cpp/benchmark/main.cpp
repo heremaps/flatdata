@@ -7,6 +7,9 @@
 #include "Lookup.h"
 #include "Printer.h"
 
+#define DOCOPT_HEADER_ONLY
+#include <docopt/docopt.h>
+
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -157,64 +160,78 @@ create( const char* graph_name, uint32_t num_nodes )
     }
 }
 
+const char* USAGE = 1 + R"_(
+flatdata benchmark
+
+Compares performance of different algorithms on a random graph using eithera a raw memory struct
+or a flatdata archive.
+
+Usage:
+  flatdata_benchmark create (struct|flatdata) --num-nodes=NUM
+  flatdata_benchmark print (reference|struct|flatdata) [--num-nodes=NUM]
+  flatdata_benchmark lookup (reference|struct|flatdata) [--num-runs=NUM] [--num-nodes=NUM]
+  flatdata_benchmark bfs (reference|struct|flatdata) [--num-runs=NUM] [--num-nodes=NUM]
+  flatdata_benchmark dijkstra (reference|struct|flatdata) [--num-runs=NUM] [--num-nodes=NUM]
+  flatdata_benchmark -h | --help
+
+Data:
+  reference  Create a random graph in memory and execute the corresponding command for it.
+  struct     Read data from benchmark.struct, reinterpret it as a C++ struct and execute the
+             corresponding command for it.
+  flatdata   Read data from flatdata archive and execute the corresponding command for it.
+
+Commands:
+  create    Create a new random graph and write it to disk either as a reinterpret_casted C++
+            struct (filename: benchmark.struct) or flatdata archive (directory:
+            benchmark.flatdata). Note that the struct data is overwritten on disk, however for the
+            flatdata archive if it already exists, this command fails.
+  print     Print graph representation stored on disk to console.
+  lookup    Run a lookup for each edge in the graph in uniform random fashion.
+  bfs       Execute Breath-First-Search starting at a random node.
+  dijkstra  Exectue Dijkstra's shortest path algorithm starting at a random edge.
+
+Options:
+  -h --help         Show this screen.
+  --num-nodes=NUM   Number of nodes in the random graph [default: 2000].
+  --num-runs=NUM    Number of runs the specified algorithm should be executed [default: 10].
+)_";
+
 int
 main( int argc, char** argv )
 {
-    std::cout << "Usage: flatdata_benchmark COMMAND GRAPH OPTIONS" << std::endl;
-    std::cout << "Commands: print, create, bfs, dijkstra, lookup, all_tests" << std::endl;
-    std::cout << "Graphs: reference, struct, flatdata" << std::endl;
-    std::cout << "Options: --num_nodes XXX" << std::endl;
-    std::cout << "Options: --num_runs XXX" << std::endl;
-
-    if ( argc < 3 )
-        return 1;
-
-    uint32_t num_nodes = 4;
-    uint32_t num_runs = 1;
-    std::cout << "Called with: " << argv[ 0 ] << " " << argv[ 1 ] << " " << argv[ 2 ];
-    for ( int i = 3; i < argc; i++ )
+    auto args = docopt::docopt( USAGE, {argv + 1, argv + argc} );
+    try
     {
-        std::cout << " " << argv[ i ];
-        if ( argv[ i ] == std::string( "--num_nodes" ) )
+        size_t num_nodes = args.at( "--num-nodes" ).asLong( );
+        size_t num_runs = args.at( "--num-runs" ).asLong( );
+
+        if ( args.at( "create" ).asBool( ) )
         {
-            if ( i + 1 >= argc )
-            {
-                return 1;
-            }
-            num_nodes = atoi( argv[ ++i ] );
-            std::cout << " " << num_nodes;
+            measure( [&]( ) { create( argv[ 2 ], num_nodes ); } );
         }
-        else if ( argv[ i ] == std::string( "--num_runs" ) )
+        else if ( args.at( "print" ).asBool( ) )
         {
-            if ( i + 1 >= argc )
-            {
-                return 1;
-            }
-            num_runs = atoi( argv[ ++i ] );
-            std::cout << " " << num_runs;
+            call_for_graph< DoPrint >( argv[ 2 ], num_nodes );
+        }
+        else if ( args.at( "lookup" ).asBool( ) )
+        {
+            size_t num_runs = args.at( "--num-runs" ).asLong( );
+            call_for_graph< DoLookup >( argv[ 2 ], num_nodes, num_runs );
+        }
+        else if ( args.at( "bfs" ).asBool( ) )
+        {
+            size_t num_runs = args.at( "--num-runs" ).asLong( );
+            call_for_graph< DoBFS >( argv[ 2 ], num_nodes, num_runs );
+        }
+        else if ( args.at( "dijkstra" ).asBool( ) )
+        {
+            size_t num_runs = args.at( "--num-runs" ).asLong( );
+            call_for_graph< DoDijkstra >( argv[ 2 ], num_nodes, num_runs );
         }
     }
-    std::cout << std::endl;
-
-    if ( argv[ 1 ] == std::string( "print" ) )
+    catch ( const std::runtime_error& err )
     {
-        call_for_graph< DoPrint >( argv[ 2 ], num_nodes );
-    }
-    if ( argv[ 1 ] == std::string( "bfs" ) || argv[ 1 ] == std::string( "all_tests" ) )
-    {
-        call_for_graph< DoBFS >( argv[ 2 ], num_nodes, num_runs );
-    }
-    if ( argv[ 1 ] == std::string( "dijkstra" ) || argv[ 1 ] == std::string( "all_tests" ) )
-    {
-        call_for_graph< DoDijkstra >( argv[ 2 ], num_nodes, num_runs );
-    }
-    if ( argv[ 1 ] == std::string( "lookup" ) || argv[ 1 ] == std::string( "all_tests" ) )
-    {
-        call_for_graph< DoLookup >( argv[ 2 ], num_nodes, num_runs );
-    }
-    if ( argv[ 1 ] == std::string( "create" ) )
-    {
-        measure( [&]( ) { create( argv[ 2 ], num_nodes ); } );
+        std::cerr << "Error: " << err.what( ) << std::endl;
     }
 
     return 0;

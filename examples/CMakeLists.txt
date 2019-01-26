@@ -15,7 +15,8 @@ function (flatdata_make_example PATH)
 
     target_include_directories(${EXAMPLE_NAME}
         PRIVATE ${Boost_INCLUDE_DIRS}
-        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/${EXAMPLE_DIR})
+        PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated/${EXAMPLE_DIR}
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../vendor)
 
     target_link_libraries(${EXAMPLE_NAME} flatdata)
 endfunction(flatdata_make_example)
