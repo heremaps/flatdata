@@ -3,6 +3,7 @@ use crate::archive::Struct;
 use std::fmt;
 use std::iter;
 use std::marker;
+use std::ops::{Bound, RangeBounds};
 
 /// A read-only view on a contiguous sequence of flatdata structs of the same
 /// type `T`.
@@ -87,9 +88,28 @@ where
     ///
     /// Panics if index is greater than or equal to `ArrayView::len()`.
     pub fn at(&self, index: usize) -> <T as Struct<'a>>::Item {
-        let index = index * <T as Struct>::SIZE_IN_BYTES;
+        let index = self.data_index(index);
         assert!(index + <T as Struct>::SIZE_IN_BYTES <= self.data.len());
         T::create(&self.data[index..])
+    }
+
+    /// Slice this array view by a given range.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the range is outside of bounds of array view.
+    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
+        let data_start = match range.start_bound() {
+            Bound::Included(&idx) => self.data_index(idx),
+            Bound::Excluded(&idx) => self.data_index(idx + 1),
+            Bound::Unbounded => 0,
+        };
+        let data_end = match range.end_bound() {
+            Bound::Included(&idx) => self.data_index(idx + 1),
+            Bound::Excluded(&idx) => self.data_index(idx),
+            Bound::Unbounded => self.data.len(),
+        };
+        Self::new(&self.data[data_start..data_end])
     }
 
     /// Returns an iterator to the elements of the array.
@@ -103,6 +123,10 @@ where
     /// Returns a raw bytes representation of the underlying array data.
     pub fn as_bytes(&self) -> &[u8] {
         self.data
+    }
+
+    fn data_index(&self, index: usize) -> usize {
+        index * <T as Struct>::SIZE_IN_BYTES
     }
 }
 
@@ -195,8 +219,10 @@ where
 
 #[cfg(test)]
 mod test {
+    use super::ArrayView;
     use crate::archive::Struct;
     use crate::memory;
+    use crate::Vector;
 
     #[test]
     #[allow(dead_code)]
@@ -214,7 +240,7 @@ mod test {
         let mut buffer = vec![255_u8; 4];
         buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
         let data = &buffer[..buffer.len() - memory::PADDING_SIZE];
-        let view: super::ArrayView<A> = super::ArrayView::new(&data);
+        let view: ArrayView<A> = ArrayView::new(&data);
         assert_eq!(11, view.len());
         let first = view.at(0);
         assert_eq!(65535, first.x());
@@ -239,5 +265,34 @@ mod test {
         };
         assert_eq!(65535, x.x());
         assert_eq!(65535, x.y());
+    }
+
+    #[test]
+    #[allow(dead_code)]
+    fn test_slice() {
+        define_struct!(
+            A,
+            RefA,
+            RefMutA,
+            "no_schema",
+            4,
+            (value, set_value, u32, 0, 32)
+        );
+
+        let mut v: Vector<A> = Vector::with_len(10);
+        for i in 0..10 {
+            let mut a = v.at_mut(i as usize);
+            a.set_value(i);
+        }
+
+        let view: ArrayView<_> = v.as_view();
+
+        assert_eq!(view.len(), 10);
+        assert_eq!(view.slice(2..).len(), 8);
+        assert_eq!(view.slice(2..).iter().next().unwrap().value(), 2);
+        assert_eq!(view.slice(..8).len(), 8);
+        assert_eq!(view.slice(..8).iter().next().unwrap().value(), 0);
+        assert_eq!(view.slice(2..8).len(), 6);
+        assert_eq!(view.slice(2..8).iter().next().unwrap().value(), 2);
     }
 }
