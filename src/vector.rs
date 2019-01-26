@@ -82,10 +82,8 @@ where
     #[inline]
     pub fn with_len(len: usize) -> Self {
         let size = Self::calc_size(len);
-        let mut data = Vec::with_capacity(size);
-        data.resize(size, 0);
         Self {
-            data,
+            data: vec![0; size],
             _phantom: marker::PhantomData,
         }
     }

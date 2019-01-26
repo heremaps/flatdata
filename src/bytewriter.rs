@@ -91,7 +91,7 @@ mod test {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn byte_writer_unsigned_test() {
         test_writer(1, 8, 8, &vec![0, 1, 0, 0, 0, 0, 0, 0, 0]);
         test_writer(1, 8, 7, &vec![0, 1, 0, 0, 0, 0, 0, 0, 0]);
@@ -1183,7 +1183,7 @@ mod test {
     }
 
     #[test]
-    #[cfg_attr(rustfmt, rustfmt_skip)]
+    #[rustfmt::skip]
     fn byte_writer_signed_test() {
         test_reader_unsigned(-1, 3, 16, &vec![0xf8, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         test_reader_unsigned(-2, 3, 16, &vec![0xf0, 0xff, 0x07, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
