@@ -1,0 +1,54 @@
+namespace benchmark {
+
+// Each edge has:
+// * data
+// * a from node
+// *  a to node
+struct EdgeData{
+    id: u64;
+    from: u32;
+    to: u32;
+    length: u32;
+    speed_pos: u8;
+    speed_neg: u8;
+    is_a: bool;
+    is_b: bool;
+    is_c: bool;
+    is_d: bool;
+    is_e_pos: bool;
+    is_e_neg: bool;
+    is_f_pos: bool;
+    is_f_neg: bool;
+    is_g_pos: bool;
+    is_g_neg: bool;
+    frc: u8: 3;
+}
+
+// Models an edge adjacent to a node
+// In addition to the id of the edge it stores the direction of the edge
+struct AdjacentEdge{
+    id: u32: 31;
+    dir: u8: 1;
+}
+
+// Each node has a list of (directed) edges adjacent to it
+struct Node{
+    x: u32;
+    y: u32;
+    first_adjacent_edge: u32;
+}
+
+// Models a graph consistent of nodes and edges, as well as their connectivity
+archive Graph {
+    @explicit_reference( Node.first_adjacent_edge, adjacent_edges )
+    nodes: vector<Node>;
+
+    @explicit_reference( AdjacentEdge.id, edge_data )
+    adjacent_edges: vector<AdjacentEdge>;
+
+    @explicit_reference( EdgeData.from, nodes )
+    @explicit_reference( EdgeData.to, nodes )
+    edge_data: vector<EdgeData>;
+}
+
+}
