@@ -4,6 +4,7 @@ use crate::arrayview::ArrayView;
 use std::fmt;
 use std::iter;
 use std::marker;
+use std::ops::{Bound, RangeBounds};
 
 /// A read-only view on a multivector.
 ///
@@ -65,6 +66,26 @@ where
             data: &self.data[start..end],
             _phantom: marker::PhantomData,
         }
+    }
+
+    /// Slice this array view by a given range.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the range is outside of bounds of array view.
+    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
+        let index_start = match range.start_bound() {
+            Bound::Included(&idx) => idx,
+            Bound::Excluded(&idx) => idx + 1,
+            Bound::Unbounded => 0,
+        };
+        // include one more element (sentinel)
+        let index_end = match range.end_bound() {
+            Bound::Included(&idx) => idx + 2,
+            Bound::Excluded(&idx) => idx + 1,
+            Bound::Unbounded => self.index.len(),
+        };
+        Self::new(self.index.slice(index_start..index_end), self.data)
     }
 
     /// Returns an iterator through the indexed items of the array.
@@ -292,6 +313,25 @@ mod tests {
         }
 
         mv.close().expect("close failed")
+    }
+
+    #[test]
+    fn test_slice() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let view = create_view(&storage, 10);
+
+        let value = |mut iter: MultiArrayViewItemIter<_>| match iter.next().unwrap() {
+            RefVariant::Value(v) => v.value(),
+            otherwise => panic!("unexpected value: {:?}", otherwise),
+        };
+
+        assert_eq!(view.len(), 10);
+        assert_eq!(view.slice(2..).len(), 8);
+        assert_eq!(value(view.slice(2..).iter().next().unwrap()), 2);
+        assert_eq!(view.slice(..8).len(), 8);
+        assert_eq!(value(view.slice(..8).iter().next().unwrap()), 0);
+        assert_eq!(view.slice(2..8).len(), 6);
+        assert_eq!(value(view.slice(2..8).iter().next().unwrap()), 2);
     }
 
     #[test]
