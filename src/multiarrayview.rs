@@ -90,10 +90,7 @@ where
 
     /// Returns an iterator through the indexed items of the array.
     pub fn iter(&self) -> MultiArrayViewIter<'a, Idx, Ts> {
-        MultiArrayViewIter {
-            view: self.clone(),
-            next_pos: 0,
-        }
+        MultiArrayViewIter { view: self.clone() }
     }
 }
 
@@ -216,7 +213,6 @@ where
     Ts: for<'b> VariadicStruct<'b>,
 {
     view: MultiArrayView<'a, Idx, Ts>,
-    next_pos: usize,
 }
 
 impl<'a, Idx, Ts> fmt::Debug for MultiArrayViewIter<'a, Idx, Ts>
@@ -236,9 +232,26 @@ where
 {
     type Item = MultiArrayViewItemIter<'a, Ts>;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_pos < self.view.len() {
-            let element = self.view.at(self.next_pos);
-            self.next_pos += 1;
+        if !self.view.is_empty() {
+            let element = self.view.at(0);
+            self.view = self.view.slice(1..);
+            Some(element)
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, Idx, Ts: 'a> iter::DoubleEndedIterator for MultiArrayViewIter<'a, Idx, Ts>
+where
+    Idx: for<'b> IndexStruct<'b>,
+    Ts: for<'b> VariadicStruct<'b>,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if !self.view.is_empty() {
+            let last_pos = self.view.len() - 1;
+            let element = self.view.at(last_pos);
+            self.view = self.view.slice(..last_pos);
             Some(element)
         } else {
             None
@@ -260,7 +273,7 @@ where
     Ts: for<'b> VariadicStruct<'b>,
 {
     fn len(&self) -> usize {
-        self.view.len() - self.next_pos
+        self.view.len()
     }
 }
 
@@ -316,7 +329,7 @@ mod tests {
     }
 
     #[test]
-    fn test_slice() {
+    fn slice() {
         let storage = MemoryResourceStorage::new("/root/resources");
         let view = create_view(&storage, 10);
 
@@ -332,6 +345,20 @@ mod tests {
         assert_eq!(value(view.slice(..8).iter().next().unwrap()), 0);
         assert_eq!(view.slice(2..8).len(), 6);
         assert_eq!(value(view.slice(2..8).iter().next().unwrap()), 2);
+    }
+
+    #[test]
+    fn reverse() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let view = create_view(&storage, 10);
+
+        let value = |mut iter: MultiArrayViewItemIter<_>| match iter.next().unwrap() {
+            RefVariant::Value(v) => v.value(),
+            otherwise => panic!("unexpected value: {:?}", otherwise),
+        };
+
+        let values: Vec<_> = view.iter().rev().map(|x| value(x)).collect();
+        assert_eq!(values, [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
     }
 
     #[test]
