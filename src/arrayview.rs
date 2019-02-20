@@ -130,23 +130,36 @@ where
     }
 }
 
+fn debug_format<'a, T>(
+    name: &str,
+    iter: ArrayViewIter<'a, T>,
+    f: &mut fmt::Formatter,
+) -> fmt::Result
+where
+    T: for<'b> Struct<'b>,
+{
+    let len = iter.len();
+    let preview: Vec<_> = iter.take(super::DEBUG_PREVIEW_LEN).collect();
+    write!(
+        f,
+        "{} {{ len: {}, data: {:?}{} }}",
+        name,
+        len,
+        preview,
+        if len <= super::DEBUG_PREVIEW_LEN {
+            ""
+        } else {
+            "..."
+        }
+    )
+}
+
 impl<'a, T> fmt::Debug for ArrayView<'a, T>
 where
     T: for<'b> Struct<'b>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview: Vec<_> = self.iter().take(super::DEBUG_PREVIEW_LEN).collect();
-        write!(
-            f,
-            "ArrayView {{ len: {}, data: {:?}{} }}",
-            self.len(),
-            preview,
-            if self.len() <= super::DEBUG_PREVIEW_LEN {
-                ""
-            } else {
-                "..."
-            }
-        )
+        debug_format("ArrayView", self.iter(), f)
     }
 }
 
@@ -190,7 +203,7 @@ where
     T: for<'b> Struct<'b>,
 {
     fn len(&self) -> usize {
-        self.view.len()
+        self.view.len() - self.next_pos
     }
 }
 
@@ -199,48 +212,43 @@ where
     T: for<'b> Struct<'b>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview = self
-            .view
-            .iter()
-            .skip(self.next_pos)
-            .take(super::DEBUG_PREVIEW_LEN);
-        write!(
-            f,
-            "ArrayViewIter {{ data: {:?}{} }}",
-            preview,
-            if self.view.len() - self.next_pos <= super::DEBUG_PREVIEW_LEN {
-                ""
-            } else {
-                "..."
-            }
-        )
+        debug_format("ArrayViewIter", self.clone(), f)
     }
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod test {
     use super::ArrayView;
     use crate::archive::Struct;
     use crate::memory;
     use crate::Vector;
 
-    #[test]
-    #[allow(dead_code)]
-    fn test() {
-        define_struct!(
-            A,
-            RefA,
-            RefMutA,
-            "no_schema",
-            4,
-            (x, set_x, u32, 0, 16),
-            (y, set_y, u32, 16, 16)
-        );
+    define_struct!(
+        Value,
+        RefValue,
+        RefMutValue,
+        "no_schema",
+        4,
+        (value, set_value, u32, 0, 32)
+    );
 
+    define_struct!(
+        Point,
+        RefPoint,
+        RefMutPoint,
+        "no_schema",
+        4,
+        (x, set_x, u32, 0, 16),
+        (y, set_y, u32, 16, 16)
+    );
+
+    #[test]
+    fn test() {
         let mut buffer = vec![255_u8; 4];
-        buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
+        buffer.extend(vec![0_u8; Point::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
         let data = &buffer[..buffer.len() - memory::PADDING_SIZE];
-        let view: ArrayView<A> = ArrayView::new(&data);
+        let view: ArrayView<Point> = ArrayView::new(&data);
         assert_eq!(11, view.len());
         let first = view.at(0);
         assert_eq!(65535, first.x());
@@ -267,25 +275,19 @@ mod test {
         assert_eq!(65535, x.y());
     }
 
-    #[test]
-    #[allow(dead_code)]
-    fn test_slice() {
-        define_struct!(
-            A,
-            RefA,
-            RefMutA,
-            "no_schema",
-            4,
-            (value, set_value, u32, 0, 32)
-        );
-
-        let mut v: Vector<A> = Vector::with_len(10);
-        for i in 0..10 {
+    fn create_values(size: usize) -> Vector<Value> {
+        let mut v: Vector<Value> = Vector::with_len(size);
+        for i in 0..size as u32 {
             let mut a = v.at_mut(i as usize);
             a.set_value(i);
         }
+        v
+    }
 
-        let view: ArrayView<_> = v.as_view();
+    #[test]
+    fn test_slice() {
+        let v = create_values(10);
+        let view = v.as_view();
 
         assert_eq!(view.len(), 10);
         assert_eq!(view.slice(2..).len(), 8);
@@ -294,5 +296,38 @@ mod test {
         assert_eq!(view.slice(..8).iter().next().unwrap().value(), 0);
         assert_eq!(view.slice(2..8).len(), 6);
         assert_eq!(view.slice(2..8).iter().next().unwrap().value(), 2);
+    }
+
+    #[test]
+    fn debug() {
+        let v = create_values(100);
+        let view = v.as_view();
+
+        let content = " { len: 100, data: [\
+                       Value { value: 0 }, \
+                       Value { value: 1 }, \
+                       Value { value: 2 }, \
+                       Value { value: 3 }, \
+                       Value { value: 4 }, \
+                       Value { value: 5 }, \
+                       Value { value: 6 }, \
+                       Value { value: 7 }, \
+                       Value { value: 8 }, \
+                       Value { value: 9 }\
+                       ]... }";
+
+        assert_eq!(format!("{:?}", view), "ArrayView".to_string() + content);
+        assert_eq!(
+            format!("{:?}", view.iter()),
+            "ArrayViewIter".to_string() + content
+        );
+        let mut iter = view.iter();
+        for _ in 0..99 {
+            iter.next();
+        }
+        assert_eq!(
+            format!("{:?}", iter),
+            "ArrayViewIter { len: 1, data: [Value { value: 99 }] }"
+        );
     }
 }
