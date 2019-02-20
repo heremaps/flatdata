@@ -114,10 +114,7 @@ where
 
     /// Returns an iterator to the elements of the array.
     pub fn iter(&self) -> ArrayViewIter<'a, T> {
-        ArrayViewIter {
-            view: self.clone(),
-            next_pos: 0,
-        }
+        ArrayViewIter { view: self.clone() }
     }
 
     /// Returns a raw bytes representation of the underlying array data.
@@ -203,7 +200,6 @@ where
     T: for<'b> Struct<'b>,
 {
     view: ArrayView<'a, T>,
-    next_pos: usize,
 }
 
 impl<'a, T> iter::Iterator for ArrayViewIter<'a, T>
@@ -212,9 +208,9 @@ where
 {
     type Item = <T as Struct<'a>>::Item;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_pos < self.view.len() {
-            let element = self.view.at(self.next_pos);
-            self.next_pos += 1;
+        if !self.view.is_empty() {
+            let element = self.view.at(0);
+            self.view = self.view.slice(1..);
             Some(element)
         } else {
             None
@@ -227,9 +223,28 @@ where
     T: for<'b> Struct<'b>,
 {
     fn len(&self) -> usize {
-        self.view.len() - self.next_pos
+        self.view.len()
     }
 }
+
+impl<'a, T> iter::DoubleEndedIterator for ArrayViewIter<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if !self.view.is_empty() {
+            let last_pos = self.view.len() - 1;
+            let element = self.view.at(last_pos);
+            self.view = self.view.slice(..last_pos);
+            Some(element)
+        } else {
+            None
+        }
+    }
+}
+
+// we always check -> iterator is already fused
+impl<'a, T> iter::FusedIterator for ArrayViewIter<'a, T> where T: for<'b> Struct<'b> {}
 
 impl<'a, T> fmt::Debug for ArrayViewIter<'a, T>
 where
@@ -312,6 +327,39 @@ mod test {
             a.set_value(i);
         }
         v
+    }
+
+    #[test]
+    fn reverse() {
+        let v = create_values(10);
+        let iter = v.as_view().iter().rev();
+        let data: Vec<_> = iter.map(|x| x.value()).collect();
+        assert_eq!(data, [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+    }
+
+    #[test]
+    fn fused() {
+        let v = create_values(1);
+        {
+            let mut iter = v.as_view().iter();
+            iter.next().unwrap();
+            if let Some(_) = iter.next() {
+                assert!(false, "Iterator did not end properly");
+            }
+            if let Some(_) = iter.next() {
+                assert!(false, "Iterator did not fuse properly");
+            }
+        }
+        {
+            let mut iter = v.as_view().iter().rev();
+            iter.next().unwrap();
+            if let Some(_) = iter.next() {
+                assert!(false, "Iterator did not end properly");
+            }
+            if let Some(_) = iter.next() {
+                assert!(false, "Iterator did not fuse properly");
+            }
+        }
     }
 
     #[test]
