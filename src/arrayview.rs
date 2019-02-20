@@ -1,4 +1,5 @@
 use crate::archive::Struct;
+use crate::vector::Vector;
 
 use std::fmt;
 use std::iter;
@@ -114,10 +115,7 @@ where
 
     /// Returns an iterator to the elements of the array.
     pub fn iter(&self) -> ArrayViewIter<'a, T> {
-        ArrayViewIter {
-            view: self.clone(),
-            next_pos: 0,
-        }
+        ArrayViewIter { view: self.clone() }
     }
 
     /// Returns a raw bytes representation of the underlying array data.
@@ -130,23 +128,69 @@ where
     }
 }
 
+impl<'a, T> From<&'a Vector<T>> for ArrayView<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    fn from(v: &'a Vector<T>) -> Self {
+        v.as_view()
+    }
+}
+
+pub(crate) fn debug_format<'a, T>(
+    name: &str,
+    iter: ArrayViewIter<'a, T>,
+    f: &mut fmt::Formatter,
+) -> fmt::Result
+where
+    T: for<'b> Struct<'b>,
+{
+    let len = iter.len();
+    let preview: Vec<_> = iter.take(super::DEBUG_PREVIEW_LEN).collect();
+    write!(
+        f,
+        "{} {{ len: {}, data: {:?}{} }}",
+        name,
+        len,
+        preview,
+        if len <= super::DEBUG_PREVIEW_LEN {
+            ""
+        } else {
+            "..."
+        }
+    )
+}
+
 impl<'a, T> fmt::Debug for ArrayView<'a, T>
 where
     T: for<'b> Struct<'b>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview: Vec<_> = self.iter().take(super::DEBUG_PREVIEW_LEN).collect();
-        write!(
-            f,
-            "ArrayView {{ len: {}, data: {:?}{} }}",
-            self.len(),
-            preview,
-            if self.len() <= super::DEBUG_PREVIEW_LEN {
-                ""
-            } else {
-                "..."
-            }
-        )
+        debug_format("ArrayView", self.iter(), f)
+    }
+}
+
+impl<'a, T> IntoIterator for ArrayView<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
+    type IntoIter = ArrayViewIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &ArrayView<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
+    type IntoIter = ArrayViewIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 
@@ -166,7 +210,6 @@ where
     T: for<'b> Struct<'b>,
 {
     view: ArrayView<'a, T>,
-    next_pos: usize,
 }
 
 impl<'a, T> iter::Iterator for ArrayViewIter<'a, T>
@@ -175,9 +218,9 @@ where
 {
     type Item = <T as Struct<'a>>::Item;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.next_pos < self.view.len() {
-            let element = self.view.at(self.next_pos);
-            self.next_pos += 1;
+        if !self.view.is_empty() {
+            let element = self.view.at(0);
+            self.view = self.view.slice(1..);
             Some(element)
         } else {
             None
@@ -194,53 +237,72 @@ where
     }
 }
 
+impl<'a, T> iter::DoubleEndedIterator for ArrayViewIter<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if !self.view.is_empty() {
+            let last_pos = self.view.len() - 1;
+            let element = self.view.at(last_pos);
+            self.view = self.view.slice(..last_pos);
+            Some(element)
+        } else {
+            None
+        }
+    }
+}
+
+// we always check -> iterator is already fused
+impl<'a, T> iter::FusedIterator for ArrayViewIter<'a, T> where T: for<'b> Struct<'b> {}
+
 impl<'a, T> fmt::Debug for ArrayViewIter<'a, T>
 where
     T: for<'b> Struct<'b>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview = self
-            .view
-            .iter()
-            .skip(self.next_pos)
-            .take(super::DEBUG_PREVIEW_LEN);
-        write!(
-            f,
-            "ArrayViewIter {{ data: {:?}{} }}",
-            preview,
-            if self.view.len() - self.next_pos <= super::DEBUG_PREVIEW_LEN {
-                ""
-            } else {
-                "..."
-            }
-        )
+        debug_format("ArrayViewIter", self.clone(), f)
     }
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod test {
-    use super::ArrayView;
+    use super::*;
     use crate::archive::Struct;
     use crate::memory;
-    use crate::Vector;
+
+    define_struct!(
+        Value,
+        RefValue,
+        RefMutValue,
+        "no_schema",
+        4,
+        (value, set_value, u32, 0, 32)
+    );
+
+    define_struct!(
+        Point,
+        RefPoint,
+        RefMutPoint,
+        "no_schema",
+        4,
+        (x, set_x, u32, 0, 16),
+        (y, set_y, u32, 16, 16)
+    );
 
     #[test]
-    #[allow(dead_code)]
-    fn test() {
-        define_struct!(
-            A,
-            RefA,
-            RefMutA,
-            "no_schema",
-            4,
-            (x, set_x, u32, 0, 16),
-            (y, set_y, u32, 16, 16)
-        );
+    fn into_iter() {
+        for _ in create_values(10).as_view() {}
+        for _ in &create_values(10).as_view() {}
+    }
 
+    #[test]
+    fn test() {
         let mut buffer = vec![255_u8; 4];
-        buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
+        buffer.extend(vec![0_u8; Point::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
         let data = &buffer[..buffer.len() - memory::PADDING_SIZE];
-        let view: ArrayView<A> = ArrayView::new(&data);
+        let view: ArrayView<Point> = ArrayView::new(&data);
         assert_eq!(11, view.len());
         let first = view.at(0);
         assert_eq!(65535, first.x());
@@ -267,25 +329,53 @@ mod test {
         assert_eq!(65535, x.y());
     }
 
-    #[test]
-    #[allow(dead_code)]
-    fn test_slice() {
-        define_struct!(
-            A,
-            RefA,
-            RefMutA,
-            "no_schema",
-            4,
-            (value, set_value, u32, 0, 32)
-        );
-
-        let mut v: Vector<A> = Vector::with_len(10);
-        for i in 0..10 {
+    fn create_values(size: usize) -> Vector<Value> {
+        let mut v: Vector<Value> = Vector::with_len(size);
+        for i in 0..size as u32 {
             let mut a = v.at_mut(i as usize);
             a.set_value(i);
         }
+        v
+    }
 
-        let view: ArrayView<_> = v.as_view();
+    #[test]
+    fn from() {
+        let v = create_values(10);
+        let x: ArrayView<_> = (&v).into();
+        assert_eq!(x.len(), 10);
+    }
+
+    #[test]
+    fn reverse() {
+        let v = create_values(10);
+        let iter = v.as_view().iter().rev();
+        let data: Vec<_> = iter.map(|x| x.value()).collect();
+        assert_eq!(data, [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
+    }
+
+    fn test_fused_iterator(mut iter: impl Iterator, size: usize) {
+        for _ in 0..size {
+            iter.next().unwrap();
+        }
+        if let Some(_) = iter.next() {
+            assert!(false, "Iterator did not end properly");
+        }
+        if let Some(_) = iter.next() {
+            assert!(false, "Iterator did not fuse properly");
+        }
+    }
+
+    #[test]
+    fn fused() {
+        let v = create_values(100);
+        test_fused_iterator(v.as_view().iter(), 100);
+        test_fused_iterator(v.as_view().iter().rev(), 100);
+    }
+
+    #[test]
+    fn test_slice() {
+        let v = create_values(10);
+        let view: ArrayView<_> = (&v).into();
 
         assert_eq!(view.len(), 10);
         assert_eq!(view.slice(2..).len(), 8);
@@ -294,5 +384,38 @@ mod test {
         assert_eq!(view.slice(..8).iter().next().unwrap().value(), 0);
         assert_eq!(view.slice(2..8).len(), 6);
         assert_eq!(view.slice(2..8).iter().next().unwrap().value(), 2);
+    }
+
+    #[test]
+    fn debug() {
+        let v = create_values(100);
+        let view = v.as_view();
+
+        let content = " { len: 100, data: [\
+                       Value { value: 0 }, \
+                       Value { value: 1 }, \
+                       Value { value: 2 }, \
+                       Value { value: 3 }, \
+                       Value { value: 4 }, \
+                       Value { value: 5 }, \
+                       Value { value: 6 }, \
+                       Value { value: 7 }, \
+                       Value { value: 8 }, \
+                       Value { value: 9 }\
+                       ]... }";
+
+        assert_eq!(format!("{:?}", view), "ArrayView".to_string() + content);
+        assert_eq!(
+            format!("{:?}", view.iter()),
+            "ArrayViewIter".to_string() + content
+        );
+        let mut iter = view.iter();
+        for _ in 0..99 {
+            iter.next();
+        }
+        assert_eq!(
+            format!("{:?}", iter),
+            "ArrayViewIter { len: 1, data: [Value { value: 99 }] }"
+        );
     }
 }
