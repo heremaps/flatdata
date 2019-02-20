@@ -79,7 +79,7 @@ where
 /// Iterator through elements of an array item.
 ///
 /// An item may be empty.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MultiArrayViewItemIter<'a, Ts>
 where
     Ts: for<'b> VariadicStruct<'b>,
@@ -106,34 +106,57 @@ where
     }
 }
 
+impl<'a, Ts> fmt::Debug for MultiArrayViewItemIter<'a, Ts>
+where
+    Ts: for<'b> VariadicStruct<'b>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let preview: Vec<_> = self.clone().collect();
+        write!(f, "MultiArrayViewItemIter {{ data: {:?} }}", preview,)
+    }
+}
+
+fn debug_format<'a, Idx, Ts>(
+    name: &str,
+    iter: MultiArrayViewIter<'a, Idx, Ts>,
+    f: &mut fmt::Formatter,
+) -> fmt::Result
+where
+    Idx: for<'b> IndexStruct<'b>,
+    Ts: for<'b> VariadicStruct<'b>,
+{
+    let len = iter.len();
+    let preview: Vec<(usize, Vec<_>)> = iter
+        .take(super::DEBUG_PREVIEW_LEN)
+        .enumerate()
+        .map(|(index, item)| (index, item.collect()))
+        .collect();
+    write!(
+        f,
+        "{} {{ len: {}, data: {:?}{} }}",
+        name,
+        len,
+        preview,
+        if len <= super::DEBUG_PREVIEW_LEN {
+            ""
+        } else {
+            "..."
+        }
+    )
+}
+
 impl<'a, Idx, Ts> fmt::Debug for MultiArrayView<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
     Ts: for<'b> VariadicStruct<'b>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let preview: Vec<(usize, Vec<_>)> = self
-            .iter()
-            .take(super::DEBUG_PREVIEW_LEN)
-            .enumerate()
-            .map(|(index, item)| (index, item.collect()))
-            .collect();
-        write!(
-            f,
-            "MultiArrayView {{ len: {}, data: {:?}{} }}",
-            self.len(),
-            preview,
-            if self.len() <= super::DEBUG_PREVIEW_LEN {
-                ""
-            } else {
-                "..."
-            }
-        )
+        debug_format("MultiArrayView", self.iter(), f)
     }
 }
 
 /// Iterator through items of an multivector.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MultiArrayViewIter<'a, Idx, Ts>
 where
     Idx: for<'b> IndexStruct<'b>,
@@ -141,6 +164,16 @@ where
 {
     view: MultiArrayView<'a, Idx, Ts>,
     next_pos: usize,
+}
+
+impl<'a, Idx, Ts> fmt::Debug for MultiArrayViewIter<'a, Idx, Ts>
+where
+    Idx: for<'b> IndexStruct<'b>,
+    Ts: for<'b> VariadicStruct<'b>,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        debug_format("MultiArrayViewIter", self.clone(), f)
+    }
 }
 
 impl<'a, Idx, Ts: 'a> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts>
@@ -166,6 +199,97 @@ where
     Ts: for<'b> VariadicStruct<'b>,
 {
     fn len(&self) -> usize {
-        self.view.len()
+        self.view.len() - self.next_pos
+    }
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
+mod tests {
+    use super::*;
+    use crate::memstorage::MemoryResourceStorage;
+    use crate::storage::create_multi_vector;
+
+    define_index!(Idx, RefIdx, RefMutIdx, "some_idx_schema", 4, 32);
+
+    define_struct!(
+        Value,
+        RefValue,
+        RefMutValue,
+        "no_schema",
+        3,
+        (value, set_value, u32, 0, 24)
+    );
+
+    define_struct!(
+        Point,
+        RefPoint,
+        RefMutPoint,
+        "no_schema",
+        4,
+        (x, set_x, u32, 0, 24),
+        (y, set_y, u32, 0, 24)
+    );
+
+    define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx, 0 => (Value, add_value), 1 => (Point, add_point) );
+
+    fn create_view<'a>(
+        storage: &'a MemoryResourceStorage,
+        size: usize,
+    ) -> MultiArrayView<'a, Idx, Variant> {
+        let mut mv = create_multi_vector::<Idx, Variant>(&*storage, "multivector", "Some schema")
+            .expect("failed to create MultiVector");
+
+        for i in 0..size {
+            let mut item = mv.grow().expect("grow failed");
+
+            let mut a = item.add_value();
+            a.set_value(i as u32);
+
+            let mut b = item.add_point();
+            b.set_x((i + size) as u32);
+            b.set_y((i + 2 * size) as u32);
+        }
+
+        mv.close().expect("close failed")
+    }
+
+    #[test]
+    fn debug() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let view = create_view(&storage, 100);
+        let content = " { len: 100, data: [\
+                       (0, [Value { value: 0 }, Point { x: 200, y: 200 }]), \
+                       (1, [Value { value: 1 }, Point { x: 201, y: 201 }]), \
+                       (2, [Value { value: 2 }, Point { x: 202, y: 202 }]), \
+                       (3, [Value { value: 3 }, Point { x: 203, y: 203 }]), \
+                       (4, [Value { value: 4 }, Point { x: 204, y: 204 }]), \
+                       (5, [Value { value: 5 }, Point { x: 205, y: 205 }]), \
+                       (6, [Value { value: 6 }, Point { x: 206, y: 206 }]), \
+                       (7, [Value { value: 7 }, Point { x: 207, y: 207 }]), \
+                       (8, [Value { value: 8 }, Point { x: 208, y: 208 }]), \
+                       (9, [Value { value: 9 }, Point { x: 209, y: 209 }])]... }";
+
+        assert_eq!(
+            format!("{:?}", view),
+            "MultiArrayView".to_string() + content
+        );
+        assert_eq!(
+            format!("{:?}", view.iter()),
+            "MultiArrayViewIter".to_string() + content
+        );
+        assert_eq!(
+            format!("{:?}", view.at(5)),
+            "MultiArrayViewItemIter { data: [Value { value: 5 }, Point { x: 205, y: 205 }] }"
+        );
+        let mut iter = view.iter();
+        for _ in 0..99 {
+            iter.next();
+        }
+        assert_eq!(
+            format!("{:?}", iter),
+            "MultiArrayViewIter { len: 1, data: \
+             [(0, [Value { value: 99 }, Point { x: 299, y: 299 }])] }"
+        );
     }
 }
