@@ -137,7 +137,7 @@ where
     }
 }
 
-fn debug_format<'a, T>(
+pub(crate) fn debug_format<'a, T>(
     name: &str,
     iter: ArrayViewIter<'a, T>,
     f: &mut fmt::Formatter,

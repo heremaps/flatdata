@@ -1,5 +1,5 @@
 use crate::archive::Struct;
-use crate::arrayview::ArrayView;
+use crate::arrayview::{debug_format, ArrayView};
 use crate::error::ResourceStorageError;
 
 use crate::memory;
@@ -189,19 +189,7 @@ where
     T: for<'b> Struct<'b>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let view = self.as_view();
-        let preview: Vec<_> = view.iter().take(super::DEBUG_PREVIEW_LEN).collect();
-        write!(
-            f,
-            "Vector {{ len: {}, data: {:?}{} }}",
-            self.len(),
-            preview,
-            if self.len() <= super::DEBUG_PREVIEW_LEN {
-                ""
-            } else {
-                "..."
-            }
-        )
+        debug_format("Vector", self.as_view().iter(), f)
     }
 }
 
