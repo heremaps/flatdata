@@ -1,4 +1,5 @@
 use crate::archive::Struct;
+use crate::vector::Vector;
 
 use std::fmt;
 use std::iter;
@@ -124,6 +125,15 @@ where
 
     fn data_index(&self, index: usize) -> usize {
         index * <T as Struct>::SIZE_IN_BYTES
+    }
+}
+
+impl<'a, T> From<&'a Vector<T>> for ArrayView<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    fn from(v: &'a Vector<T>) -> Self {
+        v.as_view()
     }
 }
 
@@ -258,10 +268,9 @@ where
 #[cfg(test)]
 #[allow(dead_code)]
 mod test {
-    use super::ArrayView;
+    use super::*;
     use crate::archive::Struct;
     use crate::memory;
-    use crate::Vector;
 
     define_struct!(
         Value,
@@ -330,6 +339,12 @@ mod test {
     }
 
     #[test]
+    fn from() {
+        let v = create_values(10);
+        let _x: ArrayView<_> = (&v).into();
+    }
+
+    #[test]
     fn reverse() {
         let v = create_values(10);
         let iter = v.as_view().iter().rev();
@@ -365,7 +380,7 @@ mod test {
     #[test]
     fn test_slice() {
         let v = create_values(10);
-        let view = v.as_view();
+        let view: ArrayView<_> = (&v).into();
 
         assert_eq!(view.len(), 10);
         assert_eq!(view.slice(2..).len(), 8);
