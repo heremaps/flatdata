@@ -163,6 +163,30 @@ where
     }
 }
 
+impl<'a, T> IntoIterator for ArrayView<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
+    type IntoIter = ArrayViewIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &ArrayView<'a, T>
+where
+    T: for<'b> Struct<'b>,
+{
+    type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
+    type IntoIter = ArrayViewIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 impl<'a, T> AsRef<[u8]> for ArrayView<'a, T>
 where
     T: for<'b> Struct<'b>,
@@ -242,6 +266,12 @@ mod test {
         (x, set_x, u32, 0, 16),
         (y, set_y, u32, 16, 16)
     );
+
+    #[test]
+    fn into_iter() {
+        for _ in create_values(10).as_view() {}
+        for _ in &create_values(10).as_view() {}
+    }
 
     #[test]
     fn test() {
