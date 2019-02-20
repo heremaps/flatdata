@@ -341,7 +341,8 @@ mod test {
     #[test]
     fn from() {
         let v = create_values(10);
-        let _x: ArrayView<_> = (&v).into();
+        let x: ArrayView<_> = (&v).into();
+        assert_eq!(x.len(), 10);
     }
 
     #[test]
