@@ -161,6 +161,32 @@ where
     }
 }
 
+impl<'a, Idx, Ts: 'a> IntoIterator for MultiArrayView<'a, Idx, Ts>
+where
+    Idx: for<'b> IndexStruct<'b>,
+    Ts: for<'b> VariadicStruct<'b>,
+{
+    type Item = <MultiArrayViewIter<'a, Idx, Ts> as Iterator>::Item;
+    type IntoIter = MultiArrayViewIter<'a, Idx, Ts>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, Idx, Ts: 'a> IntoIterator for &MultiArrayView<'a, Idx, Ts>
+where
+    Idx: for<'b> IndexStruct<'b>,
+    Ts: for<'b> VariadicStruct<'b>,
+{
+    type Item = <MultiArrayViewIter<'a, Idx, Ts> as Iterator>::Item;
+    type IntoIter = MultiArrayViewIter<'a, Idx, Ts>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 /// Iterator through items of an multivector.
 #[derive(Clone)]
 pub struct MultiArrayViewIter<'a, Idx, Ts>
@@ -326,5 +352,14 @@ mod tests {
 
         test_fused_iterator(view.iter(), 100);
         test_fused_iterator(view.at(66), 2);
+    }
+
+    #[test]
+    fn into_iter() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let view = create_view(&storage, 100);
+
+        for _ in &view {}
+        for _ in view {}
     }
 }
