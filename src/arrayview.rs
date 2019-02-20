@@ -352,29 +352,23 @@ mod test {
         assert_eq!(data, [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
     }
 
+    fn test_fused_iterator(mut iter: impl Iterator, size: usize) {
+        for _ in 0..size {
+            iter.next().unwrap();
+        }
+        if let Some(_) = iter.next() {
+            assert!(false, "Iterator did not end properly");
+        }
+        if let Some(_) = iter.next() {
+            assert!(false, "Iterator did not fuse properly");
+        }
+    }
+
     #[test]
     fn fused() {
-        let v = create_values(1);
-        {
-            let mut iter = v.as_view().iter();
-            iter.next().unwrap();
-            if let Some(_) = iter.next() {
-                assert!(false, "Iterator did not end properly");
-            }
-            if let Some(_) = iter.next() {
-                assert!(false, "Iterator did not fuse properly");
-            }
-        }
-        {
-            let mut iter = v.as_view().iter().rev();
-            iter.next().unwrap();
-            if let Some(_) = iter.next() {
-                assert!(false, "Iterator did not end properly");
-            }
-            if let Some(_) = iter.next() {
-                assert!(false, "Iterator did not fuse properly");
-            }
-        }
+        let v = create_values(100);
+        test_fused_iterator(v.as_view().iter(), 100);
+        test_fused_iterator(v.as_view().iter().rev(), 100);
     }
 
     #[test]

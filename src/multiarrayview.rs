@@ -106,6 +106,12 @@ where
     }
 }
 
+// we always check -> iterator is already fused
+impl<'a, Ts> iter::FusedIterator for MultiArrayViewItemIter<'a, Ts> where
+    Ts: for<'b> VariadicStruct<'b>
+{
+}
+
 impl<'a, Ts> fmt::Debug for MultiArrayViewItemIter<'a, Ts>
 where
     Ts: for<'b> VariadicStruct<'b>,
@@ -191,6 +197,14 @@ where
             None
         }
     }
+}
+
+// we always check -> iterator is already fused
+impl<'a, Idx, Ts: 'a> iter::FusedIterator for MultiArrayViewIter<'a, Idx, Ts>
+where
+    Idx: for<'b> IndexStruct<'b>,
+    Ts: for<'b> VariadicStruct<'b>,
+{
 }
 
 impl<'a, Idx, Ts: 'a> iter::ExactSizeIterator for MultiArrayViewIter<'a, Idx, Ts>
@@ -291,5 +305,26 @@ mod tests {
             "MultiArrayViewIter { len: 1, data: \
              [(0, [Value { value: 99 }, Point { x: 299, y: 299 }])] }"
         );
+    }
+
+    fn test_fused_iterator(mut iter: impl Iterator, size: usize) {
+        for _ in 0..size {
+            iter.next().unwrap();
+        }
+        if let Some(_) = iter.next() {
+            assert!(false, "Iterator did not end properly");
+        }
+        if let Some(_) = iter.next() {
+            assert!(false, "Iterator did not fuse properly");
+        }
+    }
+
+    #[test]
+    fn fused() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let view = create_view(&storage, 100);
+
+        test_fused_iterator(view.iter(), 100);
+        test_fused_iterator(view.at(66), 2);
     }
 }
