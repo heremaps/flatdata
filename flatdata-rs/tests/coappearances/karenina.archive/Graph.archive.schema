@@ -1,0 +1,119 @@
+namespace coappearances {
+struct Meta
+{
+    title_ref : u32 : 32;
+    author_ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct Character
+{
+    name_ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct Coappearance
+{
+    a_ref : u32 : 16;
+    b_ref : u32 : 16;
+    count : u32 : 16;
+    first_chapter_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct Nickname
+{
+    ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct Description
+{
+    ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct UnaryRelation
+{
+    kind_ref : u32 : 32;
+    to_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct BinaryRelation
+{
+    kind_ref : u32 : 32;
+    to_a_ref : u32 : 16;
+    to_b_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct Chapter
+{
+    major : u8 : 4;
+    minor : u8 : 7;
+}
+}
+
+namespace coappearances {
+struct Invariants
+{
+    max_degree : u32 : 16;
+    max_degree_ref : u32 : 16;
+    min_degree : u32 : 16;
+    min_degree_ref : u32 : 16;
+    num_connected_components : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct Degree
+{
+    value : u32 : 16;
+}
+}
+
+namespace coappearances {
+@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Statistics.vertex_degrees )
+archive Statistics
+{
+    invariants : .coappearances.Invariants;
+    vertex_degrees : vector< .coappearances.Degree >;
+}
+}
+
+namespace coappearances {
+@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Graph.vertices_data )
+archive Graph
+{
+    @explicit_reference( .coappearances.Meta.title_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.Meta.author_ref, .coappearances.Graph.strings )
+    meta : .coappearances.Meta;
+    @explicit_reference( .coappearances.Character.name_ref, .coappearances.Graph.strings )
+    vertices : vector< .coappearances.Character >;
+    @explicit_reference( .coappearances.Coappearance.a_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.Coappearance.b_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.Coappearance.first_chapter_ref, .coappearances.Graph.chapters )
+    edges : vector< .coappearances.Coappearance >;
+    @explicit_reference( .coappearances.Nickname.ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.Description.ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.UnaryRelation.kind_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.UnaryRelation.to_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.BinaryRelation.kind_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.BinaryRelation.to_a_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.BinaryRelation.to_b_ref, .coappearances.Graph.vertices )
+    vertices_data : multivector< 32, .coappearances.Nickname, .coappearances.Description, .coappearances.UnaryRelation, .coappearances.BinaryRelation >;
+    chapters : vector< .coappearances.Chapter >;
+    strings : raw_data;
+    @optional
+    statistics : archive .coappearances.Statistics;
+}
+}
+

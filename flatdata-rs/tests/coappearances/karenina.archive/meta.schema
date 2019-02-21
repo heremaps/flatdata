@@ -1,0 +1,17 @@
+namespace coappearances {
+struct Meta
+{
+    title_ref : u32 : 32;
+    author_ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+archive Graph
+{
+    @explicit_reference( .coappearances.Meta.title_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.Meta.author_ref, .coappearances.Graph.strings )
+    meta : .coappearances.Meta;
+}
+}
+

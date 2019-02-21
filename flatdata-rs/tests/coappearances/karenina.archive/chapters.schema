@@ -1,0 +1,15 @@
+namespace coappearances {
+struct Chapter
+{
+    major : u8 : 4;
+    minor : u8 : 7;
+}
+}
+
+namespace coappearances {
+archive Graph
+{
+    chapters : vector< .coappearances.Chapter >;
+}
+}
+

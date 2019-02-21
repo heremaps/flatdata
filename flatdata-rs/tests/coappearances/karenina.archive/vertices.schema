@@ -1,0 +1,15 @@
+namespace coappearances {
+struct Character
+{
+    name_ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+archive Graph
+{
+    @explicit_reference( .coappearances.Character.name_ref, .coappearances.Graph.strings )
+    vertices : vector< .coappearances.Character >;
+}
+}
+

@@ -1,0 +1,15 @@
+[package]
+name = "flatdata"
+version = "0.2.1"
+authors = ["boxdot <d@zerovolt.org>"]
+license = "MIT/Apache-2.0"
+description = "Rust implementation of heremaps/flatdata"
+repository = "https://github.com/boxdot/flatdata-rs"
+keywords = ["serialization", "flatdata", "mmap"]
+categories = ["encoding"]
+readme = "README.md"
+edition = "2018"
+
+[dependencies]
+diff = "0.1"
+memmap = "0.6"
