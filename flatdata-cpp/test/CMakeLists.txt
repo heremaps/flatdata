@@ -12,7 +12,7 @@ add_dependencies(flatdata_test generate_flatdata_test_code)
 target_include_directories(flatdata_test
     PRIVATE ${Boost_INCLUDE_DIRS}
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../vendor
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../vendor
 )
 
 target_link_libraries(flatdata_test

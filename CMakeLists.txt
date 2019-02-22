@@ -20,6 +20,5 @@ endif()
 enable_testing()
 
 add_subdirectory(flatdata-cpp)
-add_subdirectory(tests)
-add_subdirectory(examples)
+add_subdirectory(flatdata-py)
 add_subdirectory(docs)

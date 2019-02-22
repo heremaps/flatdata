@@ -1,5 +1,7 @@
 # flatdata [![Build Status](https://travis-ci.org/heremaps/flatdata.svg?branch=master)](https://travis-ci.org/heremaps/flatdata)
 
+_Write once, read-many, zero-overhead binary structured file format._
+
 Flatdata is a library providing data structures for convenient creation, storage and access of packed memory-mappable structures with minimal overhead. Library consists of schema language, code generator for C++, Python and Go, and target language libraries.
 
 * [Why Flatdata](#why-flatdata)
@@ -18,7 +20,7 @@ Flatdata helps creating efficient datasets:
 * Optimized for large read-only datasets
 * Portable with support for multiple languages
 
-Flatdata doesn't provide:
+Flatdata _doesn't_ provide:
 
 * Backwards compatible schema evolution
 * Support for mutable datasets
@@ -26,21 +28,18 @@ Flatdata doesn't provide:
 
 For more details read [why flatdata](docs/src/why-flatdata.rst).
 
-## Building `flatdata`
+## Using `flatdata`
 
-The C++ part of the library depends on Boost. The schema generator and the Python part of the
-library require Python 3.
+### Generator
+
+To use the generator, you need Python 3 and the dependencies listed in `requirements.txt`
 
 ```shell
 pip3 install -r requirements.txt
-mkdir build && cd build && cmake ..
-make
-make test  # optional
+generator/app.py
 ```
 
-## Using `flatdata`
-
-*Note: Until the release APIs are expected to be undergoing (potentially breaking) changes. Binary data layout is stable, though.*
+### Creating a schema
 
 Define a flatdata archive, let's say `locations.flatdata`:
 ```cpp
@@ -55,47 +54,6 @@ namespace loc {
 }
 ```
 
-Generate a C++ header `locations.hpp` from it.
-```shell
-./generator/app.py --gen cpp --schema locations.flatdata --output-file locations.hpp
-```
-
-Serialize some data:
-```cpp
-// Compile with: c++ -std=c++11 writer.cpp -Iflatdata-cpp/include -Lbuild/flatdata-cpp -lflatdata -lboost_system -lboost_filesystem -o writer
-#include "locations.hpp"
-int main() {
-  auto storage = flatdata::FileResourceStorage::create("locations.archive");  // create storage
-  auto builder = loc::LocationsBuilder::open(std::move(storage));             // create builder
-  auto pois = builder.start_pois();
-
-  uint32_t x, y;
-  while(std::cin >> x >> y) {
-      loc::PointMutator poi = pois.grow();
-      poi.x = x;
-      poi.y = y;
-  }
-  pois.close();  // flush not yet written data to disk
-}
-```
-
-And finally, read the serialized data:
-
-```cpp
-// Compile with: c++ -std=c++11 reader.cpp -Iflatdata-cpp/include -Lbuild/flatdata-cpp -lflatdata -lboost_system -lboost_filesystem -o reader
-#include "locations.hpp"
-#include <iostream>
-int main() {
-    auto storage = flatdata::FileResourceStorage::create("locations.archive");  // open storage
-    auto archive = loc::Locations::open(std::move(storage));              // create archive
-    for (loc::Point point : archive.pois()) {                             // iterate through pois
-        std::cout << point.to_string() << std::endl;
-    }
-    return 0;
-}
-```
-
-For more examples cf. the [examples](examples) directory.
 
 ## Library Layout
 
@@ -106,7 +64,7 @@ Library is organized as follows:
    * `flatdata-cpp` includes C++ library sources. Client application needs to include and
                       link against this library.
    * `flatdata-py` includes python library sources. Client application needs to have this
-                     folder in PYTHON_PATH. 
+                     folder in PYTHON_PATH.
    * `flatdata-go`  includes Go library sources. Client application needs to have `flatdata-go/flatdata`
                      folder in GOPATH.
    * `tools` contains tools to work with flatdata archives.

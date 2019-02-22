@@ -406,7 +406,7 @@ def test_archives_are_defined_correctly():
     }
     }
     """, CppGenerator, """
-namespace n { 
+namespace n {
 namespace internal
 {
 const char* const A__schema__ =

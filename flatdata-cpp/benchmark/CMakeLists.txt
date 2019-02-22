@@ -17,7 +17,7 @@ target_include_directories(flatdata_benchmark
     PRIVATE ${GTEST_INCLUDE_DIRS}
     PRIVATE ${Boost_INCLUDE_DIRS}
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../vendor)
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../vendor)
 
 target_link_libraries(flatdata_benchmark
     flatdata)
