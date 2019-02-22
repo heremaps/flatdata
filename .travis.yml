@@ -4,6 +4,9 @@ services:
   - docker
 
 matrix:
+  allow_failures:
+    - rust: nightly
+
   include:
 
     # gcc
@@ -32,7 +35,7 @@ matrix:
             -w /build \
             boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
 
-    # go 
+    # go
     - language: go
       go: 1.x
       install: true
@@ -48,3 +51,41 @@ matrix:
               -s flatdata-go/backward-compatibility-tests/test_backward_compatibility.schema \
               -O flatdata-go/backward-compatibility-tests/test_backward_compatibility_generated.go
           pushd flatdata-go/backward-compatibility-tests; make run-ci; popd
+
+    # rust
+    - rust: stable
+      cache:
+        - cargo
+      addons:
+        apt:
+          packages:
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - binutils-dev
+      before_script:
+        - cd flatdata-rs
+        - cargo install cargo-update || echo "cargo-update already installed"
+        - cargo install cargo-travis || echo "cargo-travis already installed"
+        - cargo install-update -a # update outdated cached binaries
+      script:
+        - cargo build
+        - cargo test
+      after_success:
+        - cargo coveralls
+
+    - rust: beta
+      cache: cargo
+      before_script:
+        - cd flatdata-rs
+      script:
+        - cargo build
+        - cargo test
+
+    - rust: nightly
+      cache: cargo
+      before_script:
+        - cd flatdata-rs
+      script:
+        - cargo build
+        - cargo test
