@@ -20,5 +20,4 @@ endif()
 enable_testing()
 
 add_subdirectory(flatdata-cpp)
-add_subdirectory(flatdata-py)
 add_subdirectory(docs)
