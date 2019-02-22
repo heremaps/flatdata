@@ -2,7 +2,7 @@
 name = "flatdata"
 version = "0.2.1"
 authors = ["boxdot <d@zerovolt.org>"]
-license = "MIT/Apache-2.0"
+license = "Apache-2.0"
 description = "Rust implementation of heremaps/flatdata"
 repository = "https://github.com/boxdot/flatdata-rs"
 keywords = ["serialization", "flatdata", "mmap"]
