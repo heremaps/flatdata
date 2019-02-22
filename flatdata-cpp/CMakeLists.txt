@@ -4,6 +4,7 @@ project(flatdata-cpp)
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(Threads REQUIRED)
 
 file(GLOB FLATDATA_SOURCE
     "src/*.h"
@@ -20,7 +21,8 @@ target_include_directories(flatdata
     PUBLIC ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(flatdata
-  ${Boost_LIBRARIES})
+  ${Boost_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT})
 
 add_subdirectory(test)
 add_subdirectory(benchmark)
