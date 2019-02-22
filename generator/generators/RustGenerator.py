@@ -6,6 +6,7 @@
 from generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
     Archive as ArchiveResource)
 from generator.tree.nodes.trivial import Structure, Constant, Enumeration
+from generator.tree.helpers.enumtype import EnumType
 from generator.tree.nodes.archive import Archive
 from generator.tree.syntax_tree import SyntaxTree
 from .BaseGenerator import BaseGenerator
@@ -59,6 +60,11 @@ class RustGenerator(BaseGenerator):
                 return "{}_".format(s)
             return s
 
+        def _field_type(f):
+            if isinstance(f.type, EnumType):
+                return f.type_reference.node.name + " : " + f.type_reference.node.type.name
+            return f.type.name + " : " + f.type.name
+
         def _format_numeric_literal(value):
             try:
                 value = int(value)
@@ -68,6 +74,7 @@ class RustGenerator(BaseGenerator):
             return value
 
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
+        env.filters["field_type"] = _field_type
         env.filters['structure_references'] = lambda ls: [
             x for x in ls if (isinstance(x.node, Structure)
                 and not "_builtin.multivector" in SyntaxTree.namespace_path(x.node) )]
