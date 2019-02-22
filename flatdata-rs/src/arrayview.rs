@@ -29,8 +29,8 @@ use std::ops::{Bound, RangeBounds};
 ///     RefMutA,
 ///     "no_schema",
 ///     4,
-///     (x, set_x, u32, 0, 16),
-///     (y, set_y, u32, 16, 16)
+///     (x, set_x, u32, u32, 0, 16),
+///     (y, set_y, u32, u32, 16, 16)
 /// );
 ///
 /// let mut v: Vector<A> = Vector::with_len(1);
@@ -278,7 +278,7 @@ mod test {
         RefMutValue,
         "no_schema",
         4,
-        (value, set_value, u32, 0, 32)
+        (value, set_value, u32, u32, 0, 32)
     );
 
     define_struct!(
@@ -287,8 +287,8 @@ mod test {
         RefMutPoint,
         "no_schema",
         4,
-        (x, set_x, u32, 0, 16),
-        (y, set_y, u32, 16, 16)
+        (x, set_x, u32, u32, 0, 16),
+        (y, set_y, u32, u32, 16, 16)
     );
 
     #[test]

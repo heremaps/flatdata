@@ -30,8 +30,8 @@ use std::marker;
 ///     RefMutA,
 ///     "no_schema",
 ///     4,
-///     (x, set_x, u32, 0, 16),
-///     (y, set_y, u32, 16, 16)
+///     (x, set_x, u32, u32, 0, 16),
+///     (y, set_y, u32, u32, 16, 16)
 /// );
 ///
 /// let mut a = StructBuf::<A>::new();
@@ -121,8 +121,8 @@ mod test {
         RefMutA,
         "no_schema",
         4,
-        (x, set_x, u32, 0, 16),
-        (y, set_y, u32, 16, 16)
+        (x, set_x, u32, u32, 0, 16),
+        (y, set_y, u32, u32, 16, 16)
     );
 
     #[test]

@@ -36,8 +36,8 @@ use std::marker;
 ///     RefMutA,
 ///     "no_schema",
 ///     4,
-///     (x, set_x, u32, 0, 16),
-///     (y, set_y, u32, 16, 16)
+///     (x, set_x, u32, u32, 0, 16),
+///     (y, set_y, u32, u32, 16, 16)
 /// );
 ///
 /// let mut v: Vector<A> = Vector::new();
@@ -220,8 +220,8 @@ where
 ///     RefMutA,
 ///     "no_schema",
 ///     4,
-///     (x, set_x, u32, 0, 16),
-///     (y, set_y, u32, 16, 16)
+///     (x, set_x, u32, u32, 0, 16),
+///     (y, set_y, u32, u32, 16, 16)
 /// );
 ///
 /// let storage = MemoryResourceStorage::new("/root/extvec");
@@ -365,8 +365,8 @@ mod tests {
         RefMutA,
         "no_schema",
         4,
-        (x, set_x, u32, 0, 16),
-        (y, set_y, u32, 16, 16)
+        (x, set_x, u32, u32, 0, 16),
+        (y, set_y, u32, u32, 16, 16)
     );
 
     #[test]

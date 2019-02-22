@@ -62,8 +62,8 @@ class RustGenerator(BaseGenerator):
 
         def _field_type(f):
             if isinstance(f.type, EnumType):
-                return f.type_reference.node.name + " : " + f.type_reference.node.type.name
-            return f.type.name + " : " + f.type.name
+                return f.type_reference.node.name + ", " + f.type_reference.node.type.name
+            return f.type.name + ", " + f.type.name
 
         def _format_numeric_literal(value):
             try:

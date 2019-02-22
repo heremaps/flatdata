@@ -292,7 +292,7 @@ mod tests {
         RefMutValue,
         "no_schema",
         3,
-        (value, set_value, u32, 0, 24)
+        (value, set_value, u32, u32, 0, 24)
     );
 
     define_struct!(
@@ -301,8 +301,8 @@ mod tests {
         RefMutPoint,
         "no_schema",
         4,
-        (x, set_x, u32, 0, 24),
-        (y, set_y, u32, 0, 24)
+        (x, set_x, u32, u32, 0, 24),
+        (y, set_y, u32, u32, 0, 24)
     );
 
     define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx, 0 => (Value, add_value), 1 => (Point, add_point) );

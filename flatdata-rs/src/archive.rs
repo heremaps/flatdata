@@ -194,16 +194,8 @@ pub trait ArchiveBuilder: Clone {
 /// Macro used by generator to define a flatdata struct.
 #[macro_export]
 macro_rules! define_struct {
-
-    // Simpler case where type and primitive_type coincide.
     ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
-        $(,($field:ident, $field_setter:ident, $type:tt, $offset:expr, $bit_size:expr))*) => {
-        define_struct!($factory, $name, $name_mut, $schema, $size_in_bytes
-            $(,($field, $field_setter, $type: $type, $offset, $bit_size))*
-        );
-    };
-    ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
-        $(,($field:ident, $field_setter:ident, $type:tt: $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
+        $(,($field:ident, $field_setter:ident, $type:tt, $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
     {
         #[derive(Clone, Copy)]
         pub struct $name<'a> {
@@ -279,7 +271,7 @@ macro_rules! define_struct {
                 let buffer = unsafe {
                     ::std::slice::from_raw_parts_mut(self.data, $size_in_bytes)
                 };
-                write_bytes!($type; value, buffer, $offset, $bit_size)
+                write_bytes!($primitive_type; value, buffer, $offset, $bit_size)
             })*
 
             #[inline]
@@ -314,7 +306,7 @@ macro_rules! define_index {
             $name_mut,
             $schema,
             $size_in_bytes,
-            (value, set_value, u64, 0, $size_in_bits)
+            (value, set_value, u64, u64, 0, $size_in_bits)
         );
 
         impl<'a> $crate::IndexStruct<'a> for $factory {
@@ -738,18 +730,24 @@ mod test {
     #[test]
     #[allow(dead_code)]
     fn test_debug() {
+        #[derive(Debug, PartialEq, Eq)]
+        #[repr(u32)]
+        pub enum MyEnum {
+            Value,
+        }
         define_struct!(
             A,
             RefA,
             RefMutA,
             "no_schema",
             4,
-            (x, set_x, u32, 0, 16),
-            (y, set_y, u32, 16, 16)
+            (x, set_x, u32, u32, 0, 16),
+            (y, set_y, u32, u32, 16, 16),
+            (e, set_e, MyEnum, u32, 32, 16)
         );
         let a = StructBuf::<A>::new();
         let output = format!("{:?}", a);
-        assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0 } }");
+        assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0, e: Value } }");
     }
 
     macro_rules! define_enum_test {
@@ -774,7 +772,7 @@ mod test {
                     RefMutA,
                     "no_schema",
                     1,
-                    (x, set_x, Variant: $type, 0, 2)
+                    (x, set_x, Variant, $type, 0, 2)
                 );
                 let mut a = StructBuf::<A>::new();
                 let output = format!("{:?}", a);
@@ -822,8 +820,8 @@ mod test {
             RefMutA,
             "no_schema",
             4,
-            (x, set_x, u32, 0, 16),
-            (y, set_y, u32, 16, 16)
+            (x, set_x, u32, u32, 0, 16),
+            (y, set_y, u32, u32, 16, 16)
         );
 
         define_struct!(
@@ -832,8 +830,8 @@ mod test {
             RefMutB,
             "no_schema",
             4,
-            (x, set_x, u32, 0, 16),
-            (y, set_y, u32, 16, 16)
+            (x, set_x, u32, u32, 0, 16),
+            (y, set_y, u32, u32, 16, 16)
         );
 
         define_index!(
