@@ -10,7 +10,7 @@ define_struct!(
     {% if field.doc %}
         {{ field.doc | rust_doc }}
     {% endif %}
-    ({{ field.name | escape_rust_keywords }}, set_{{ field.name }}, {{ field.type.name }}, {{ field.offset }}, {{ field.type.width }})
+    ({{ field.name | escape_rust_keywords }}, set_{{ field.name }}, {{ field | field_type }}, {{ field.offset }}, {{ field.type.width }})
     {%- if not loop.last %},
     {% endif %}
     {% endfor %}
