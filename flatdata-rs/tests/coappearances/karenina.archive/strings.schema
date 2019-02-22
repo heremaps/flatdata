@@ -1,0 +1,7 @@
+namespace coappearances {
+archive Graph
+{
+    strings : raw_data;
+}
+}
+

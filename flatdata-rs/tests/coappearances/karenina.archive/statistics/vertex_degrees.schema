@@ -1,0 +1,14 @@
+namespace coappearances {
+struct Degree
+{
+    value : u32 : 16;
+}
+}
+
+namespace coappearances {
+archive Statistics
+{
+    vertex_degrees : vector< .coappearances.Degree >;
+}
+}
+

@@ -1,0 +1,20 @@
+namespace coappearances {
+struct Coappearance
+{
+    a_ref : u32 : 16;
+    b_ref : u32 : 16;
+    count : u32 : 16;
+    first_chapter_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+archive Graph
+{
+    @explicit_reference( .coappearances.Coappearance.a_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.Coappearance.b_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.Coappearance.first_chapter_ref, .coappearances.Graph.chapters )
+    edges : vector< .coappearances.Coappearance >;
+}
+}
+

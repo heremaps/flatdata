@@ -1,0 +1,45 @@
+namespace coappearances {
+struct Nickname
+{
+    ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct Description
+{
+    ref : u32 : 32;
+}
+}
+
+namespace coappearances {
+struct UnaryRelation
+{
+    kind_ref : u32 : 32;
+    to_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+struct BinaryRelation
+{
+    kind_ref : u32 : 32;
+    to_a_ref : u32 : 16;
+    to_b_ref : u32 : 16;
+}
+}
+
+namespace coappearances {
+archive Graph
+{
+    @explicit_reference( .coappearances.Nickname.ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.Description.ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.UnaryRelation.kind_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.UnaryRelation.to_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.BinaryRelation.kind_ref, .coappearances.Graph.strings )
+    @explicit_reference( .coappearances.BinaryRelation.to_a_ref, .coappearances.Graph.vertices )
+    @explicit_reference( .coappearances.BinaryRelation.to_b_ref, .coappearances.Graph.vertices )
+    vertices_data : multivector< 32, .coappearances.Nickname, .coappearances.Description, .coappearances.UnaryRelation, .coappearances.BinaryRelation >;
+}
+}
+
