@@ -1,4 +1,4 @@
-use crate::archive::Struct;
+use crate::archive::{RefFactory, Struct};
 use crate::vector::Vector;
 
 use std::fmt;
@@ -52,7 +52,7 @@ use std::ops::{Bound, RangeBounds};
 #[derive(Clone)]
 pub struct ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     data: &'a [u8],
     _phantom: marker::PhantomData<T>,
@@ -60,7 +60,7 @@ where
 
 impl<'a, T> ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     /// Creates a new `ArrayView` to the data at the given address.
     ///
@@ -130,7 +130,7 @@ where
 
 impl<'a, T> From<&'a Vector<T>> for ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn from(v: &'a Vector<T>) -> Self {
         v.as_view()
@@ -143,7 +143,7 @@ pub(crate) fn debug_format<'a, T>(
     f: &mut fmt::Formatter,
 ) -> fmt::Result
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     let len = iter.len();
     let preview: Vec<_> = iter.take(super::DEBUG_PREVIEW_LEN).collect();
@@ -163,7 +163,7 @@ where
 
 impl<'a, T> fmt::Debug for ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         debug_format("ArrayView", self.iter(), f)
@@ -172,7 +172,7 @@ where
 
 impl<'a, T> IntoIterator for ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
     type IntoIter = ArrayViewIter<'a, T>;
@@ -184,7 +184,7 @@ where
 
 impl<'a, T> IntoIterator for &ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
     type IntoIter = ArrayViewIter<'a, T>;
@@ -196,7 +196,7 @@ where
 
 impl<'a, T> AsRef<[u8]> for ArrayView<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
@@ -207,14 +207,14 @@ where
 #[derive(Clone)]
 pub struct ArrayViewIter<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     view: ArrayView<'a, T>,
 }
 
 impl<'a, T> iter::Iterator for ArrayViewIter<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     type Item = <T as Struct<'a>>::Item;
     fn next(&mut self) -> Option<Self::Item> {
@@ -230,7 +230,7 @@ where
 
 impl<'a, T> iter::ExactSizeIterator for ArrayViewIter<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn len(&self) -> usize {
         self.view.len()
@@ -239,7 +239,7 @@ where
 
 impl<'a, T> iter::DoubleEndedIterator for ArrayViewIter<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
         if !self.view.is_empty() {
@@ -254,11 +254,11 @@ where
 }
 
 // we always check -> iterator is already fused
-impl<'a, T> iter::FusedIterator for ArrayViewIter<'a, T> where T: for<'b> Struct<'b> {}
+impl<'a, T> iter::FusedIterator for ArrayViewIter<'a, T> where T: RefFactory {}
 
 impl<'a, T> fmt::Debug for ArrayViewIter<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         debug_format("ArrayViewIter", self.clone(), f)
