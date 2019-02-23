@@ -1,4 +1,6 @@
-use crate::archive::{IndexStruct, VariadicRef, VariadicStruct};
+use crate::archive::{
+    IndexRefFactory, IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct,
+};
 use crate::error::ResourceStorageError;
 use crate::memory;
 use crate::multiarrayview::MultiArrayView;
@@ -128,7 +130,11 @@ use std::marker;
 /// [`ExternalVector`]: struct.ExternalVector.html
 /// [`Vector`]: struct.Vector.html
 /// [`MultiArrayView`]: struct.MultiArrayView.html
-pub struct MultiVector<'a, Idx, Ts> {
+pub struct MultiVector<'a, Idx, Ts>
+where
+    Idx: IndexRefFactory,
+    Ts: VariadicRefFactory,
+{
     index: ExternalVector<'a, Idx>,
     data: Vec<u8>,
     data_handle: ResourceHandle<'a>,
@@ -138,8 +144,8 @@ pub struct MultiVector<'a, Idx, Ts> {
 
 impl<'a, Idx, Ts> MultiVector<'a, Idx, Ts>
 where
-    Idx: for<'b> IndexStruct<'b>,
-    Ts: for<'b> VariadicStruct<'b>,
+    Idx: IndexRefFactory,
+    Ts: VariadicRefFactory,
 {
     /// Creates an empty multivector.
     pub fn new(index: ExternalVector<'a, Idx>, data_handle: ResourceHandle<'a>) -> Self {
@@ -209,8 +215,8 @@ where
 
 impl<'a, Idx, Ts: VariadicRef> fmt::Debug for MultiVector<'a, Idx, Ts>
 where
-    Idx: for<'b> IndexStruct<'b>,
-    Ts: for<'b> VariadicStruct<'b>,
+    Idx: IndexRefFactory,
+    Ts: VariadicRefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "MultiVector {{ len: {} }}", self.index.len())

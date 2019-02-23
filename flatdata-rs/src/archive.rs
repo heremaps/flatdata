@@ -74,6 +74,12 @@ pub trait Struct<'a>: Clone {
     fn create_mut(data: &'a mut [u8]) -> Self::ItemMut;
 }
 
+/// Shortcut trait for Structs that are able to produce references of any given lifetime
+///
+/// Equivalent to ```for<'a> Struct<'a>'''
+pub trait RefFactory: for<'a> Struct<'a> {}
+impl<T> RefFactory for T where T: for<'a> Struct<'a> {}
+
 /// A specialized Struct factory producing Index items.
 /// Used primarily by the MultiVector/MultiArrayView.
 pub trait IndexStruct<'a>: Struct<'a> {
@@ -83,6 +89,12 @@ pub trait IndexStruct<'a>: Struct<'a> {
     /// Provide setter for index
     fn set_index(data: Self::ItemMut, value: usize);
 }
+
+/// Shortcut trait for IndexStructs that are able to produce references of any given lifetime
+///
+/// Equivalent to ```for<'a> IndexStruct<'a>'''
+pub trait IndexRefFactory: for<'a> IndexStruct<'a> {}
+impl<T> IndexRefFactory for T where T: for<'a> IndexStruct<'a> {}
 
 /// A type in archive used as index of a `MultiArrayView`.
 pub trait Index: Ref {}
@@ -128,6 +140,12 @@ pub trait VariadicStruct<'a>: Clone {
     /// Creates a builder for a list of VariadicRef.
     fn create_mut(data: &'a mut Vec<u8>) -> Self::ItemMut;
 }
+
+/// Shortcut trait for VariadicStructs that are able to produce references of any given lifetime
+///
+/// Equivalent to ```for<'a> VariadicStruct<'a>'''
+pub trait VariadicRefFactory: for<'a> VariadicStruct<'a> {}
+impl<T> VariadicRefFactory for T where T: for<'a> VariadicStruct<'a> {}
 
 /// A flatdata archive representing serialized data.
 ///
