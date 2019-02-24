@@ -54,7 +54,7 @@ The following languages are supported:
     * **[C++](./flatdata-cpp)** - used extensively, tested excessively normally receives features first
     * **[Rust](./flatdata-rs)** - the newest addition to the family
   * Read-only implementations:
-    * **[Python](./flatdata-py)** - used mostly for debugging purposes
+    * **[Python](./flatdata-py)** - used mostly for inspecting the data
     * **[Dot](./flatdata-dot)** - used to generate diagrams of the schema
     * **[Go](./flatdata-go)** - beta implementation.
 
@@ -91,4 +91,4 @@ limitations under the License.
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in this document by you, as defined in the Apache-2.0 license,
-shall be dual licensed as above, without any additional terms or conditions.
+without any additional terms or conditions.
