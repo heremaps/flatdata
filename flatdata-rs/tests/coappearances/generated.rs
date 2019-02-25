@@ -282,14 +282,6 @@ archive Statistics
 }
 
 "#;
-pub const CHARACTERS: &str = r#"namespace coappearances {
-@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Statistics.vertex_degrees )
-archive Statistics
-{
-}
-}
-
-"#;
         }
         pub mod graph {
 pub const META: &str = r#"namespace coappearances {
@@ -453,14 +445,6 @@ archive Graph
 }
 
 "#;
-pub const CHARACTERS: &str = r#"namespace coappearances {
-@bound_implicitly( characters : .coappearances.Graph.vertices, .coappearances.Graph.vertices_data )
-archive Graph
-{
-}
-}
-
-"#;
         }
     }
 }
@@ -472,8 +456,8 @@ define_struct!(
     RefMutMeta,
     schema::structs::META,
     8,
-    (title_ref, set_title_ref, u32, 0, 32),
-    (author_ref, set_author_ref, u32, 32, 32));
+    (title_ref, set_title_ref, u32, u32, 0, 32),
+    (author_ref, set_author_ref, u32, u32, 32, 32));
 
 /// A character.
 define_struct!(
@@ -482,7 +466,7 @@ define_struct!(
     RefMutCharacter,
     schema::structs::CHARACTER,
     4,
-    (name_ref, set_name_ref, u32, 0, 32));
+    (name_ref, set_name_ref, u32, u32, 0, 32));
 
 /// An appearance of two characters in the same scene.
 ///
@@ -495,10 +479,10 @@ define_struct!(
     RefMutCoappearance,
     schema::structs::COAPPEARANCE,
     8,
-    (a_ref, set_a_ref, u32, 0, 16),
-    (b_ref, set_b_ref, u32, 16, 16),
-    (count, set_count, u32, 32, 16),
-    (first_chapter_ref, set_first_chapter_ref, u32, 48, 16));
+    (a_ref, set_a_ref, u32, u32, 0, 16),
+    (b_ref, set_b_ref, u32, u32, 16, 16),
+    (count, set_count, u32, u32, 32, 16),
+    (first_chapter_ref, set_first_chapter_ref, u32, u32, 48, 16));
 
 /// A nickname or an alternative name of a character.
 define_struct!(
@@ -507,7 +491,7 @@ define_struct!(
     RefMutNickname,
     schema::structs::NICKNAME,
     4,
-    (ref_, set_ref, u32, 0, 32));
+    (ref_, set_ref, u32, u32, 0, 32));
 
 /// A description of a character.
 define_struct!(
@@ -516,7 +500,7 @@ define_struct!(
     RefMutDescription,
     schema::structs::DESCRIPTION,
     4,
-    (ref_, set_ref, u32, 0, 32));
+    (ref_, set_ref, u32, u32, 0, 32));
 
 /// A relation of a character to another one.
 define_struct!(
@@ -525,8 +509,8 @@ define_struct!(
     RefMutUnaryRelation,
     schema::structs::UNARY_RELATION,
     6,
-    (kind_ref, set_kind_ref, u32, 0, 32),
-    (to_ref, set_to_ref, u32, 32, 16));
+    (kind_ref, set_kind_ref, u32, u32, 0, 32),
+    (to_ref, set_to_ref, u32, u32, 32, 16));
 
 /// A relation of a character to two other characters.
 define_struct!(
@@ -535,9 +519,9 @@ define_struct!(
     RefMutBinaryRelation,
     schema::structs::BINARY_RELATION,
     8,
-    (kind_ref, set_kind_ref, u32, 0, 32),
-    (to_a_ref, set_to_a_ref, u32, 32, 16),
-    (to_b_ref, set_to_b_ref, u32, 48, 16));
+    (kind_ref, set_kind_ref, u32, u32, 0, 32),
+    (to_a_ref, set_to_a_ref, u32, u32, 32, 16),
+    (to_b_ref, set_to_b_ref, u32, u32, 48, 16));
 
 /// A chapter in the book.
 define_struct!(
@@ -546,8 +530,8 @@ define_struct!(
     RefMutChapter,
     schema::structs::CHAPTER,
     2,
-    (major, set_major, u8, 0, 4),
-    (minor, set_minor, u8, 4, 7));
+    (major, set_major, u8, u8, 0, 4),
+    (minor, set_minor, u8, u8, 4, 7));
 
 
 define_struct!(
@@ -556,11 +540,11 @@ define_struct!(
     RefMutInvariants,
     schema::structs::INVARIANTS,
     10,
-    (max_degree, set_max_degree, u32, 0, 16),
-    (max_degree_ref, set_max_degree_ref, u32, 16, 16),
-    (min_degree, set_min_degree, u32, 32, 16),
-    (min_degree_ref, set_min_degree_ref, u32, 48, 16),
-    (num_connected_components, set_num_connected_components, u32, 64, 16));
+    (max_degree, set_max_degree, u32, u32, 0, 16),
+    (max_degree_ref, set_max_degree_ref, u32, u32, 16, 16),
+    (min_degree, set_min_degree, u32, u32, 32, 16),
+    (min_degree_ref, set_min_degree_ref, u32, u32, 48, 16),
+    (num_connected_components, set_num_connected_components, u32, u32, 64, 16));
 
 
 define_struct!(
@@ -569,7 +553,7 @@ define_struct!(
     RefMutDegree,
     schema::structs::DEGREE,
     2,
-    (value, set_value, u32, 0, 16));
+    (value, set_value, u32, u32, 0, 16));
 
 /// Builtin type to for MultiVector index
 define_index!(

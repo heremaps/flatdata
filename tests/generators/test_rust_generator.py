@@ -48,8 +48,8 @@ define_struct!(
     RefMutS,
     schema::structs::S,
     3,
-    (f0, set_f0, u8 : u8, 0, 3),
-    (f1, set_f1, u16 : u16, 3, 15));
+    (f0, set_f0, u8, u8, 0, 3),
+    (f1, set_f1, u16, u16, 3, 15));
 """)
 
 

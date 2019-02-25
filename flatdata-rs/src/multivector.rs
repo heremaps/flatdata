@@ -60,12 +60,12 @@ use std::marker;
 /// );
 ///
 /// define_struct!(A, RefA, RefMutA, "some_A_schema", 4,
-///     (x, set_x, u32, 0, 16),
-///     (y, set_y, u32, 16, 16)
+///     (x, set_x, u32, u32, 0, 16),
+///     (y, set_y, u32, u32, 16, 16)
 /// );
 ///
 /// define_struct!(B, RefB, RefMutB, "some_B_schema", 2,
-///     (id, set_id, u32, 0, 16)
+///     (id, set_id, u32, u32, 0, 16)
 /// );
 ///
 /// define_variadic_struct!(AB, RefAB, BuilderAB, Idx,
@@ -240,8 +240,8 @@ mod tests {
         RefMutA,
         "no_schema",
         4,
-        (x, set_x, u32, 0, 16),
-        (y, set_y, u32, 16, 16)
+        (x, set_x, u32, u32, 0, 16),
+        (y, set_y, u32, u32, 16, 16)
     );
 
     define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx, 0 => (A, add_a) );
