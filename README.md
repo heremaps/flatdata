@@ -61,7 +61,7 @@ The following languages are supported:
 
 ### Generate code
 
-See the [generator's README](./generator/README.md#usage) for more information.
+See the [generator's README](./generator/README.md#usage) for instructions.
 
 ## License
 

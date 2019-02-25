@@ -4,7 +4,10 @@ C++ 11 implementation of `flatdata`
 
 ## Building
 
+First, build `flatdata-cpp` and install the requirements of the generator.
+
 ```shell
+pip3 install -r requirements.txt
 mkdir build
 cd build
 cmake ..
