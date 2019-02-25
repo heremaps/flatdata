@@ -1,4 +1,4 @@
-use crate::archive::Struct;
+use crate::archive::{RefFactory, Struct};
 use crate::arrayview::{debug_format, ArrayView};
 use crate::error::ResourceStorageError;
 
@@ -61,14 +61,17 @@ use std::marker;
 /// [`ExternalVector`]: struct.ExternalVector.html
 /// [`as_view`]: #method.as_view
 #[derive(Clone)]
-pub struct Vector<T> {
+pub struct Vector<T>
+where
+    T: RefFactory,
+{
     data: Vec<u8>,
     _phantom: marker::PhantomData<T>,
 }
 
 impl<T> Vector<T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     /// Creates an empty `Vector<T>`.
     #[inline]
@@ -163,7 +166,7 @@ where
 
 impl<T> Default for Vector<T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     /// Creates an empty `Vector<T>`.
     fn default() -> Self {
@@ -173,7 +176,7 @@ where
 
 impl<T> AsRef<[u8]> for Vector<T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     /// Returns the content of this vector as slice of bytes. Equivalent to
     /// [`as_bytes`].
@@ -186,7 +189,7 @@ where
 
 impl<T> fmt::Debug for Vector<T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         debug_format("Vector", self.as_view().iter(), f)
@@ -263,7 +266,10 @@ where
 /// ```
 ///
 /// [`grow`]: #method.grow
-pub struct ExternalVector<'a, T> {
+pub struct ExternalVector<'a, T>
+where
+    T: RefFactory,
+{
     data: Vec<u8>,
     len: usize,
     resource_handle: ResourceHandle<'a>,
@@ -272,7 +278,7 @@ pub struct ExternalVector<'a, T> {
 
 impl<'a, T> ExternalVector<'a, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     /// Creates an empty `ExternalVector<T>` in the given resource storage.
     pub fn new(resource_handle: ResourceHandle<'a>) -> Self {
@@ -345,7 +351,7 @@ where
 
 impl<T> fmt::Debug for ExternalVector<'_, T>
 where
-    T: for<'b> Struct<'b>,
+    T: RefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "ExternalVector {{ len: {} }}", self.len())
