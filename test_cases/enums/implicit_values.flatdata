@@ -1,0 +1,16 @@
+/* This test tests that an enumeration can contain implicit values
+ */
+namespace n{
+enum Enum1 : u16 {
+    // = 0
+    VALUE_1,
+    // = 3
+    VALUE_2 = 3,
+    // = 4
+    VALUE_3,
+    // = 1
+    VALUE_4 = 1,
+    // = 2
+    VALUE_5
+}
+}

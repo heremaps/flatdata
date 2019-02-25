@@ -1,0 +1,27 @@
+/* This test tests that comments get attached to the corresponding constant
+ */
+namespace n{
+// This is a comment about Foo
+struct Foo {
+	// This is a comment about Foo.a
+    a : u64 : 64;
+
+    // This is a comment about Foo.b
+    b : u64 : 64;
+}
+
+/*
+ * This is a comment about Bar
+ */
+struct Bar {
+	/*
+	 * This is a comment about Bar.a
+	 */
+    a : u64 : 64;
+
+    /*
+     * This is a comment about Bar.b
+     */
+    b : u64 : 64;
+}
+}
