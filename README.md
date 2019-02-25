@@ -10,7 +10,7 @@ The data is serialized in a portable way which allows zero-overhead random acces
 
 ## Why `flatdata`?
 
-Flatdata helps creating efficient datasets:
+Flatdata helps creating efficient _read-only_ datasets:
 
 * Zero overhead random access
 * Support for bit and byte packing
@@ -30,7 +30,7 @@ For more details read [why flatdata](docs/src/why-flatdata.rst).
 
 ### Creating a schema
 
-Define a flatdata archive, let's say `locations.flatdata`:
+Define a flatdata archive:
 ```cpp
 namespace loc {
     struct Point {
@@ -45,7 +45,7 @@ namespace loc {
 
 ### Generating a module
 
-Flatdata relies on a generator that takes a `.flatdata` file as an input and
+Flatdata relies on a generator that takes a flatdata schema file as an input and
 generates a module for one of the supported languages.
 
 The following languages are supported:
@@ -56,7 +56,7 @@ The following languages are supported:
   * Read-only implementations:
     * **[Python](./flatdata-py)** - used mostly for inspecting the data
     * **[Dot](./flatdata-dot)** - used to generate diagrams of the schema
-    * **[Go](./flatdata-go)** - beta implementation.
+    * **[Go](./flatdata-go)** - beta implementation
 
 
 ### Generate code
