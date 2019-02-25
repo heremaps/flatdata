@@ -59,17 +59,9 @@ The following languages are supported:
     * **[Go](./flatdata-go)** - beta implementation.
 
 
-To use the generator:
+### Generate code
 
-```sh
-# install all the required dependencies in a virtualenv
-python3 -m virtualenv .venv
-.venv/bin/activate
-pip3 install -r generator/requirements.txt
-
-# generate a rust module
-./generator/app.py -s locations.flatdata -g rust -O location
-```
+See the [generator's README](./generator/README.md#usage) for more information.
 
 ## License
 
