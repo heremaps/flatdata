@@ -6,9 +6,9 @@ Flatdata is a library providing data structures for convenient creation, storage
 
 With `flatdata`, the user defines a schema of the data format using a very simple schema language that supports plain structs, vectors and multivectors. The schema is then used to generate builders and readers for serialization and deserialization of the data to an archive of files on disk.
 
-The data is serialized in a portable way which allows zero-overhead random access to it by using memory mapped storage: the operating system facilities for loading, caching and paging of the data, and most important, accessing it as if it were in memory.
+The data is serialized in a portable way which allows zero-overhead random access to it by using memory mapped storage: the operating system facilities are used for loading, caching and paging of the data, and most important, accessing it as if it were in memory.
 
-## Why `flatdata`?
+## Why `flatdata`
 
 Flatdata helps creating efficient _read-only_ datasets:
 
