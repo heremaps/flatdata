@@ -4,7 +4,6 @@ function (flatdata_make_example PATH)
 
     include(flatdata/GenerateSource)
     flatdata_generate_source(generate_flatdata_${EXAMPLE_NAME}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../generator
         ${CMAKE_CURRENT_SOURCE_DIR}/../../examples/${PATH}.flatdata
         ${CMAKE_CURRENT_BINARY_DIR}/generated/${PATH}.hpp)
 

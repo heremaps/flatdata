@@ -18,10 +18,10 @@ the data was de/serialized correctly. Run them simply with:
 cargo test
 ```
 
-[travis]: https://travis-ci.org/boxdot/flatdata-rs
-[travis status]: https://travis-ci.org/boxdot/flatdata-rs.svg?branch=master
+[travis]: https://travis-ci.org/heremaps/flatdata-rs
+[travis status]: https://travis-ci.org/heremaps/flatdata-rs.svg?branch=master
 [latest version]: https://img.shields.io/crates/v/flatdata.svg
 [crates.io]: https://crates.io/crates/flatdata
 [docs]: https://docs.rs/flatdata/badge.svg
 [docs.rs]: https://docs.rs/flatdata/
-[Why flatdata?]: https://github.com/heremaps/flatdata/blob/master/docs/src/why-flatdata.rst
+[Why flatdata?]: https://github.com/heremaps/flatdata/blob/master/docs/why-flatdata.md

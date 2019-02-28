@@ -8,7 +8,6 @@ matrix:
     - rust: nightly
 
   include:
-
     # gcc
     - language: cpp
       env:
@@ -47,7 +46,7 @@ matrix:
           set -ex
           pushd flatdata-go/flatdata; make run-ci; popd
           docker run -t --user `id -u $USER` -v $(pwd):/src -w /src boxdot/flatdata-dev:15 \
-            generator/app.py -v -g go \
+            ./generator -v -g go \
               -s flatdata-go/backward-compatibility-tests/test_backward_compatibility.schema \
               -O flatdata-go/backward-compatibility-tests/test_backward_compatibility_generated.go
           pushd flatdata-go/backward-compatibility-tests; make run-ci; popd

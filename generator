@@ -1,0 +1,3 @@
+#!/bin/sh
+cd flatdata-py
+exec generator/app.py $@

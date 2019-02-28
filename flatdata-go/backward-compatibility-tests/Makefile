@@ -19,7 +19,7 @@ lint:
 		golint $$(go list ./... | grep -v /vendor/) | grep -v _generated.go; test $$? -eq 1
 
 generate:
-		$$GOPATH/src/github.com/heremaps/flatdata/generator/app.py -v -g go \
+		$$GOPATH/src/github.com/heremaps/flatdata/generator -v -g go \
             -s test_backward_compatibility.schema \
             -O test_backward_compatibility_generated.go
 

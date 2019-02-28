@@ -20,7 +20,7 @@ make test # optional
 Once you have [created a flatdata schema file](../README.md#creating-a-schema), you can generate a C++ header:
 
 ```shell
-./generator/app.py --gen cpp --schema locations.flatdata --output-file locations.hpp
+./generator --gen cpp --schema locations.flatdata --output-file locations.hpp
 ```
 
 Serialize some data:

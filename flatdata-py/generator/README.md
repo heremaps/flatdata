@@ -9,7 +9,7 @@ python3 -m virtualenv .venv
 pip3 install -r generator/requirements.txt
 
 # generate a rust module
-./generator/app.py -s locations.flatdata -g rust -O location
+./generator -s locations.flatdata -g rust -O location
 ```
 
 ## Architecture
