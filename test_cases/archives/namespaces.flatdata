@@ -9,6 +9,7 @@ struct S {
 archive X {
 	payload : raw_data;
 }
+}
 
 namespace m {
 struct S {
@@ -20,11 +21,11 @@ archive X {
 }
 }
 
-namespace a
+namespace a {
 archive A {
 	single : .n.S;
-	list : vec< .m.S >;
-	multi : multivector< 32, .n.S >
+	list : vector< .m.S >;
+	multi : multivector< 32, .n.S >;
 	inner : archive .n.X;
 }
 }
