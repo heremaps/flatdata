@@ -1,0 +1,14 @@
+/* This test tests that a vector can be stored/read in archives
+ */
+namespace n{
+struct S {
+	x : u64;
+}
+
+archive A {
+	data : vector< S >;
+
+	@optional
+	optional_data : vector< S >;
+}
+}

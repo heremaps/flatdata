@@ -1,0 +1,10 @@
+/* This test tests that raw data can be stored/read in archives
+ */
+namespace n{
+archive A {
+	data : raw_data;
+
+	@optional
+	optional_data : raw_data;
+}
+}

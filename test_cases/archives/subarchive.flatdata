@@ -1,0 +1,14 @@
+/* This test tests that a subarchive can be stored/read in archives
+ */
+namespace n{
+archive X {
+	payload : raw_data;
+}
+
+archive A {
+	data : archive X;
+
+	@optional
+	optional_data : archive X;
+}
+}
