@@ -1,0 +1,16 @@
+namespace n {
+archive X
+{
+    payload : raw_data;
+}
+}
+
+namespace n {
+archive A
+{
+    data : archive .n.X;
+    @optional
+    optional_data : archive .n.X;
+}
+}
+

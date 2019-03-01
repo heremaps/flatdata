@@ -1,0 +1,16 @@
+namespace n {
+enum Foo : u64
+{
+    A = 0,
+    B = 1,
+}
+}
+
+namespace n {
+enum Bar : u64
+{
+    A = 0,
+    B = 1,
+}
+}
+

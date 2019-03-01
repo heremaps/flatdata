@@ -1,0 +1,28 @@
+namespace a {
+enum Bar : u8
+{
+    VALUE = 0,
+}
+}
+
+namespace b {
+enum Bar : u8
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct Foo
+{
+    f : .a.Bar : 8;
+}
+}
+
+namespace m {
+struct Foo
+{
+    f : .b.Bar : 8;
+}
+}
+

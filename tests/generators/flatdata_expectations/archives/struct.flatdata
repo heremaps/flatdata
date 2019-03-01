@@ -1,0 +1,16 @@
+namespace n {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace n {
+archive A
+{
+    data : .n.S;
+    @optional
+    optional_data : .n.S;
+}
+}
+
