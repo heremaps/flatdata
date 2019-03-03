@@ -41,7 +41,7 @@ matrix:
       install: true
       before_script:
         - go get github.com/golang/dep/cmd/dep
-        - go get github.com/golang/lint/golint
+        - go get golang.org/x/lint/golint
       script:
         - |
           set -ex
