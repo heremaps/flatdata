@@ -26,3 +26,4 @@ target_link_libraries(flatdata
 
 add_subdirectory(test)
 add_subdirectory(benchmark)
+add_subdirectory(examples)

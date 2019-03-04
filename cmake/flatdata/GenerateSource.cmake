@@ -5,10 +5,10 @@
 # @param SCHEMA_FILENAME path to the flatdata schema
 # @param OUTPUT_FILENAME output filename. Generator is forced to output to the given file.
 #
-function(flatdata_generate_source TARGET_NAME GENERATOR_PATH SCHEMA_FILENAME OUTPUT_FILENAME)
+function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
     find_program(PYTHON3_EXECUTABLE python3)
     if (NOT PYTHON3_EXECUTABLE)
-        message(FATAL_ERROR "Python3 NOT found.")
+        message(FATAL_ERROR "python3 NOT found.")
     endif()
     file(GLOB_RECURSE FLATDATA_GENERATOR_SOURCES ${GENERATOR_PATH}/**/*.py)
     file(GLOB_RECURSE FLATDATA_GENERATOR_TEMPLATES ${GENERATOR_PATH}/**/*.jinja2)
