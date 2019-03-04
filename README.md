@@ -1,4 +1,4 @@
-# flatdata [![Build Status](https://travis-ci.org/heremaps/flatdata.svg?branch=master)](https://travis-ci.org/heremaps/flatdata)
+# flatdata [![Build Status](https://api.travis-ci.com/heremaps/flatdata.svg?branch=master)](https://travis-ci.com/heremaps/flatdata/)
 
 Flatdata is a library providing data structures for convenient creation, storage and access of packed memory-mappable structures with minimal overhead. Library consists of schema language, code generator for C++, Python and Go, and target language libraries.
 
