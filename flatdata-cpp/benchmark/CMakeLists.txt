@@ -6,7 +6,6 @@ file(GLOB BENCHMARK_FLATDATA_SOURCES "*.cpp")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/flatdata/GenerateSource.cmake)
 flatdata_generate_source(generate_flatdata_benchmark_code
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../generator
     ${CMAKE_CURRENT_SOURCE_DIR}/graph.flatdata
     ${CMAKE_CURRENT_BINARY_DIR}/generated/graph.hpp)
 
@@ -17,7 +16,7 @@ target_include_directories(flatdata_benchmark
     PRIVATE ${GTEST_INCLUDE_DIRS}
     PRIVATE ${Boost_INCLUDE_DIRS}
     PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../vendor)
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../vendor)
 
 target_link_libraries(flatdata_benchmark
     flatdata)

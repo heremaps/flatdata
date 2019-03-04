@@ -1,10 +1,8 @@
-Schema Language
-===============
+# `flatdata` Schema Language
 
-Basic Types
------------
+## Basic Types
 
-Flatdata supports following basic types:
+Flatdata supports the following primitive types:
 
 -  ``bool`` - boolean data type
 -  ``i8`` - signed 8-bit wide type
@@ -16,8 +14,7 @@ Flatdata supports following basic types:
 -  ``i64`` - signed 64-bit wide type
 -  ``u64`` - unsigned 64-bit wide type
 
-Enumerations
-----------
+## Enumerations
 
 Flatdata supports adding enumeration over basic types. Each enumeration
 value can either automatically be assigned a value (previous value +1,
@@ -25,19 +22,18 @@ starting with 0), or manually.
 
 Each enumeration is defined as follows:
 
-.. code_block:: c
-
-    enum <Name> : <type> {
-        <value name> [= value],
-        ...
-    }
+```cpp
+enum <Name> : <type> {
+    <value name> [= value],
+    ...
+}
+```
 
 The following restrictions for values are checked:
 -   No duplicate values
 -   Values must fit into the underlying type
 
-Structures
-----------
+## Structures
 
 Flatdata structure definition syntax resembles known alternatives,
 albeit with notable differences:
@@ -52,30 +48,29 @@ albeit with notable differences:
 
 Each structure is defined as follows:
 
-.. code-block:: c
-
-    struct <Name> {
-        <field> : <type> : <width>;
-        ...
-    }
+```cpp
+struct <Name> {
+    <field> : <type> : <width>;
+    ...
+}
+```
 
 ``<type>`` can either be a basic type, or an enumeration.
 
 Example:
 
-.. code-block:: c
-
-    struct Structure {
-        field1 : u32 : 29;
-        field2 : u8 : 2;
-    }
+```cpp
+struct Structure {
+    field1 : u32 : 29;
+    field2 : u8 : 2;
+}
+```
 
 Every structure field specifies target language type to represent the
 field and its target size in bits. Flatdata takes care of packing and
 aligning the structures correctly as well as accessing them efficiently.
 
-Archives
---------
+## Archives
 
 Flatdata archive is the entry point to the data. Archives are the
 smallest data units which can be opened or written to disk. An archive's
@@ -85,27 +80,26 @@ opened.
 
 Archives are defined as follows:
 
-.. code-block:: c
-
-    archive <name> {
-        <resource> : <type>;
-        ...
-    }
+```cpp
+archive <name> {
+    <resource> : <type>;
+    ...
+}
+```
 
 For example:
 
-.. code-block:: c
+```cpp
+archive ExampleArchive {
+    single_structure : StructureType;
+    vector_of_stuff : vector< StructureType >;
+    what_an_archive_without_a_map : multivector< 40, StructureA, StructureB, StructureC >;
+    strings_forever : raw_data;
+    lets_get_some_structure : archive OtherArchive;
+}
+```
 
-    archive ExampleArchive {
-        single_structure : StructureType;
-        vector_of_stuff : vector< StructureType >;
-        what_an_archive_without_a_map : multivector< 40, StructureA, StructureB, StructureC >;
-        strings_forever : raw_data;
-        lets_get_some_structure : archive OtherArchive;
-    }
-
-Resources
----------
+## Resources
 
 Archive resources can be one of following types:
 
@@ -130,30 +124,28 @@ Archive resources can be one of following types:
    and grouping optionality semantics. Referenced archive type has to be
    defined.
 
-Comments
---------
+## Comments
 
 Flatdata schema supports C++-style comments. Comments located before
 structures/archives or their members will be available in generated
 code. Example:
 
-.. code-block:: c
+```cpp
+/// A single secret. Might be important
+struct Secret { importance : u64 : 64; }
 
-    /// A single secret. Might be important
-    struct Secret { importance : u64 : 64; }
+/**
+    * Very important archive
+    */
+archive TheBookOfSecrets {
+    // More important secret
+    secret1 : Secret;
+    // Less important secret
+    secret2 : Secret;
+}
+```
 
-    /**
-     * Very important archive
-     */
-    archive TheBookOfSecrets {
-        // More important secret
-        secret1 : Secret;
-        // Less important secret
-        secret2 : Secret;
-    }
-
-Decorations
------------
+## Decorations
 
 Decorations declare additional properties of entities they are applied
 to. Decorations supported at the moment are described below. Note that
@@ -165,22 +157,20 @@ and create reference edges, while other generators mostly support only
 Nonetheless, decorations are first-class citizens of schema and thus are
 validated as well during archive opening.
 
-Optional
-~~~~~~~~
+## Optional
 
 ``@optional`` can be applied to resources. If resource is optional and
 missing, archive can still be opened successfully. Resource of any type
 can be optional. Example:
 
-.. code-block:: c
+```cpp
+archive Archive {
+    @optional
+    resource: vector< SomeStructure >;
+}
+```
 
-    archive Archive {
-        @optional
-        resource: vector< SomeStructure >;
-    }
-
-Explicit Reference
-~~~~~~~~~~~~~~~~~~
+## Explicit Reference
 
 ``@explicit_reference`` declares an explicit reference of one resource's
 property to another resource. This is a very common type of referencing
@@ -192,25 +182,24 @@ different archive, as long as it is defined.
 
 Example:
 
-.. code-block:: c
+```cpp
+struct Person {
+    name : u64 : 64;
+    first_child : u64 : 64;
+}
 
-    struct Person {
-        name : u64 : 64;
-        first_child : u64 : 64;
-    }
+archive Archive {
+    @explicit_reference( Person.name, names )
+    @explicit_reference( Person.first_child, children )
+    people: vector< Person >
 
-    archive Archive {
-        @explicit_reference( Person.name, names )
-        @explicit_reference( Person.first_child, children )
-        people: vector< Person >
+    children: vector< Child >
 
-        children: vector< Child >
+    names: raw_data
+}
+```
 
-        names: raw_data
-    }
-
-Bound Implicitly
-~~~~~~~~~~~~~~~~
+## Bound Implicitly
 
 Sometimes it is useful to split structures' fields into multiple
 resources (for example, to promote data locality in case binary search
@@ -218,36 +207,33 @@ is done extensively on a particular field). ``@bound_implicitly``
 declares that such resources are grouped implicitly and therefore
 represent a single entity. The decoration also gives entity a name
 
-.. code-block:: c
+```cpp
+@bound_implicitly( transactions: keys, transaction_data )
+archive Archive {
+    keys: vector< Key >
+    transaction_data : vector< Transaction >
+}
+```
 
-    @bound_implicitly( transactions: keys, transaction_data )
-    archive Archive {
-        keys: vector< Key >
-        transaction_data : vector< Transaction >
-    }
-
-Entity Referencing
-------------------
+## Entity Referencing
 
 Resources and decorations can reference other entities declared in the
 schema. Types can be specified either with fully-qualified path or with
 local path, for example:
 
-.. code-block:: c
-
-    namespace N {
-        struct T {
-            ...
-        }
-
-        archive Archive {
-            // Local path
-            resource: vector< T >
-            // Fully-qualified path
-            another_resource: vector< .N.T >
-        }
+```cpp
+namespace N {
+    struct T {
+        ...
     }
 
-Local paths must be available in the current namespace. If not, error
-will be reported.
+    archive Archive {
+        // Local path
+        resource: vector< T >
+        // Fully-qualified path
+        another_resource: vector< .N.T >
+    }
+}
+```
 
+Local paths must be available in the current namespace.

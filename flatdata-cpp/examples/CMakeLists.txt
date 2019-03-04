@@ -1,13 +1,10 @@
-add_compile_options(-std=c++11)
-
 function (flatdata_make_example PATH)
     get_filename_component(EXAMPLE_DIR ${PATH} DIRECTORY)
     get_filename_component(EXAMPLE_NAME ${PATH} NAME)
 
     include(flatdata/GenerateSource)
     flatdata_generate_source(generate_flatdata_${EXAMPLE_NAME}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../generator
-        ${CMAKE_CURRENT_SOURCE_DIR}/${PATH}.flatdata
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../examples/${PATH}.flatdata
         ${CMAKE_CURRENT_BINARY_DIR}/generated/${PATH}.hpp)
 
     add_executable(${EXAMPLE_NAME} ${PATH}.cpp)
