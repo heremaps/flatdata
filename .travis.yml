@@ -10,7 +10,7 @@ matrix:
   include:
     # flatdata-py and generator
     - language: python
-      python: 3.5
+      python: 3.7
       before_script: cd flatdata-py
       script:
         - pip3 install -r requirements.txt
