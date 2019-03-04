@@ -14,6 +14,7 @@ matrix:
       before_script: cd flatdata-py
       script:
         - pip install -r requirements.txt
+        - pip install -r generator/requirements.txt
         - python -m nose
 
     # gcc
