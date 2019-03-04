@@ -1,4 +1,4 @@
-# flatdata [![Build Status](https://travis-ci.org/heremaps/flatdata.svg?branch=master)](https://travis-ci.org/heremaps/flatdata)
+# flatdata [![Build Status](https://api.travis-ci.com/heremaps/flatdata.svg?branch=master)](https://travis-ci.com/heremaps/flatdata/)
 
 _Write once, read-many, minimal overhead binary structured file format._
 
