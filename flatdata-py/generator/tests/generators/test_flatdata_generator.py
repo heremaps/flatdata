@@ -2,13 +2,11 @@
  Copyright (c) 2018 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+from nose.tools import assert_equal
 
 from generator.generators.flatdata import FlatdataGenerator
 from generator.tree.builder import SyntaxTreeBuilder
-
-from nose.tools import assert_equal
-
-from .schemas import *
+from .schemas import schemas_and_expectations
 
 def generate_and_compare(test_case):
     with open(test_case[0], 'r') as test_file:
@@ -18,12 +16,12 @@ def generate_and_compare(test_case):
     tree = SyntaxTreeBuilder.build(definition=test)
     contents = FlatdataGenerator().render(tree)
     assert_equal.__self__.maxDiff = None
-    assert_equal(expectation, contents, test_case);
+    assert_equal(expectation, contents, test_case)
 
 def test_against_expectations():
-    for x in schemas_and_expectations(generator='flatdata', extension='flatdata'):
-        generate_and_compare(x)
+    for i in schemas_and_expectations(generator='flatdata', extension='flatdata'):
+        generate_and_compare(i)
 
 def test_normalization_is_fixed_point():
-    for x in schemas_and_expectations(generator='flatdata', extension='flatdata'):
-        generate_and_compare((x[1], x[1]))
+    for i in schemas_and_expectations(generator='flatdata', extension='flatdata'):
+        generate_and_compare((i[1], i[1]))

@@ -4,8 +4,7 @@
 '''
 
 from generator.generators.go import GoGenerator
-
-from .assertions import *
+from .assertions import generate_and_assert_in
 
 
 def test_imports_and_constants_generation():
@@ -406,7 +405,7 @@ func (v *ARawDataResourceRawData) Close() {
 func (v *ARawDataResourceRawData) GetSizeInBytes() int {
     return v.descriptor.Len()
 }""",
-    """func OpenAArchive(resource flatdata.ResourceStorage) (*AArchive, error) {
+        """func OpenAArchive(resource flatdata.ResourceStorage) (*AArchive, error) {
     v := &AArchive{}
     // Initialize resources
 	rawDataResourceIsOpen := true

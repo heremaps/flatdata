@@ -4,7 +4,7 @@
 '''
 
 from generator.generators.dot import DotGenerator
-from .assertions import *
+from .assertions import generate_and_assert_in
 
 
 def test_folded_namespaces_are_represented_correctly():

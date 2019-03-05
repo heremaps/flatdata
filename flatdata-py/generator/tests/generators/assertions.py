@@ -3,8 +3,6 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from nose.tools import *
-
 from generator.tree.builder import SyntaxTreeBuilder
 import re
 
