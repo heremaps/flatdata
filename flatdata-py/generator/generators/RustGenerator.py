@@ -32,8 +32,9 @@ class RustGenerator(BaseGenerator):
     def _format_numeric_literal(value):
         try:
             # only apply this to integer values
-            int(value)
-            return re.sub(r'(?<!^)(?=(\d{3})+$)', r'_', str(value))
+            number = int(value)
+            formatted_number = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1_", str(number))
+            return formatted_number
         except ValueError:
             return value
 
