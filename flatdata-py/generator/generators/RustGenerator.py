@@ -28,6 +28,16 @@ class RustGenerator(BaseGenerator):
     def _supported_nodes(self):
         return [Structure, Archive, Constant, Enumeration]
 
+    @staticmethod
+    def _format_numeric_literal(value):
+        try:
+            # only apply this to integer values
+            number = int(value)
+            formatted_number = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1_", str(number))
+            return formatted_number
+        except ValueError:
+            return value
+
     def _populate_environment(self, env):
         def _camel_to_snake_case(s):
             s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
@@ -65,14 +75,6 @@ class RustGenerator(BaseGenerator):
                 return _fully_qualified_name(f.parent, f.type_reference.node) + ", " + f.type_reference.node.type.name
             return f.type.name + ", " + f.type.name
 
-        def _format_numeric_literal(value):
-            try:
-                value = int(value)
-                value = "{:_d}".format(value)
-            except ValueError:
-                pass
-            return value
-
         def _fully_qualified_name(current, node):
             return "::".join((current.path_depth() - 1) * ["super"]) + node.path_with("::")
 
@@ -96,4 +98,4 @@ class RustGenerator(BaseGenerator):
         env.filters["supported_resources"] = lambda l: [
             x for x in l if not isinstance(x, BoundResource)]
 
-        env.filters["format_numeric_literal"] = _format_numeric_literal
+        env.filters["format_numeric_literal"] = RustGenerator._format_numeric_literal
