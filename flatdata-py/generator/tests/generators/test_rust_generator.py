@@ -11,10 +11,17 @@ from nose.tools import eq_
 def test_format_numeric_literals():
     eq_(RustGenerator._format_numeric_literal(1), "1")
     eq_(RustGenerator._format_numeric_literal(123), "123")
+    eq_(RustGenerator._format_numeric_literal(1), "1")
+    eq_(RustGenerator._format_numeric_literal(10), "10")
+    eq_(RustGenerator._format_numeric_literal(100), "100")
+    eq_(RustGenerator._format_numeric_literal(1000), "1_000")
+    eq_(RustGenerator._format_numeric_literal(10000), "10_000")
+    eq_(RustGenerator._format_numeric_literal(100000), "100_000")
     eq_(RustGenerator._format_numeric_literal(1000000), "1_000_000")
     eq_(RustGenerator._format_numeric_literal(2147483647), "2_147_483_647")
     eq_(RustGenerator._format_numeric_literal("hello"), "hello")
     eq_(RustGenerator._format_numeric_literal("hello1234"), "hello1234")
+    eq_(RustGenerator._format_numeric_literal("1234hello"), "1234hello")
 
 
 def test_constants_are_declared_correctly():
