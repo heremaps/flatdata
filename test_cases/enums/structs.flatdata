@@ -1,0 +1,67 @@
+/* This test tests that enums work in structs
+ */
+namespace n{
+enum EnumI8 : i8 {
+	VALUE = 0,
+}
+
+struct StructEnumI8 {
+	f : EnumI8 : 1;
+}
+
+enum EnumU8 : u8 {
+	VALUE = 0,
+}
+
+struct StructEnumU8 {
+	f : EnumU8 : 1;
+}
+
+enum EnumI16 : i16 {
+	VALUE = 0,
+}
+
+struct StructEnumI16 {
+	f : EnumI16 : 1;
+}
+
+enum EnumU16 : u16 {
+	VALUE = 0,
+}
+
+struct StructEnumU16 {
+	f : EnumU16 : 1;
+}
+
+enum EnumI32 : i32 {
+	VALUE = 0,
+}
+
+struct StructEnumI32 {
+	f : EnumI32 : 1;
+}
+
+enum EnumU32 : u32 {
+	VALUE = 0,
+}
+
+struct StructEnumU32 {
+	f : EnumU32 : 1;
+}
+
+enum EnumI64 : i64 {
+	VALUE = 0,
+}
+
+struct StructEnumI64 {
+	f : EnumI64 : 1;
+}
+
+enum EnumU64 : u64 {
+	VALUE = 0,
+}
+
+struct StructEnumU64 {
+	f : EnumU64 : 1;
+}
+}

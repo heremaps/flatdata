@@ -1,0 +1,48 @@
+template< template < typename, int, int > class Member >
+union U8Template
+{
+    using FType = Member< uint8_t, 0, 8 >;
+    FType f;
+
+    /// Stream type accepted by the class
+    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    /// Mutable structure type
+    using MutatorType = U8Template< flatdata::Writer >;
+    /// Immutable structure type
+    using AccessorType = U8Template< flatdata::Reader >;
+
+    U8Template( );
+    explicit U8Template( StreamType data );
+
+    /// Get raw data stream
+    StreamType data( ) const;
+    /// Get structure schema
+    static std::string schema( );
+    /// Get structure name
+    static std::string name( );
+    /// Get structure size in bytes
+    static constexpr size_t size_in_bytes( );
+
+    bool operator==( const U8Template& other ) const;
+    bool operator!=( const U8Template& other ) const;
+    bool operator<( const U8Template& other ) const;
+    operator U8Template< flatdata::Reader >( ) const;
+    explicit operator bool( ) const;
+
+    std::string to_string( ) const;
+    std::string describe( ) const;
+
+    /**
+    * Private data member, should not be directly used.
+    * Cannot be made private.
+    * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
+    * This union has to be kept standard-layout, which different access control prevents.
+    */
+    Member< uint32_t, 0, 0 > _data;
+};
+
+
+typedef U8Template< flatdata::Reader > U8;
+typedef U8Template< flatdata::Writer > U8Mutator;
+
+} // namespace n

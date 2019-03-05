@@ -1,0 +1,37 @@
+/* This test tests that varies integral types work in structures
+ * Tests should test the expected structure size
+ * Tests should try assigning min/max/random values to these and reading them again
+ */
+namespace n{
+struct U8 {
+    f : u8 : 8;
+}
+
+struct I8 {
+    f : i8 : 8;
+}
+
+struct U16 {
+    f : u16 : 16;
+}
+
+struct I16 {
+    f : i16 : 16;
+}
+
+struct U32 {
+    f : u32 : 32;
+}
+
+struct I32 {
+    f : i32 : 32;
+}
+
+struct U64 {
+    f : u64 : 64;
+}
+
+struct I64 {
+    f : i64 : 64;
+}
+}

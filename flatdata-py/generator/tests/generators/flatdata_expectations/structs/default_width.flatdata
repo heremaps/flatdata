@@ -1,0 +1,56 @@
+namespace n {
+struct U8
+{
+    f : u8 : 8;
+}
+}
+
+namespace n {
+struct I8
+{
+    f : i8 : 8;
+}
+}
+
+namespace n {
+struct U16
+{
+    f : u16 : 16;
+}
+}
+
+namespace n {
+struct I16
+{
+    f : i16 : 16;
+}
+}
+
+namespace n {
+struct U32
+{
+    f : u32 : 32;
+}
+}
+
+namespace n {
+struct I32
+{
+    f : i32 : 32;
+}
+}
+
+namespace n {
+struct U64
+{
+    f : u64 : 64;
+}
+}
+
+namespace n {
+struct I64
+{
+    f : i64 : 64;
+}
+}
+

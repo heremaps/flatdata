@@ -1,0 +1,9 @@
+/* This test tests that symbols are properly separated into namespaces
+ */
+namespace n{
+const i8 FOO = 0;
+}
+
+namespace m{
+const i8 FOO = 1;
+}

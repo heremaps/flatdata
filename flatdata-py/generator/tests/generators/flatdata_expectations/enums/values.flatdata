@@ -1,0 +1,88 @@
+namespace n {
+enum EnumI8 : i8
+{
+    FOO_I8_NEG = -128,
+    FOO_I8_POS = 127,
+    FOO_I8_ZERO = 0,
+    FOO_I8_NEG_HEX = -127,
+    FOO_I8_POS_HEX = 126,
+    FOO_I8_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumU8 : u8
+{
+    FOO_U8_POS = 255,
+    FOO_U8_ZERO = 0,
+    FOO_U8_POS_HEX = 254,
+    FOO_U8_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumI16 : i16
+{
+    FOO_I16_NEG = -32768,
+    FOO_I16_POS = 32767,
+    FOO_I16_ZERO = 0,
+    FOO_I16_NEG_HEX = -32767,
+    FOO_I16_POS_HEX = 32766,
+    FOO_I16_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumU16 : u16
+{
+    FOO_U16_POS = 65535,
+    FOO_U16_ZERO = 0,
+    FOO_U16_POS_HEX = 65534,
+    FOO_U16_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumI32 : i32
+{
+    FOO_I32_NEG = -2147483648,
+    FOO_I32_POS = 2147483647,
+    FOO_I32_ZERO = 0,
+    FOO_I32_NEG_HEX = -2147483647,
+    FOO_I32_POS_HEX = 2147483646,
+    FOO_I32_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumU32 : u32
+{
+    FOO_U32_POS = 4294967295,
+    FOO_U32_ZERO = 0,
+    FOO_U32_POS_HEX = 4294967294,
+    FOO_U32_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumI64 : i64
+{
+    FOO_I64_NEG = -9223372036854775808,
+    FOO_I64_POS = 9223372036854775807,
+    FOO_I64_ZERO = 0,
+    FOO_I64_NEG_HEx = -9223372036854775807,
+    FOO_I64_POS_HEX = 9223372036854775806,
+    FOO_I64_ONE_HEX = 1,
+}
+}
+
+namespace n {
+enum EnumU64 : u64
+{
+    FOO_U64_POS = 18446744073709551615,
+    FOO_U64_ZERO = 0,
+    FOO_U64_POS_HEX = 18446744073709551614,
+    FOO_U64_ONE_HEX = 1,
+}
+}
+
