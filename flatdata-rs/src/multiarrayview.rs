@@ -304,7 +304,9 @@ mod tests {
         (y, set_y, u32, u32, 0, 24)
     );
 
-    define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx, 0 => (Value, add_value), 1 => (Point, add_point) );
+    define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx,
+        0 => (Value, Value, add_value),
+        1 => (Point, Point, add_point) );
 
     fn create_view<'a>(
         storage: &'a MemoryResourceStorage,

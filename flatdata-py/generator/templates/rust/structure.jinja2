@@ -1,4 +1,4 @@
-{% macro declaration(struct) %}
+{%- macro declaration(struct) %}
 {{ struct.doc | rust_doc }}
 define_struct!(
     {{ struct.name }},
@@ -15,4 +15,4 @@ define_struct!(
     {% endif %}
     {% endfor %}
 );
-{% endmacro %}
+{%- endmacro %}

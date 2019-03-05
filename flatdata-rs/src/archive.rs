@@ -213,7 +213,7 @@ pub trait ArchiveBuilder: Clone {
 #[macro_export]
 macro_rules! define_struct {
     ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
-        $(,($field:ident, $field_setter:ident, $type:tt, $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
+        $(,($field:ident, $field_setter:ident, $type:path, $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
     {
         #[derive(Clone, Copy)]
         pub struct $name<'a> {
@@ -252,6 +252,11 @@ macro_rules! define_struct {
                 let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
+
+            #[inline]
+            pub fn as_ptr(&self) -> *const u8 {
+                self.data
+            }
         }
 
         impl<'a> ::std::fmt::Debug for $name<'a> {
@@ -301,6 +306,16 @@ macro_rules! define_struct {
             pub fn into_ref(self) -> $name<'a> {
                 $name{ data : self.data, _phantom : $crate::marker::PhantomData }
             }
+
+            #[inline]
+            pub fn as_ptr(&self) -> *const u8 {
+                self.data
+            }
+
+            #[inline]
+            pub fn as_mut_ptr(&self) -> *mut u8 {
+                self.data
+            }
         }
 
         impl<'a> ::std::fmt::Debug for $name_mut<'a> {
@@ -346,17 +361,17 @@ macro_rules! define_index {
 #[macro_export]
 macro_rules! define_variadic_struct {
     ($factory:ident, $name:ident, $item_builder_name:ident, $index_type:path,
-        $($type_index:expr => ($type:tt, $add_type_fn:ident)),+) =>
+        $($type_index:expr => ($type_name:ident, $inner_type:path, $add_type_fn:ident)),+) =>
     {
         #[derive(Clone, PartialEq)]
         pub enum $name<'a> {
-            $($type(<$type as $crate::Struct<'a>>::Item),)*
+            $($type_name(<$inner_type as $crate::Struct<'a>>::Item),)*
         }
 
         impl<'a> ::std::fmt::Debug for $name<'a> {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 match *self {
-                    $($name::$type(ref inner) => write!(f, "{:?}", inner)),+
+                    $($name::$type_name(ref inner) => write!(f, "{:?}", inner)),+
                 }
             }
         }
@@ -365,7 +380,7 @@ macro_rules! define_variadic_struct {
             #[inline]
             fn size_in_bytes(&self) -> usize {
                 match *self {
-                    $($name::$type(_) => <$type as $crate::Struct<'a>>::SIZE_IN_BYTES),+
+                    $($name::$type_name(_) => <$inner_type as $crate::Struct<'a>>::SIZE_IN_BYTES),+
                 }
             }
         }
@@ -376,12 +391,12 @@ macro_rules! define_variadic_struct {
 
         impl<'a> $item_builder_name<'a> {
             #[inline]
-            $(pub fn $add_type_fn<'b>(&'b mut self) -> <$type as $crate::Struct<'b>>::ItemMut {
+            $(pub fn $add_type_fn<'b>(&'b mut self) -> <$inner_type as $crate::Struct<'b>>::ItemMut {
                 let old_len = self.data.len();
-                let increment = 1 + <$type as $crate::Struct<'b>>::SIZE_IN_BYTES;
+                let increment = 1 + <$inner_type as $crate::Struct<'b>>::SIZE_IN_BYTES;
                 self.data.resize(old_len + increment, 0);
                 self.data[old_len - $crate::PADDING_SIZE] = $type_index;
-                <$type as $crate::Struct<'b>>::create_mut(
+                <$inner_type as $crate::Struct<'b>>::create_mut(
                     &mut self.data[1 + old_len - $crate::PADDING_SIZE..]
                 )
             })*
@@ -397,7 +412,7 @@ macro_rules! define_variadic_struct {
             fn create(index : $crate::TypeIndex, data : &'a [u8]) -> Self::Item
             {
                 match index {
-                    $($type_index => $name::$type(<$type as $crate::Struct<'a>>::create(data))),+,
+                    $($type_index => $name::$type_name(<$inner_type as $crate::Struct<'a>>::create(data))),+,
                     _ => panic!(concat!(
                         "invalid type index {} for type ", stringify!($name)), index),
                 }
@@ -461,15 +476,15 @@ macro_rules! check_resource {
 macro_rules! define_archive {
     ($name:ident, $builder_name:ident, $archive_schema:expr;
         // struct resources
-        $(($struct_resource:ident, $struct_setter:ident, $struct_type:tt, $struct_schema:expr,
+        $(($struct_resource:ident, $struct_setter:ident, $struct_type:path, $struct_schema:expr,
             $is_optional_struct:ident)),*;
         // vector resources
         $(($vector_resource:ident, $vector_setter:ident, $vector_start:ident,
-            $element_type:tt, $element_schema:expr, $is_optional_vector:ident)),*;
+            $element_type:path, $element_schema:expr, $is_optional_vector:ident)),*;
         // multivector resources
         $(($multivector_resource:ident,
             $multivector_start:ident,
-            $variadic_type:tt, $variadic_type_schema:expr,
+            $variadic_type:path, $variadic_type_schema:expr,
             $multivector_resource_index:ident, $index_type:path,
             $is_optional_multivector:ident)),*;
         // raw data resources
@@ -477,7 +492,7 @@ macro_rules! define_archive {
             $raw_data_schema:expr, $is_optional_raw_data:ident)),*;
         // subarchive resources
         $(($subarchive_resource:ident,
-            $subarchive_type:tt, $subarchive_builder_type:tt, $subarchive_schema:expr,
+            $subarchive_type:path, $subarchive_builder_type:path, $subarchive_schema:expr,
             $is_optional_subarchive:ident)),*
     ) => {
 
@@ -644,8 +659,11 @@ macro_rules! define_archive {
                 }
                 $(
                 let $subarchive_resource = check_resource!(
-                    $subarchive_type::open(
-                        storage.subdir(&stringify!($subarchive_resource))),
+                    {
+                        type Archive = $subarchive_type;
+                        Archive::open(
+                            storage.subdir(&stringify!($subarchive_resource)))
+                    },
                     $is_optional_subarchive
                 );)*
                 Ok(Self {
@@ -672,7 +690,7 @@ macro_rules! define_archive {
                 resource: <$struct_type as $crate::Struct>::Item,
             ) -> ::std::io::Result<()> {
                 let data = unsafe {
-                    ::std::slice::from_raw_parts(resource.data, <$struct_type as $crate::Struct>::SIZE_IN_BYTES)
+                    ::std::slice::from_raw_parts(resource.as_ptr(), <$struct_type as $crate::Struct>::SIZE_IN_BYTES)
                 };
                 self.storage
                     .write(stringify!($struct_resource), $struct_schema, data)
@@ -721,7 +739,8 @@ macro_rules! define_archive {
             ) -> Result<$subarchive_builder_type, $crate::ResourceStorageError> {
                 use $crate::ArchiveBuilder;
                 let storage = self.storage.subdir(stringify!($subarchive_resource));
-                $subarchive_builder_type::new(storage)
+                type Builder = $subarchive_builder_type;
+                Builder::new(storage)
             }
             )*
         }
@@ -766,6 +785,154 @@ mod test {
         let a = StructBuf::<A>::new();
         let output = format!("{:?}", a);
         assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0, e: Value } }");
+    }
+
+    #[allow(dead_code)]
+    mod namespace_test {
+
+        // check that the following compiles
+
+        pub mod test_structures {
+
+            pub mod schema {
+                pub mod structs {
+                    pub const A: &str = "A";
+                }
+            }
+
+            define_struct!(
+                A,
+                RefA,
+                RefMutA,
+                schema::structs::A,
+                4,
+                (x, set_x, u32, u32, 0, 32)
+            );
+
+            #[derive(Debug, PartialEq, Eq)]
+            #[repr(u8)]
+            pub enum E {
+                Value1 = 0,
+            }
+
+            use crate::helper::Int;
+
+            impl Int for E {
+                const IS_SIGNED: bool = false;
+            }
+        }
+
+        pub mod test_structures2 {
+
+            pub mod schema {
+                pub mod structs {
+                    pub const A: &str = "A";
+                }
+            }
+
+            define_struct!(
+                A,
+                RefA,
+                RefMutA,
+                schema::structs::A,
+                5,
+                (x, set_x, u32, u32, 0, 32),
+                (e, set_e, super::test_structures::E, u8, 32, 8)
+            );
+        }
+
+        pub mod tiny_archive {
+
+            pub mod schema {
+                pub mod structs {}
+                pub mod tiny_archive {
+                    pub const TINY_ARCHIVE: &str = "TinyArchive";
+                    pub mod resources {}
+                }
+            }
+
+            define_archive!(TinyArchive, TinyArchiveBuilder,
+    schema::tiny_archive::TINY_ARCHIVE;
+    // struct resources
+;
+    // vector resources
+;
+    // multivector resources
+;
+    // raw data resources
+;
+    // subarchives
+);
+
+        }
+
+        pub mod my_archive {
+
+            pub mod schema {
+                pub mod structs {}
+                pub mod my_archive {
+                    pub const MY_ARCHIVE: &str = "MyArchive";
+                    pub mod resources {
+                        pub const A: &str = "a";
+                        pub const SOME_DATA: &str = "some_data";
+                        pub const MIXED_DATA: &str = "mixed_data";
+                        pub const TINY: &str = "tiny";
+                    }
+                }
+            }
+
+            /// Builtin union type of .test_structures.A.
+            define_variadic_struct!(MixedData, RefMixedData, BuilderMixedData,
+                IndexType32,
+                0 => ( A, super::test_structures::A, add_a));
+
+            define_archive!(MyArchive, MyArchiveBuilder,
+                schema::my_archive::MY_ARCHIVE;
+                // struct resources
+                (a, set_a,
+                    super::test_structures::A,
+                    schema::my_archive::resources::A, false);
+                // vector resources
+                (some_data, set_some_data, start_some_data,
+                    super::test_structures2::A,
+                    schema::my_archive::resources::SOME_DATA, false);
+                // multivector resources
+                (mixed_data, start_mixed_data,
+                    MixedData,
+                    schema::my_archive::resources::MIXED_DATA,
+                    mixed_data_index, super::_builtin::multivector::IndexType32, false);
+                // raw data resources
+            ;
+                // subarchives
+                (tiny,
+                    super::tiny_archive::TinyArchive, super::tiny_archive::TinyArchiveBuilder,
+                    schema::my_archive::resources::TINY, false));
+
+        }
+
+        pub mod _builtin {
+            pub mod multivector {
+                pub mod schema {
+                    pub mod structs {
+                        pub const INDEX_TYPE32: &str = r#""#;
+                    }
+                }
+                /// Builtin type to for MultiVector index
+                define_index!(
+                    IndexType32,
+                    RefIndexType32,
+                    RefMutIndexType32,
+                    schema::structs::INDEX_TYPE32,
+                    4,
+                    32
+                );
+
+            }
+
+            pub mod schema {
+                pub mod structs {}
+            }
+        }
     }
 
     macro_rules! define_enum_test {
@@ -862,8 +1029,8 @@ mod test {
         );
 
         define_variadic_struct!(Ts, RefTs, BuilderTs, IndexType32,
-            0 => (A, add_a),
-            1 => (B, add_b));
+            0 => (A, A, add_a),
+            1 => (B, B, add_b));
 
         define_archive!(SubArch, SubArchBuilder, "SubArch schema";
             ;  // struct resources
