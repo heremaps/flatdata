@@ -4,6 +4,8 @@
 '''
 import sys
 
+from nose.tools import assert_equal, assert_equals, assert_false, assert_in, assert_is_instance, assert_raises, assert_true
+
 sys.path.insert(0, "..")
 import generator.tree.nodes.trivial as nodes
 import generator.tree.nodes.resources as resources
@@ -11,9 +13,8 @@ import generator.tree.nodes.references as refs
 from generator.tree.helpers.basictype import BasicType
 from generator.tree.nodes.root import Root
 from generator.tree.builder import _build_node_tree, _compute_structure_sizes, resolve_references, _update_field_type_references
+# pylint: disable=unused-wildcard-import
 from generator.tree.errors import *
-
-from nose.tools import *
 
 
 def check_constant(c, typename, value):
@@ -486,4 +487,3 @@ def test_enumeration():
         ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
 
     check_struct(tree.find(".n.B"), 16, 2)
-    

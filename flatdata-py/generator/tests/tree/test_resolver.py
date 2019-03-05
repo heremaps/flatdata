@@ -15,7 +15,7 @@ import generator.tree.nodes.references as refs
 from generator.tree.resolver import resolve_references
 import generator.tree.errors as errors
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_is_instance, assert_raises
 
 
 def _create_tree_resource_to_struct(actual, reference):

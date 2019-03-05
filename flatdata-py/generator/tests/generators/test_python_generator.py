@@ -4,7 +4,7 @@
 '''
 
 from generator.generators.python import PythonGenerator
-from .assertions import *
+from .assertions import generate_and_assert_in
 
 
 def test_structures_are_defined_correctly():

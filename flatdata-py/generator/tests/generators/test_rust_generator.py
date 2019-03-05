@@ -6,8 +6,8 @@ import glob
 from nose.tools import eq_
 
 from generator.generators.rust import RustGenerator
-from .assertions import *
-from .schemas import *
+from .assertions import generate_and_assert_in
+from .schemas import schemas_and_expectations
 
 def test_format_numeric_literals():
     eq_(RustGenerator._format_numeric_literal(1), "1")

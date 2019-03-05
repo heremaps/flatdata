@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, "..")
 from generator.tree.nodes.node import Node
 from generator.tree.errors import SymbolRedefinition
-from nose.tools import *
+from nose.tools import assert_equal, assert_is_none, assert_raises
 
 
 def test_nodes_are_named():

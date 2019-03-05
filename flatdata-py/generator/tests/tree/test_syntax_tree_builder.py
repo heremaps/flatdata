@@ -5,6 +5,8 @@
 
 import sys
 
+from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_true
+
 sys.path.insert(0, "..")
 from generator.tree.errors import MissingSymbol
 from generator.tree.builder import build_ast
@@ -17,7 +19,6 @@ from generator.tree.nodes.references import ResourceReference, StructureReferenc
     FieldReference, ArchiveReference, BuiltinStructureReference, VectorReference, ConstantReference, \
     EnumerationReference
 
-from nose.tools import *
 
 
 def test_validating_archive_with_no_structure_defined_raises_missing_symbol_error():

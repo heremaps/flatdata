@@ -9,7 +9,7 @@ from generator.tree.syntax_tree import SyntaxTree
 from generator.tree.builder import _build_node_tree, build_ast
 from generator.tree.resolver import resolve_references
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_raises
 
 
 def test_archive_member_schemas_references_dependent_types():
