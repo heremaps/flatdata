@@ -1,0 +1,19 @@
+/* This test tests that comments get attached to the corresponding constant
+ */
+namespace n{
+// This is a comment about foo
+archive Foo {
+	// this is a comment about foo.bar
+	bar : raw_data;
+}
+
+/*
+ * This is a comment about Bar
+ */
+archive Bar {
+	/*
+	 * this is a comment about bar.foo
+	 */
+	foo : raw_data;
+}
+}

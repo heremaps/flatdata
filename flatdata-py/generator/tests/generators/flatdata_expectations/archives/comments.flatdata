@@ -1,0 +1,14 @@
+namespace n {
+archive Foo
+{
+    bar : raw_data;
+}
+}
+
+namespace n {
+archive Bar
+{
+    foo : raw_data;
+}
+}
+

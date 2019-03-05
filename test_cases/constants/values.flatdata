@@ -1,0 +1,48 @@
+/* This test tests that varies ways of assigning values to the different types works properly
+ * MIN, MAX and 0 are assigned to test that the resulting constant can hold the full range
+ */
+namespace n{
+const i8 FOO_I8_NEG = -128;
+const i8 FOO_I8_POS = 127;
+const i8 FOO_I8_ZERO = 0;
+const i8 FOO_I8_NEG_HEX = -0x80;
+const i8 FOO_I8_POS_HEX = 0x7f;
+const i8 FOO_I8_ZERO_HEX = 0x0;
+const u8 FOO_U8_POS = 255;
+const u8 FOO_U8_ZERO = 0;
+const u8 FOO_U8_POS_HEX = 0xff;
+const u8 FOO_U8_ZERO_HEX = 0x0;
+
+const i16 FOO_I16_NEG = -32768;
+const i16 FOO_I16_POS = 32767;
+const i16 FOO_I16_ZERO = 0;
+const i16 FOO_I16_NEG_HEX = -0x8000;
+const i16 FOO_I16_POS_HEX = 0x7fff;
+const i16 FOO_I16_ZERO_HEX = 0x0;
+const u16 FOO_U16_POS = 65535;
+const u16 FOO_U16_ZERO = 0;
+const u16 FOO_U16_POS_HEX = 0xffff;
+const u16 FOO_U16_ZERO_HEX = 0x0;
+
+const i32 FOO_I32_NEG = -2147483648;
+const i32 FOO_I32_POS = 2147483647;
+const i32 FOO_I32_ZERO = 0;
+const i32 FOO_I32_NEG_HEX = -0x80000000;
+const i32 FOO_I32_POS_HEX = 0x7fffffff;
+const i32 FOO_I32_ZERO_HEX = 0x0;
+const u32 FOO_U32_POS = 4294967295;
+const u32 FOO_U32_ZERO = 0;
+const u32 FOO_U32_POS_HEX = 0xffffffff;
+const u32 FOO_U32_ZERO_HEX = 0x0;
+
+const i64 FOO_I64_NEG = -9223372036854775808;
+const i64 FOO_I64_POS = 9223372036854775807;
+const i64 FOO_I64_ZERO = 0;
+const i64 FOO_I64_NEG_HEX = -0x8000000000000000;
+const i64 FOO_I64_POS_HEX = 0x7fffffffffffffff;
+const i64 FOO_I64_ZERO_HEX = 0x0;
+const u64 FOO_U64_POS = 18446744073709551615;
+const u64 FOO_U64_ZERO = 0;
+const u64 FOO_U64_POS_HEX = 0xffffffffffffffff;
+const u64 FOO_U64_ZERO_HEX = 0x0;
+}

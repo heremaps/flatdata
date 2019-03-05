@@ -1,0 +1,8 @@
+namespace n {
+const i8 FOO = 0;
+}
+
+namespace m {
+const i8 FOO = 1;
+}
+

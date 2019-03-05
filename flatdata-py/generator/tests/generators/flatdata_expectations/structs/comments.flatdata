@@ -1,0 +1,16 @@
+namespace n {
+struct Foo
+{
+    a : u64 : 64;
+    b : u64 : 64;
+}
+}
+
+namespace n {
+struct Bar
+{
+    a : u64 : 64;
+    b : u64 : 64;
+}
+}
+

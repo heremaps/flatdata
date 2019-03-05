@@ -1,0 +1,14 @@
+/* This test tests that a single struct can be stored/read in archives
+ */
+namespace n{
+struct S {
+	x : u64;
+}
+
+archive A {
+	data : S;
+
+	@optional
+	optional_data : S;
+}
+}

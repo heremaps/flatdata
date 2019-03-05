@@ -1,0 +1,24 @@
+namespace n {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace n {
+struct T
+{
+    x : u64 : 64;
+}
+}
+
+namespace n {
+archive A
+{
+    data : multivector< 8, .n.S, .n.T >;
+    @optional
+    optional_data : multivector< 16, .n.S, .n.T >;
+    data_u64_index : multivector< 64, .n.S, .n.T >;
+}
+}
+

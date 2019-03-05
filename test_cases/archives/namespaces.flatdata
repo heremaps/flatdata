@@ -1,0 +1,31 @@
+/* This test tests that a namespaces are resolved properly
+ * Note that same-name structs are not supported in the same multivector, even if in different namespaces
+ */
+namespace n{
+struct S {
+	x : u64;
+}
+
+archive X {
+	payload : raw_data;
+}
+}
+
+namespace m {
+struct S {
+	x : u64;
+}
+
+archive X {
+	payload : raw_data;
+}
+}
+
+namespace a {
+archive A {
+	single : .n.S;
+	list : vector< .m.S >;
+	multi : multivector< 32, .n.S >;
+	inner : archive .n.X;
+}
+}
