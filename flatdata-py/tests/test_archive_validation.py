@@ -1,17 +1,16 @@
 from generator.engine import Engine
 from flatdata.errors import CorruptArchiveError, SchemaMismatchError
-from .dict_resource_storage import DictResourceStorage
-from .common_testing_data import instance_test_schema, resource_payload, archive_signature_payload
+from . import DictResourceStorage, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD, ARCHIVE_SIGNATURE_PAYLOAD
 
-from nose.tools import *
+from nose.tools import assert_raises
 
 
 def test_archive_does_not_open_on_signature_resource_or_schemas_missing():
-    module = Engine(instance_test_schema).render_python_module()
+    module = Engine(INSTANCE_TEST_SCHEMA).render_python_module()
     valid_data = {
-        "Archive.archive": archive_signature_payload,
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
-        "resource": resource_payload,
+        "resource": RESOURCE_PAYLOAD,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode()
     }
 

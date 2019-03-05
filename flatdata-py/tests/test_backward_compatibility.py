@@ -1,8 +1,7 @@
 from generator.engine import Engine
-from .common_testing_data import archive_signature_payload
-from .dict_resource_storage import DictResourceStorage
+from . import DictResourceStorage, ARCHIVE_SIGNATURE_PAYLOAD, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD
 
-from nose.tools import *
+from nose.tools import eq_, assert_is_instance
 
 
 def check_signed_struct(s):
@@ -18,12 +17,11 @@ def check_simple_struct(s):
 
 
 def test_instance_reading():
-    from .common_testing_data import instance_test_schema, resource_payload
-    module = Engine(instance_test_schema).render_python_module()
+    module = Engine(INSTANCE_TEST_SCHEMA).render_python_module()
     valid_data = {
-        "Archive.archive": archive_signature_payload,
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
-        "resource": resource_payload,
+        "resource": RESOURCE_PAYLOAD,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode()
     }
     archive = module.backward_compatibility_Archive(DictResourceStorage(valid_data))
@@ -45,7 +43,7 @@ namespace backward_compatibility {
 }
 """
 
-    resource_payload = (
+    RESOURCE_PAYLOAD = (
         b"\x14\x00\x00\x00\x00\x00\x00\x00"  # Payload size in bytes
         b"\xff\xac\x68\x24\x00\x0b\x00\x00"  # Payload
         b"\x00\x00\xff\xac\x68\x24\x00\x0b"  # Payload
@@ -55,9 +53,9 @@ namespace backward_compatibility {
 
     module = Engine(vector_test_schema).render_python_module()
     valid_data = {
-        "Archive.archive": archive_signature_payload,
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
-        "resource": resource_payload,
+        "resource": RESOURCE_PAYLOAD,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode()
     }
 
@@ -108,7 +106,7 @@ namespace backward_compatibility {
 
     module = Engine(multivector_test_schema).render_python_module()
     valid_data = {
-        "Archive.archive": archive_signature_payload,
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
         "resource": multivector_resource_data,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode(),
@@ -155,7 +153,7 @@ namespace backward_compatibility {
 
     module = Engine(raw_data_test_schema).render_python_module()
     valid_data = {
-        "Archive.archive": archive_signature_payload,
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
         "resource": raw_data_resource_data,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode(),
