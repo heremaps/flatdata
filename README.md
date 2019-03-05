@@ -24,7 +24,7 @@ Flatdata _doesn't_ provide:
 * Support for mutable datasets
 * Portable floating point serialization
 
-For more details read [why flatdata](docs/src/why-flatdata.rst).
+For more details read [why flatdata](docs/why-flatdata.md).
 
 ## Using `flatdata`
 
@@ -61,7 +61,7 @@ The following languages are supported:
 
 ### Generate code
 
-See the [generator's README](./generator/README.md#usage) for instructions.
+See the [generator's README](./flatdata-py/generator/README.md#usage) for instructions.
 
 ## License
 

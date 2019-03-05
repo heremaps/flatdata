@@ -1,16 +1,24 @@
 # Flatdata generator
 
+Generates code for a given flatdata schema file.
+
 ## Usage
 
 ```sh
-# install all the required dependencies in a virtualenv
-python3 -m virtualenv .venv
-.venv/bin/activate
+# install all the required Python3 dependencies
 pip3 install -r generator/requirements.txt
 
-# generate a rust module
-./generator -s locations.flatdata -g rust -O location
+# generate header-only cpp code
+./generator -s locations.flatdata -g cpp -O locations.hpp
 ```
+
+The output is a source single file in the specified language. Supported output formats are:
+
+* C++ (read/write)
+* Rust (read/write)
+* Python (read only)
+* Dot (graph of the schema)
+* Flatdata (normalized stable schema)
 
 ## Architecture
 
