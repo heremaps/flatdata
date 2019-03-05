@@ -11,6 +11,8 @@ from . import BaseGenerator
 
 
 class FlatdataGenerator(BaseGenerator):
+    """Flatdata to Flatdata generator, used for debugging/testing"""
+
     def __init__(self):
         BaseGenerator.__init__(self, "flatdata/flatdata.jinja2")
 
@@ -18,16 +20,15 @@ class FlatdataGenerator(BaseGenerator):
         return [Structure, Archive, Constant, Enumeration]
 
     def _populate_environment(self, env):
-
         def _is_builtin(node):
-            for x in SyntaxTree.namespaces(node):
-                if x.name == "_builtin":
-                    return True;
+            for namespace in SyntaxTree.namespaces(node):
+                if namespace.name == "_builtin":
+                    return True
             return False
         env.filters["filter_builtin"] = lambda l: [x for x in l if not _is_builtin(x)]
 
-        def _field_type(t):
-            return t.replace("@@", ".").replace("@", ".")
+        def _field_type(flatdata_type):
+            return flatdata_type.replace("@@", ".").replace("@", ".")
 
         env.filters["field_type"] = _field_type
 

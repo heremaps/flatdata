@@ -3,7 +3,6 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.tree.nodes.trivial import Structure
 from generator.tree.nodes.archive import Archive
 from . import BaseGenerator
 
@@ -12,6 +11,8 @@ DECORATION_BOUND = "__bound__"
 
 
 class DotGenerator(BaseGenerator):
+    """Flatdata to DOT (graph description language) generator"""
+
     def __init__(self):
         BaseGenerator.__init__(self, "dot/dot.jinja2")
 

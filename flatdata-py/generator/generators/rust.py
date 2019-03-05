@@ -2,18 +2,19 @@
  Copyright (c) 2018 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+import re
 
 from generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
-    Archive as ArchiveResource)
+                                            Archive as ArchiveResource)
 from generator.tree.nodes.trivial import Structure, Constant, Enumeration
 from generator.tree.helpers.enumtype import EnumType
 from generator.tree.nodes.archive import Archive
 from generator.tree.syntax_tree import SyntaxTree
 from . import BaseGenerator
 
-import re
 
 class RustGenerator(BaseGenerator):
+    """Flatdata to Rust generator"""
 
     RESERVED_KEYWORDS = [
         "abstract", "alignof", "as", "become", "box", "break", "const", "continue", "crate", "do",
@@ -33,47 +34,52 @@ class RustGenerator(BaseGenerator):
         try:
             # only apply this to integer values
             number = int(value)
-            formatted_number = re.sub("(\d)(?=(\d{3})+(?!\d))", r"\1_", str(number))
+            formatted_number = re.sub(
+                r"(\d)(?=(\d{3})+(?!\d))", r"\1_", str(number))
             return formatted_number
         except ValueError:
             return value
 
     def _populate_environment(self, env):
-        def _camel_to_snake_case(s):
-            s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', s)
-            return re.sub('([a-z0-9])(A-Z)', r'\1_\2', s1).lower()
+        def _camel_to_snake_case(expr):
+            step1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', expr)
+            return re.sub('([a-z0-9])(A-Z)', r'\1_\2', step1).lower()
 
         env.filters["camel_to_snake_case"] = _camel_to_snake_case
 
-        def _snake_to_upper_camel_case(s):
-            return ''.join(p.title() for p in  s.split('_'))
+        def _snake_to_upper_camel_case(expr):
+            return ''.join(p.title() for p in expr.split('_'))
 
         env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
-        def _rust_doc(s):
+        def _rust_doc(expr):
             lines = [
-                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)\s*(.*?)\s*(\*/)?$', r"/// \2", line).strip()
-                for line in s.split('\n')
+                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)\s*(.*?)\s*(\*/)?$',
+                       r"/// \2", line).strip()
+                for line in expr.split('\n')
             ]
             start = 0
             end = len(lines)
             if lines[0] == "///":
                 start = 1
             if lines[-1] == "///":
-                end = -1;
+                end = -1
             return "\n".join(lines[start:end])
 
         env.filters["rust_doc"] = _rust_doc
 
-        def _escape_rust_keywords(s):
-            if s in self.RESERVED_KEYWORDS:
-                return "{}_".format(s)
-            return s
+        def _escape_rust_keywords(expr):
+            if expr in self.RESERVED_KEYWORDS:
+                return "{}_".format(expr)
+            return expr
 
-        def _field_type(f):
-            if isinstance(f.type, EnumType):
-                return _fully_qualified_name(f.parent, f.type_reference.node) + ", " + f.type_reference.node.type.name
-            return f.type.name + ", " + f.type.name
+        def _field_type(field):
+            if isinstance(field.type, EnumType):
+                return "{}, {}".format(
+                    _fully_qualified_name(field.parent, field.type_reference.node),
+                    field.type_reference.node.type.name
+                )
+            return "{}, {}".format(field.type.name, field.type.name)
 
         def _fully_qualified_name(current, node):
             return "::".join((current.path_depth() - 1) * ["super"]) + node.path_with("::")
@@ -83,7 +89,7 @@ class RustGenerator(BaseGenerator):
         env.filters["field_type"] = _field_type
         env.filters['structure_references'] = lambda ls: [
             x for x in ls if (isinstance(x.node, Structure)
-                and not "_builtin.multivector" in SyntaxTree.namespace_path(x.node) )]
+                              and "_builtin.multivector" not in SyntaxTree.namespace_path(x.node))]
         env.filters['instance_resources'] = lambda ls: [
             x for x in ls if isinstance(x, Instance)]
         env.filters['vector_resources'] = lambda ls: [

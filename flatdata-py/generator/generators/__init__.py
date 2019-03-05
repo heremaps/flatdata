@@ -19,6 +19,7 @@ from generator.tree.traversal import DfsTraversal
 
 class BaseGenerator(metaclass=ABCMeta):
     """Abstract base class for Flatdata generators"""
+
     def __init__(self, template):
         self._template = template
 
@@ -64,6 +65,7 @@ class BaseGenerator(metaclass=ABCMeta):
 
 class RaiseExtension(Extension):
     """Nicer error formatting for jinja2"""
+
     tags = set(['raise'])
 
     def parse(self, parser):

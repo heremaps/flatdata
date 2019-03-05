@@ -11,6 +11,8 @@ from . import BaseGenerator
 
 
 class PythonGenerator(BaseGenerator):
+    """Flatdata to Python generator"""
+
     def __init__(self):
         BaseGenerator.__init__(self, "py/python.jinja2")
 
@@ -32,32 +34,32 @@ class PythonGenerator(BaseGenerator):
         def to_container(resource):
             if isinstance(resource, Instance):
                 return "flatdata.resources.Instance"
-            elif isinstance(resource, Vector):
+            if isinstance(resource, Vector):
                 return "flatdata.resources.Vector"
-            elif isinstance(resource, Multivector):
+            if isinstance(resource, Multivector):
                 return "flatdata.resources.Multivector"
-            elif isinstance(resource, RawData):
+            if isinstance(resource, RawData):
                 return "flatdata.resources.RawData"
-            elif isinstance(resource, ArchiveResource):
+            if isinstance(resource, ArchiveResource):
                 return "flatdata.archive.Archive"
-            assert False, "Unknown resource type: %s" % (resource.__class__)
+            raise ValueError("Unknown resource type: %s" % (resource.__class__))
 
         def to_initializer(resource, tree):
             if isinstance(resource, Instance):
                 return _decorate_archive_type(tree, resource.referenced_structures[0].node)
-            elif isinstance(resource, Vector):
+            if isinstance(resource, Vector):
                 return _decorate_archive_type(tree, resource.referenced_structures[0].node)
-            elif isinstance(resource, Multivector):
+            if isinstance(resource, Multivector):
                 return "[{}]".format(
                     ','.join([_decorate_archive_type(tree, t.node) for t in
                               resource.referenced_structures]))
-            elif isinstance(resource, ArchiveResource):
+            if isinstance(resource, ArchiveResource):
                 return _decorate_archive_type(tree, resource.children[0].node)
-            elif isinstance(resource, RawData):
+            if isinstance(resource, RawData):
                 return "None"
-            assert False, "Unknown resource type: %s" % (resource.__class__)
+            raise ValueError("Unknown resource type: %s" % (resource.__class__))
 
-        def to_dtype(t):
+        def to_dtype(flatdata_type):
             return {
                 "bool": "?",
                 "i8": "b",
@@ -68,7 +70,7 @@ class PythonGenerator(BaseGenerator):
                 "i32": "i4",
                 "u64": "u8",
                 "i64": "i8"
-            }[t.name]
+            }[flatdata_type.name]
 
         def _safe_py_string_line(value):
             return value.replace('\\', '\\\\').replace('"', r'\"')
