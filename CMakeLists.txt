@@ -8,7 +8,8 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(flatdata/PythonRequirements)
-ensure_python3_requirements(${CMAKE_CURRENT_LIST_DIR}/generator/requirements.txt HAS_GENERATOR_PKGS)
+set(GENERATOR_PATH ${PROJECT_SOURCE_DIR}/flatdata-py/generator)
+ensure_python3_requirements(${CMAKE_CURRENT_LIST_DIR}/flatdata-py/generator/requirements.txt HAS_GENERATOR_PKGS)
 if(NOT HAS_GENERATOR_PKGS)
     file(READ generator/requirements.txt REQUIREMENTS_CONTENT)
     message(FATAL_ERROR
@@ -20,6 +21,3 @@ endif()
 enable_testing()
 
 add_subdirectory(flatdata-cpp)
-add_subdirectory(tests)
-add_subdirectory(examples)
-add_subdirectory(docs)

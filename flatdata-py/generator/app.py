@@ -84,5 +84,9 @@ class App(object):
             logging.info("Code for %s is written to %s" % (gen, args.output_file))
 
 
-if __name__ == "__main__":
+def main():
     App.run(_parse_command_line())
+
+
+if __name__ == "__main__":
+    main()
