@@ -78,11 +78,8 @@ def _run(args):
     try:
         logging.info("Generating %s...", args.gen)
         output_content = engine.render(args.gen)
-    except Engine.GeneratorNotDefined:
-        logging.fatal(
-            "Generator %s not implemented. Available options: %s",
-            args.gen, ', '.join(Engine.available_generators())
-        )
+    except ValueError as ex:
+        logging.fatal("%s", ex)
         sys.exit(1)
 
     dirname = os.path.dirname(os.path.abspath(args.output_file))
