@@ -12,7 +12,7 @@ pip3 install -r generator/requirements.txt
 ./generator -s locations.flatdata -g cpp -O locations.hpp
 ```
 
-The output is a source single file in the specified language. Supported output formats are:
+The output is a single source file in the specified language. Supported output formats are:
 
 * C++ (read/write)
 * Rust (read/write)
