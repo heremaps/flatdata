@@ -5,16 +5,9 @@
 '''
 
 import argparse
-import inspect
-import os.path
-
-import pandas as pd
 import sys
 
-parent_path = os.path.join(
-    os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), os.pardir)
-sys.path.insert(0, parent_path)
-sys.path.insert(0, os.path.join(parent_path, 'flatdata-py'))
+import pandas as pd
 
 from inline import open_archive
 
@@ -22,7 +15,7 @@ DESCRIPTION = \
     """Flatdata Interactive Shell.
 
     Archive at {path}
-    Data is available via `archive`. Try following:
+    Data is available via `archive`. Try the following:
      - `archive`
      - `archive.resource`
      - `archive.resource[N]`
@@ -31,7 +24,7 @@ DESCRIPTION = \
     """
 
 
-def main():
+def _main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str, dest="path", required=True,
                         help="Path to archive")
@@ -48,6 +41,7 @@ def main():
     pd.set_option('expand_frame_repr', False)
 
     if args.non_interactive:
+        # pylint: disable=exec-used
         exec(args.non_interactive, globals(), locals())
         sys.exit(0)
 
@@ -60,4 +54,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    _main()
