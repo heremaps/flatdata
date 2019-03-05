@@ -7,7 +7,7 @@ import sys
 
 sys.path.insert(0, "..")
 from generator.tree.errors import MissingSymbol
-from generator.tree.builder import SyntaxTreeBuilder
+from generator.tree.builder import build_ast
 from generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from generator.tree.nodes.archive import Archive
 from generator.tree.nodes.explicit_reference import ExplicitReference
@@ -23,7 +23,7 @@ from nose.tools import *
 def test_validating_archive_with_no_structure_defined_raises_missing_symbol_error():
     def __test(resource_type):
         with assert_raises(MissingSymbol):
-            SyntaxTreeBuilder.build(
+            build_ast(
                 """namespace foo{ archive A { resourceA : %s; } }""" % resource_type)
 
     for t in ["T", "vector< T >", "multivector< 33, V>"]:
@@ -32,7 +32,7 @@ def test_validating_archive_with_no_structure_defined_raises_missing_symbol_erro
 
 def test_explicit_reference_decoration_fails_when_unknown_type_is_referenced():
     with assert_raises(MissingSymbol):
-        SyntaxTreeBuilder.build("""namespace foo{
+        build_ast("""namespace foo{
             struct A {
                 refB : u64 : 64;
             }
@@ -47,7 +47,7 @@ def test_explicit_reference_decoration_fails_when_unknown_type_is_referenced():
 
 def test_explicit_reference_decoration_fails_when_unknown_field_is_referenced():
     with assert_raises(MissingSymbol):
-        SyntaxTreeBuilder.build("""namespace foo {
+        build_ast("""namespace foo {
             struct A {
                 refB : u64 : 64;
             }
@@ -62,7 +62,7 @@ def test_explicit_reference_decoration_fails_when_unknown_field_is_referenced():
 
 def test_explicit_reference_decoration_fails_when_unknown_resource_is_referenced():
     with assert_raises(MissingSymbol):
-        SyntaxTreeBuilder.build("""namespace foo{
+        build_ast("""namespace foo{
             struct A {
                 refB : u64 : 64;
             }
@@ -76,7 +76,7 @@ def test_explicit_reference_decoration_fails_when_unknown_resource_is_referenced
 
 def test_implicit_references_fail_on_unknown_resource():
     with assert_raises(MissingSymbol):
-        SyntaxTreeBuilder.build("""namespace foo{
+        build_ast("""namespace foo{
             struct A {
                 refB : u64 : 64;
             }
@@ -90,7 +90,7 @@ def test_implicit_references_fail_on_unknown_resource():
 
 
 def test_multi_vector_references_builtin_type():
-    tree = SyntaxTreeBuilder.build("""namespace n{
+    tree = build_ast("""namespace n{
         struct T { t : u64 : 17; }
         archive A {
             r : multivector< 33, T >;
@@ -106,7 +106,7 @@ def test_multi_vector_references_builtin_type():
 
 
 def test_duplicate_multivector_builtin_types_are_not_produced():
-    tree = SyntaxTreeBuilder.build("""namespace n{
+    tree = build_ast("""namespace n{
         struct T { t : u64 : 17; }
         archive A {
             r : multivector< 33, T >;
@@ -169,7 +169,7 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
 
 
 def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
-    tree = SyntaxTreeBuilder.build(TREE_WITH_ALL_FEATURES)
+    tree = build_ast(TREE_WITH_ALL_FEATURES)
 
     assert_equal.__self__.maxDiff = None
     assert_equal({
@@ -235,9 +235,9 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
 
 
 def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
-    tree = SyntaxTreeBuilder.build(TREE_WITH_ALL_FEATURES)
+    tree = build_ast(TREE_WITH_ALL_FEATURES)
     schema = tree.schema(tree.find('.ns.A1'))
-    generated_tree = SyntaxTreeBuilder.build(schema)
+    generated_tree = build_ast(schema)
     assert_equal({
         '._builtin': Namespace,
         '._builtin.multivector': Namespace,
@@ -302,7 +302,7 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
 
 def test_resource_types_are_populated_from_structure_references():
     def __test(schema, resource_type, properties):
-        tree = SyntaxTreeBuilder.build("""namespace n{
+        tree = build_ast("""namespace n{
             struct T {
                 f0 : u8 : 1;
             }
@@ -333,7 +333,7 @@ def test_resource_types_are_populated_from_structure_references():
 
 
 def test_constants_are_referred_from_every_archive():
-    tree = SyntaxTreeBuilder.build("""
+    tree = build_ast("""
 namespace m {
     const u8 C = 17;
     }

@@ -5,7 +5,7 @@
 from nose.tools import assert_equal
 
 from generator.generators.flatdata import FlatdataGenerator
-from generator.tree.builder import SyntaxTreeBuilder
+from generator.tree.builder import build_ast
 from .schemas import schemas_and_expectations
 
 def generate_and_compare(test_case):
@@ -13,7 +13,7 @@ def generate_and_compare(test_case):
         test = test_file.read()
     with open(test_case[1], 'r') as expectation_file:
         expectation = expectation_file.read()
-    tree = SyntaxTreeBuilder.build(definition=test)
+    tree = build_ast(definition=test)
     contents = FlatdataGenerator().render(tree)
     assert_equal.__self__.maxDiff = None
     assert_equal(expectation, contents, test_case)

@@ -5,7 +5,7 @@
 
 import imp
 
-from generator.tree.builder import SyntaxTreeBuilder
+from generator.tree.builder import build_ast
 from generator.tree.nodes.trivial.namespace import Namespace
 
 from .generators.cpp import CppGenerator
@@ -44,7 +44,7 @@ class Engine:
         :raises FlatdataSyntaxError
         """
         self.schema = schema
-        self.tree = SyntaxTreeBuilder.build(schema)
+        self.tree = build_ast(schema)
 
     def render(self, generator_name):
         """

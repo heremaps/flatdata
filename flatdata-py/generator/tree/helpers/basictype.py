@@ -27,7 +27,7 @@ class BasicType(object):
         if width is None:
             self._width = self._WIDTH[self._name]
         if self._width > self._WIDTH[self.name]:
-            raise InvalidWidthError(width=self._width, type=self._name)
+            raise InvalidWidthError(self._width, self._name)
 
     @property
     def name(self):

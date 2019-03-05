@@ -1,9 +1,11 @@
+from abc import ABCMeta, abstractmethod
+
 from collections import namedtuple, deque
 from .errors import CircularReferencing
 from .nodes.references import Reference, TypeReference
 
 
-class _Traversal(object):
+class _Traversal(metaclass=ABCMeta):
     def __init__(self, tree):
         self._root = tree.root
 
@@ -12,20 +14,18 @@ class _Traversal(object):
         return [c for c in node.children if not isinstance(c, Reference)] + \
                [r.node for r in node.children if isinstance(r, TypeReference)]
 
+    @abstractmethod
     def iterate(self):
-        raise RuntimeError("Derived classes must reimplement iterate()")
+        raise NotImplementedError("Derived classes must implement iterate()")
 
 
 class BfsTraversal(_Traversal):
-    def __init__(self, *args, **kwargs):
-        super(BfsTraversal, self).__init__(*args, **kwargs)
-
     def iterate(self):
         Attr = namedtuple("Attr", ["distance"])
 
         queue = deque([(self._root, 0)])
         processed = set()
-        while len(queue) != 0:
+        while queue:
             node, distance = queue.popleft()
             if node in processed:
                 continue
@@ -42,9 +42,6 @@ class DfsTraversal(_Traversal):
     _PROCESS_NODE_EARLY = 0
     _PROCESS_NODE_LATE = 1
 
-    def __init__(self, *args, **kwargs):
-        super(DfsTraversal, self).__init__(*args, **kwargs)
-
     def _iterate(self):
         State = namedtuple("State", ["node", "processed"])
         Attr = namedtuple("Attr", [])
@@ -52,7 +49,7 @@ class DfsTraversal(_Traversal):
         discovered = set()
         processed = set()
 
-        while len(stack) != 0:
+        while stack:
             node, is_processed = stack.pop()
             if not is_processed:
                 if node in processed:

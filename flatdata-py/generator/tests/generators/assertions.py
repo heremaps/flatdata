@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.tree.builder import SyntaxTreeBuilder
+from generator.tree.builder import build_ast
 import re
 
 def unify_whitespace(value):
@@ -11,7 +11,7 @@ def unify_whitespace(value):
     return re.sub(r"\s+", " ", removed_trailing)
 
 def generate_and_assert_in(definition, generator, *expectations, unexpected_items = None):
-    tree = SyntaxTreeBuilder.build(definition=definition)
+    tree = build_ast(definition=definition)
     contents = generator().render(tree)
     contents_unified = unify_whitespace(contents)
 
