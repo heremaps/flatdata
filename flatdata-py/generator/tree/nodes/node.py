@@ -90,6 +90,14 @@ class Node(object):
         """
         return self.path.replace(self.PATH_SEPARATOR, separator)
 
+    def path_depth(self):
+        """
+        Returns nodes' depths in a tree
+        """
+        if self._parent is None:
+            return 0
+        return 1 + self._parent.path_depth()
+
     def set_name(self, value):
         """
         Sets the new name for the node. New name should not clash with any of siblings' names.
