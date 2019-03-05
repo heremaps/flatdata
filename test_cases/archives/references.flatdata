@@ -1,0 +1,24 @@
+/* This test tests that a resources can be annotated with references
+ */
+namespace n{
+struct S {
+	x : u32;
+}
+
+struct R {
+	ref : u32;
+}
+
+@bound_implicitly( all_lists : list1, list2, multilist)
+archive A {
+	list1 : vector< S >;
+	list2 : vector< S >;
+	multilist : multivector< 32, S >;
+
+	@explicit_reference( R.ref, list1 )
+	refs : vector< R >;
+
+	@explicit_reference( R.ref, list1 )
+	multirefs : multivector< 32, R >;
+}
+}

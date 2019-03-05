@@ -1,0 +1,8 @@
+namespace n {
+const u32 FOO = 0;
+}
+
+namespace n {
+const u64 BAR = 0;
+}
+

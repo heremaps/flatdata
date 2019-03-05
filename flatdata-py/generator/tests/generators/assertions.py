@@ -16,6 +16,8 @@ def generate_and_assert_in(definition, generator, *expectations, unexpected_item
     tree = SyntaxTreeBuilder.build(definition=definition)
     contents = generator().render(tree)
     contents_unified = unify_whitespace(contents)
+
+    assert len(expectations) > 0 or unexpected_items != None, "No expectations specified"
     for expectation in expectations:
         expectation_unified = unify_whitespace(expectation)
         assert expectation_unified in contents_unified, "\n*Did not find:\n%s\n========== IN GENERATED CODE ===========\n%s" % (expectation, contents)

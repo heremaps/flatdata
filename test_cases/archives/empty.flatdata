@@ -1,0 +1,6 @@
+/* This test tests that empty archives work
+ */
+namespace n{
+archive A {
+}
+}

@@ -1,0 +1,22 @@
+inline
+const char* to_string( EnumI8 value )
+{
+    switch( value )
+    {
+    case EnumI8::FOO_I8_NEG:
+        return "EnumI8::FOO_I8_NEG";
+    case EnumI8::FOO_I8_POS:
+        return "EnumI8::FOO_I8_POS";
+    case EnumI8::FOO_I8_ZERO:
+        return "EnumI8::FOO_I8_ZERO";
+    case EnumI8::FOO_I8_NEG_HEX:
+        return "EnumI8::FOO_I8_NEG_HEX";
+    case EnumI8::FOO_I8_POS_HEX:
+        return "EnumI8::FOO_I8_POS_HEX";
+    case EnumI8::FOO_I8_ONE_HEX:
+        return "EnumI8::FOO_I8_ONE_HEX";
+    default:
+        // default needed since C++ allows storage of unknown values
+        return "Unknown value of EnumI8";
+    }
+}

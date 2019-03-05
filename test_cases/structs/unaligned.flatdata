@@ -1,0 +1,45 @@
+/* This test tests that fields with misaligned offsets and less than full width work
+ * Tests should test the expected structure size
+ * Tests should try assigning min/max/random values to these and reading them again
+ */
+namespace n{
+struct U8 {
+    padding : u64 : 3;
+    f : u8 : 5;
+}
+
+struct I8 {
+    padding : u64 : 3;
+    f : i8 : 5;
+}
+
+struct U16 {
+    padding : u64 : 3;
+    f : u16 : 13;
+}
+
+struct I16 {
+    padding : u64 : 3;
+    f : i16 : 13;
+}
+
+struct U32 {
+    padding : u64 : 3;
+    f : u32 : 29;
+}
+
+struct I32 {
+    padding : u64 : 3;
+    f : i32 : 29;
+}
+
+struct U64 {
+    padding : u64 : 3;
+    f : u64 : 61;
+}
+
+struct I64 {
+    padding : u64 : 3;
+    f : i64 : 61;
+}
+}
