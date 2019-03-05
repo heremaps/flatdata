@@ -14,7 +14,7 @@ class PythonGenerator(BaseGenerator):
     def __init__(self):
         BaseGenerator.__init__(self, "py/python.jinja2")
 
-    def _supported_nodes(self):
+    def supported_nodes(self):
         return [Structure, Archive]
 
     def _populate_environment(self, env):

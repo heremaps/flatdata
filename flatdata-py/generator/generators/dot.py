@@ -18,5 +18,5 @@ class DotGenerator(BaseGenerator):
     def _populate_environment(self, env):
         env.autoescape = True
 
-    def _supported_nodes(self):
+    def supported_nodes(self):
         return [Archive]

@@ -15,7 +15,7 @@ class GoGenerator(BaseGenerator):
     def __init__(self):
         BaseGenerator.__init__(self, "go/go.jinja2")
 
-    def _supported_nodes(self):
+    def supported_nodes(self):
         return [Structure, Archive, Constant]
 
     def _populate_environment(self, env):

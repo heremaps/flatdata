@@ -14,7 +14,7 @@ class CppGenerator(BaseGenerator):
     def __init__(self):
         BaseGenerator.__init__(self, "cpp/cpp.jinja2")
 
-    def _supported_nodes(self):
+    def supported_nodes(self):
         return [Structure, Archive, Constant, Enumeration]
 
     def _populate_environment(self, env):

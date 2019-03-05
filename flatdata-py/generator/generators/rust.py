@@ -25,7 +25,7 @@ class RustGenerator(BaseGenerator):
     def __init__(self):
         BaseGenerator.__init__(self, "rust/rust.jinja2")
 
-    def _supported_nodes(self):
+    def supported_nodes(self):
         return [Structure, Archive, Constant, Enumeration]
 
     @staticmethod
