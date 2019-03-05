@@ -43,6 +43,8 @@ namespace loc {
 }
 ```
 
+The full schema documentation can be find [here](docs/schema-language.md).
+
 ### Generating a module
 
 Flatdata relies on a generator that takes a flatdata schema file as an input and
