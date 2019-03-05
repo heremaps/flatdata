@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.generators.CppGenerator import CppGenerator
+from generator.generators.cpp import CppGenerator
 import glob;
 
 from .assertions import *

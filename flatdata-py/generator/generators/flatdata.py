@@ -7,7 +7,7 @@ from generator.tree.nodes.resources import BoundResource
 from generator.tree.nodes.trivial import Structure, Enumeration, Constant
 from generator.tree.nodes.archive import Archive
 from generator.tree.syntax_tree import SyntaxTree
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 
 class FlatdataGenerator(BaseGenerator):

@@ -7,7 +7,7 @@ from generator.tree.nodes.resources.archive import Archive as ArchiveResource
 from generator.tree.nodes.trivial import Structure
 from generator.tree.nodes.node import Node
 from generator.tree.nodes.archive import Archive
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 
 class PythonGenerator(BaseGenerator):

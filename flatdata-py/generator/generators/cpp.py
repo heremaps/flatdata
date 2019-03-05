@@ -7,7 +7,7 @@ from generator.tree.nodes.resources import Vector, Multivector, Instance, RawDat
     ResourceBase, Archive as ArchiveResource
 from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
 from generator.tree.nodes.archive import Archive
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 
 class CppGenerator(BaseGenerator):

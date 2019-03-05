@@ -5,7 +5,7 @@
 import glob
 from nose.tools import eq_
 
-from generator.generators.RustGenerator import RustGenerator
+from generator.generators.rust import RustGenerator
 from .assertions import *
 from .schemas import *
 

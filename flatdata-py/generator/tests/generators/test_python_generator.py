@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.generators.PythonGenerator import PythonGenerator
+from generator.generators.python import PythonGenerator
 from .assertions import *
 
 

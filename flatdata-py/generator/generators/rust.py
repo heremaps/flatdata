@@ -9,7 +9,7 @@ from generator.tree.nodes.trivial import Structure, Constant, Enumeration
 from generator.tree.helpers.enumtype import EnumType
 from generator.tree.nodes.archive import Archive
 from generator.tree.syntax_tree import SyntaxTree
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 import re
 

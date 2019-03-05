@@ -8,7 +8,7 @@ from generator.tree.nodes.resources import Instance, Vector, Multivector, RawDat
 from generator.tree.nodes.resources.archive import Archive as ArchiveResource
 from generator.tree.nodes.trivial import Structure, Constant
 
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 
 class GoGenerator(BaseGenerator):

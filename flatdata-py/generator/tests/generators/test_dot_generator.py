@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.generators.DotGenerator import DotGenerator
+from generator.generators.dot import DotGenerator
 from .assertions import *
 
 

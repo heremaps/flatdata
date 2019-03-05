@@ -5,7 +5,7 @@
 
 from generator.tree.nodes.trivial import Structure
 from generator.tree.nodes.archive import Archive
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 SCOPE_SEPARATOR = "__"
 DECORATION_BOUND = "__bound__"

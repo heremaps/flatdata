@@ -8,12 +8,12 @@ import imp
 from generator.tree.builder import SyntaxTreeBuilder
 from generator.tree.nodes.trivial.namespace import Namespace
 
-from .generators.CppGenerator import CppGenerator
-from .generators.DotGenerator import DotGenerator
-from .generators.GoGenerator import GoGenerator
-from .generators.PythonGenerator import PythonGenerator
-from .generators.RustGenerator import RustGenerator
-from .generators.FlatdataGenerator import FlatdataGenerator
+from .generators.cpp import CppGenerator
+from .generators.dot import DotGenerator
+from .generators.go import GoGenerator
+from .generators.python import PythonGenerator
+from .generators.rust import RustGenerator
+from .generators.flatdata import FlatdataGenerator
 
 
 class Engine(object):

@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.generators.FlatdataGenerator import FlatdataGenerator
+from generator.generators.flatdata import FlatdataGenerator
 from generator.tree.builder import SyntaxTreeBuilder
 
 from nose.tools import assert_equal

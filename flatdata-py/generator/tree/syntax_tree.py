@@ -64,7 +64,7 @@ class SyntaxTree(object):
 
     @staticmethod
     def schema(node):
-        from ..generators.FlatdataGenerator import FlatdataGenerator
+        from ..generators.flatdata import FlatdataGenerator
         generator = FlatdataGenerator()
 
         # extract subtree from syntax tree
