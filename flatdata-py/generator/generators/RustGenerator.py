@@ -71,9 +71,13 @@ class RustGenerator(BaseGenerator):
 
         def _field_type(f):
             if isinstance(f.type, EnumType):
-                return f.type_reference.node.name + ", " + f.type_reference.node.type.name
+                return _fully_qualified_name(f.parent, f.type_reference.node) + ", " + f.type_reference.node.type.name
             return f.type.name + ", " + f.type.name
 
+        def _fully_qualified_name(current, node):
+            return "::".join((current.path_depth() - 1) * ["super"]) + node.path_with("::")
+
+        env.globals["fully_qualified_name"] = _fully_qualified_name
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
         env.filters["field_type"] = _field_type
         env.filters['structure_references'] = lambda ls: [
