@@ -12,11 +12,13 @@ matrix:
     - language: python
       dist: xenial
       python: 3.5
-      before_script: cd flatdata-py
       script:
+        - pushd flatdata-py
         - pip3 install -r requirements.txt
         - pip3 install -r generator/requirements.txt
         - python3 -m nose
+        - popd
+        - ./ci/lint.py
 
     # gcc
     - language: cpp
