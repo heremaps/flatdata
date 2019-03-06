@@ -5,6 +5,7 @@ authors = ["Christian Vetter <veaac.fdirct@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+flatdata = { path = ".." }
 
 [build-dependencies]
 walkdir = "2"

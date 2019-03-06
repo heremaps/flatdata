@@ -14,7 +14,7 @@ pub enum {{ enum.name }} {
     {% endfor %}
 }
 
-impl Int for {{ enum.name }} {
+impl flatdata::helper::Int for {{ enum.name }} {
     const IS_SIGNED: bool = {{ enum.type.is_signed | lower }};
 }
 

@@ -18,15 +18,13 @@ fn main() {
         let filename = out_path.join(&result);
         std::fs::create_dir_all(filename.parent().unwrap()).expect("Failed to create output dir");
         let output = std::process::Command::new("python3")
-            .args(&[
-                "../../generator",
-                "-g",
-                "rust",
-                "-s",
-                entry.path().to_str().expect("Invalid path"),
-                "-O",
-                filename.to_str().expect("Invalid path"),
-            ])
+            .arg("../../generator")
+            .arg("-g")
+            .arg("rust")
+            .arg("-s")
+            .arg(&entry.path())
+            .arg("-O")
+            .arg(&filename)
             .output()
             .expect("Failed to run generator");
 
