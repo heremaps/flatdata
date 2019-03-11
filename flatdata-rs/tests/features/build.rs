@@ -4,7 +4,7 @@ use std::path::PathBuf;
 fn main() {
     let out_path = PathBuf::from(std::env::var("OUT_DIR").unwrap());
     let dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let test_cases_path = dir.join("../../test_cases").canonicalize().unwrap();
+    let test_cases_path = dir.join("../../../test_cases").canonicalize().unwrap();
 
     for entry in walkdir::WalkDir::new(&test_cases_path) {
         let entry = entry.expect("Cannot access file");
@@ -18,7 +18,7 @@ fn main() {
         let filename = out_path.join(&result);
         std::fs::create_dir_all(filename.parent().unwrap()).expect("Failed to create output dir");
         let output = std::process::Command::new("python3")
-            .arg("../../generator")
+            .arg("../../../generator")
             .arg("-g")
             .arg("rust")
             .arg("-s")
