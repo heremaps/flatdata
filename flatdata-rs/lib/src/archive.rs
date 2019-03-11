@@ -575,10 +575,14 @@ macro_rules! define_archive {
                 })
             })*
 
-            $(pub fn $subarchive_resource(&self) -> &opt!(
-                $subarchive_type, $is_optional_subarchive)
+            $(pub fn $subarchive_resource(&self) -> opt!(
+                &$subarchive_type, $is_optional_subarchive)
             {
-                &self.$subarchive_resource
+                static_if!($is_optional_subarchive, {
+                    self.$subarchive_resource.as_ref()
+                }, {
+                    &self.$subarchive_resource
+                })
             })*
 
             fn signature_name(archive_name: &str) -> String {

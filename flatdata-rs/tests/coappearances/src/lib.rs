@@ -338,8 +338,8 @@ fn read_write_statistics_subarchive() {
     let storage = flatdata::FileResourceStorage::new(archive_path);
     let copy = coappearances::Graph::open(storage).expect("invalid archive");
 
-    let orig_stats = orig.statistics().as_ref().expect("orig statistics failed");
-    let copy_stats = copy.statistics().as_ref().expect("copy statistics failed");
+    let orig_stats = orig.statistics().expect("orig statistics failed");
+    let copy_stats = copy.statistics().expect("copy statistics failed");
 
     assert_eq!(orig_stats.invariants(), copy_stats.invariants());
     assert_eq!(

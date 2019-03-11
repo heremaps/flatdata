@@ -11,21 +11,29 @@ use std::slice;
 type MemoryStorageStream = Rc<RefCell<Cursor<Vec<u8>>>>;
 
 /// Internal storage of data in memory.
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct MemoryStorage {
     // Streams of resources that were written.
-    streams: RefCell<BTreeMap<PathBuf, MemoryStorageStream>>,
+    streams: Rc<RefCell<BTreeMap<PathBuf, MemoryStorageStream>>>,
     // Data of resources that were opened for reading.
-    resources: RefCell<BTreeMap<PathBuf, Rc<Vec<u8>>>>,
+    resources: Rc<RefCell<BTreeMap<PathBuf, Rc<Vec<u8>>>>>,
 }
 
 impl fmt::Debug for MemoryStorage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "MemoryStorage {{ num_streams: {}, num_resources: {} }}",
-            self.streams.borrow().len(),
-            self.resources.borrow().len(),
+            "MemoryStorage {{ streams: {:?}, resources: {:?} }}",
+            self.streams
+                .borrow()
+                .iter()
+                .map(|(path, _)| path.display())
+                .collect::<Vec<_>>(),
+            self.resources
+                .borrow()
+                .iter()
+                .map(|(path, _)| path.display())
+                .collect::<Vec<_>>(),
         )
     }
 }
@@ -55,7 +63,10 @@ impl Stream for Cursor<Vec<u8>> {}
 
 impl ResourceStorage for MemoryResourceStorage {
     fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {
-        Self::new(self.path.join(dir))
+        Rc::new(Self {
+            storage: self.storage.clone(),
+            path: self.path.join(dir),
+        })
     }
 
     fn exists(&self, resource_name: &str) -> bool {
