@@ -30,5 +30,7 @@ fn main() {
 
         std::io::stderr().write_all(&output.stderr).unwrap();
         assert!(output.status.success());
+
+        println!("cargo:rerun-if-changed={}", entry.path().display());
     }
 }
