@@ -1,0 +1,112 @@
+namespace n {
+enum EnumI8 : i8
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumI8
+{
+    f : .n.EnumI8 : 1;
+}
+}
+
+namespace n {
+enum EnumU8 : u8
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumU8
+{
+    f : .n.EnumU8 : 1;
+}
+}
+
+namespace n {
+enum EnumI16 : i16
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumI16
+{
+    f : .n.EnumI16 : 1;
+}
+}
+
+namespace n {
+enum EnumU16 : u16
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumU16
+{
+    f : .n.EnumU16 : 1;
+}
+}
+
+namespace n {
+enum EnumI32 : i32
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumI32
+{
+    f : .n.EnumI32 : 1;
+}
+}
+
+namespace n {
+enum EnumU32 : u32
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumU32
+{
+    f : .n.EnumU32 : 1;
+}
+}
+
+namespace n {
+enum EnumI64 : i64
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumI64
+{
+    f : .n.EnumI64 : 1;
+}
+}
+
+namespace n {
+enum EnumU64 : u64
+{
+    VALUE = 0,
+}
+}
+
+namespace n {
+struct StructEnumU64
+{
+    f : .n.EnumU64 : 1;
+}
+}
+

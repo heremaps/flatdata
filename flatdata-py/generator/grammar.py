@@ -140,7 +140,7 @@ archive = Group(
     Keyword("archive") +
     identifier("name") +
     "{" +
-    OneOrMore(resource)("resources") +
+    ZeroOrMore(resource)("resources") +
     "}"
 )
 

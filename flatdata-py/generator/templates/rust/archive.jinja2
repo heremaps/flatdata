@@ -1,58 +1,63 @@
 {% import "rust/index.jinja2" as index %}
 
-{% macro declaration(archive) %}
+{%- macro declaration(archive) %}
 
 {# variadic structs #}
 {% for r in archive.resources | multivector_resources %}
-/// Builtin union type of {% for type in r.referenced_structures | structure_references %}{{ type.node.name }}{%- if not loop.last %}, {% endif %}{% endfor %}.
+
+/// Builtin union type of {% for type in r.referenced_structures | structure_references %}{{ type.node.path }}{%- if not loop.last %}, {% endif %}{% endfor %}.
 define_variadic_struct!({{ r.name | snake_to_upper_camel_case }}, Ref{{ r.name | snake_to_upper_camel_case }}, Builder{{ r.name | snake_to_upper_camel_case }},
     {{ r.index_reference.node.name }},
 {% for type in r.referenced_structures | structure_references %}
-    {{ loop.index0 }} => ({{ type.node.name }}, add_{{ type.node.name | camel_to_snake_case }})
+    {{ loop.index0 }} => ( {{type.node.name }}, {{ fully_qualified_name(archive, type.node) }}, add_{{ type.node.name | camel_to_snake_case }})
     {%- if not loop.last %},
     {% endif %}
-{% endfor %}
+{%- endfor %}
 );
-{% endfor %}
+{%- endfor %}
 
 {# archive definition #}
-{% set archive_ns = archive.name | camel_to_snake_case %}
+{%- set archive_ns = archive.name | camel_to_snake_case %}
+
 define_archive!({{archive.name}}, {{archive.name}}Builder,
-    schema::structs::{{ archive.name | camel_to_snake_case | upper }};
+    schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
     // struct resources
     {% for r in archive.resources | instance_resources %}
     ({{ r.name }}, set_{{ r.name }},
-        {{r.referenced_structures[0].node.name}}, schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
+        {{ fully_qualified_name(archive, r.referenced_structures[0].node) }},
+        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
     // vector resources
     {% for r in archive.resources | vector_resources %}
     ({{ r.name }}, set_{{ r.name }}, start_{{ r.name }},
-        {{ r.referenced_structures[0].node.name }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
+        {{ fully_qualified_name(archive, r.referenced_structures[0].node) }},
+        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
     // multivector resources
     {% for r in archive.resources | multivector_resources %}
     ({{ r.name }}, start_{{ r.name }},
-        {{ r.name | snake_to_upper_camel_case }}, schema::resources::{{ archive_ns }}::{{ r.name | upper }},
-        {{ r.name }}_index, {{ r.index_reference.node.name }}, {{ r.optional | lower }})
+        {{ r.name | snake_to_upper_camel_case }},
+        schema::{{ archive_ns }}::resources::{{ r.name | upper }},
+        {{ r.name }}_index, {{ fully_qualified_name(archive, r.index_reference.node) }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
     // raw data resources
     {% for r in archive.resources | rawdata_resources %}
     ({{ r.name }}, set_{{ r.name }},
-        schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
+        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %};
     // subarchives
     {% for r in archive.resources | subarchive_resources %}
     ({{ r.name }},
-        {{ r.name | snake_to_upper_camel_case }}, {{ r.name | snake_to_upper_camel_case }}Builder,
-        schema::resources::{{ archive_ns }}::{{ r.name | upper }}, {{ r.optional | lower }})
+        {{ fully_qualified_name(archive, r.target.node) }}, {{ fully_qualified_name(archive, r.target.node) }}Builder,
+        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
         {%- if not loop.last %},
         {% endif %}
     {% endfor %}

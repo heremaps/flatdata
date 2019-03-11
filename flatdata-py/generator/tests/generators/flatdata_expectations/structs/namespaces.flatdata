@@ -1,0 +1,14 @@
+namespace n {
+struct Foo
+{
+    f : u32 : 32;
+}
+}
+
+namespace m {
+struct Foo
+{
+    f : u32 : 32;
+}
+}
+

@@ -69,8 +69,8 @@ use std::marker;
 /// );
 ///
 /// define_variadic_struct!(AB, RefAB, BuilderAB, Idx,
-///     0 => (A, add_a),
-///     1 => (B, add_b)
+///     0 => (A, A, add_a),
+///     1 => (B, B, add_b)
 /// );
 ///
 /// // create multivector and serialize some data
@@ -244,7 +244,8 @@ mod tests {
         (y, set_y, u32, u32, 16, 16)
     );
 
-    define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx, 0 => (A, add_a) );
+    define_variadic_struct!(Variant, RefVariant, BuilderVariant, Idx,
+        0 => (A, A, add_a) );
 
     #[test]
     fn test_multi_vector() {

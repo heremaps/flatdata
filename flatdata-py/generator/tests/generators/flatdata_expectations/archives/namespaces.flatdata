@@ -1,0 +1,38 @@
+namespace n {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace n {
+archive X
+{
+    payload : raw_data;
+}
+}
+
+namespace m {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace m {
+archive X
+{
+    payload : raw_data;
+}
+}
+
+namespace a {
+archive A
+{
+    single : .n.S;
+    list : vector< .m.S >;
+    multi : multivector< 32, .n.S >;
+    inner : archive .n.X;
+}
+}
+

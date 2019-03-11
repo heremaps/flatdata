@@ -1,0 +1,28 @@
+namespace n {
+struct S
+{
+    x : u32 : 32;
+}
+}
+
+namespace n {
+struct R
+{
+    ref : u32 : 32;
+}
+}
+
+namespace n {
+@bound_implicitly( all_lists : .n.A.list1, .n.A.list2, .n.A.multilist )
+archive A
+{
+    list1 : vector< .n.S >;
+    list2 : vector< .n.S >;
+    multilist : multivector< 32, .n.S >;
+    @explicit_reference( .n.R.ref, .n.A.list1 )
+    refs : vector< .n.R >;
+    @explicit_reference( .n.R.ref, .n.A.list1 )
+    multirefs : multivector< 32, .n.R >;
+}
+}
+

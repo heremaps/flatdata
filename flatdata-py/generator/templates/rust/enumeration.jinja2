@@ -1,8 +1,8 @@
-{% macro declaration(enum) %}
-
-{% if enum.doc %}
+{%- macro declaration(enum) %}
+{%- if enum.doc %}
 {{ enum.doc | rust_doc }}
-{% endif %}
+{%- endif %}
+
 #[derive(Debug, PartialEq, Eq)]
 #[repr({{ enum.type.name }})]
 pub enum {{ enum.name }} {
@@ -10,7 +10,7 @@ pub enum {{ enum.name }} {
     {% if value.doc %}
     {{ value.doc | rust_doc }}
     {% endif %}
-    {{ value.name | snake_to_upper_camel_case }} = {{ value.value }},
+    {{ value.name | snake_to_upper_camel_case }} = {{ value.value | format_numeric_literal }},
     {% endfor %}
 }
 

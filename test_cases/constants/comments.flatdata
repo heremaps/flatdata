@@ -1,0 +1,11 @@
+/* This test tests that comments get attached to the corresponding constant
+ */
+namespace n{
+// This is a comment about foo
+const u32 FOO = 0;
+
+/*
+ * This is a comment about bar
+ */
+const u64 BAR = 0;
+}

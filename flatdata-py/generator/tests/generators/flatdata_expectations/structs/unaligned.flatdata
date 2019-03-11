@@ -1,0 +1,64 @@
+namespace n {
+struct U8
+{
+    padding : u64 : 3;
+    f : u8 : 5;
+}
+}
+
+namespace n {
+struct I8
+{
+    padding : u64 : 3;
+    f : i8 : 5;
+}
+}
+
+namespace n {
+struct U16
+{
+    padding : u64 : 3;
+    f : u16 : 13;
+}
+}
+
+namespace n {
+struct I16
+{
+    padding : u64 : 3;
+    f : i16 : 13;
+}
+}
+
+namespace n {
+struct U32
+{
+    padding : u64 : 3;
+    f : u32 : 29;
+}
+}
+
+namespace n {
+struct I32
+{
+    padding : u64 : 3;
+    f : i32 : 29;
+}
+}
+
+namespace n {
+struct U64
+{
+    padding : u64 : 3;
+    f : u64 : 61;
+}
+}
+
+namespace n {
+struct I64
+{
+    padding : u64 : 3;
+    f : i64 : 61;
+}
+}
+

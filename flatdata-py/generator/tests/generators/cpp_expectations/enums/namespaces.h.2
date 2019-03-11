@@ -1,0 +1,6 @@
+namespace m { 
+
+template< template < typename, int, int > class Member >
+union FooTemplate
+{
+    using FType = Member< ::b::Bar, 0, 8 >;

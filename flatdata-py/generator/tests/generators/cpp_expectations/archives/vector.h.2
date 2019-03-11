@@ -1,0 +1,9 @@
+    using DataType = flatdata::ExternalVector< ::n::S >;
+    using DataReaderType = flatdata::ArrayView< ::n::S >;
+    DataType start_data( );
+    bool set_data( DataReaderType data );
+
+    using OptionalDataType = flatdata::ExternalVector< ::n::S >;
+    using OptionalDataReaderType = flatdata::ArrayView< ::n::S >;
+    OptionalDataType start_optional_data( );
+    bool set_optional_data( OptionalDataReaderType data );

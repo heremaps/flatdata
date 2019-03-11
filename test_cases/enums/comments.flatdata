@@ -1,0 +1,27 @@
+/* This test tests that comments get attached to the corresponding constant
+ */
+namespace n{
+// This is a comment about Foo
+enum Foo : u64 {
+	// This is a comment about Foo.a
+    A = 0,
+
+    // This is a comment about Foo.b
+    B = 1,
+}
+
+/*
+ * This is a comment about Bar
+ */
+enum Bar : u64 {
+	/*
+	 * This is a comment about Bar.a
+	 */
+    A = 0,
+
+    /*
+     * This is a comment about Bar.b
+     */
+    B = 1,
+}
+}
