@@ -12,6 +12,9 @@ from .errors import SchemaMismatchError
 ResourceSignature = namedtuple("ResourceSignature",
                                ["container", "initializer", "schema", "is_optional", "doc"])
 
+def _is_archive_signature(resource_signature):
+    return resource_signature.container == Archive
+
 _SCHEMA_EXT = ".schema"
 
 
@@ -88,11 +91,17 @@ class Archive(object):
 
     def _schema_validated_resource_signature(self, name):
         resource_signature = self._RESOURCES[name]
-        storage = self._resource_storage.get(name + _SCHEMA_EXT, resource_signature.is_optional)
-        if storage:
-            self._check_non_subarchive_schema(name, resource_signature, storage)
-            return resource_signature
-        return None
+        # We check only schema for non-subarchives, since the subarchives schema is checked,
+        # when it is initialized.
+        if not _is_archive_signature(resource_signature):
+            storage = self._resource_storage.get(name + _SCHEMA_EXT, resource_signature.is_optional)
+            if storage:
+                self._check_non_subarchive_schema(name, resource_signature, storage)
+            elif not resource_signature.is_optional:
+                raise MissingResourceError(name)
+            else:
+                return None
+        return resource_signature
 
     def _open_resource(self, name):
         resource_signature = self._schema_validated_resource_signature(name)
@@ -106,19 +115,8 @@ class Archive(object):
                 return resource
         return None
 
-    @staticmethod
-    def _is_archive():
-        """
-        Necessary to distinguish between archive and normal resources in a reliable manner.
-        isinstance fails to do the check with current module structure.
-        https://stackoverflow.com/questions/38514730/isinstance-returns-false-when-the-fully-qualified-object-class-differs-from-th
-        """
-        return True
-
-    def _check_non_subarchive_schema(self, name, resource, storage):
-        if resource.container._is_archive():
-            return
-
+    def _check_non_subarchive_schema(self, name, resource_signature, storage):
         actual_schema = storage.read().decode()
-        if actual_schema != resource.schema:
-            raise SchemaMismatchError(name, resource.schema.splitlines(), actual_schema.splitlines())
+        if actual_schema != resource_signature.schema:
+            raise SchemaMismatchError(
+                name, resource_signature.schema.splitlines(), actual_schema.splitlines())
