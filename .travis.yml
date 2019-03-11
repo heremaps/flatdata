@@ -74,6 +74,7 @@ matrix:
             - libdw-dev
             - binutils-dev
       before_script:
+        - pip3 install -r generator/requirements.txt
         - cd flatdata-rs
         - cargo install cargo-update || echo "cargo-update already installed"
         - cargo install cargo-travis || echo "cargo-travis already installed"
