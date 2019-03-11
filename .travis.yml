@@ -73,6 +73,7 @@ matrix:
             - libelf-dev
             - libdw-dev
             - binutils-dev
+            - python3-pip
       before_script:
         - pip3 install -r generator/requirements.txt
         - cd flatdata-rs
