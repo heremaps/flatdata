@@ -75,7 +75,7 @@ matrix:
             - binutils-dev
             - python3-pip
       before_script:
-        - pip3 install -r generator/requirements.txt
+        - pip3 install -r flatdata-py/generator/requirements.txt
         - cd flatdata-rs
         - cargo install cargo-update || echo "cargo-update already installed"
         - cargo install cargo-travis || echo "cargo-travis already installed"
