@@ -15,7 +15,7 @@ function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
 
     add_custom_command(
         OUTPUT ${OUTPUT_FILENAME}
-        COMMAND ${PYTHON_EXECUTABLE} ${GENERATOR_PATH}/app.py
+        COMMAND ${PYTHON3_EXECUTABLE} ${GENERATOR_PATH}/app.py
         --gen cpp
         --schema ${SCHEMA_FILENAME}
         --output-file ${OUTPUT_FILENAME}
