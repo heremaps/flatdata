@@ -10,7 +10,7 @@ pub enum Bar {
     Value = 0,
 }
 
-impl Int for Bar {
+impl flatdata::helper::Int for Bar {
     const IS_SIGNED: bool = false;
 }
 }
@@ -26,7 +26,7 @@ pub enum Bar {
     Value = 0,
 }
 
-impl Int for Bar {
+impl flatdata::helper::Int for Bar {
     const IS_SIGNED: bool = false;
 }
 }
