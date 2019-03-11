@@ -63,6 +63,7 @@ matrix:
 
     # rust
     - language: rust
+      dist: xenial
       rust: stable
       cache:
         - cargo
