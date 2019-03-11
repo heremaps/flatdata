@@ -54,7 +54,7 @@ enum EnumI64 : i64 {
 	FOO_I64_NEG = -9223372036854775808,
 	FOO_I64_POS = 9223372036854775807,
 	FOO_I64_ZERO = 0,
-	FOO_I64_NEG_HEx= -0x7fffffffffffffff,
+	FOO_I64_NEG_HEX = -0x7fffffffffffffff,
 	FOO_I64_POS_HEX = 0x7ffffffffffffffe,
 	FOO_I64_ONE_HEX = 0x1,
 }
