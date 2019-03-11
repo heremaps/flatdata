@@ -9,7 +9,7 @@ pub enum EnumI8 {
     FooI8OneHex = 1,
 }
 
-impl Int for EnumI8 {
+impl flatdata::helper::Int for EnumI8 {
     const IS_SIGNED: bool = true;
 }
 
@@ -22,7 +22,7 @@ pub enum EnumU8 {
     FooU8OneHex = 1,
 }
 
-impl Int for EnumU8 {
+impl flatdata::helper::Int for EnumU8 {
     const IS_SIGNED: bool = false;
 }
 
@@ -37,7 +37,7 @@ pub enum EnumI16 {
     FooI16OneHex = 1,
 }
 
-impl Int for EnumI16 {
+impl flatdata::helper::Int for EnumI16 {
     const IS_SIGNED: bool = true;
 }
 
@@ -50,7 +50,7 @@ pub enum EnumU16 {
     FooU16OneHex = 1,
 }
 
-impl Int for EnumU16 {
+impl flatdata::helper::Int for EnumU16 {
     const IS_SIGNED: bool = false;
 }
 
@@ -65,7 +65,7 @@ pub enum EnumI32 {
     FooI32OneHex = 1,
 }
 
-impl Int for EnumI32 {
+impl flatdata::helper::Int for EnumI32 {
     const IS_SIGNED: bool = true;
 }
 
@@ -78,7 +78,7 @@ pub enum EnumU32 {
     FooU32OneHex = 1,
 }
 
-impl Int for EnumU32 {
+impl flatdata::helper::Int for EnumU32 {
     const IS_SIGNED: bool = false;
 }
 
@@ -93,7 +93,7 @@ pub enum EnumI64 {
     FooI64OneHex = 1,
 }
 
-impl Int for EnumI64 {
+impl flatdata::helper::Int for EnumI64 {
     const IS_SIGNED: bool = true;
 }
 
@@ -106,6 +106,6 @@ pub enum EnumU64 {
     FooU64OneHex = 1,
 }
 
-impl Int for EnumU64 {
+impl flatdata::helper::Int for EnumU64 {
     const IS_SIGNED: bool = false;
 }
