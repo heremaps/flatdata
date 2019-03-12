@@ -13,3 +13,4 @@ edition = "2018"
 [dependencies]
 diff = "0.1"
 memmap = "0.6"
+walkdir = "2"

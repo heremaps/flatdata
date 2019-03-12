@@ -8,4 +8,4 @@ edition = "2018"
 flatdata = { path = "../../lib" }
 
 [build-dependencies]
-walkdir = "2"
+flatdata = { path = "../../lib" }

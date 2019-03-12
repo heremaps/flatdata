@@ -6,3 +6,6 @@ edition = "2018"
 
 [dependencies]
 flatdata = { path = "../../lib" }
+
+[build-dependencies]
+flatdata = { path = "../../lib" }
