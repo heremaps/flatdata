@@ -11,6 +11,14 @@ import logging
 import os.path
 import sys
 
+# check that requirements are installed here
+try:
+    import pyparsing
+    import jinja2
+except ModuleNotFoundError as e:
+    print("Cannot import `%s`, you probably need to install it. See `generator/requirements.txt` or `README.md`." % e.name, file=sys.stderr)
+    sys.exit(2)
+
 sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), os.pardir))
 
