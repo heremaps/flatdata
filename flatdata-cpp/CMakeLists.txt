@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.2)
 project(flatdata-cpp)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake OPTIONAL RESULT_VARIABLE USE_CONAN)
-if(USE_CONAN)
-    conan_basic_setup()
-endif()
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(flatdata/GenerateSource)
 
