@@ -27,7 +27,7 @@ matrix:
           docker run -t \
             -e C_COMPILER=${C_COMPILER} \
             -e CXX_COMPILER=${CXX_COMPILER} \
-            -v $(pwd):/src \
+            -v $(pwd):/src/flatdata-cpp \
             -w /build \
             boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
 

@@ -4,7 +4,7 @@ endif()
 
 file(GLOB BENCHMARK_FLATDATA_SOURCES "*.cpp")
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/flatdata/GenerateSource.cmake)
+# include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/flatdata/GenerateSource.cmake)
 flatdata_generate_source(generate_flatdata_benchmark_code
     ${CMAKE_CURRENT_SOURCE_DIR}/graph.flatdata
     ${CMAKE_CURRENT_BINARY_DIR}/generated/graph.hpp)

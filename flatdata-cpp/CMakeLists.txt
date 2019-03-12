@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.2)
 project(flatdata-cpp)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake OPTIONAL RESULT_VARIABLE USE_CONAN)
+if(USE_CONAN)
+    conan_basic_setup()
+endif()
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+include(flatdata/GenerateSource)
+
 set(CMAKE_CXX_STANDARD 11)
 
 find_package(Boost COMPONENTS system filesystem REQUIRED)
@@ -24,6 +32,7 @@ target_link_libraries(flatdata
   ${Boost_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT})
 
+enable_testing()
 add_subdirectory(test)
 add_subdirectory(benchmark)
 add_subdirectory(examples)
