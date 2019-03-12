@@ -42,7 +42,7 @@ pub fn generate(output_dir: &Path, schemas_path: &Path, generator: &Path) {
             continue;
         }
 
-        let result: PathBuf = if entry.path().is_dir() {
+        let result: PathBuf = if schemas_path.is_dir() {
             output_dir
                 .join(entry.path().strip_prefix(&schemas_path).unwrap())
                 .with_extension("rs")
