@@ -27,9 +27,9 @@ matrix:
           docker run -t \
             -e C_COMPILER=${C_COMPILER} \
             -e CXX_COMPILER=${CXX_COMPILER} \
-            -v $(pwd):/src/flatdata-cpp \
+            -v $(pwd):/src \
             -w /build \
-            boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
+            boxdot/flatdata-dev:15 /src/flatdata-cpp/ci/build-and-test-cpp.sh
 
     # clang
     - language: cpp
@@ -42,7 +42,7 @@ matrix:
             -e CXX_COMPILER=${CXX_COMPILER} \
             -v $(pwd):/src \
             -w /build \
-            boxdot/flatdata-dev:15 /src/ci/build-and-test-cpp.sh
+            boxdot/flatdata-dev:15 /src/flatdata-cpp/ci/build-and-test-cpp.sh
 
     # go
     - language: go
