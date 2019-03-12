@@ -7,7 +7,7 @@ set(FLATDATA_GENERATOR_PATH ${CMAKE_CURRENT_LIST_DIR}/../../../flatdata-py/gener
 # @param OUTPUT_FILENAME output filename. Generator is forced to output to the given file.
 #
 function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
-    find_program(PYTHON3_EXECUTABLE python3)
+    find_program(PYTHON3_EXECUTABLE NAMES python3 python36)
     if (NOT PYTHON3_EXECUTABLE)
         message(FATAL_ERROR "python3 NOT found.")
     endif()

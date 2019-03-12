@@ -11,7 +11,7 @@ RUN apk --no-cache add \
     gfortran \
     make \
     musl-dev \
-    python3-dev \
+    python3 \
     && pip3 install \
     breathe \
     sphinx \
