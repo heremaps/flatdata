@@ -88,18 +88,22 @@ matrix:
         - cargo coveralls
 
     - language: rust
+      dist: xenial
       rust: beta
       cache: cargo
       before_script:
+        - pip3 install -r flatdata-py/generator/requirements.txt
         - cd flatdata-rs
       script:
         - cargo build
         - cargo test
 
     - language: rust
+      dist: xenial
       rust: nightly
       cache: cargo
       before_script:
+        - pip3 install -r flatdata-py/generator/requirements.txt
         - cd flatdata-rs
       script:
         - cargo build
