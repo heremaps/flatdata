@@ -70,17 +70,10 @@ matrix:
       addons:
         apt:
           packages:
-            - libcurl4-openssl-dev
-            - libelf-dev
-            - libdw-dev
-            - binutils-dev
             - python3-pip
       before_script:
         - pip3 install -r flatdata-py/generator/requirements.txt
         - cd flatdata-rs
-        - cargo install cargo-update || echo "cargo-update already installed"
-        - cargo install cargo-travis || echo "cargo-travis already installed"
-        - cargo install-update -a # update outdated cached binaries
       script:
         - cargo build
         - cargo test
@@ -91,6 +84,10 @@ matrix:
       dist: xenial
       rust: beta
       cache: cargo
+      addons:
+        apt:
+          packages:
+            - python3-pip
       before_script:
         - pip3 install -r flatdata-py/generator/requirements.txt
         - cd flatdata-rs
@@ -102,6 +99,10 @@ matrix:
       dist: xenial
       rust: nightly
       cache: cargo
+      addons:
+        apt:
+          packages:
+            - python3-pip
       before_script:
         - pip3 install -r flatdata-py/generator/requirements.txt
         - cd flatdata-rs
