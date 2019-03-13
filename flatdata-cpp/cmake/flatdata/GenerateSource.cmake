@@ -1,21 +1,23 @@
+set(FLATDATA_GENERATOR_PATH ${CMAKE_CURRENT_LIST_DIR}/../../../flatdata-py/generator)
+
 # Generates sources from flatdata schema
 #
 # @param TARGET_NAME Name of custom target to generate header for schema
-# @param GENERATOR_PATH path to generator code. Has to provide it due to some cmake limitations with functions.
 # @param SCHEMA_FILENAME path to the flatdata schema
 # @param OUTPUT_FILENAME output filename. Generator is forced to output to the given file.
 #
 function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
-    find_program(PYTHON3_EXECUTABLE python3)
+    find_program(PYTHON3_EXECUTABLE NAMES python3 python36)
     if (NOT PYTHON3_EXECUTABLE)
         message(FATAL_ERROR "python3 NOT found.")
     endif()
-    file(GLOB_RECURSE FLATDATA_GENERATOR_SOURCES ${GENERATOR_PATH}/**/*.py)
-    file(GLOB_RECURSE FLATDATA_GENERATOR_TEMPLATES ${GENERATOR_PATH}/**/*.jinja2)
+
+    file(GLOB_RECURSE FLATDATA_GENERATOR_SOURCES ${FLATDATA_GENERATOR_PATH}/**/*.py)
+    file(GLOB_RECURSE FLATDATA_GENERATOR_TEMPLATES ${FLATDATA_GENERATOR_PATH}/**/*.jinja2)
 
     add_custom_command(
         OUTPUT ${OUTPUT_FILENAME}
-        COMMAND ${PYTHON3_EXECUTABLE} ${GENERATOR_PATH}/app.py
+        COMMAND ${PYTHON3_EXECUTABLE} ${FLATDATA_GENERATOR_PATH}/app.py
         --gen cpp
         --schema ${SCHEMA_FILENAME}
         --output-file ${OUTPUT_FILENAME}
