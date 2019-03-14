@@ -37,6 +37,7 @@ use crate::storage::ResourceStorage;
 use std::fmt::Debug;
 use std::rc::Rc;
 
+#[doc(hidden)]
 pub use std::marker;
 
 /// A type in flatdata used for reading data.
@@ -210,6 +211,7 @@ pub trait ArchiveBuilder: Clone {
 //
 
 /// Macro used by generator to define a flatdata struct.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! define_struct {
     ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
@@ -221,7 +223,7 @@ macro_rules! define_struct {
             _phantom: $crate::marker::PhantomData<&'a u8>,
         }
 
-        #[derive(Clone)]
+        #[derive(Clone, Debug)]
         pub struct $factory{}
 
         impl<'a> $crate::Struct<'a> for $factory
@@ -329,6 +331,7 @@ macro_rules! define_struct {
 }
 
 /// Macro used by generator to define a flatdata index.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! define_index {
     ($factory:ident,$name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr, $size_in_bits:expr) => {
@@ -358,6 +361,7 @@ macro_rules! define_index {
 
 /// Macro used by generator to define a flatdata variant used in `MultiVector`
 /// and `MultiArrayView`.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! define_variadic_struct {
     ($factory:ident, $name:ident, $item_builder_name:ident, $index_type:path,
@@ -472,6 +476,7 @@ macro_rules! check_resource {
 
 /// Macro used by generator to define a flatdata archive and corresponding
 /// archive builder.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! define_archive {
     ($name:ident, $builder_name:ident, $archive_schema:expr;
@@ -683,7 +688,7 @@ macro_rules! define_archive {
             }
         }
 
-        #[derive(Clone)]
+        #[derive(Clone, Debug)]
         pub struct $builder_name {
             storage: ::std::rc::Rc<$crate::ResourceStorage>
         }

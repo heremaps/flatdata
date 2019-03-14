@@ -16,6 +16,7 @@
 /// [`write_bytes`]: macro.write_bytes.html
 /// [`Archive`]: trait.Archive.html
 /// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
+#[doc(hidden)]
 #[macro_export]
 macro_rules! read_bytes {
     (bool, $data:expr, $offset:expr, $num_bits:expr) => {{

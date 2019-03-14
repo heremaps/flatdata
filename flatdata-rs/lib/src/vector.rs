@@ -24,37 +24,63 @@ use std::marker;
 /// [`as_view`] and the corresponding setter to write a `Vector` to storage.
 ///
 /// # Examples
+/// ``` flatdata
+/// struct A {
+///     x : u32 : 16;
+///     y : u32 : 16;
+/// }
+///
+/// archive X {
+///    data : vector< A >;
+/// }
+/// ```
 ///
 /// ```
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
-/// use flatdata::Vector;
-///
-/// define_struct!(
-///     A,
-///     RefA,
-///     RefMutA,
-///     "no_schema",
-///     4,
-///     (x, set_x, u32, u32, 0, 16),
-///     (y, set_y, u32, u32, 16, 16)
-/// );
-///
+/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder, Vector };
+/// #
+/// # define_struct!(
+/// #     A,
+/// #     RefA,
+/// #     RefMutA,
+/// #     "Schema of A",
+/// #     4,
+/// #     (x, set_x, u32, u32, 0, 16),
+/// #     (y, set_y, u32, u32, 16, 16));
+/// #
+/// # define_archive!(X, XBuilder,
+/// #     "Schema of X";
+/// #     // struct resources
+/// # ;
+/// #     // vector resources
+/// #     (data, set_data, start_data,
+/// #         A,
+/// #         "Schema of data", false);
+/// #     // multivector resources
+/// # ;
+/// #     // raw data resources
+/// # ;
+/// #     // subarchives
+/// # );
+/// #
+/// let storage = MemoryResourceStorage::new("/root/extvec");
+/// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// let mut v: Vector<A> = Vector::new();
-/// {
-///     let mut a = v.grow();
-///     a.set_x(1);
-///     a.set_y(2);
-/// }
-/// {
-///     let mut b = v.grow();
-///     b.set_x(3);
-///     b.set_y(4);
-/// }
+/// let mut a = v.grow();
+/// a.set_x(1);
+/// a.set_y(2);
+///
+/// let mut b = v.grow();
+/// b.set_x(3);
+/// b.set_y(4);
 ///
 /// assert_eq!(v.len(), 2);
-/// // serialize
-/// // SomeArchiveBuilder.set_vector_resource_of_a_s(&v.as_view());
+/// builder.set_data(&v.as_view());
+///
+/// let archive = X::open(storage).expect("failed to open");
+/// let view = archive.data();
+/// assert_eq!(view.at(1).x(), 3);
 /// # }
 /// ```
 ///
@@ -209,56 +235,68 @@ where
 /// result in panic on drop (in debug mode).
 ///
 /// # Examples
+/// ``` flatdata
+/// struct A {
+///     x : u32 : 16;
+///     y : u32 : 16;
+/// }
+///
+/// archive X {
+///    data : vector< A >;
+/// }
+/// ```
 ///
 /// ```
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
-/// use flatdata::{
-///     create_external_vector, ArrayView, ExternalVector, MemoryResourceStorage, ResourceStorage,
-/// };
-///
-/// define_struct!(
-///     A,
-///     RefA,
-///     RefMutA,
-///     "no_schema",
-///     4,
-///     (x, set_x, u32, u32, 0, 16),
-///     (y, set_y, u32, u32, 16, 16)
-/// );
-///
+/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder };
+/// #
+/// # define_struct!(
+/// #     A,
+/// #     RefA,
+/// #     RefMutA,
+/// #     "Schema of A",
+/// #     4,
+/// #     (x, set_x, u32, u32, 0, 16),
+/// #     (y, set_y, u32, u32, 16, 16));
+/// #
+/// # define_archive!(X, XBuilder,
+/// #     "Schema of X";
+/// #     // struct resources
+/// # ;
+/// #     // vector resources
+/// #     (data, set_data, start_data,
+/// #         A,
+/// #         "Schema of data", false);
+/// #     // multivector resources
+/// # ;
+/// #     // raw data resources
+/// # ;
+/// #     // subarchives
+/// # );
+/// #
 /// let storage = MemoryResourceStorage::new("/root/extvec");
+/// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// {
-///     let mut v = create_external_vector::<A>(&*storage, "vector", "Some schema content")
-///         .expect("failed to create ExternalVector");
-///     {
-///         let mut a = v.grow().expect("grow failed");
-///         a.set_x(0);
-///         a.set_y(1);
-///     }
-///     {
-///         let mut a = v.grow().expect("grow failed");
-///         a.set_x(2);
-///         a.set_y(3);
-///     }
+///     let mut v = builder.start_data().expect("failed to start");
+///     let mut a = v.grow().expect("grow failed");
+///     a.set_x(0);
+///     a.set_y(1);
+///
+///     let mut a = v.grow().expect("grow failed");
+///     a.set_x(2);
+///     a.set_y(3);
+///
 ///     let view = v.close().expect("close failed");
 ///
 ///     // data can also be inspected directly after closing
 ///     assert_eq!(view.len(), 2);
 ///     assert_eq!(view.at(0).x(), 0);
 ///     assert_eq!(view.at(0).y(), 1);
-///     assert_eq!(view.at(1).x(), 2);
-///     assert_eq!(view.at(1).y(), 3);
 /// }
 ///
-/// let resource = storage
-///     .read_and_check_schema("vector", "Some schema content")
-///     .expect("failed to read vector resource");
-///
-/// let view: ArrayView<A> = ArrayView::new(&resource);
-/// assert_eq!(view.len(), 2);
-/// assert_eq!(view.at(0).x(), 0);
-/// assert_eq!(view.at(0).y(), 1);
+/// let archive = X::open(storage).expect("failed to open");
+/// let view = archive.data();
 /// assert_eq!(view.at(1).x(), 2);
 /// assert_eq!(view.at(1).y(), 3);
 ///

@@ -18,27 +18,58 @@ use std::marker;
 /// buffer.
 ///
 /// # Examples
+/// ``` flatdata
+/// struct A {
+///     x : u32 : 16;
+///     y : u32 : 16;
+/// }
+///
+/// archive X {
+///    data : A;
+/// }
+/// ```
 ///
 /// ```
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
-/// use flatdata::StructBuf;
-///
-/// define_struct!(
-///     A,
-///     RefA,
-///     RefMutA,
-///     "no_schema",
-///     4,
-///     (x, set_x, u32, u32, 0, 16),
-///     (y, set_y, u32, u32, 16, 16)
-/// );
-///
+/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder, StructBuf };
+/// #
+/// # define_struct!(
+/// #     A,
+/// #     RefA,
+/// #     RefMutA,
+/// #     "schema of A",
+/// #     4,
+/// #     (x, set_x, u32, u32, 0, 16),
+/// #     (y, set_y, u32, u32, 16, 16));
+/// #
+/// # define_archive!(X, XBuilder,
+/// #     "schema of X";
+/// #     // struct resources
+/// #     (data, set_data,
+/// #         A,
+/// #         "schema of data", false);
+/// #     // vector resources
+/// # ;
+/// #     // multivector resources
+/// # ;
+/// #     // raw data resources
+/// # ;
+/// #     // subarchives
+/// # );
+/// #
+/// let storage = MemoryResourceStorage::new("/root/structbuf");
+/// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// let mut a = StructBuf::<A>::new();
 /// a.get_mut().set_x(1);
 /// a.get_mut().set_y(2);
-/// assert_eq!(a.get().x(), 1);
-/// assert_eq!(a.get().y(), 2);
+/// builder.set_data(a.get());
+///
+/// let archive = X::open(storage).expect("failed to open");
+/// let view = archive.data();
+///
+/// assert_eq!(view.x(), 1);
+/// assert_eq!(view.y(), 2);
 /// # }
 /// ```
 ///

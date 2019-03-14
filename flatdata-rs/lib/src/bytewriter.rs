@@ -20,6 +20,7 @@
 /// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
 /// [`read_bytes`]: macro.read_bytes.html
 /// [`std::mem::size_of::<T>`]: https://doc.rust-lang.org/std/mem/fn.size_of.html
+#[doc(hidden)]
 #[macro_export]
 macro_rules! write_bytes {
     ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{
