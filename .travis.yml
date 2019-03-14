@@ -16,9 +16,10 @@ matrix:
         - pushd flatdata-py
         - pip3 install -r requirements.txt
         - pip3 install -r generator/requirements.txt
+        - pip3 install pylint
         - python3 -m nose
+        - pylint flatdata generator
         - popd
-        - ./ci/lint.py
 
     # gcc
     - language: cpp

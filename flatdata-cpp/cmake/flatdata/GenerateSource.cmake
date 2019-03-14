@@ -1,4 +1,4 @@
-set(FLATDATA_GENERATOR_PATH ${CMAKE_CURRENT_LIST_DIR}/../../../flatdata-py/generator)
+set(FLATDATA_GENERATOR_PATH ${CMAKE_CURRENT_LIST_DIR}/../../../flatdata-py)
 
 # Generates sources from flatdata schema
 #
@@ -17,7 +17,7 @@ function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
 
     add_custom_command(
         OUTPUT ${OUTPUT_FILENAME}
-        COMMAND ${PYTHON3_EXECUTABLE} ${FLATDATA_GENERATOR_PATH}/app.py
+        COMMAND ${PYTHON3_EXECUTABLE} ${FLATDATA_GENERATOR_PATH}/generate.py
         --gen cpp
         --schema ${SCHEMA_FILENAME}
         --output-file ${OUTPUT_FILENAME}

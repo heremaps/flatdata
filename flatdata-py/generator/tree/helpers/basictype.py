@@ -45,9 +45,9 @@ class BasicType:
         if self.is_signed:
             if value >= 0:
                 # sign bit
-                return value.bit_length() + 1;
+                return value.bit_length() + 1
             # sign bit plus 2 complement allowes one more value
-            return (-value -1).bit_length() + 1;
+            return (-value -1).bit_length() + 1
         if value >= 0:
             return value.bit_length()
         raise InvalidSignError(value=value)

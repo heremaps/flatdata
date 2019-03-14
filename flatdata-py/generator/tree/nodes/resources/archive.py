@@ -1,5 +1,5 @@
-from .base import ResourceBase
 from generator.tree.nodes.references import ArchiveReference
+from .base import ResourceBase
 
 
 class Archive(ResourceBase):
@@ -19,5 +19,5 @@ class Archive(ResourceBase):
         assert len(targets) == 1
         return targets[0]
 
-    def _create_references(self):
+    def create_references(self):
         return [ArchiveReference(name=self._target)]

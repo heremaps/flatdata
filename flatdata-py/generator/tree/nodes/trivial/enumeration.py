@@ -1,13 +1,13 @@
-from generator.tree.nodes.node import Node
-from generator.tree.errors import DuplicateEnumValueError
-from generator.tree.errors import InvalidEnumValueError
-from .enumeration_value import EnumerationValue
+from generator.tree.errors import DuplicateEnumValueError, InvalidEnumValueError
 from generator.tree.helpers.basictype import BasicType
+from generator.tree.nodes.node import Node
+from .enumeration_value import EnumerationValue
+
 
 class Enumeration(Node):
     def __init__(self, name, properties=None, type=None):
         super(Enumeration, self).__init__(name=name, properties=properties)
-        self._type=type
+        self._type = type
 
         if self._type is not None:
             self._type = BasicType(name=self._type)
@@ -17,7 +17,7 @@ class Enumeration(Node):
         result = Enumeration(name=properties.name, properties=properties, type=properties.type)
 
         current_assigned_value = 0
-        unique_values = set();
+        unique_values = set()
         for value in properties.enum_values:
             if value.constant:
                 current_assigned_value = int(value.constant, 0)
@@ -52,4 +52,3 @@ class Enumeration(Node):
     @property
     def bits_required(self):
         return self._bits_required
-    

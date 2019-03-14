@@ -73,5 +73,6 @@ class Structure:
         return json.dumps({
             "name": self.__class__.__name__,
             "attributes":
-                {name: getattr(self, name) for name, signature in self._FIELDS.items()}
-        }, indent = 4)
+                {name: getattr(self, name)
+                 for name, signature in self._FIELDS.items()}
+        }, indent=4)

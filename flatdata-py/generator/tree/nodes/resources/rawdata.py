@@ -9,5 +9,5 @@ class RawData(ResourceBase):
     def create(properties):
         return RawData(name=properties.name, properties=properties)
 
-    def _create_references(self):
+    def create_references(self):
         return []

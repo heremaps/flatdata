@@ -1,6 +1,3 @@
-from generator import grammar
-from generator.tree.errors import InvalidWidthError
-
 from .basictype import BasicType
 
 
@@ -8,7 +5,7 @@ class EnumType:
     def __init__(self, name, basic_type):
         assert not BasicType.is_basic_type(name), "%r is no valid enum name" % name
         self._name = name
-        self._type = basic_type;
+        self._type = basic_type
 
     @property
     def name(self):
