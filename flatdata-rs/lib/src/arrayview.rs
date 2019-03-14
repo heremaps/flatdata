@@ -9,43 +9,10 @@ use std::ops::{Bound, RangeBounds};
 /// A read-only view on a contiguous sequence of flatdata structs of the same
 /// type `T`.
 ///
-/// The sequence is written using [`Vector`] or [`ExternalVector`]. The former
-/// provides a method to create an `ArrayView` to it. Note that, that an array
-/// view does not hold the data itself.
+/// The sequence is written using [`Vector`] or [`ExternalVector`]. For detailed examples see either of the two.
 ///
 /// An archive provides a getter for each vector resource, which returns an
 /// array view.
-///
-/// # Examples
-///
-/// ```
-/// # #[macro_use] extern crate flatdata;
-/// # fn main() {
-/// use flatdata::{ArrayView, Vector};
-///
-/// define_struct!(
-///     A,
-///     RefA,
-///     RefMutA,
-///     "no_schema",
-///     4,
-///     (x, set_x, u32, u32, 0, 16),
-///     (y, set_y, u32, u32, 16, 16)
-/// );
-///
-/// let mut v: Vector<A> = Vector::with_len(1);
-/// {
-///     let mut a = v.at_mut(0);
-///     a.set_x(1);
-///     a.set_y(2);
-/// }
-///
-/// let view: ArrayView<_> = v.as_view();
-/// let a = view.at(0);
-/// assert_eq!(a.x(), 1);
-/// assert_eq!(a.y(), 2);
-/// # }
-/// ```
 ///
 /// [`Vector`]: struct.Vector.html
 /// [`ExternalVector`]: struct.ExternalVector.html

@@ -39,6 +39,34 @@ impl fmt::Debug for MemoryStorage {
 }
 
 /// Resource storage in memory.
+///
+/// Can be used to create archives in-memory, e.g. when writing tests.
+///
+/// # Examples
+/// ```
+/// # #[macro_use] extern crate flatdata;
+/// # fn main() {
+/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder };
+/// # define_archive!(X, XBuilder,
+/// #     "Schema for X";
+/// #     // struct resources
+/// # ;
+/// #     // vector resources
+/// # ;
+/// #     // multivector resources
+/// # ;
+/// #     // raw data resources
+/// # ;
+/// #     // subarchives
+/// # );
+/// let storage = MemoryResourceStorage::new("/root/extvec");
+/// let _builder = XBuilder::new(storage.clone()).expect("failed to create builder");
+/// // Write some data
+///
+/// let _archive = X::open(storage).expect("failed to open");
+/// // read some data
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct MemoryResourceStorage {
     storage: MemoryStorage,

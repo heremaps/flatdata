@@ -25,7 +25,7 @@ pub trait Stream: Write + Seek {}
 /// slash-separated('/'). Manages schema for each resource and checks it on
 /// query. Resource storage is expected to provide read-write access to
 /// resources.
-pub trait ResourceStorage {
+pub trait ResourceStorage: std::fmt::Debug {
     /// Open a flatdata resource with given name and schema for reading.
     ///
     /// Also checks if the schema matches the stored schema in the storage. The
@@ -135,6 +135,7 @@ pub trait ResourceStorage {
 /// Creates a new resource with given name and schema in storage, and returns
 /// an [`ExternalVector`] using this resource for writing and flushing data to
 /// storage.
+#[doc(hidden)]
 pub fn create_external_vector<'a, T>(
     storage: &'a ResourceStorage,
     resource_name: &str,
@@ -160,6 +161,7 @@ where
 /// Creates a new resource with given name and schema in storage, and returns
 /// an [`MultiVector`] using this resource for writing and flushing data to
 /// storage.
+#[doc(hidden)]
 pub fn create_multi_vector<'a, Idx, Ts>(
     storage: &'a ResourceStorage,
     resource_name: &str,
@@ -197,6 +199,7 @@ where
 /// error of kind [`AlreadyExists`] is returned.
 ///
 /// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
+#[doc(hidden)]
 pub fn create_archive<T: ArchiveBuilder>(
     storage: &Rc<ResourceStorage>,
 ) -> Result<(), ResourceStorageError> {
@@ -220,6 +223,7 @@ pub fn create_archive<T: ArchiveBuilder>(
 }
 
 /// Describes a chunk of memory
+#[doc(hidden)]
 #[derive(Debug, Clone)]
 pub struct MemoryDescriptor {
     ptr: *const u8,
