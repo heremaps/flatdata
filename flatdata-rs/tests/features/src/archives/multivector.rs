@@ -79,24 +79,3 @@ fn test() {
         }
     }
 }
-
-/*
-namespace n{
-struct S {
-    x : u64;
-}
-
-struct T {
-    x : u64;
-}
-
-archive A {
-    data : multivector< 8, S, T >;
-
-    @optional
-    optional_data : multivector< 16, S, T >;
-
-    data_u64_index : multivector< 64, S, T >;
-}
-}
-*/
