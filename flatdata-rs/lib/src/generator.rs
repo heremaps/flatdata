@@ -23,9 +23,9 @@ use std::path::PathBuf;
 /// ``` text
 /// out_dir/
 /// ├───────example_a/
-/// │       ├─────────my_schema.flatdata
-/// │       └─────────my_other_schema.flatdata
-/// └───────example_b.flatdata
+/// │       ├─────────my_schema.rs
+/// │       └─────────my_other_schema.rs
+/// └───────example_b.rs
 /// ```
 ///
 /// # Examples
