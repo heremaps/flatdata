@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 #[macro_use]
 extern crate flatdata;
 
@@ -19,9 +21,8 @@ fn substring(strings: &str, start: u32) -> &str {
 
 #[test]
 fn read_and_validate_coappearances() {
-    let storage = flatdata::FileResourceStorage::new(path::PathBuf::from(
-        "tests/coappearances/karenina.archive",
-    ));
+    let storage =
+        flatdata::FileResourceStorage::new(path::PathBuf::from("assets/karenina.archive"));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
     println!("{:?}", g);
 
@@ -278,7 +279,7 @@ fn copy_coappearances_archive(
 #[test]
 fn read_write_coappearances() {
     copy_coappearances_archive(
-        "tests/coappearances/karenina.archive",
+        "assets/karenina.archive",
         "read_write_coappearances/karenina.archive",
     );
 }
@@ -286,7 +287,7 @@ fn read_write_coappearances() {
 #[test]
 fn read_non_existent_statistics_subarchive() {
     let (archive_path, _) = copy_coappearances_archive(
-        "tests/coappearances/karenina.archive",
+        "assets/karenina.archive",
         "read_non_existent_statistics_subarchive/karenina.archive",
     );
 
@@ -298,7 +299,7 @@ fn read_non_existent_statistics_subarchive() {
 #[test]
 fn read_write_statistics_subarchive() {
     let (archive_path, gb) = copy_coappearances_archive(
-        "tests/coappearances/karenina.archive",
+        "assets/karenina.archive",
         "read_write_statistics_subarchive/karenina.archive",
     );
 
@@ -332,13 +333,13 @@ fn read_write_statistics_subarchive() {
     vertex_degrees.close().expect("close failed");
 
     // compare
-    let storage = flatdata::FileResourceStorage::new("tests/coappearances/karenina.archive");
+    let storage = flatdata::FileResourceStorage::new("assets/karenina.archive");
     let orig = coappearances::Graph::open(storage).expect("invalid archive");
     let storage = flatdata::FileResourceStorage::new(archive_path);
     let copy = coappearances::Graph::open(storage).expect("invalid archive");
 
-    let orig_stats = orig.statistics().as_ref().expect("orig statistics failed");
-    let copy_stats = copy.statistics().as_ref().expect("copy statistics failed");
+    let orig_stats = orig.statistics().expect("orig statistics failed");
+    let copy_stats = copy.statistics().expect("copy statistics failed");
 
     assert_eq!(orig_stats.invariants(), copy_stats.invariants());
     assert_eq!(
@@ -356,7 +357,7 @@ fn read_write_statistics_subarchive() {
 #[test]
 fn read_and_validate_calculate_data_subarchive() {
     let storage = flatdata::FileResourceStorage::new(path::PathBuf::from(
-        "tests/coappearances/karenina.archive/statistics",
+        "assets/karenina.archive/statistics",
     ));
     let stats = coappearances::Statistics::open(storage).expect("invalid archive");
     println!("{:?}", stats);

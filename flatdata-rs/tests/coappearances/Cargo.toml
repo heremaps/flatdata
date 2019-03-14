@@ -1,0 +1,11 @@
+[package]
+name = "flatdata_tests_coappearances"
+version = "0.1.0"
+authors = ["boxdot <d@zerovolt.org>"]
+edition = "2018"
+
+[dependencies]
+flatdata = { path = "../../lib" }
+
+[build-dependencies]
+flatdata = { path = "../../lib" }
