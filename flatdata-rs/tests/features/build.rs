@@ -5,5 +5,11 @@ fn main() {
     let test_cases_path = PathBuf::from("../../../test_cases");
     let generator_path = PathBuf::from("../../../generator");
 
-    flatdata::generate(&out_path, &test_cases_path, &generator_path);
+    match flatdata::generate(&out_path, &test_cases_path, &generator_path) {
+        Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
+        }
+        _ => (),
+    }
 }
