@@ -98,8 +98,8 @@ archive A
             doc=_R0_DOC),
     }
 
-    def __init__(self, path):
-        flatdata.archive.Archive.__init__(self, path)
+    def __init__(self, resource_storage):
+        flatdata.archive.Archive.__init__(self, resource_storage)
 
         """
     ]
