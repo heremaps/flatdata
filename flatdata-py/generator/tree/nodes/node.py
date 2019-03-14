@@ -8,7 +8,7 @@ from generator.tree.errors import SymbolRedefinition
 from copy import copy
 
 
-class Node(object):
+class Node:
     """
     Node of a Syntax Tree.
     Every node is defined by its name and location in the tree.

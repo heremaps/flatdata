@@ -3,7 +3,7 @@ from generator.tree.errors import InvalidWidthError
 from generator.tree.errors import InvalidSignError
 
 
-class BasicType(object):
+class BasicType:
     _WIDTH = {
         "bool": 1,
         "u8": 8,

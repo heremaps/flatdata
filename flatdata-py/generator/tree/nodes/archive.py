@@ -3,7 +3,7 @@ from generator.tree.nodes.node import Node
 import generator.tree.nodes.resources as resources
 
 
-class _ResourceFactory(object):
+class _ResourceFactory:
     @staticmethod
     def _create_resource_object(properties):
         type = properties.type

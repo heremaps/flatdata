@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 '''
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
@@ -12,14 +11,12 @@ import sys
 
 # check that requirements are installed here
 try:
+    #pylint: disable=unused-import
     import pyparsing
     import jinja2
-except ModuleNotFoundError as e:
-    print("Cannot import `%s`, you probably need to install it. See `generator/requirements.txt` or `README.md`." % e.name, file=sys.stderr)
+except ModuleNotFoundError as exc:
+    print("Cannot import `%s`, you probably need to install it. See `generator/requirements.txt` or `README.md`." % exc.name, file=sys.stderr)
     sys.exit(2)
-
-sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))), os.pardir))
 
 from generator.engine import Engine
 from generator.tree.errors import FlatdataSyntaxError

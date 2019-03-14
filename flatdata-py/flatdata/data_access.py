@@ -3,9 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-"""
-Sign bits cache for the value reading.
-"""
+# Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
 
 
