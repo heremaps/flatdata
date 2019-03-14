@@ -1,4 +1,4 @@
-# flatdata [![Build Status](https://api.travis-ci.com/heremaps/flatdata.svg?branch=master)](https://travis-ci.com/heremaps/flatdata/)
+# <img align="left" src="https://github.com/heremaps/flatdata/blob/master/docs/logo.svg" width="48" height="48"> flatdata [![Build Status](https://api.travis-ci.com/heremaps/flatdata.svg?branch=master)](https://travis-ci.com/heremaps/flatdata/)
 
 _Write once, read-many, minimal overhead binary structured file format._
 
@@ -43,7 +43,7 @@ namespace loc {
 }
 ```
 
-The full schema documentation can be find [here](docs/schema-language.md).
+The full schema documentation can be found [here](docs/schema-language.md).
 
 ### Generating a module
 
