@@ -1,5 +1,5 @@
 [package]
-name = "tests_features"
+name = "flatdata_tests_features"
 version = "0.1.0"
 authors = ["Christian Vetter <veaac.fdirct@gmail.com>"]
 edition = "2018"
