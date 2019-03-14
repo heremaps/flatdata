@@ -56,16 +56,6 @@ class ResourceBase(object):
     def open(cls, storage, name, initializer, is_optional=False):
         return cls(storage.get(name, is_optional), initializer)
 
-    @staticmethod
-    def _is_archive():
-        """
-        Necessary to distinguish between archive and normal resources in a reliable manner.
-        isinstance fails to do the check with current module structure.
-        https://stackoverflow.com/questions/38514730/isinstance-returns-false-when-the-fully
-        -qualified-object-class-differs-from-th
-        """
-        return False
-
 
 class _VectorSlice(object):
     def __init__(self, s, sequence):
