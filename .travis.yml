@@ -63,6 +63,18 @@ matrix:
               -O flatdata-go/backward-compatibility-tests/test_backward_compatibility_generated.go
           pushd flatdata-go/backward-compatibility-tests; make run-ci; popd
 
+    # dot
+    - dist: xenial
+      addons:
+        apt:
+          packages:
+            - python3-pip
+            - graphviz
+      before_script:
+        - pip3 install -r flatdata-py/generator/requirements.txt
+      script:
+        - ci/dot_test_cases.sh
+
     # rust
     - language: rust
       dist: xenial
