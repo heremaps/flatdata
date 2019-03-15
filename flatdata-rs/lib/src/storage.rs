@@ -1,4 +1,4 @@
-use crate::archive::{ArchiveBuilder, IndexStruct, Struct, VariadicStruct};
+use crate::archive::{ArchiveBuilder, Struct, VariadicRefFactory};
 use crate::error::ResourceStorageError;
 use crate::memory::{SizeType, PADDING_SIZE};
 use crate::multivector::MultiVector;
@@ -162,14 +162,13 @@ where
 /// an [`MultiVector`] using this resource for writing and flushing data to
 /// storage.
 #[doc(hidden)]
-pub fn create_multi_vector<'a, Idx, Ts>(
+pub fn create_multi_vector<'a, Ts>(
     storage: &'a ResourceStorage,
     resource_name: &str,
     schema: &str,
-) -> io::Result<MultiVector<'a, Idx, Ts>>
+) -> io::Result<MultiVector<'a, Ts>>
 where
-    Idx: for<'b> IndexStruct<'b>,
-    Ts: for<'b> VariadicStruct<'b>,
+    Ts: VariadicRefFactory,
 {
     // create index
     let index_name = format!("{}_index", resource_name);

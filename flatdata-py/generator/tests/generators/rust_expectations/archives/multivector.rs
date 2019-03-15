@@ -16,19 +16,19 @@ define_struct!(
 
 /// Builtin union type of .n.S, .n.T.
 define_variadic_struct!(Data, RefData, BuilderData,
-    IndexType8,
+    super::_builtin::multivector::IndexType8,
     0 => ( S, super::n::S, add_s),
     1 => ( T, super::n::T, add_t));
 
 /// Builtin union type of .n.S, .n.T.
 define_variadic_struct!(OptionalData, RefOptionalData, BuilderOptionalData,
-    IndexType16,
+    super::_builtin::multivector::IndexType16,
     0 => ( S, super::n::S, add_s),
     1 => ( T, super::n::T, add_t));
 
 /// Builtin union type of .n.S, .n.T.
 define_variadic_struct!(DataU64Index, RefDataU64Index, BuilderDataU64Index,
-    IndexType64,
+    super::_builtin::multivector::IndexType64,
     0 => ( S, super::n::S, add_s),
     1 => ( T, super::n::T, add_t));
 

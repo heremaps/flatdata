@@ -123,6 +123,9 @@ pub trait VariadicRef: Clone + Debug + PartialEq {
 /// structs since that binds lifetime too early. Instead this generic factory
 /// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
 pub trait VariadicStruct<'a>: Clone {
+    /// Index type
+    type Index: IndexRefFactory;
+
     /// Reader type
     type Item: VariadicRef;
 
@@ -410,6 +413,8 @@ macro_rules! define_variadic_struct {
         pub struct $factory{}
 
         impl<'a> $crate::VariadicStruct<'a> for $factory {
+            type Index = $index_type;
+
             type Item = $name<'a>;
 
             #[inline]
@@ -548,7 +553,7 @@ macro_rules! define_archive {
             })*
 
             $(pub fn $multivector_resource(&self) -> opt!(
-                $crate::MultiArrayView<$index_type, $variadic_type>, $is_optional_multivector)
+                $crate::MultiArrayView<$variadic_type>, $is_optional_multivector)
             {
                 static_if!($is_optional_multivector, {
                     let index_mem_desc = &self.$multivector_resource.0.as_ref();
@@ -726,7 +731,7 @@ macro_rules! define_archive {
             $(pub fn $multivector_start(
                 &self,
             ) -> ::std::io::Result<
-                $crate::MultiVector<$index_type, $variadic_type>
+                $crate::MultiVector<$variadic_type>
             > {
                 $crate::create_multi_vector(
                     &*self.storage,

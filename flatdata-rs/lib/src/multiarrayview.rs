@@ -1,6 +1,4 @@
-use crate::archive::{
-    IndexRefFactory, IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct,
-};
+use crate::archive::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 use crate::arrayview::ArrayView;
 
 use std::fmt;
@@ -15,25 +13,26 @@ use std::ops::{Bound, RangeBounds};
 ///
 /// [`MultiVector`]: struct.MultiVector.html
 #[derive(Clone)]
-pub struct MultiArrayView<'a, Idx, Ts>
+pub struct MultiArrayView<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
-    index: ArrayView<'a, Idx>,
+    index: ArrayView<'a, <Ts as VariadicStruct<'a>>::Index>,
     data: &'a [u8],
     _phantom: marker::PhantomData<Ts>,
 }
 
-impl<'a, Idx, Ts> MultiArrayView<'a, Idx, Ts>
+impl<'a, Ts> MultiArrayView<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     /// Creates a new `MultiArrayView` to the data at the given address.
     ///
     /// The returned array view does not own the data.
-    pub fn new(index: ArrayView<'a, Idx>, data_mem_descr: &'a [u8]) -> Self {
+    pub fn new(
+        index: ArrayView<'a, <Ts as VariadicStruct<'a>>::Index>,
+        data_mem_descr: &'a [u8],
+    ) -> Self {
         Self {
             index,
             data: &data_mem_descr,
@@ -62,8 +61,9 @@ where
     ///
     /// Panics if index is greater than or equal to `MultiArrayView::len()`.
     pub fn at(&self, index: usize) -> MultiArrayViewItemIter<'a, Ts> {
-        let start = <Idx as IndexStruct>::index(self.index.at(index));
-        let end = <Idx as IndexStruct>::index(self.index.at(index + 1));
+        let start = <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::index(self.index.at(index));
+        let end =
+            <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::index(self.index.at(index + 1));
         MultiArrayViewItemIter {
             data: &self.data[start..end],
             _phantom: marker::PhantomData,
@@ -91,7 +91,7 @@ where
     }
 
     /// Returns an iterator through the indexed items of the array.
-    pub fn iter(&self) -> MultiArrayViewIter<'a, Idx, Ts> {
+    pub fn iter(&self) -> MultiArrayViewIter<'a, Ts> {
         MultiArrayViewIter { view: self.clone() }
     }
 }
@@ -139,13 +139,12 @@ where
     }
 }
 
-fn debug_format<'a, Idx, Ts>(
+fn debug_format<'a, Ts: 'a>(
     name: &str,
-    iter: MultiArrayViewIter<'a, Idx, Ts>,
+    iter: MultiArrayViewIter<'a, Ts>,
     f: &mut fmt::Formatter,
 ) -> fmt::Result
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     let len = iter.len();
@@ -168,9 +167,8 @@ where
     )
 }
 
-impl<'a, Idx, Ts> fmt::Debug for MultiArrayView<'a, Idx, Ts>
+impl<'a, Ts: 'a> fmt::Debug for MultiArrayView<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -178,26 +176,24 @@ where
     }
 }
 
-impl<'a, Idx, Ts: 'a> IntoIterator for MultiArrayView<'a, Idx, Ts>
+impl<'a, Ts: 'a> IntoIterator for MultiArrayView<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
-    type Item = <MultiArrayViewIter<'a, Idx, Ts> as Iterator>::Item;
-    type IntoIter = MultiArrayViewIter<'a, Idx, Ts>;
+    type Item = <MultiArrayViewIter<'a, Ts> as Iterator>::Item;
+    type IntoIter = MultiArrayViewIter<'a, Ts>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-impl<'a, Idx, Ts: 'a> IntoIterator for &MultiArrayView<'a, Idx, Ts>
+impl<'a, Ts: 'a> IntoIterator for &MultiArrayView<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
-    type Item = <MultiArrayViewIter<'a, Idx, Ts> as Iterator>::Item;
-    type IntoIter = MultiArrayViewIter<'a, Idx, Ts>;
+    type Item = <MultiArrayViewIter<'a, Ts> as Iterator>::Item;
+    type IntoIter = MultiArrayViewIter<'a, Ts>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
@@ -206,17 +202,15 @@ where
 
 /// Iterator through items of an multivector.
 #[derive(Clone)]
-pub struct MultiArrayViewIter<'a, Idx, Ts>
+pub struct MultiArrayViewIter<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
-    view: MultiArrayView<'a, Idx, Ts>,
+    view: MultiArrayView<'a, Ts>,
 }
 
-impl<'a, Idx, Ts> fmt::Debug for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Ts: 'a> fmt::Debug for MultiArrayViewIter<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -224,9 +218,8 @@ where
     }
 }
 
-impl<'a, Idx, Ts: 'a> iter::Iterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Ts: 'a> iter::Iterator for MultiArrayViewIter<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     type Item = MultiArrayViewItemIter<'a, Ts>;
@@ -241,9 +234,8 @@ where
     }
 }
 
-impl<'a, Idx, Ts: 'a> iter::DoubleEndedIterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Ts: 'a> iter::DoubleEndedIterator for MultiArrayViewIter<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     fn next_back(&mut self) -> Option<Self::Item> {
@@ -259,16 +251,10 @@ where
 }
 
 // we always check -> iterator is already fused
-impl<'a, Idx, Ts: 'a> iter::FusedIterator for MultiArrayViewIter<'a, Idx, Ts>
-where
-    Idx: IndexRefFactory,
-    Ts: VariadicRefFactory,
-{
-}
+impl<'a, Ts: 'a> iter::FusedIterator for MultiArrayViewIter<'a, Ts> where Ts: VariadicRefFactory {}
 
-impl<'a, Idx, Ts: 'a> iter::ExactSizeIterator for MultiArrayViewIter<'a, Idx, Ts>
+impl<'a, Ts: 'a> iter::ExactSizeIterator for MultiArrayViewIter<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     fn len(&self) -> usize {
@@ -311,8 +297,8 @@ mod tests {
     fn create_view<'a>(
         storage: &'a MemoryResourceStorage,
         size: usize,
-    ) -> MultiArrayView<'a, Idx, Variant> {
-        let mut mv = create_multi_vector::<Idx, Variant>(&*storage, "multivector", "Some schema")
+    ) -> MultiArrayView<'a, Variant> {
+        let mut mv = create_multi_vector::<Variant>(&*storage, "multivector", "Some schema")
             .expect("failed to create MultiVector");
 
         for i in 0..size {
