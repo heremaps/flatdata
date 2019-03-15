@@ -1,8 +1,5 @@
 sudo: required
 
-services:
-  - docker
-
 matrix:
   allow_failures:
     - rust: nightly
@@ -20,31 +17,33 @@ matrix:
         - python3 -m nose
         - pylint flatdata generator || true
 
-    # gcc
+    # cpp
     - language: cpp
-      env:
-        - C_COMPILER=clang CXX_COMPILER=clang++
+      dist: xenial
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - python3-pip
+            - libboost-filesystem-dev
+      before_script:
+        - pip3 install -r flatdata-py/generator/requirements.txt
       script:
-        - |
-          docker run -t \
-            -e C_COMPILER=${C_COMPILER} \
-            -e CXX_COMPILER=${CXX_COMPILER} \
-            -v $(pwd):/src \
-            -w /build \
-            boxdot/flatdata-dev:15 /src/flatdata-cpp/ci/build-and-test-cpp.sh
+        - flatdata-cpp/ci/build-and-test-cpp.sh
 
-    # clang
+    # cpp
     - language: cpp
-      env:
-        - C_COMPILER=gcc CXX_COMPILER=g++
+      dist: xenial
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - python3-pip
+            - libboost-filesystem-dev
+      before_script:
+        - pip3 install -r flatdata-py/generator/requirements.txt
       script:
-        - |
-          docker run -t \
-            -e C_COMPILER=${C_COMPILER} \
-            -e CXX_COMPILER=${CXX_COMPILER} \
-            -v $(pwd):/src \
-            -w /build \
-            boxdot/flatdata-dev:15 /src/flatdata-cpp/ci/build-and-test-cpp.sh
+        - flatdata-cpp/ci/build-and-test-cpp.sh
 
     # go
     - language: go
@@ -62,6 +61,18 @@ matrix:
               -s flatdata-go/backward-compatibility-tests/test_backward_compatibility.schema \
               -O flatdata-go/backward-compatibility-tests/test_backward_compatibility_generated.go
           pushd flatdata-go/backward-compatibility-tests; make run-ci; popd
+
+    # dot
+    - dist: xenial
+      addons:
+        apt:
+          packages:
+            - python3-pip
+            - graphviz
+      before_script:
+        - pip3 install -r flatdata-py/generator/requirements.txt
+      script:
+        - ci/dot_test_cases.sh
 
     # rust
     - language: rust
@@ -82,10 +93,12 @@ matrix:
       after_success:
         - cargo coveralls
 
+    # rust
     - language: rust
       dist: xenial
       rust: beta
-      cache: cargo
+      cache:
+        - cargo
       addons:
         apt:
           packages:
@@ -97,10 +110,12 @@ matrix:
         - cargo build
         - cargo test
 
+    # rust
     - language: rust
       dist: xenial
       rust: nightly
-      cache: cargo
+      cache:
+        - cargo
       addons:
         apt:
           packages:
