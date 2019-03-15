@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import pandas as pd
 
-from .errors import SchemaMismatchError
+from .errors import MissingResourceError, SchemaMismatchError
 
 ResourceSignature = namedtuple("ResourceSignature",
                                ["container", "initializer", "schema", "is_optional", "doc"])
@@ -18,7 +18,7 @@ def _is_archive_signature(resource_signature):
 _SCHEMA_EXT = ".schema"
 
 
-class Archive(object):
+class Archive:
     """
     Archive class. Entry point to Flatdata.
     Provides access to flatdata resources and verifies archive/resource schemas on opening.
@@ -35,7 +35,7 @@ class Archive(object):
         self._loaded_resources = {}
 
         # Preload resources and check their schemas
-        for name, signature in sorted(list(self._RESOURCES.items())):
+        for name, _ in sorted(list(self._RESOURCES.items())):
             self.__getattr__(name)
 
     def __getattr__(self, name):
@@ -96,7 +96,7 @@ class Archive(object):
         if not _is_archive_signature(resource_signature):
             storage = self._resource_storage.get(name + _SCHEMA_EXT, resource_signature.is_optional)
             if storage:
-                self._check_non_subarchive_schema(name, resource_signature, storage)
+                Archive._check_non_subarchive_schema(name, resource_signature, storage)
             elif not resource_signature.is_optional:
                 raise MissingResourceError(name)
             else:
@@ -115,7 +115,8 @@ class Archive(object):
                 return resource
         return None
 
-    def _check_non_subarchive_schema(self, name, resource_signature, storage):
+    @staticmethod
+    def _check_non_subarchive_schema(name, resource_signature, storage):
         actual_schema = storage.read().decode()
         if actual_schema != resource_signature.schema:
             raise SchemaMismatchError(

@@ -5,25 +5,22 @@
 
 import imp
 
-from generator.tree.builder import SyntaxTreeBuilder
+from generator.tree.builder import build_ast
 from generator.tree.nodes.trivial.namespace import Namespace
 
-from .generators.CppGenerator import CppGenerator
-from .generators.DotGenerator import DotGenerator
-from .generators.GoGenerator import GoGenerator
-from .generators.PythonGenerator import PythonGenerator
-from .generators.RustGenerator import RustGenerator
-from .generators.FlatdataGenerator import FlatdataGenerator
+from .generators.cpp import CppGenerator
+from .generators.dot import DotGenerator
+from .generators.go import GoGenerator
+from .generators.python import PythonGenerator
+from .generators.rust import RustGenerator
+from .generators.flatdata import FlatdataGenerator
 
 
-class Engine(object):
+class Engine:
     """
     Flatdata Generator Engine.
     Implements code generation from the given flatdata schema.
     """
-
-    class GeneratorNotDefined(RuntimeError):
-        pass
 
     _GENERATORS = {
         "cpp": CppGenerator,
@@ -47,7 +44,7 @@ class Engine(object):
         :raises FlatdataSyntaxError
         """
         self.schema = schema
-        self.tree = SyntaxTreeBuilder.build(schema)
+        self.tree = build_ast(schema)
 
     def render(self, generator_name):
         """
@@ -56,7 +53,10 @@ class Engine(object):
         """
         generator = self._create_generator(generator_name)
         if generator is None:
-            raise self.GeneratorNotDefined()
+            raise ValueError(
+                "Generator %s not implemented. Available options: %s" %
+                generator_name, self.available_generators()
+            )
 
         output_content = generator.render(self.tree)
         return output_content
@@ -65,16 +65,19 @@ class Engine(object):
         """
         Render python module.
         :param module_name: Module name to use. If none, root namespace name is used.
-        :param archive_name: Archive name to lookup, if specified, archive type is returned along with the model
+        :param archive_name: Archive name to lookup,
+            if specified, archive type is returned along with the model
         """
         root_namespace = self._find_root_namespace(self.tree)
         module_code = self.render("py")
         module = imp.new_module(module_name if module_name is not None else root_namespace.name)
+        #pylint: disable=exec-used
         exec(module_code, module.__dict__)
         if archive_name is None:
             return module
 
-        archive_type = getattr(module, root_namespace.name + "_" + archive_name) if archive_name else None
+        name = root_namespace.name + "_" + archive_name
+        archive_type = getattr(module, name) if archive_name else None
         return module, archive_type
 
     @classmethod

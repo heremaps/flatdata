@@ -29,7 +29,7 @@ class Reference(Node):
 
     @property
     def is_qualified(self):
-        return "@@" == self.name[:2]
+        return self.name[:2] == "@@"
 
     @staticmethod
     def _referencify(name):
@@ -47,7 +47,6 @@ class RuntimeReference(Reference):
 
     Runtime References are excluded from cycle resolution
     """
-    pass
 
 
 class ResourceReference(RuntimeReference):

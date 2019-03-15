@@ -1,5 +1,5 @@
-from .base import ResourceBase
 from generator.tree.nodes.references import ResourceReference
+from .base import ResourceBase
 
 
 class BoundResource(ResourceBase):
@@ -13,7 +13,7 @@ class BoundResource(ResourceBase):
                              properties=properties,
                              resources=[r for r in properties.resources])
 
-    def _create_references(self):
+    def create_references(self):
         return [ResourceReference(name=r) for r in self._resources]
 
     @property

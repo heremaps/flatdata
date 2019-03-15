@@ -3,14 +3,13 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from generator.generators.GoGenerator import GoGenerator
-
-from .assertions import *
+from generator.generators.go import GoGenerator
+from .assertions import generate_and_assert_in
 
 
 def test_imports_and_constants_generation():
     generate_and_assert_in("""namespace xyz{
-        
+
 }
     """, GoGenerator, """/////////////////////////////////////////////////////////////////////////
 //    ATTENTION!
@@ -115,7 +114,7 @@ func (v *AArchive) GetSizeInBytes() int {
 	}""",
         """// Add resources to archive
     v.R0Instance = &AR0Instance {
-        descriptor: r0MemoryDescriptor, 
+        descriptor: r0MemoryDescriptor,
         IsOptional: false,
         IsOpen: r0IsOpen,
     }
@@ -162,7 +161,7 @@ func (v *AVectorResourceVector) GetSize() int {
 }
 
 func (v *AVectorResourceVector) GetSlice(start, end, step int) []*T {
-	var result []*T	
+	var result []*T
 	for start <= end {
 		result = append(result, &T{
 			descriptor: v.descriptor,
@@ -180,7 +179,7 @@ func (v *AVectorResourceVector) Close() {
 
 func (v *AVectorResourceVector) GetSizeInBytes() int {
     return v.descriptor.Len()
-}""" 
+}"""
     ]
 
     generate_and_assert_in("""
@@ -233,7 +232,7 @@ func (v *AMultivectorResourceVector) GetSize() int {
 }
 
 func (v *AMultivectorResourceVector) GetSlice(start, end, step int) []*IndexType33 {
-	var result []*IndexType33	
+	var result []*IndexType33
 	for start <= end {
 		result = append(result, &IndexType33{
 			descriptor: v.descriptor,
@@ -276,7 +275,7 @@ func (v *AMultivectorResourceMultivector) GetSizeInBytes() int {
 func (v *AMultivectorResourceMultivector) getBucketOffset(i int) int {
 	if i == v.index.GetSize() {
 		return v.descriptor.Len() - int(flatdataPaddingSizeInBytes)
-	} 
+	}
 	return int(v.index.Get(i).GetValue()) + int(flatdataOffsetSizeInBytes)
 }
 
@@ -293,7 +292,7 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 			//TODO: How to process case, then type of element is not found?
 			log.Println("Can't get type of element")
 		}
-		
+
 		switch element := abstractElement.(type) {
 		case *T:
 			element.position = offset
@@ -308,7 +307,7 @@ func (v *AMultivectorResourceMultivector) Get(i int) []interface{} {
 			log.Println("Can't cast element. Type is unknown...")
 		}
 	}
-	
+
 	return result
 }"""
     ]
@@ -406,7 +405,7 @@ func (v *ARawDataResourceRawData) Close() {
 func (v *ARawDataResourceRawData) GetSizeInBytes() int {
     return v.descriptor.Len()
 }""",
-    """func OpenAArchive(resource flatdata.ResourceStorage) (*AArchive, error) {
+        """func OpenAArchive(resource flatdata.ResourceStorage) (*AArchive, error) {
     v := &AArchive{}
     // Initialize resources
 	rawDataResourceIsOpen := true
@@ -420,7 +419,7 @@ func (v *ARawDataResourceRawData) GetSizeInBytes() int {
 		}
 	}""",
         """v.RawDataResourceRawData = &ARawDataResourceRawData{
-        descriptor: rawDataResourceMemoryDescriptor, 
+        descriptor: rawDataResourceMemoryDescriptor,
         IsOptional: true,
         IsOpen: rawDataResourceIsOpen,
     }"""

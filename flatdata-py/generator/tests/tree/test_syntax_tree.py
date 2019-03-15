@@ -5,11 +5,12 @@
 
 import sys
 
+from nose.tools import assert_equal, assert_raises
+
 sys.path.insert(0, "..")
 from generator.tree.syntax_tree import SyntaxTree
 from generator.tree.nodes.node import Node
 from generator.tree.nodes.trivial import Structure
-from nose.tools import *
 import generator.tree.nodes.references as refs
 from generator.tree.errors import CircularReferencing
 from generator.tree.traversal import BfsTraversal, DfsTraversal

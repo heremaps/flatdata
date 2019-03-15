@@ -4,7 +4,6 @@
 '''
 
 import json
-import itertools
 
 import pandas as pd
 import numpy as np
@@ -17,22 +16,20 @@ SIZE_OFFSET_IN_BYTES = SIZE_OFFSET_IN_BITS // 8
 SIZE_PADDING_IN_BYTES = 8
 
 
-class ResourceBase(object):
+class ResourceBase:
     def __init__(self, mem, element_type):
         if len(mem) < (SIZE_OFFSET_IN_BYTES + SIZE_PADDING_IN_BYTES):
             raise CorruptResourceError()
-
         self._mem = mem
         self._element_type = element_type
         self._element_types = [element_type]
-        self._type_size_in_bytes = self._element_type._SIZE_IN_BYTES if self._element_type is not \
-                                                                        None else 1;
+        self._type_size_in_bytes = self._element_type._SIZE_IN_BYTES if self._element_type else 1
 
     def size_in_bytes(self):
         return len(self._mem)
 
     def _item_offset(self, index):
-        return SIZE_OFFSET_IN_BYTES + self._element_type._SIZE_IN_BYTES * index;
+        return SIZE_OFFSET_IN_BYTES + self._element_type._SIZE_IN_BYTES * index
 
     def _get_item(self, index):
         offset = self._item_offset(index)
@@ -57,7 +54,7 @@ class ResourceBase(object):
         return cls(storage.get(name, is_optional), initializer)
 
 
-class _VectorSlice(object):
+class _VectorSlice:
     def __init__(self, s, sequence):
         self._slice = s
         self._sequence = sequence
@@ -99,14 +96,14 @@ class Vector(ResourceBase):
         return self[:].to_data_frame()
 
     def __getitem__(self, index):
-        if type(index) == slice:
+        if isinstance(index, slice):
             return _VectorSlice(index, self)
-        else:
-            if index >= self._size:
-                raise IndexError("Vector access out of bounds")
-            if index < 0:
-                index += len(self)
-            return self._get_item(index)
+
+        if index >= self._size:
+            raise IndexError("Vector access out of bounds")
+        if index < 0:
+            index += len(self)
+        return self._get_item(index)
 
     def __iter__(self):
         for i in range(len(self)):
@@ -156,9 +153,9 @@ class Multivector(ResourceBase):
             yield self[i]
 
     def __repr__(self):
-        d = self._repr_attributes()
-        d.update(index_type=self._index_type._repr_attributes())
-        return json.dumps(d, indent=4)
+        attrs = self._repr_attributes()
+        attrs.update(index_type=self._index_type._repr_attributes())
+        return json.dumps(attrs, indent=4)
 
 
 class RawData(ResourceBase):
@@ -166,7 +163,7 @@ class RawData(ResourceBase):
         return read_value(self._mem, 0, SIZE_OFFSET_IN_BITS, False)
 
     def __getitem__(self, item):
-        if type(item) == slice:
+        if isinstance(item, slice):
             return self._mem[
                 slice(item.start + SIZE_OFFSET_IN_BYTES,
                       (item.stop + SIZE_OFFSET_IN_BYTES) if item.stop is not None else None,

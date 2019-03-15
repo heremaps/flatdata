@@ -2,13 +2,13 @@
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+from copy import copy
 
 from collections import OrderedDict
 from generator.tree.errors import SymbolRedefinition
-from copy import copy
 
 
-class Node(object):
+class Node:
     """
     Node of a Syntax Tree.
     Every node is defined by its name and location in the tree.
@@ -33,7 +33,7 @@ class Node(object):
 
     def __init__(self, name, properties=None):
         assert self.PATH_SEPARATOR not in name
-        assert name is not None and len(name) > 0
+        assert name
         self._name = name
         self._properties = properties
         self._children = OrderedDict()
@@ -158,7 +158,7 @@ class Node(object):
         Finds a last node existing in the path. If no such node found, None is returned.
         """
         keys = Node.splitpath(path)
-        if len(keys) == 0:
+        if not keys:
             return None
 
         target = self
@@ -195,10 +195,10 @@ class Node(object):
         """
 
         new_root = copy(self)
-        while new_root._parent != None:
+        while new_root._parent:
             parent = copy(new_root._parent)
             parent._children = OrderedDict()
-            new_root._parent = parent;
+            new_root._parent = parent
             parent._children[new_root.name] = new_root
             new_root = parent
         return new_root
@@ -235,28 +235,28 @@ class Node(object):
         Reindex the node. Produces no side effects if called externally.
         """
         new_children = OrderedDict()
-        for key, node in self._children.items():
+        for _key, node in self._children.items():
             new_children[node.name] = node
         self._children = new_children
 
-    def iterate(self, type=None):
+    def iterate(self, node_type=None):
         """
         Iterates the nodes in pre-order traversal fashion
         """
-        if type is None or isinstance(self, type):
+        if node_type is None or isinstance(self, node_type):
             yield self
         for _, child in self._children.items():
-            for node in child.iterate(type=type):
+            for node in child.iterate(node_type):
                 yield node
 
     def parents(self):
         """
         Returns all node's parents up to the root of the tree.
         """
-        p = self
-        while p._parent is not None:
-            yield p._parent
-            p = p._parent
+        par = self
+        while par._parent is not None:
+            yield par._parent
+            par = par._parent
 
     def detach(self):
         """
@@ -276,12 +276,11 @@ class Node(object):
         result = dict()
         for node in self.iterate():
             path = node.path
-            if len(path) > 0:
+            if path:
                 result[path] = type(node)
         if not include_types:
             return set(result.keys())
-        else:
-            return result
+        return result
 
     def __repr__(self):
         return "{type}{{{path}}}".format(type=type(self).__name__, path=self.path)

@@ -9,7 +9,7 @@ from generator.tree.nodes.resources import ResourceBase, BoundResource
 from generator.tree.nodes.archive import Archive
 from generator.tree.nodes.references import ResourceReference
 
-class SyntaxTree(object):
+class SyntaxTree:
     """
     Flatdata Syntax Tree.
     Wraps a root node and adds number of operations like:
@@ -58,13 +58,13 @@ class SyntaxTree(object):
             return [item for item in sequence if not (item in seen or seen.add(item))]
 
         nodes = _unique([r.node for r in node.iterate(TypeReference)])
-        for l in [SyntaxTree.dependent_types(n) for n in nodes]:
-            nodes.extend(l)
+        for dependent_type in [SyntaxTree.dependent_types(n) for n in nodes]:
+            nodes.extend(dependent_type)
         return _unique(nodes)
 
     @staticmethod
     def schema(node):
-        from ..generators.FlatdataGenerator import FlatdataGenerator
+        from ..generators.flatdata import FlatdataGenerator
         generator = FlatdataGenerator()
 
         # extract subtree from syntax tree
@@ -93,8 +93,8 @@ class SyntaxTree(object):
         assert isinstance(node.parent, Archive)
         archive = node.parent
         bound_resources = archive.children_like(BoundResource)
-        for r in bound_resources:
-            if any([c.node == node for c in r.children_like(ResourceReference)]):
+        for resource in bound_resources:
+            if any([c.node == node for c in resource.children_like(ResourceReference)]):
                 return True
         return False
 
@@ -107,14 +107,13 @@ class SyntaxTree(object):
         archive = node.parent
         bound_resources = archive.children_like(BoundResource)
         result = []
-        for r in bound_resources:
-            if any([c.node == node for c in r.children_like(ResourceReference)]):
-                result.append(r)
+        for resource in bound_resources:
+            if any([c.node == node for c in resource.children_like(ResourceReference)]):
+                result.append(resource)
         return result
 
     @staticmethod
     def binding_resources_or_self(node):
         if SyntaxTree.is_bound_implicitly(node):
             return SyntaxTree.binding_resources(node)
-        else:
-            return [node]
+        return [node]

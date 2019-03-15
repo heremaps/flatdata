@@ -1,4 +1,4 @@
-from nose.tools import *
+from nose.tools import assert_equal
 from flatdata.data_access import read_value
 
 

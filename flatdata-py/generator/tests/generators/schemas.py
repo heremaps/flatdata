@@ -1,6 +1,6 @@
 import os
 
-num_test_cases = 23
+NUM_TEST_CASES = 23
 
 def schemas_and_expectations(generator, extension):
     """
@@ -14,7 +14,7 @@ def schemas_and_expectations(generator, extension):
     basedir = os.path.dirname(__file__)
     test_dir = os.path.normpath(os.path.join(
         basedir, '..', '..', '..', '..', 'test_cases'))
-    for path, subdirs, files in os.walk(test_dir):
+    for path, _subdirs, files in os.walk(test_dir):
         for name in files:
             if os.path.splitext(name)[1] == '.flatdata':
                 relpath = os.path.relpath(path, test_dir)
@@ -24,5 +24,5 @@ def schemas_and_expectations(generator, extension):
                 expecation_path = os.path.join(
                     basedir, generator + '_expectations', expectation_filename)
                 result.append((os.path.join(path, name), expecation_path))
-    assert len(result) == num_test_cases, "Did not find expected number of test cases in " + test_dir
+    assert len(result) == NUM_TEST_CASES, "Did not find expected number of test cases in " + test_dir
     return result

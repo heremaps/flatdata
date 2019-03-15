@@ -24,14 +24,12 @@ class CorruptArchiveError(RuntimeError):
     """
     Corrupt archive error: missing resource files or schemas, incorrect archive signature etc.
     """
-    pass
 
 
 class CorruptResourceError(CorruptArchiveError):
     """
     Resource is corrupt and cannot be opened.
     """
-    pass
 
 
 class MissingResourceError(KeyError, CorruptArchiveError):

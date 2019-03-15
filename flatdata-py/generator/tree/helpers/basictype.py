@@ -3,7 +3,7 @@ from generator.tree.errors import InvalidWidthError
 from generator.tree.errors import InvalidSignError
 
 
-class BasicType(object):
+class BasicType:
     _WIDTH = {
         "bool": 1,
         "u8": 8,
@@ -27,7 +27,7 @@ class BasicType(object):
         if width is None:
             self._width = self._WIDTH[self._name]
         if self._width > self._WIDTH[self.name]:
-            raise InvalidWidthError(width=self._width, type=self._name)
+            raise InvalidWidthError(self._width, self._name)
 
     @property
     def name(self):
@@ -45,9 +45,9 @@ class BasicType(object):
         if self.is_signed:
             if value >= 0:
                 # sign bit
-                return value.bit_length() + 1;
+                return value.bit_length() + 1
             # sign bit plus 2 complement allowes one more value
-            return (-value -1).bit_length() + 1;
+            return (-value -1).bit_length() + 1
         if value >= 0:
             return value.bit_length()
         raise InvalidSignError(value=value)

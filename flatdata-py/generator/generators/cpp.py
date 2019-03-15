@@ -7,14 +7,16 @@ from generator.tree.nodes.resources import Vector, Multivector, Instance, RawDat
     ResourceBase, Archive as ArchiveResource
 from generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
 from generator.tree.nodes.archive import Archive
-from .BaseGenerator import BaseGenerator
+from . import BaseGenerator
 
 
 class CppGenerator(BaseGenerator):
+    """Flatdata to C++ header file generator"""
+
     def __init__(self):
         BaseGenerator.__init__(self, "cpp/cpp.jinja2")
 
-    def _supported_nodes(self):
+    def supported_nodes(self):
         return [Structure, Archive, Constant, Enumeration]
 
     def _populate_environment(self, env):
@@ -25,7 +27,7 @@ class CppGenerator(BaseGenerator):
 
         env.filters["safe_cpp_string_line"] = _safe_cpp_string_line
 
-        def _cpp_base_type(t):
+        def _cpp_base_type(flatdata_type):
             type_map = {
                 "bool": "bool",
                 "i8": "int8_t",
@@ -37,9 +39,9 @@ class CppGenerator(BaseGenerator):
                 "u64": "uint64_t",
                 "i64": "int64_t"
             }
-            if t.name in type_map:
-                return type_map[t.name]
-            return t.name.replace("@@", "::").replace("@", "::")
+            if flatdata_type.name in type_map:
+                return type_map[flatdata_type.name]
+            return flatdata_type.name.replace("@@", "::").replace("@", "::")
 
         env.filters["cpp_base_type"] = _cpp_base_type
 
@@ -49,9 +51,7 @@ class CppGenerator(BaseGenerator):
         env.filters["to_type_params"] = _to_type_params
 
         def _typedef_name(entity, extra_suffix=""):
-            assert isinstance(entity, Field) or isinstance(entity,
-                                                           ResourceBase), "Got: %s" % \
-                                                                          entity.__class__
+            assert isinstance(entity, (Field, ResourceBase)), "Got: %s" % entity.__class__
             return "".join([c.title() for c in entity.name.split('_')]) + extra_suffix + "Type"
 
         env.filters["typedef_name"] = _typedef_name
@@ -70,13 +70,13 @@ class CppGenerator(BaseGenerator):
             assert isinstance(resource, ResourceBase)
             if isinstance(resource, Instance):
                 return False
-            elif isinstance(resource, Vector):
+            if isinstance(resource, Vector):
                 return True
-            elif isinstance(resource, Multivector):
+            if isinstance(resource, Multivector):
                 return True
-            elif isinstance(resource, RawData):
+            if isinstance(resource, RawData):
                 return False
-            assert False, "Unknown resource type %s" % (resource.__class__)
+            raise ValueError("Unknown resource type %s" % (resource.__class__))
 
         env.filters[
             "resource_provides_incremental_builder"] = _resource_provides_incremental_builder
@@ -85,13 +85,13 @@ class CppGenerator(BaseGenerator):
             assert isinstance(resource, ResourceBase)
             if isinstance(resource, Instance):
                 return True
-            elif isinstance(resource, Vector):
+            if isinstance(resource, Vector):
                 return True
-            elif isinstance(resource, Multivector):
+            if isinstance(resource, Multivector):
                 return False
-            elif isinstance(resource, RawData):
+            if isinstance(resource, RawData):
                 return True
-            assert False, "Unknown resource type %s" % (resource.__class__)
+            raise ValueError("Unknown resource type %s" % (resource.__class__))
 
         env.filters["provides_setter"] = provides_setter
 

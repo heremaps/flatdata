@@ -1,5 +1,5 @@
-from .base import ResourceBase
 from generator.tree.nodes.references import StructureReference
+from .base import ResourceBase
 
 
 class Vector(ResourceBase):
@@ -13,5 +13,5 @@ class Vector(ResourceBase):
                       properties=properties,
                       type=properties.type.vector.type)
 
-    def _create_references(self):
+    def create_references(self):
         return [StructureReference(name=self._type)]

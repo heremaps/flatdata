@@ -7,7 +7,7 @@ class EnumerationValue(Node):
 
     @staticmethod
     def create(properties, value):
-        result = EnumerationValue(name=properties.name, properties=properties, value = value)
+        result = EnumerationValue(name=properties.name, properties=properties, value=value)
         return result
 
     @property

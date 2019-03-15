@@ -1,22 +1,24 @@
+
+from abc import ABC, abstractmethod
+
 from generator.tree.nodes.explicit_reference import ExplicitReference
 from generator.tree.nodes.node import Node
 from generator.tree.nodes.references import BuiltinStructureReference, StructureReference
 
 
-class ResourceBase(Node):
+class ResourceBase(Node, ABC):
     def __init__(self, name, properties=None,):
         super(ResourceBase, self).__init__(name=name, properties=properties)
         self._decorations = []
         if properties is not None and 'decorations' in properties:
             self._decorations = properties.decorations
-            for d in self._decorations:
-                if 'explicit_reference' in d:
-                    self.insert(ExplicitReference.create(properties=d.explicit_reference))
+            for decoration in self._decorations:
+                if 'explicit_reference' in decoration:
+                    self.insert(ExplicitReference.create(properties=decoration.explicit_reference))
 
+    @abstractmethod
     def create_references(self):
-        result = []
-        result.extend(self._create_references())
-        return result
+        pass
 
     @property
     def optional(self):

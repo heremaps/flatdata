@@ -4,7 +4,7 @@ import generator.tree.nodes.resources as resources
 from generator.tree.nodes.archive import Archive
 from . import errors
 
-_RESOLVED_BASE_TYPES = [refs.TypeReference, refs.RuntimeReference]
+_RESOLVED_BASE_TYPES = (refs.TypeReference, refs.RuntimeReference)
 
 
 def _filter_references(iterable):
@@ -26,10 +26,9 @@ def _resolve_in_parent_scope(ref):
 
 
 def _resolve_in_parent_namespace(ref):
-    ns = ref.first_parent_like(nodes.Namespace)
-    assert ns is not None, \
-        "No namespace found in the tree. Unable to do name resolution"
-    symbol = ns.get_relative(ref.target)
+    namespace = ref.first_parent_like(nodes.Namespace)
+    assert namespace, "No namespace found in the tree. Unable to do name resolution"
+    symbol = namespace.get_relative(ref.target)
     if symbol is None:
         return False
     ref.update_reference(symbol.path)
@@ -63,8 +62,7 @@ def _validate_target_type(root, ref):
 
 def resolve_references(tree):
     for node in tree.root.iterate():
-        assert type(node) not in _RESOLVED_BASE_TYPES, \
-            "Base reference types should not be used directly"
+        assert type(node) not in _RESOLVED_BASE_TYPES, "Base reference types should not be used directly"
         if any([issubclass(type(node), t) for t in _RESOLVED_BASE_TYPES]):
             if node.is_qualified:
                 resolved = _resolve_as_fully_qualified_reference(node)

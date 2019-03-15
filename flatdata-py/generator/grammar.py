@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name
+
 '''
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
@@ -90,12 +92,12 @@ resource_type = Group(
     archive_resource("archive")
 )
 
-def combine_list(t):
+def _combine_list(t):
     return "".join(t[0].asList())
 
 explicit_field_reference_prefix = Group(
     OneOrMore((Optional(".") + identifier + ~FollowedBy(',')))
-).setParseAction(combine_list)
+).setParseAction(_combine_list)
 
 explicit_reference = Group(
     Keyword("@explicit_reference") +

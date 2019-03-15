@@ -6,10 +6,10 @@ import sys
 
 sys.path.insert(0, "..")
 from generator.tree.syntax_tree import SyntaxTree
-from generator.tree.builder import _build_node_tree, SyntaxTreeBuilder
+from generator.tree.builder import _build_node_tree, build_ast
 from generator.tree.resolver import resolve_references
 
-from nose.tools import *
+from nose.tools import assert_equal, assert_raises
 
 
 def test_archive_member_schemas_references_dependent_types():
@@ -149,7 +149,7 @@ archive A
 
 
 def test_archive_schemas_include_constants():
-    root = SyntaxTreeBuilder.build("""namespace foo{
+    root = build_ast("""namespace foo{
 const u8 C = 42;
 struct T { f : u8 : 7; }
 archive A {

@@ -1,7 +1,1 @@
-#!/usr/bin/env python3
-import os, sys
-sys.path.append(os.path.join(os.path.os.path.dirname(__file__), "flatdata-py"))
-import generator.app as generator
-
-if __name__ == "__main__":
-    generator.main()
+flatdata-py/generate.py

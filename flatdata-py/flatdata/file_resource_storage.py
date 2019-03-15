@@ -9,7 +9,7 @@ import os
 from .errors import MissingResourceError
 
 
-class FileResourceStorage(object):
+class FileResourceStorage:
     """
     Resource storage based on memory-mapped files.
     """
@@ -21,8 +21,8 @@ class FileResourceStorage(object):
         :param filename:
         :return: file-like object for memory mapped file.
         """
-        f = open(filename, 'r')
-        return mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        opened_file = open(filename, 'r')
+        return mmap.mmap(opened_file.fileno(), 0, access=mmap.ACCESS_READ)
 
     def __init__(self, path):
         self.path = path

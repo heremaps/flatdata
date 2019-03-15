@@ -1,13 +1,14 @@
-from .data_access import read_value
 from collections import namedtuple
 import json
-
 import numpy as np
 
-FieldSignature = namedtuple("FieldSignature", ["offset", "width", "is_signed", "dtype"])
+from .data_access import read_value
+
+FieldSignature = namedtuple(
+    "FieldSignature", ["offset", "width", "is_signed", "dtype"])
 
 
-class Structure(object):
+class Structure:
     def __init__(self, mem, pos):
         self._mem = mem
         self._pos = pos
@@ -30,7 +31,7 @@ class Structure(object):
             yield getattr(self, name)
 
     def as_dict(self):
-        return dict([(name, self._get_value(field)) for name, field in self._FIELDS.items()])
+        return {name: self._get_value(field) for name, field in self._FIELDS.items()}
 
     def as_list(self):
         return [self._get_value(field) for field in self._FIELDS.values()]
@@ -72,5 +73,6 @@ class Structure(object):
         return json.dumps({
             "name": self.__class__.__name__,
             "attributes":
-                dict([(name, getattr(self, name)) for name, signature in self._FIELDS.items()])
+                {name: getattr(self, name)
+                 for name, signature in self._FIELDS.items()}
         }, indent=4)
