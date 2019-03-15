@@ -1,0 +1,185 @@
+subgraph cluster__n
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>n</b>>
+subgraph cluster__n_X
+{
+    penwidth=1;
+    color="#85D4FF";
+    fillcolor="#EBF8FF";
+    label=<<b>X</b>>
+subgraph cluster__n_X_payload
+{
+    label=<<b>payload</b><br/><i>RawData</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+_n_X_payload [style=invisible, fixedsize="true", width="0", height="0", label=""];
+
+
+}
+
+    }
+}
+
+subgraph cluster__m
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>m</b>>
+subgraph cluster__m_X
+{
+    penwidth=1;
+    color="#85D4FF";
+    fillcolor="#EBF8FF";
+    label=<<b>X</b>>
+subgraph cluster__m_X_payload
+{
+    label=<<b>payload</b><br/><i>RawData</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+_m_X_payload [style=invisible, fixedsize="true", width="0", height="0", label=""];
+
+
+}
+
+    }
+}
+
+subgraph cluster__a
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>a</b>>
+subgraph cluster__a_A
+{
+    penwidth=1;
+    color="#85D4FF";
+    fillcolor="#EBF8FF";
+    label=<<b>A</b>>
+subgraph cluster__a_A_single
+{
+    label=<<b>single</b><br/><i>Instance</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+
+_a_A_single_n_S [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">S</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__a_A_single_n_S_x">
+            <b><font color="#516D7B">x</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">64</font>
+        </td>
+    </tr>
+</table>>];
+
+
+}
+
+subgraph cluster__a_A_list
+{
+    label=<<b>list</b><br/><i>Vector</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+
+_a_A_list_m_S [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">S</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__a_A_list_m_S_x">
+            <b><font color="#516D7B">x</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">64</font>
+        </td>
+    </tr>
+</table>>];
+
+
+}
+
+subgraph cluster__a_A_multi
+{
+    label=<<b>multi</b><br/><i>Multivector</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+
+_a_A_multi__builtin_multivector_IndexType32 [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">IndexType32</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__a_A_multi__builtin_multivector_IndexType32_value">
+            <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+_a_A_multi_n_S [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">S</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__a_A_multi_n_S_x">
+            <b><font color="#516D7B">x</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">64</font>
+        </td>
+    </tr>
+</table>>];
+
+
+}
+
+subgraph cluster__a_A_inner
+{
+    label=<<b>inner</b><br/><i>Archive</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+_a_A_inner [style=invisible, fixedsize="true", width="0", height="0", label=""];
+
+
+}
+
+    }
+}
+
+subgraph cluster___builtin
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>_builtin</b>>
+subgraph cluster___builtin_multivector
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>multivector</b>>
+}
+
+}
