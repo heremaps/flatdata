@@ -13,13 +13,12 @@ matrix:
       dist: xenial
       python: 3.5
       script:
-        - pushd flatdata-py
+        - cd flatdata-py
         - pip3 install -r requirements.txt
         - pip3 install -r generator/requirements.txt
         - pip3 install pylint
         - python3 -m nose
-        - pylint flatdata generator
-        - popd
+        - pylint flatdata generator || true
 
     # gcc
     - language: cpp
