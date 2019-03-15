@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from pyparsing import ParseException
+from pyparsing import ParseException, ParseSyntaxException
 
 import generator.tree.nodes.trivial as nodes
 from generator.grammar import flatdata_grammar
@@ -79,7 +79,7 @@ def _build_node_tree(definition):
     try:
         parsed = flatdata_grammar.parseString(
             definition, parseAll=True).flatdata
-    except ParseException as err:
+    except (ParseException, ParseSyntaxException) as err:
         raise ParsingError(err)
 
     roots = []
