@@ -214,7 +214,7 @@ archive A
 
 /// Builtin union type of .n.S.
 define_variadic_struct!(Multi, RefMulti, BuilderMulti,
-    IndexType32,
+    super::_builtin::multivector::IndexType32,
     0 => ( S, super::n::S, add_s));
 
 define_archive!(A, ABuilder,

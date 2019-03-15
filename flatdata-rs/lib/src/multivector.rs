@@ -1,6 +1,4 @@
-use crate::archive::{
-    IndexRefFactory, IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct,
-};
+use crate::archive::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 use crate::error::ResourceStorageError;
 use crate::memory;
 use crate::multiarrayview::MultiArrayView;
@@ -150,25 +148,26 @@ use std::marker;
 /// [`ExternalVector`]: struct.ExternalVector.html
 /// [`Vector`]: struct.Vector.html
 /// [`MultiArrayView`]: struct.MultiArrayView.html
-pub struct MultiVector<'a, Idx, Ts>
+pub struct MultiVector<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
-    index: ExternalVector<'a, Idx>,
+    index: ExternalVector<'a, <Ts as VariadicStruct<'a>>::Index>,
     data: Vec<u8>,
     data_handle: ResourceHandle<'a>,
     size_flushed: usize,
     _phantom: marker::PhantomData<Ts>,
 }
 
-impl<'a, Idx, Ts> MultiVector<'a, Idx, Ts>
+impl<'a, Ts> MultiVector<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     /// Creates an empty multivector.
-    pub fn new(index: ExternalVector<'a, Idx>, data_handle: ResourceHandle<'a>) -> Self {
+    pub fn new(
+        index: ExternalVector<'a, <Ts as VariadicStruct<'a>>::Index>,
+        data_handle: ResourceHandle<'a>,
+    ) -> Self {
         Self {
             index,
             data: vec![0; memory::PADDING_SIZE],
@@ -211,7 +210,7 @@ where
 
     fn add_to_index(&mut self) -> io::Result<()> {
         let idx_mut = self.index.grow()?;
-        <Idx as IndexStruct>::set_index(
+        <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::set_index(
             idx_mut,
             self.size_flushed + self.data.len() - memory::PADDING_SIZE,
         );
@@ -222,7 +221,7 @@ where
     /// finalizes the data inside the storage.
     ///
     /// A multivector *must* be closed, otherwise it will panic on drop
-    pub fn close(mut self) -> Result<MultiArrayView<'a, Idx, Ts>, ResourceStorageError> {
+    pub fn close(mut self) -> Result<MultiArrayView<'a, Ts>, ResourceStorageError> {
         let name: String = self.data_handle.name().into();
         let into_storage_error = |e| ResourceStorageError::from_io_error(e, name.clone());
         self.add_to_index().map_err(into_storage_error)?; // sentinel for last item
@@ -233,9 +232,8 @@ where
     }
 }
 
-impl<'a, Idx, Ts: VariadicRef> fmt::Debug for MultiVector<'a, Idx, Ts>
+impl<'a, Ts: VariadicRef> fmt::Debug for MultiVector<'a, Ts>
 where
-    Idx: IndexRefFactory,
     Ts: VariadicRefFactory,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -271,9 +269,8 @@ mod tests {
     fn test_multi_vector() {
         let storage = MemoryResourceStorage::new("/root/resources");
         {
-            let mut mv =
-                create_multi_vector::<Idx, Variant>(&*storage, "multivector", "Some schema")
-                    .expect("failed to create MultiVector");
+            let mut mv = create_multi_vector::<Variant>(&*storage, "multivector", "Some schema")
+                .expect("failed to create MultiVector");
             {
                 let mut item = mv.grow().expect("grow failed");
                 {
@@ -312,7 +309,7 @@ mod tests {
         let resource = storage
             .read_and_check_schema("multivector", "Some schema")
             .expect("read_and_check_schema failed");
-        let mv: MultiArrayView<Idx, Variant> = MultiArrayView::new(index, &resource);
+        let mv: MultiArrayView<Variant> = MultiArrayView::new(index, &resource);
 
         assert_eq!(mv.len(), 1);
         let mut item = mv.at(0);
