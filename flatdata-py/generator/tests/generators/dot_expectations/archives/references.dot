@@ -1,0 +1,176 @@
+subgraph cluster__n
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>n</b>>
+subgraph cluster__n_A
+{
+    penwidth=1;
+    color="#85D4FF";
+    fillcolor="#EBF8FF";
+    label=<<b>A</b>>
+
+
+
+
+
+
+subgraph cluster__n_A_refs
+{
+    label=<<b>refs</b><br/><i>Vector</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+
+_n_A_refs_n_R [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">R</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_refs_n_R_ref">
+            <b><font color="#516D7B">ref</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+
+}
+
+subgraph cluster__n_A_multirefs
+{
+    label=<<b>multirefs</b><br/><i>Multivector</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+
+_n_A_multirefs__builtin_multivector_IndexType32 [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">IndexType32</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_multirefs__builtin_multivector_IndexType32_value">
+            <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+_n_A_multirefs_n_R [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">R</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_multirefs_n_R_ref">
+            <b><font color="#516D7B">ref</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+
+}
+
+subgraph cluster__n_A_all_lists
+{
+    label=<<b>all_lists</b><br/><i>BoundResource</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+
+_n_A_all_lists_n_S [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">S</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_all_lists_n_S_x">
+            <b><font color="#516D7B">x</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+_n_A_all_lists_n_S [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">S</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_all_lists_n_S_x">
+            <b><font color="#516D7B">x</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+_n_A_all_lists__builtin_multivector_IndexType32 [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">IndexType32</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_all_lists__builtin_multivector_IndexType32_value">
+            <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+_n_A_all_lists_n_S [label=<
+<table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
+    <tr>
+        <td bgcolor="#257FAD">
+            <b><font color="#EBF8FF">S</font></b>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_all_lists_n_S_x">
+            <b><font color="#516D7B">x</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+        </td>
+    </tr>
+</table>>];
+
+
+}
+
+    }
+}
+
+subgraph cluster___builtin
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>_builtin</b>>
+subgraph cluster___builtin_multivector
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>multivector</b>>
+}
+
+}
+
+
+                        
+
+    _n_A_refs_n_R:port__n_A_refs_n_R_ref -> _n_A_all_lists_n_S [lhead=cluster__n_A_all_lists];
+
+                        
+
+    _n_A_multirefs_n_R:port__n_A_multirefs_n_R_ref -> _n_A_all_lists_n_S [lhead=cluster__n_A_all_lists];

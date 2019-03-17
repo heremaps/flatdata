@@ -1,0 +1,39 @@
+digraph FlatdataDot
+{
+    graph [splines=true, compound=false, rankdir=LR, rank=same, style=filled, fontsize="16", fontname="Courier New", penwidth=1, fontcolor="#516D7B"]
+    node [shape=none, margin=none, fontsize=9, fontname="Courier New"];
+    edge [style=solid, arrowsize=0.5, color="#257FAD", arrowtail="dot", dir="both"]
+
+subgraph cluster__a
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>a</b>>
+}
+
+subgraph cluster__b
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>b</b>>
+}
+
+subgraph cluster__n
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>n</b>>
+}
+
+subgraph cluster__m
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>m</b>>
+}
+
+}

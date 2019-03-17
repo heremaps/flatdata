@@ -2,141 +2,32 @@
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+import glob
 
 from generator.generators.python import PythonGenerator
 from .assertions import generate_and_assert_in
+from .schemas import schemas_and_expectations
 
+from nose.plugins.skip import SkipTest
 
-def test_structures_are_defined_correctly():
-    expectation = [
-        """
-class foo_S(flatdata.structure.Structure):
-    \"\"\"/**
- * This is S
- */\"\"\"
-    _SCHEMA = \"\"\"namespace foo {
-struct S
-{
-    member1 : u8 : 3;
-    member2 : u64 : 17;
-    member3 : i32 : 11;
-}
-}
+def generate_and_compare(test_case):
+    with open(test_case[0], 'r') as test_file:
+        test = test_file.read()
 
-\"\"\"
-    _SIZE_IN_BITS = 31
-    _SIZE_IN_BYTES = 4
-    _FIELDS = {
-        "member1": flatdata.structure.FieldSignature(offset=0, width=3, is_signed=False, dtype="B"),
-        "member2": flatdata.structure.FieldSignature(offset=3, width=17, is_signed=False, dtype="u8"),
-        "member3": flatdata.structure.FieldSignature(offset=20, width=11, is_signed=True, dtype="i4"),
-    }
-    """
-    ]
-    generate_and_assert_in("""
-namespace foo{
+    expectations = list()
+    for file in  glob.glob(test_case[1] + '*'):
+        with open(file, 'r') as expectation_file:
+            expectations.append(expectation_file.read())
 
-/**
- * This is S
- */
-struct S {
-    member1 : u8 : 3;
-    member2 : u64 : 17;
-    member3 : i32 : 11;
-}
-}
-""", PythonGenerator, *expectation)
+    generate_and_assert_in(test, PythonGenerator, *expectations)
 
+def skip(test_case):
+    raise SkipTest("Test %s is skipped" % test_case[0])
 
-def test_archives_are_defined_correctly():
-    expectation = [
-        """
-class foo_A(flatdata.archive.Archive):
-    _SCHEMA = \"\"\"namespace foo {
-struct S
-{
-    f1 : u8 : 3;
-}
-}
-
-namespace foo {
-archive A
-{
-    r0 : .foo.S;
-}
-}
-
-\"\"\"
-    _R0_SCHEMA = \"\"\"namespace foo {
-struct S
-{
-    f1 : u8 : 3;
-}
-}
-
-namespace foo {
-archive A
-{
-    r0 : .foo.S;
-}
-}
-
-\"\"\"
-    _R0_DOC = \"\"\"\"\"\"
-    _NAME = "A"
-    _RESOURCES = {
-        "A.archive" : flatdata.archive.ResourceSignature(
-            container=flatdata.resources.RawData,
-            initializer=None,
-            schema=_SCHEMA,
-            is_optional=False,
-            doc="Archive signature"),
-        "r0": flatdata.archive.ResourceSignature(container=flatdata.resources.Instance,
-            initializer=foo_S,
-            schema=_R0_SCHEMA,
-            is_optional=False,
-            doc=_R0_DOC),
-    }
-
-    def __init__(self, resource_storage):
-        flatdata.archive.Archive.__init__(self, resource_storage)
-
-        """
-    ]
-    generate_and_assert_in("""
-namespace foo{
-
-struct S {
-    f1 : u8 : 3;
-}
-
-archive A {
-    r0 : S;
-}
-}
-""", PythonGenerator, *expectation)
-
-
-def test_resource_optionality():
-    expectation = [
-        """
-        "r0": flatdata.archive.ResourceSignature(container=flatdata.resources.Instance,
-            initializer=foo_S,
-            schema=_R0_SCHEMA,
-            is_optional=True,
-            doc=_R0_DOC),
-        """
-    ]
-    generate_and_assert_in("""
-namespace foo{
-
-struct S {
-    f1 : u8 : 3;
-}
-
-archive A {
-    @optional
-    r0 : S;
-}
-}
-""", PythonGenerator, *expectation)
+def test_against_expectations():
+    for x in schemas_and_expectations(generator='py', extension='py'):
+        # Python does not yet support enums or constants, skip those tests
+        if "enums" not in x[0] and "constants" not in x[0]:
+            yield generate_and_compare, x
+        else:
+            yield skip, x
