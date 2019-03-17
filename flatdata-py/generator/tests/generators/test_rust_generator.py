@@ -39,4 +39,4 @@ def generate_and_compare(test_case):
 
 def test_against_expectations():
     for x in schemas_and_expectations(generator='rust', extension='rs'):
-        generate_and_compare(x)
+        yield generate_and_compare, x

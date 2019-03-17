@@ -1,0 +1,57 @@
+subgraph cluster__n
+{
+    penwidth=0;
+    fontcolor="#516D7B";
+    fillcolor="#F7F7F7";
+    label=<<b>n</b>>
+subgraph cluster__n_X
+{
+    penwidth=1;
+    color="#85D4FF";
+    fillcolor="#EBF8FF";
+    label=<<b>X</b>>
+subgraph cluster__n_X_payload
+{
+    label=<<b>payload</b><br/><i>RawData</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+_n_X_payload [style=invisible, fixedsize="true", width="0", height="0", label=""];
+
+
+}
+
+    }
+subgraph cluster__n_A
+{
+    penwidth=1;
+    color="#85D4FF";
+    fillcolor="#EBF8FF";
+    label=<<b>A</b>>
+subgraph cluster__n_A_data
+{
+    label=<<b>data</b><br/><i>Archive</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+_n_A_data [style=invisible, fixedsize="true", width="0", height="0", label=""];
+
+
+}
+
+subgraph cluster__n_A_optional_data
+{
+    label=<<b>optional_data</b><br/><i>Archive<br/>optional</i>>
+    penwidth=0;
+    fontsize="9"
+    fillcolor="#C4E6F8";
+
+_n_A_optional_data [style=invisible, fixedsize="true", width="0", height="0", label=""];
+
+
+}
+
+    }
+}

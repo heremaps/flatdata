@@ -20,5 +20,5 @@ def generate_and_compare(test_case):
     generate_and_assert_in(test, CppGenerator, *expectations)
 
 def test_against_expectations():
-    for s_e in schemas_and_expectations(generator='cpp', extension='h'):
-        generate_and_compare(s_e)
+    for x in schemas_and_expectations(generator='cpp', extension='h'):
+        yield generate_and_compare, x

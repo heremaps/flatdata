@@ -20,8 +20,8 @@ def generate_and_compare(test_case):
 
 def test_against_expectations():
     for i in schemas_and_expectations(generator='flatdata', extension='flatdata'):
-        generate_and_compare(i)
+        yield generate_and_compare, i
 
 def test_normalization_is_fixed_point():
     for i in schemas_and_expectations(generator='flatdata', extension='flatdata'):
-        generate_and_compare((i[1], i[1]))
+        yield generate_and_compare, (i[1], i[1])
