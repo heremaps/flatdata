@@ -1,4 +1,6 @@
 sudo: required
+dist: bionic
+language: minimal
 
 matrix:
   allow_failures:
@@ -7,36 +9,35 @@ matrix:
   include:
     # flatdata-generator
     - language: python
-      name: "flatdata-generator"
-      dist: xenial
-      python: 3.5
-      script:
+      python: 3.6
+      install:
         - cd flatdata-generator
-        - pip3 install -r requirements.txt  # runtime requirements
-        - pip3 install nose pylint  # CI requirements
-        - python3 -m nose
+        - pip install -r requirements.txt # runtime requirements
+        - pip install nose pylint # CI requirements
+      script:
+        # run tests
+        - python -m nose
         # try to install
-        - pip3 install .
+        - pip install .
         - flatdata-generator --help
 
     # flatdata-py
     - language: python
       name: "flatdata-py"
-      dist: xenial
-      python: 3.5
-      script:
-        - pip3 install ./flatdata-generator
+      python: 3.6
+      install:
+        - pip install ./flatdata-generator
         - cd flatdata-py
-        - pip3 install -r requirements.txt  # runtime requirements
-        - pip3 install nose pylint  # CI requirements
-        - python3 -m nose
-        # try to install
-        - pip3 install .
+        - pip install -r requirements.txt # runtime requirements
+        - pip install nose pylint # CI requirements
+      script:
+        - python -m nose
+        - pip install .
         - flatdata-inspector --help
 
     # cpp
     - language: cpp
-      dist: xenial
+      name: "flatdata-cpp"
       compiler: gcc
       addons:
         apt:
@@ -44,14 +45,14 @@ matrix:
             - python3-pip
             - python3-setuptools
             - libboost-filesystem-dev
-      before_script:
+      install:
         - pip3 install ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
     # cpp
     - language: cpp
-      dist: xenial
+      name: "flatdata-cpp"
       compiler: clang
       addons:
         apt:
@@ -59,13 +60,14 @@ matrix:
             - python3-pip
             - python3-setuptools
             - libboost-filesystem-dev
-      before_script:
+      install:
         - pip3 install ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
     # go
     - language: go
+      name: "flatdata-go"
       go: 1.x
       install: true
       before_script:
@@ -82,33 +84,30 @@ matrix:
           pushd flatdata-go/backward-compatibility-tests; make run-ci; popd
 
     # dot
-    - dist: xenial
+    - language: python
+      name: "flatdata-dot"
       addons:
         apt:
           packages:
-            - python3-pip
-            - python3-setuptools
             - graphviz
-      before_script:
+      install:
         - pip3 install ./flatdata-generator
       script:
         - ci/dot_test_cases.sh
 
     # rust
     - language: rust
-      dist: xenial
+      name: "flatdata-rs"
       rust: stable
       cache:
         - cargo
       addons:
         apt:
           packages:
-            - python3-pip
-            - python3-setuptools
-      before_script:
-        - pip3 install ./flatdata-generator
-        - cd flatdata-rs
+            - python3-venv
       script:
+        - export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator # use generator from source
+        - cd flatdata-rs
         - cargo build
         - cargo test
       after_success:
@@ -116,36 +115,34 @@ matrix:
 
     # rust
     - language: rust
-      dist: xenial
+      name: "flatdata-rs"
+      dist: bionic
       rust: beta
       cache:
         - cargo
       addons:
         apt:
           packages:
-            - python3-pip
-            - python3-setuptools
-      before_script:
-        - pip3 install ./flatdata-generator
-        - cd flatdata-rs
+            - python3-venv
       script:
+        - export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator # use generator from source
+        - cd flatdata-rs
         - cargo build
         - cargo test
 
     # rust
     - language: rust
-      dist: xenial
+      name: "flatdata-rs"
+      dist: bionic
       rust: nightly
       cache:
         - cargo
       addons:
         apt:
           packages:
-            - python3-pip
-            - python3-setuptools
-      before_script:
-        - pip3 install ./flatdata-generator
-        - cd flatdata-rs
+            - python3-venv
       script:
+        - export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator # use generator from source
+        - cd flatdata-rs
         - cargo build
         - cargo test

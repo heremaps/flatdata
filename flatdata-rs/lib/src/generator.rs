@@ -1,7 +1,4 @@
-use std::{
-    io::Write,
-    path::{Path, PathBuf},
-};
+use std::{env, path::PathBuf, process::Command};
 
 /// A helper function wrapping the flatdata generator.
 ///
@@ -30,24 +27,12 @@ use std::{
 /// └───────example_b.rs
 /// ```
 ///
-/// # Examples
+/// ## Examples
 ///
 /// `build.rs`
 /// ``` ignore
-/// use std::path::PathBuf;
-///
 /// fn main() {
-///     let out_path = PathBuf::from(std::env::var("OUT_DIR").unwrap());
-///     let test_cases_path = PathBuf::from("assets/schemas");
-///     let generator_path = PathBuf::from(std::env::var("GENERATOR_PATH").unwrap());
-///
-///     match flatdata::generate(&out_path, &test_cases_path, &generator_path) {
-///        Err(e) => {
-///            eprintln!("{}", e);
-///            std::process::exit(1);
-///        }
-///        _ => (),
-///     }
+///     flatdata::generate("schemas_path/", env!("OUT_DIR")).unwrap();
 /// }
 /// ```
 ///
@@ -55,19 +40,49 @@ use std::{
 /// ``` ignore
 /// #![allow(dead_code)]
 ///
-/// include!(concat!(env!("OUT_DIR"), "/path/to/my_schema.rs"));
+/// include!(concat!(env!("OUT_DIR"), "/example_a/my_schema.rs"));
 ///
 /// // re-export if desired
 /// pub use my_schema::*;
+///
+/// ## Development
+///
+/// If you are working on the generator, you can make sure your `build.rs` script
+/// picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to the
+/// `flatdata-generator` folder.
 /// ```
-pub fn generate(
-    output_dir: &Path,
-    schemas_path: &Path,
-    generator: &Path,
-) -> Result<(), GeneratorError> {
-    let output_dir = output_dir.canonicalize()?;
-    let schemas_path = schemas_path.canonicalize()?;
-    let generator = generator.canonicalize()?;
+pub fn generate(schemas_path: &str) -> Result<(), GeneratorError> {
+    let schemas_path = PathBuf::from(schemas_path).canonicalize()?;
+    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("not running in a build.rs script?"));
+
+    // create a virtualenv in the target folder
+    eprintln!("creating python virtualenv");
+    let _ = Command::new("python3")
+        .arg("-m")
+        .arg("venv")
+        .arg(&out_dir)
+        .spawn()
+        .map_err(GeneratorError::PythonError)?
+        .wait()?;
+
+    // install dependencies
+    let generator_path = if let Ok(path) = env::var("FLATDATA_GENERATOR_PATH") {
+        // we want to rebuild automatically if we edit the generator's code
+        let path = PathBuf::from(path).canonicalize()?;
+        println!("cargo:rerun-if-changed={}", path.display());
+        eprintln!("installing flatdata-generator from source");
+        path
+    } else {
+        eprintln!("installing flatdata-generator from PyPI");
+        PathBuf::from("flatdata-generator")
+    };
+    let _ = Command::new(out_dir.join("bin/pip3"))
+        .arg("install")
+        .arg("--disable-pip-version-check")
+        .arg(&generator_path)
+        .spawn()
+        .map_err(GeneratorError::PythonError)?
+        .wait()?;
 
     for entry in walkdir::WalkDir::new(&schemas_path) {
         let entry = entry?;
@@ -76,33 +91,35 @@ pub fn generate(
         }
 
         let result: PathBuf = if schemas_path.is_dir() {
-            output_dir
-                .join(entry.path().strip_prefix(&schemas_path)?)
+            out_dir
+                .join(entry.path().strip_prefix(&schemas_path).unwrap())
                 .with_extension("rs")
         } else {
-            output_dir
+            out_dir
                 .join(entry.path().file_name().unwrap())
                 .with_extension("rs")
         };
+        eprintln!(
+            "generating {} from {}",
+            result.display(),
+            schemas_path.display()
+        );
 
         std::fs::create_dir_all(result.parent().unwrap())?;
-        let output = std::process::Command::new(&generator)
+        let _ = std::process::Command::new(out_dir.join("bin/flatdata-generator"))
             .arg("-g")
             .arg("rust")
             .arg("-s")
             .arg(&entry.path())
             .arg("-O")
             .arg(&result)
-            .output()?;
-
-        std::io::stderr().write_all(&output.stderr).unwrap();
-
-        if !output.status.success() {
-            return Err(GeneratorError::Failure {
-                schema: result,
-                destination: entry.path().into(),
-            });
-        }
+            .spawn()
+            .map_err(|e| GeneratorError::Failure {
+                schema: entry.path().into(),
+                destination: result,
+                error: e,
+            })?
+            .wait()?;
 
         println!("cargo:rerun-if-changed={}", entry.path().display());
     }
@@ -112,34 +129,44 @@ pub fn generate(
 /// Error type for generate function
 #[derive(Debug)]
 pub enum GeneratorError {
+    /// Python interpreter or virtualenv not found
+    PythonError(std::io::Error),
     /// Wrapper around underlying io::Error
     Io(std::io::Error),
-    /// Failed to compute paths
-    Path(std::path::StripPrefixError),
     /// Failed to run generator
     Failure {
         /// path to the problematic schema
         schema: PathBuf,
         /// path to the generated file
         destination: PathBuf,
+        /// the original io::Error
+        error: std::io::Error,
     },
 }
 
 impl std::fmt::Display for GeneratorError {
     fn fmt(self: &Self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            GeneratorError::Io(details) => write!(f, "GeneratorError::Io( details: {})", details),
-            GeneratorError::Path(details) => {
-                write!(f, "GeneratorError::Path( details: {})", details)
+            GeneratorError::PythonError(err) => {
+                writeln!(f, "{} could not be executed", err)?;
+                writeln!(
+                    f,
+                    "Failed to prepare virtualenv for flatdata-generator: please make sure both python3 and python3-virtualenv are installed."
+                )
+            }
+            GeneratorError::Io(details) => {
+                write!(f, "Failed to run flatdata-generator: {}", details)
             }
             GeneratorError::Failure {
                 schema,
                 destination,
+                error,
             } => write!(
                 f,
-                "GeneratorError::Failure {{\n    schema: {},\n    destination: {},\n}}",
+                "Failed to run generate {} from {}: {}",
                 schema.display(),
                 destination.display(),
+                error
             ),
         }
     }
@@ -156,11 +183,5 @@ impl std::convert::From<std::io::Error> for GeneratorError {
 impl std::convert::From<walkdir::Error> for GeneratorError {
     fn from(detail: walkdir::Error) -> Self {
         GeneratorError::Io(detail.into())
-    }
-}
-
-impl std::convert::From<std::path::StripPrefixError> for GeneratorError {
-    fn from(detail: std::path::StripPrefixError) -> Self {
-        GeneratorError::Path(detail)
     }
 }
