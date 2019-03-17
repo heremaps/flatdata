@@ -45,7 +45,7 @@ enum = Group(
 
 field = Group(
     Optional(comment)("doc") +
-    identifier("name") +':' +
+    identifier("name") +':' -
     qualified_identifier("type") +
     Optional(':' + bit_width("width")) +
     ';'
@@ -53,7 +53,7 @@ field = Group(
 
 struct = Group(
     Optional(comment)("doc") +
-    Keyword("struct") +
+    Keyword("struct") -
     identifier("name") +
     "{" +
     OneOrMore(field)("fields") +
@@ -61,11 +61,11 @@ struct = Group(
 )
 
 vector = Group(
-    Keyword("vector") + "<" + qualified_identifier("type") + ">"
+    Keyword("vector") - "<" + qualified_identifier("type") + ">"
 )
 
 multivector = Group(
-    Keyword("multivector") +
+    Keyword("multivector") -
     "<" +
     bit_width("width") + "," +
     delimitedList(qualified_identifier, ",")("type") +
@@ -85,11 +85,11 @@ archive_resource = Group(
 )
 
 resource_type = Group(
-    raw_data("raw_data") ^
-    single_object("object") ^
-    vector("vector") ^
-    multivector("multivector") ^
-    archive_resource("archive")
+    raw_data("raw_data") |
+    vector("vector") |
+    multivector("multivector") |
+    archive_resource("archive") |
+    single_object("object") 
 )
 
 def _combine_list(t):
@@ -100,7 +100,7 @@ explicit_field_reference_prefix = Group(
 ).setParseAction(_combine_list)
 
 explicit_reference = Group(
-    Keyword("@explicit_reference") +
+    Keyword("@explicit_reference") -
     "(" +
     explicit_field_reference_prefix("source_type") +
     "." +
@@ -109,7 +109,7 @@ explicit_reference = Group(
 )
 
 bound_implicitly = Group(
-    Keyword("@bound_implicitly") +
+    Keyword("@bound_implicitly") -
     "(" +
     identifier("name") + ":" +
     delimitedList(qualified_identifier)("resources") +
@@ -121,7 +121,7 @@ optional_decoration = Group(
 )
 
 resource_decorations = Group(
-    explicit_reference("explicit_reference") ^
+    explicit_reference("explicit_reference") |
     optional_decoration("optional")
 )
 
@@ -132,14 +132,14 @@ archive_decorations = Group(
 resource = Group(
     Optional(comment)("doc") +
     ZeroOrMore(resource_decorations)("decorations") +
-    identifier("name") + ':' +
+    identifier("name") + ':' -
     resource_type("type") + ';'
 )
 
 archive = Group(
     Optional(comment)("doc") +
     ZeroOrMore(archive_decorations)("decorations") +
-    Keyword("archive") +
+    Keyword("archive") -
     identifier("name") +
     "{" +
     ZeroOrMore(resource)("resources") +
@@ -156,10 +156,10 @@ constant = Group(
 )
 
 flatdata_entry = (
-    enum.setResultsName("enumerations", listAllMatches=True) ^
-    struct.setResultsName("structures", listAllMatches=True) ^
-    archive.setResultsName("archives", listAllMatches=True) ^
-    constant.setResultsName("constants", listAllMatches=True) ^
+    enum.setResultsName("enumerations", listAllMatches=True) |
+    struct.setResultsName("structures", listAllMatches=True) |
+    archive.setResultsName("archives", listAllMatches=True) |
+    constant.setResultsName("constants", listAllMatches=True) |
     comment.setResultsName("comment", listAllMatches=True)
 )
 

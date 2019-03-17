@@ -9,11 +9,20 @@ namespace flatdata
 {
 namespace functraits_test
 {
-void free_function( std::true_type ){};
-void zero_arity_function( ){};
+void free_function( std::true_type )
+{
+}
+
+void
+zero_arity_function( )
+{
+}
+
 struct Functor
 {
-    void operator( )( std::true_type, std::true_type ){};
+    void operator( )( std::true_type, std::true_type )
+    {
+    }
 };
 
 static_assert( is_callable_with< decltype( free_function ), std::true_type >::value,
