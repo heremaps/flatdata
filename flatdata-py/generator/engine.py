@@ -55,7 +55,7 @@ class Engine:
         if generator is None:
             raise ValueError(
                 "Generator %s not implemented. Available options: %s" %
-                generator_name, self.available_generators()
+                ( generator_name, self.available_generators() )
             )
 
         output_content = generator.render(self.tree)
