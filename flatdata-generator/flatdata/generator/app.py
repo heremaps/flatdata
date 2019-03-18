@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 '''
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
@@ -11,7 +10,7 @@ import sys
 
 # check that requirements are installed here
 try:
-    #pylint: disable=unused-import
+    # pylint: disable=unused-import
     import pyparsing
     import jinja2
 except ModuleNotFoundError as exc:
@@ -90,7 +89,3 @@ def _run(args):
 def main():
     """Entrypoint"""
     _run(_parse_command_line())
-
-
-if __name__ == "__main__":
-    main()

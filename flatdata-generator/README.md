@@ -5,11 +5,22 @@ Generates code for a given flatdata schema file.
 ## Usage
 
 ```sh
-# install all the required Python3 dependencies
-pip3 install -r generator/requirements.txt
+# install the package with pip
+pip3 install .
 
 # generate header-only cpp code
-./generator -s locations.flatdata -g cpp -O locations.hpp
+flatdata-generator -s locations.flatdata -g cpp -O locations.hpp
+```
+
+For local development, or when changing the generator, you might want to run:
+
+```sh
+pip install -r requirements.txt
+
+# run locally
+python3 -m flatdata.generator.app
+# or
+./generator.py
 ```
 
 The output is a single source file in the specified language. Supported output formats are:
