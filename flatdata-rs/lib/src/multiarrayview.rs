@@ -1,5 +1,5 @@
-use crate::archive::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 use crate::arrayview::ArrayView;
+use crate::structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 
 use std::fmt;
 use std::iter;

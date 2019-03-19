@@ -1,7 +1,8 @@
-use crate::archive::{ArchiveBuilder, Struct, VariadicRefFactory};
+use crate::archive::ArchiveBuilder;
 use crate::error::ResourceStorageError;
 use crate::memory::{SizeType, PADDING_SIZE};
 use crate::multivector::MultiVector;
+use crate::structs::{Struct, VariadicRefFactory};
 use crate::vector::ExternalVector;
 
 use std::cell::RefCell;

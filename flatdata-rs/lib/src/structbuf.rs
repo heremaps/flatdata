@@ -1,8 +1,8 @@
 // Note: This module is called `structbuf` in contrast to `struct` in the C++
 // implementation, since Rust does not allow module names to be one of the
 // language keywords.
-use crate::archive::Struct;
 use crate::memory;
+use crate::structs::Struct;
 
 use std::fmt;
 use std::marker;

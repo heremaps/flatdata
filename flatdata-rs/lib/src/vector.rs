@@ -1,6 +1,6 @@
-use crate::archive::{RefFactory, Struct};
 use crate::arrayview::{debug_format, ArrayView};
 use crate::error::ResourceStorageError;
+use crate::structs::{RefFactory, Struct};
 
 use crate::memory;
 use crate::storage::ResourceHandle;
