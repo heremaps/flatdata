@@ -434,7 +434,7 @@ mod test {
             .unwrap();
 
         let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
-        let mut h = ResourceHandle::try_new(
+        let h = ResourceHandle::try_new(
             &*storage,
             "/root/extvec/blubb".into(),
             "myschema".into(),
