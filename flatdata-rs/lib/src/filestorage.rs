@@ -2,13 +2,15 @@ use crate::storage::{ResourceStorage, Stream};
 
 use memmap::Mmap;
 
-use std::cell::RefCell;
-use std::collections::BTreeMap;
-use std::fs::{self, File};
-use std::io;
-use std::path::PathBuf;
-use std::rc::Rc;
-use std::slice;
+use std::{
+    cell::RefCell,
+    collections::BTreeMap,
+    fs::{self, File},
+    io,
+    path::PathBuf,
+    rc::Rc,
+    slice,
+};
 
 /// Internal storage of data as files.
 #[derive(Debug, Default)]

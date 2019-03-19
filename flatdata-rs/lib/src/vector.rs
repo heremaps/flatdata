@@ -1,14 +1,12 @@
-use crate::arrayview::{debug_format, ArrayView};
-use crate::error::ResourceStorageError;
-use crate::structs::{RefFactory, Struct};
+use crate::{
+    arrayview::{debug_format, ArrayView},
+    error::ResourceStorageError,
+    structs::{RefFactory, Struct},
+};
 
-use crate::memory;
-use crate::storage::ResourceHandle;
+use crate::{memory, storage::ResourceHandle};
 
-use std::borrow::BorrowMut;
-use std::fmt;
-use std::io;
-use std::marker;
+use std::{borrow::BorrowMut, fmt, io, marker};
 
 /// A container holding a contiguous sequence of flatdata structs of the same
 /// type `T` in memory, and providing read and write access to it.

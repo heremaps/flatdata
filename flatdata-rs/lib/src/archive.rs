@@ -6,11 +6,9 @@
 //! A flatdata archive is introduced by `define_archive`. It defines two types
 //! `ArchiveName` and `ArchiveNameBuilder` for reading resp. writing data.
 
-use crate::error::ResourceStorageError;
-use crate::storage::ResourceStorage;
+use crate::{error::ResourceStorageError, storage::ResourceStorage};
 
-use std::fmt::Debug;
-use std::rc::Rc;
+use std::{fmt::Debug, rc::Rc};
 
 #[doc(hidden)]
 pub use std::marker;

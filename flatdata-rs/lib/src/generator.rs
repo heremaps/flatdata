@@ -1,6 +1,7 @@
-use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 /// A helper function wrapping the flatdata generator.
 ///

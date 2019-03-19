@@ -1,19 +1,22 @@
-use crate::archive::ArchiveBuilder;
-use crate::error::ResourceStorageError;
-use crate::memory::{SizeType, PADDING_SIZE};
-use crate::multivector::MultiVector;
-use crate::structs::{Struct, VariadicRefFactory};
-use crate::vector::ExternalVector;
+use crate::{
+    archive::ArchiveBuilder,
+    error::ResourceStorageError,
+    memory::{SizeType, PADDING_SIZE},
+    multivector::MultiVector,
+    structs::{Struct, VariadicRefFactory},
+    vector::ExternalVector,
+};
 
-use std::cell::RefCell;
-use std::fmt;
-use std::io::{self, Seek, Write};
-use std::mem;
-use std::ops::DerefMut;
-use std::ptr;
-use std::rc::Rc;
-use std::slice;
-use std::str;
+use std::{
+    cell::RefCell,
+    fmt,
+    io::{self, Seek, Write},
+    mem,
+    ops::DerefMut,
+    ptr,
+    rc::Rc,
+    slice, str,
+};
 
 use diff;
 
