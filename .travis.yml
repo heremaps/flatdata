@@ -43,7 +43,7 @@ matrix:
             - python3-pip
             - libboost-filesystem-dev
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
@@ -57,7 +57,7 @@ matrix:
             - python3-pip
             - libboost-filesystem-dev
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install -r flatdata-generator/requirements.txt
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
@@ -86,7 +86,7 @@ matrix:
             - python3-pip
             - graphviz
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install -r flatdata-generator/requirements.txt
       script:
         - ci/dot_test_cases.sh
 
@@ -101,7 +101,7 @@ matrix:
           packages:
             - python3-pip
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install -r flatdata-generator/requirements.txt
         - cd flatdata-rs
       script:
         - cargo build
@@ -120,7 +120,7 @@ matrix:
           packages:
             - python3-pip
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install -r flatdata-generator/requirements.txt
         - cd flatdata-rs
       script:
         - cargo build
@@ -137,7 +137,7 @@ matrix:
           packages:
             - python3-pip
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install -r flatdata-generator/requirements.txt
         - cd flatdata-rs
       script:
         - cargo build
