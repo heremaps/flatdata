@@ -158,15 +158,13 @@ macro_rules! define_archive {
         }
 
         impl $name {
-            fn read_resource<R>(
+            fn read_resource(
                 storage: &$crate::ResourceStorage,
                 name: &str,
                 schema: &str,
-            ) -> Result<R, $crate::ResourceStorageError>
-            where
-                R: From<$crate::MemoryDescriptor>,
+            ) -> Result<$crate::MemoryDescriptor, $crate::ResourceStorageError>
             {
-                storage.read(name, schema).map(|x|R::from($crate::MemoryDescriptor::new(&x)))
+                storage.read(name, schema).map(|x| $crate::MemoryDescriptor::new(&x))
             }
 
             $(pub fn $struct_resource(&self) -> opt!(
@@ -199,8 +197,8 @@ macro_rules! define_archive {
                     let res_mem_desc = &self.$multivector_resource.1.as_ref();
                     index_mem_desc
                         .map(|x|$crate::ArrayView::new(unsafe{x.as_bytes()}))
-                        .and_then(move |index| {
-                            res_mem_desc.map(move |mem_desc| {
+                        .and_then(|index| {
+                            res_mem_desc.map(|mem_desc| {
                                 $crate::MultiArrayView::new(index, unsafe{mem_desc.as_bytes()})
                             })
                         })
@@ -267,58 +265,45 @@ macro_rules! define_archive {
             fn open(storage: ::std::rc::Rc<$crate::ResourceStorage>)
                 -> ::std::result::Result<Self, $crate::ResourceStorageError>
             {
-                $(let $struct_resource;)*
-                $(let $vector_resource;)*
-                $(let $multivector_resource_index;
-                  let $multivector_resource;)*
-                $(let $raw_data_resource;)*
-                {
-                    storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+                storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
-                    $($struct_resource = check_resource!(
-                        Self::read_resource(
-                            &*storage,
-                            stringify!($struct_resource),
-                            $struct_schema
-                        ), $is_optional_struct);
-                    )*
+                let read_resource = |name, schema| {
+                    Self::read_resource(&*storage, name, schema )
+                };
 
-                    $($vector_resource = check_resource!(
-                        Self::read_resource(
-                            &*storage,
-                            stringify!($vector_resource),
-                            $element_schema), $is_optional_vector);
-                    )*
+                $(let $struct_resource = check_resource!(
+                    read_resource(stringify!($struct_resource), $struct_schema),
+                    $is_optional_struct);
+                )*
 
-                    $($multivector_resource_index = check_resource!(
-                        Self::read_resource(
-                            &*storage,
-                            stringify!($multivector_resource_index),
-                            &format!("index({})", $variadic_type_schema)),
-                        $is_optional_multivector);
-                    $multivector_resource = check_resource!(
-                        Self::read_resource(
-                            &*storage,
-                            stringify!($multivector_resource),
-                            $variadic_type_schema), $is_optional_multivector);
-                    )*
+                $(let $vector_resource = check_resource!(
+                    read_resource(stringify!($vector_resource), $element_schema),
+                    $is_optional_vector);
+                )*
 
-                    $($raw_data_resource = check_resource!(
-                        Self::read_resource(
-                            &*storage,
-                            stringify!($raw_data_resource),
-                            $raw_data_schema), $is_optional_raw_data);
-                    )*
-                }
+                $(let index_schema = &format!("index({})", $variadic_type_schema);
+                let $multivector_resource_index = check_resource!(
+                    read_resource(stringify!($multivector_resource_index), &index_schema),
+                    $is_optional_multivector);
+                let $multivector_resource = check_resource!(
+                    read_resource(stringify!($multivector_resource), $variadic_type_schema),
+                    $is_optional_multivector);
+                )*
+
+                $(let $raw_data_resource = check_resource!(
+                    read_resource(stringify!($raw_data_resource), $raw_data_schema),
+                    $is_optional_raw_data);
+                )*
+
                 $(
                 let $subarchive_resource = check_resource!(
                     {
                         type Archive = $subarchive_type;
-                        Archive::open(
-                            storage.subdir(&stringify!($subarchive_resource)))
+                        Archive::open(storage.subdir(&stringify!($subarchive_resource)))
                     },
                     $is_optional_subarchive
                 );)*
+
                 Ok(Self {
                     _storage: storage
                     $(,$struct_resource)*

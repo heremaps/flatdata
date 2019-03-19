@@ -14,11 +14,11 @@ use std::ptr;
 use std::rc::Rc;
 use std::slice;
 use std::str;
-use std::thread;
 
 use diff;
 
 pub trait Stream: Write + Seek {}
+impl<T: Write + Seek> Stream for T {}
 
 /// Hierarchical Resource Storage
 ///
@@ -266,7 +266,7 @@ impl MemoryDescriptor {
 /// [`create_output_stream`]: trait.ResourceStorage.html#tycreate_output_stream
 #[derive(Clone)]
 pub struct ResourceHandle<'a> {
-    stream: Option<Rc<RefCell<Stream>>>,
+    stream: Rc<RefCell<Stream>>,
     size_in_bytes: usize,
     storage: &'a ResourceStorage,
     name: String,
@@ -293,7 +293,7 @@ impl<'a> ResourceHandle<'a> {
             write_size(0u64, mut_stream.deref_mut())?;
         }
         Ok(Self {
-            stream: Some(stream),
+            stream: stream,
             size_in_bytes: 0,
             storage,
             name,
@@ -301,19 +301,9 @@ impl<'a> ResourceHandle<'a> {
         })
     }
 
-    /// Returns `true` if the underlying is still open for writing.
-    pub fn is_open(&self) -> bool {
-        self.stream.is_some()
-    }
-
     /// Writes data to the underlying stream.
     pub fn write(&mut self, data: &[u8]) -> io::Result<()> {
-        let stream = self
-            .stream
-            .as_ref()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "stream closed"))?;
-
-        let res = stream.borrow_mut().write_all(data);
+        let res = self.stream.borrow_mut().write_all(data);
         if res.is_ok() {
             self.size_in_bytes += data.len();
         }
@@ -322,19 +312,13 @@ impl<'a> ResourceHandle<'a> {
 
     /// Close the underlying stream and write the header containing the size in
     /// bytes of written data.
-    pub fn close(&mut self) -> Result<&'a [u8], ResourceStorageError> {
+    pub fn close(self) -> Result<&'a [u8], ResourceStorageError> {
         {
             let resource_name = self.name.clone();
             let into_storage_error =
                 |e| ResourceStorageError::from_io_error(e, resource_name.clone());
-            let stream = self.stream.as_ref().ok_or_else(|| {
-                into_storage_error(io::Error::new(
-                    io::ErrorKind::UnexpectedEof,
-                    "stream closed",
-                ))
-            })?;
 
-            let mut mut_stream = stream.borrow_mut();
+            let mut mut_stream = self.stream.borrow_mut();
             write_padding(mut_stream.deref_mut()).map_err(into_storage_error)?;
 
             // Update size in the beginning of the file
@@ -344,7 +328,7 @@ impl<'a> ResourceHandle<'a> {
             write_size(self.size_in_bytes as u64, mut_stream.deref_mut())
                 .map_err(into_storage_error)?;
         }
-        self.stream = None;
+
         // return underlying memory descriptor to the written data
         self.storage.read(&self.name, &self.schema)
     }
@@ -356,10 +340,7 @@ impl<'a> ResourceHandle<'a> {
 
 impl<'a> Drop for ResourceHandle<'a> {
     fn drop(&mut self) {
-        if !thread::panicking() {
-            // Only panic in case we are dropping the handle normally
-            assert!(!self.is_open(), "Resource not closed");
-        }
+        panic!("Resource not closed");
     }
 }
 
@@ -367,8 +348,7 @@ impl<'a> fmt::Debug for ResourceHandle<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "ResourceHandle {{ is_open: {}, size_in_bytes: {} }}",
-            self.is_open(),
+            "ResourceHandle {{ size_in_bytes: {} }}",
             self.size_in_bytes,
         )
     }

@@ -87,8 +87,6 @@ impl MemoryResourceStorage {
     }
 }
 
-impl Stream for Cursor<Vec<u8>> {}
-
 impl ResourceStorage for MemoryResourceStorage {
     fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {
         Rc::new(Self {

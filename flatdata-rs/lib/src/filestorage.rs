@@ -31,8 +31,6 @@ impl MemoryMappedFileStorage {
     }
 }
 
-impl Stream for File {}
-
 /// Resource storage on disk using memory mapped files.
 ///
 /// Can be used to create and read archives from the file system.
@@ -70,7 +68,6 @@ pub struct FileResourceStorage {
 
 impl FileResourceStorage {
     /// Create an empty memory mapped file storage at a given path.
-    #[allow(clippy::new_ret_no_self)]
     pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
         Rc::new(Self {
             storage: MemoryMappedFileStorage::default(),

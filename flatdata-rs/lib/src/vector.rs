@@ -5,7 +5,7 @@ use crate::structs::{RefFactory, Struct};
 use crate::memory;
 use crate::storage::ResourceHandle;
 
-use std::borrow::{Borrow, BorrowMut};
+use std::borrow::BorrowMut;
 use std::fmt;
 use std::io;
 use std::marker;
@@ -365,12 +365,6 @@ where
         self.data.resize(0, 0);
         self.data.resize(memory::PADDING_SIZE, 0);
         Ok(())
-    }
-
-    /// Returns `true` if this vector was not closed yet and more elements can
-    /// be added to it.
-    pub fn is_open(&self) -> bool {
-        self.resource_handle.borrow().is_open()
     }
 
     /// Flushes the remaining not yet flushed elements in this vector and
