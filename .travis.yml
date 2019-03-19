@@ -16,7 +16,7 @@ matrix:
         - pip3 install nose pylint
         - python3 -m nose
         # try to install
-        - pip3 install --user .
+        - pip3 install .
         - flatdata-generator --help
 
     # flatdata-py
@@ -30,7 +30,7 @@ matrix:
         - pip3 install nose pylint
         - python3 -m nose
         # try to install
-        - pip3 install --user .
+        - pip3 install .
         - flatdata-inspector --help
 
     # cpp
