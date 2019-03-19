@@ -1,8 +1,8 @@
-use crate::archive::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 use crate::error::ResourceStorageError;
 use crate::memory;
 use crate::multiarrayview::MultiArrayView;
 use crate::storage::ResourceHandle;
+use crate::structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 use crate::vector::ExternalVector;
 
 use std::borrow::BorrowMut;

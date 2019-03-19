@@ -1,4 +1,4 @@
-use crate::archive::{RefFactory, Struct};
+use crate::structs::{RefFactory, Struct};
 use crate::vector::Vector;
 
 use std::fmt;
@@ -236,8 +236,8 @@ where
 #[allow(dead_code)]
 mod test {
     use super::*;
-    use crate::archive::Struct;
     use crate::memory;
+    use crate::structs::Struct;
 
     define_struct!(
         Value,

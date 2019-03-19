@@ -273,6 +273,8 @@ mod bytereader;
 #[macro_use]
 mod bytewriter;
 #[macro_use]
+mod structs;
+#[macro_use]
 mod archive;
 mod arrayview;
 mod error;
@@ -299,4 +301,5 @@ pub use crate::storage::{
     create_archive, create_external_vector, create_multi_vector, MemoryDescriptor, ResourceStorage,
 };
 pub use crate::structbuf::StructBuf;
+pub use crate::structs::*;
 pub use crate::vector::*;
