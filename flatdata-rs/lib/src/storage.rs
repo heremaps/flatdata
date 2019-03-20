@@ -296,7 +296,7 @@ impl<'a> ResourceHandle<'a> {
             write_size(0u64, mut_stream.deref_mut())?;
         }
         Ok(Self {
-            stream: stream,
+            stream,
             size_in_bytes: 0,
             storage,
             name,
