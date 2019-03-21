@@ -29,3 +29,10 @@ pip3 install -r requirements.txt
 
 python3 -m flatdata.inspector
 ```
+
+## Local development
+
+If you wish to modify both `flatdata-generator` and `flatdata-py`, you need to run tests or scripts here
+while overriding the `PYTHONPATH`:
+
+`export PYTHONPATH=$PWD/../flatdata-generator`
