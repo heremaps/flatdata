@@ -25,6 +25,7 @@ matrix:
       dist: xenial
       python: 3.5
       script:
+        - pip3 install ./flatdata-generator
         - cd flatdata-py
         - pip3 install -r requirements.txt
         - pip3 install nose pylint
@@ -41,9 +42,10 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
             - libboost-filesystem-dev
       before_script:
-        - pip3 install flatdata-generator
+        - pip3 install ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
@@ -55,6 +57,7 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
             - libboost-filesystem-dev
       before_script:
         - pip3 install --user ./flatdata-generator
@@ -84,6 +87,7 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
             - graphviz
       before_script:
         - pip3 install --user ./flatdata-generator
@@ -100,6 +104,7 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
       before_script:
         - pip3 install ./flatdata-generator
         - cd flatdata-rs
@@ -119,6 +124,7 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
       before_script:
         - pip3 install ./flatdata-generator
         - cd flatdata-rs
