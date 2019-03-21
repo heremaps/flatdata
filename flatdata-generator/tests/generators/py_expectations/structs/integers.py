@@ -4,7 +4,7 @@
 #    Any modifications to this file will be lost upon next regeneration.    #
 #############################################################################
 
-import flatdata
+import flatdata.lib as flatdata
 
 
 
