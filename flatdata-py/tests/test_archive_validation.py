@@ -1,6 +1,6 @@
 from flatdata.generator.engine import Engine
-from flatdata.errors import CorruptArchiveError, SchemaMismatchError
-from . import DictResourceStorage, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD, ARCHIVE_SIGNATURE_PAYLOAD
+from flatdata.lib.errors import CorruptArchiveError, SchemaMismatchError
+from common import DictResourceStorage, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD, ARCHIVE_SIGNATURE_PAYLOAD
 
 from nose.tools import assert_raises
 

@@ -1,6 +1,6 @@
 """Common testing helpers & data"""
 
-from flatdata.errors import MissingResourceError
+from flatdata.lib.errors import MissingResourceError
 
 
 INSTANCE_TEST_SCHEMA = """

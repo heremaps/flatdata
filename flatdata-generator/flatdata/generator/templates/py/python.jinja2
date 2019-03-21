@@ -4,7 +4,7 @@
 #    Any modifications to this file will be lost upon next regeneration.    #
 #############################################################################
 
-import flatdata
+import flatdata.lib as flatdata
 
 {% macro structure_definition(tree, struct) %}
 {{ struct.doc|to_python_doc}}

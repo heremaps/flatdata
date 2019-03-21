@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import setuptools
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 
 
 setuptools.setup(
@@ -11,7 +11,10 @@ setuptools.setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/heremaps/flatdata",
-    packages=find_packages(),
+    packages=find_namespace_packages(),
+    package_data={
+        '': ['*.jinja2'],
+    },
     entry_points={
         'console_scripts': [
             'flatdata-generator=flatdata.generator.app:main'
