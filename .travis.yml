@@ -12,8 +12,8 @@ matrix:
       python: 3.5
       script:
         - cd flatdata-generator
-        - pip3 install -r requirements.txt
-        - pip3 install nose pylint
+        - pip3 install -r requirements.txt  # runtime requirements
+        - pip3 install nose pylint setuptools  # CI requirements
         - python3 -m nose
         # try to install
         - pip3 install .
@@ -27,8 +27,8 @@ matrix:
       script:
         - pip3 install ./flatdata-generator
         - cd flatdata-py
-        - pip3 install -r requirements.txt
-        - pip3 install nose pylint
+        - pip3 install -r requirements.txt  # runtime requirements
+        - pip3 install nose pylint setuptools  # CI requirements
         - python3 -m nose
         # try to install
         - pip3 install .
@@ -42,9 +42,9 @@ matrix:
         apt:
           packages:
             - python3-pip
-            - python3-setuptools
             - libboost-filesystem-dev
       before_script:
+        - pip3 install setuptools
         - pip3 install ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
@@ -57,9 +57,9 @@ matrix:
         apt:
           packages:
             - python3-pip
-            - python3-setuptools
             - libboost-filesystem-dev
       before_script:
+        - python3-setuptools
         - pip3 install --user ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
@@ -87,10 +87,10 @@ matrix:
         apt:
           packages:
             - python3-pip
-            - python3-setuptools
             - graphviz
       before_script:
-        - pip3 install --user ./flatdata-generator
+        - pip3 install setuptools
+        - pip3 install ./flatdata-generator
       script:
         - ci/dot_test_cases.sh
 
@@ -104,8 +104,8 @@ matrix:
         apt:
           packages:
             - python3-pip
-            - python3-setuptools
       before_script:
+        - pip3 install setuptools
         - pip3 install ./flatdata-generator
         - cd flatdata-rs
       script:
@@ -124,8 +124,8 @@ matrix:
         apt:
           packages:
             - python3-pip
-            - python3-setuptools
       before_script:
+        - pip3 install setuptools
         - pip3 install ./flatdata-generator
         - cd flatdata-rs
       script:
@@ -143,6 +143,7 @@ matrix:
           packages:
             - python3-pip
       before_script:
+        - pip3 install setuptools
         - pip3 install ./flatdata-generator
         - cd flatdata-rs
       script:

@@ -1,4 +1,4 @@
--r ../flatdata-generator/requirements.txt
+flatdata-generator
 numpy
 pandas
 IPython
