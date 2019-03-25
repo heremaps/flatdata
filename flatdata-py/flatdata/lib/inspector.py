@@ -10,7 +10,7 @@ import sys
 
 import pandas as pd
 
-from flatdata.file_resource_storage import FileResourceStorage
+from .file_resource_storage import FileResourceStorage
 from flatdata.generator.engine import Engine
 from flatdata.generator.tree.errors import FlatdataSyntaxError
 
