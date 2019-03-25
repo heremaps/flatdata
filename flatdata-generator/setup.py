@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import setuptools
-from setuptools import find_namespace_packages
-
+from setuptools import find_packages
 
 setuptools.setup(
     name="flatdata-generator",
@@ -11,7 +10,8 @@ setuptools.setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/heremaps/flatdata",
-    packages=find_namespace_packages(),
+    # find_namespace_packages is only a very recent addition to setuptools
+    packages=['flatdata.' + p for p in find_packages('flatdata')],
     package_data={
         '': ['*.jinja2'],
     },
