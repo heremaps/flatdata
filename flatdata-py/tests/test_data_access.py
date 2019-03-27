@@ -1,5 +1,5 @@
 from nose.tools import assert_equal
-from flatdata.data_access import read_value
+from flatdata.lib.data_access import read_value
 
 
 def test_reader():

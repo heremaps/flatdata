@@ -1,5 +1,5 @@
-from generator.engine import Engine
-from . import DictResourceStorage, ARCHIVE_SIGNATURE_PAYLOAD, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD
+from flatdata.generator.engine import Engine
+from common import DictResourceStorage, ARCHIVE_SIGNATURE_PAYLOAD, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD
 
 from nose.tools import eq_, assert_is_instance
 
