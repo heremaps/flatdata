@@ -5,17 +5,34 @@ matrix:
     - rust: nightly
 
   include:
-    # flatdata-py and generator
+    # flatdata-generator
     - language: python
+      name: "flatdata-generator"
       dist: xenial
       python: 3.5
       script:
-        - cd flatdata-py
-        - pip3 install -r requirements.txt
-        - pip3 install -r generator/requirements.txt
-        - pip3 install pylint
+        - cd flatdata-generator
+        - pip3 install -r requirements.txt  # runtime requirements
+        - pip3 install nose pylint  # CI requirements
         - python3 -m nose
-        - pylint flatdata generator || true
+        # try to install
+        - pip3 install .
+        - flatdata-generator --help
+
+    # flatdata-py
+    - language: python
+      name: "flatdata-py"
+      dist: xenial
+      python: 3.5
+      script:
+        - pip3 install ./flatdata-generator
+        - cd flatdata-py
+        - pip3 install -r requirements.txt  # runtime requirements
+        - pip3 install nose pylint  # CI requirements
+        - python3 -m nose
+        # try to install
+        - pip3 install .
+        - flatdata-inspector --help
 
     # cpp
     - language: cpp
@@ -25,9 +42,10 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
             - libboost-filesystem-dev
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
@@ -39,9 +57,10 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
             - libboost-filesystem-dev
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install ./flatdata-generator
       script:
         - flatdata-cpp/ci/build-and-test-cpp.sh
 
@@ -68,9 +87,10 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
             - graphviz
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install ./flatdata-generator
       script:
         - ci/dot_test_cases.sh
 
@@ -84,8 +104,9 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install ./flatdata-generator
         - cd flatdata-rs
       script:
         - cargo build
@@ -103,8 +124,9 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install ./flatdata-generator
         - cd flatdata-rs
       script:
         - cargo build
@@ -120,8 +142,9 @@ matrix:
         apt:
           packages:
             - python3-pip
+            - python3-setuptools
       before_script:
-        - pip3 install -r flatdata-py/generator/requirements.txt
+        - pip3 install ./flatdata-generator
         - cd flatdata-rs
       script:
         - cargo build
