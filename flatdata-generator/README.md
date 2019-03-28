@@ -1,33 +1,29 @@
-# Flatdata generator
+# flatdata-generator
 
-Generates code for a given flatdata schema file.
+[![Build Status](https://api.travis-ci.com/heremaps/flatdata.svg?branch=master)](https://travis-ci.com/heremaps/flatdata/)
 
-## Usage
+Generates code from a [flatdata](https://github.com/heremaps/flatdata) schema file.
+
+For more information on `flatdata` and its implementations, please [refer to flatdata's homepage](https://github.com/heremaps/flatdata).
+
+## Using `flatdata-generator`
 
 ```sh
-# install the package with pip
-pip3 install .
+# installation
+pip3 install flatdata-generator
 
-# generate header-only cpp code
+# example: generate header-only cpp code
 flatdata-generator -s locations.flatdata -g cpp -O locations.hpp
 ```
 
-For local development, or when changing the generator, you might want to run:
+The output is a single source file in the specified language.
 
-```sh
-pip install -r requirements.txt
+Currently supported languages:
 
-# run locally
-python3 -m flatdata.generator.app
-# or
-./generator.py
-```
-
-The output is a single source file in the specified language. Supported output formats are:
-
-* C++ (read/write)
-* Rust (read/write)
-* Python (read only)
+* C++
+* Rust
+* Python
+* Go
 * Dot (graph of the schema)
 * Flatdata (normalized stable schema)
 
