@@ -414,7 +414,7 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn test_drop() {
+    fn test_panic_on_drop() {
         let storage = MemoryResourceStorage::new("/root/extvec");
 
         let stream = storage
@@ -437,7 +437,7 @@ mod test {
     }
 
     #[test]
-    fn test_close() -> Result<(), ResourceStorageError> {
+    fn test_not_panic_on_close() -> Result<(), ResourceStorageError> {
         let storage = MemoryResourceStorage::new("/root/extvec");
 
         let stream = storage
