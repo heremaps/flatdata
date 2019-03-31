@@ -3,11 +3,7 @@
 #[macro_use]
 extern crate flatdata;
 
-use std::env;
-use std::fs;
-use std::io::Read;
-use std::path;
-use std::str;
+use std::{env, fs, io::Read, path, str};
 
 use flatdata::{Archive, ArchiveBuilder};
 
