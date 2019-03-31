@@ -274,6 +274,7 @@ pub struct ResourceHandle<'a> {
     storage: &'a ResourceStorage,
     name: String,
     schema: String,
+    finalized: bool,
 }
 
 impl<'a> ResourceHandle<'a> {
@@ -283,7 +284,7 @@ impl<'a> ResourceHandle<'a> {
     ///
     /// Resource storage will try to reserve space in the beginning of the
     /// stream for the size of the resource, will may result in an `io::Error`.
-    pub fn try_new(
+    pub(crate) fn try_new(
         storage: &'a ResourceStorage,
         name: String,
         schema: String,
@@ -301,11 +302,12 @@ impl<'a> ResourceHandle<'a> {
             storage,
             name,
             schema,
+            finalized: false,
         })
     }
 
     /// Writes data to the underlying stream.
-    pub fn write(&mut self, data: &[u8]) -> io::Result<()> {
+    pub(crate) fn write(&mut self, data: &[u8]) -> io::Result<()> {
         let res = self.stream.borrow_mut().write_all(data);
         if res.is_ok() {
             self.size_in_bytes += data.len();
@@ -315,35 +317,45 @@ impl<'a> ResourceHandle<'a> {
 
     /// Close the underlying stream and write the header containing the size in
     /// bytes of written data.
-    pub fn close(self) -> Result<&'a [u8], ResourceStorageError> {
-        {
-            let resource_name = self.name.clone();
-            let into_storage_error =
-                |e| ResourceStorageError::from_io_error(e, resource_name.clone());
-
-            let mut mut_stream = self.stream.borrow_mut();
-            write_padding(mut_stream.deref_mut()).map_err(into_storage_error)?;
-
-            // Update size in the beginning of the file
-            mut_stream
-                .seek(io::SeekFrom::Start(0u64))
-                .map_err(into_storage_error)?;
-            write_size(self.size_in_bytes as u64, mut_stream.deref_mut())
-                .map_err(into_storage_error)?;
-        }
+    pub(crate) fn close(mut self) -> Result<&'a [u8], ResourceStorageError> {
+        self.finalize()?;
 
         // return underlying memory descriptor to the written data
-        self.storage.read(&self.name, &self.schema)
+        let res = self.storage.read(&self.name, &self.schema);
+        res
     }
 
-    pub fn name(&self) -> &str {
+    pub(crate) fn name(&self) -> &str {
         &self.name
+    }
+
+    fn finalize(&mut self) -> Result<(), ResourceStorageError> {
+        assert!(!self.finalized);
+        // Mark as finalized even in case of failure, otherwise Drop would complain
+        self.finalized = true;
+
+        let resource_name = self.name.clone();
+        let into_storage_error = |e| ResourceStorageError::from_io_error(e, resource_name.clone());
+
+        let mut mut_stream = self.stream.borrow_mut();
+        write_padding(mut_stream.deref_mut()).map_err(into_storage_error)?;
+
+        // Update size in the beginning of the file
+        mut_stream
+            .seek(io::SeekFrom::Start(0u64))
+            .map_err(into_storage_error)?;
+        write_size(self.size_in_bytes as u64, mut_stream.deref_mut())
+            .map_err(into_storage_error)?;
+
+        Ok(())
     }
 }
 
 impl<'a> Drop for ResourceHandle<'a> {
     fn drop(&mut self) {
-        panic!("Resource not closed");
+        if !self.finalized && !std::thread::panicking() {
+            panic!("Resource not closed: {}", self.name);
+        }
     }
 }
 
@@ -351,8 +363,8 @@ impl<'a> fmt::Debug for ResourceHandle<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "ResourceHandle {{ size_in_bytes: {} }}",
-            self.size_in_bytes,
+            "ResourceHandle {{ name: {}, size_in_bytes: {} }}",
+            self.name, self.size_in_bytes,
         )
     }
 }
@@ -402,7 +414,7 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn test_panick_on_leak() {
+    fn test_drop() {
         let storage = MemoryResourceStorage::new("/root/extvec");
 
         let stream = storage
@@ -425,7 +437,7 @@ mod test {
     }
 
     #[test]
-    fn test_not_panick_on_close() -> Result<(), ResourceStorageError> {
+    fn test_close() -> Result<(), ResourceStorageError> {
         let storage = MemoryResourceStorage::new("/root/extvec");
 
         let stream = storage

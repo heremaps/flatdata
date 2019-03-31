@@ -3,7 +3,7 @@ use crate::{
     memory,
     multiarrayview::MultiArrayView,
     storage::ResourceHandle,
-    structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct},
+    structs::{IndexStruct, VariadicRefFactory, VariadicStruct},
     vector::ExternalVector,
 };
 
@@ -231,7 +231,7 @@ where
     }
 }
 
-impl<'a, Ts: VariadicRef> fmt::Debug for MultiVector<'a, Ts>
+impl<'a, Ts> fmt::Debug for MultiVector<'a, Ts>
 where
     Ts: VariadicRefFactory,
 {
