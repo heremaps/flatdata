@@ -3,3 +3,7 @@ reorder_modules = true
 merge_imports = true
 format_doc_comments = true
 wrap_comments = true
+
+ignore = [
+    "lib/src/lib.rs",
+]

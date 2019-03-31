@@ -66,7 +66,8 @@ pub trait Struct<'a>: Clone {
     fn create_mut(data: &'a mut [u8]) -> Self::ItemMut;
 }
 
-/// Shortcut trait for Structs that are able to produce references of any given lifetime
+/// Shortcut trait for Structs that are able to produce references of any given
+/// lifetime
 ///
 /// Equivalent to ```for<'a> Struct<'a>'''
 pub trait RefFactory: for<'a> Struct<'a> {}
@@ -82,7 +83,8 @@ pub trait IndexStruct<'a>: Struct<'a> {
     fn set_index(data: Self::ItemMut, value: usize);
 }
 
-/// Shortcut trait for IndexStructs that are able to produce references of any given lifetime
+/// Shortcut trait for IndexStructs that are able to produce references of any
+/// given lifetime
 ///
 /// Equivalent to ```for<'a> IndexStruct<'a>'''
 pub trait IndexRefFactory: for<'a> IndexStruct<'a> {}
@@ -136,7 +138,8 @@ pub trait VariadicStruct<'a>: Clone {
     fn create_mut(data: &'a mut Vec<u8>) -> Self::ItemMut;
 }
 
-/// Shortcut trait for VariadicStructs that are able to produce references of any given lifetime
+/// Shortcut trait for VariadicStructs that are able to produce references of
+/// any given lifetime
 ///
 /// Equivalent to ```for<'a> VariadicStruct<'a>'''
 pub trait VariadicRefFactory: for<'a> VariadicStruct<'a> {}

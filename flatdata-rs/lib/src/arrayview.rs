@@ -11,7 +11,8 @@ use std::{
 /// A read-only view on a contiguous sequence of flatdata structs of the same
 /// type `T`.
 ///
-/// The sequence is written using [`Vector`] or [`ExternalVector`]. For detailed examples see either of the two.
+/// The sequence is written using [`Vector`] or [`ExternalVector`]. For detailed
+/// examples see either of the two.
 ///
 /// An archive provides a getter for each vector resource, which returns an
 /// array view.
