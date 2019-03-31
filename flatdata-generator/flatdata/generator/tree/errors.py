@@ -33,7 +33,7 @@ class MissingSymbol(FlatdataSyntaxError):
                 [(Levenshtein.distance(name, option.split('.')[-1]), option)
                  for option in options],
                 key=lambda x: x[0])
-            if not options:
+            if options:
                 message += " Did you mean \"{options}\"?".format(
                     options=options[0][1])
         except ImportError:
