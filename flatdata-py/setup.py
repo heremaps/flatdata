@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="flatdata-py",
-    version="0.2.3",
+    version="0.2.4",
     author="Flatdata Developers",
     description="Python 3 implementation of Flatdata",
     long_description=open("README.md").read(),
