@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="flatdata-generator",
-    version="0.2.2",
+    version="0.2.3",
     author="Flatdata Developers",
     description="Generate source code for C++, Rust, Go or Python from a Flatdata schema file",
     long_description=open("README.md").read(),

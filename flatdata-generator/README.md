@@ -12,13 +12,11 @@ For more information on `flatdata` and its implementations, please [refer to fla
 # installation
 pip3 install flatdata-generator
 
-# example: generate header-only cpp code
+# example: generate a header-only C++ library
 flatdata-generator -s locations.flatdata -g cpp -O locations.hpp
 ```
 
-The output is a single source file in the specified language.
-
-Currently supported languages:
+Currently supported target languages:
 
 * C++
 * Rust
