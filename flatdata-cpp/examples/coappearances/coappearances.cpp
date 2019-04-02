@@ -360,18 +360,14 @@ read( const char* archive_path )
     auto edges = graph.edges( );
     std::cout << "Coappearances (" << edges.size( ) << "):" << std::endl;
     // Skip the last edge since it is a sentinel
-    for ( uint32_t edge_ref = 0; edge_ref + 1 < edges.size( ); ++edge_ref )
+    for ( auto edge : edges )
     {
-        auto edge = edges[ edge_ref ];
         std::cout << strings + vertices[ edge.a_ref ].name_ref << " meets "
                   << strings + vertices[ edge.b_ref ].name_ref << " " << edge.count
                   << " time(s) in chapters ";
         // The end of the chapters assigned to this edge is the first chapter from the next edge.
         // This is a typical trick when storing ranges. That's why a sentinel was added to edges.
-        uint32_t next_edge_ref = edge_ref + 1;
-        uint32_t chapters_begin = edge.first_chapter_ref;
-        uint32_t chapters_size = edges[ next_edge_ref ].first_chapter_ref - chapters_begin;
-        auto chapters = graph.chapters( ).slice( chapters_begin, chapters_size );
+        auto chapters = graph.chapters( ).slice( edge.chapters_range );
         for ( size_t chapter_ref = 0; chapter_ref < chapters.size( ); ++chapter_ref )
         {
             auto chapter = graph.chapters( )[ chapter_ref ];

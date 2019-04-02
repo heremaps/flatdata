@@ -8,7 +8,7 @@ import sys
 from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_true
 
 sys.path.insert(0, "..")
-from flatdata.generator.tree.errors import MissingSymbol
+from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from flatdata.generator.tree.nodes.archive import Archive
@@ -16,7 +16,7 @@ from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 import flatdata.generator.tree.nodes.resources as res
 from flatdata.generator.tree.nodes.resources import Vector, Multivector, RawData, Instance, BoundResource
 from flatdata.generator.tree.nodes.references import ResourceReference, StructureReference, \
-    FieldReference, ArchiveReference, BuiltinStructureReference, VectorReference, ConstantReference, \
+    FieldReference, ArchiveReference, BuiltinStructureReference, ConstantReference, \
     EnumerationReference
 
 
@@ -30,6 +30,56 @@ def test_validating_archive_with_no_structure_defined_raises_missing_symbol_erro
     for t in ["T", "vector< T >", "multivector< 33, V>"]:
         yield __test, t
 
+def test_range_with_duplicate_name():
+    with assert_raises(InvalidRangeName):
+        build_ast("""namespace foo{
+            struct A {
+                @range_with_next(ref_n)
+                ref_n : u64 : 64;
+            }
+            }
+            """)
+
+def test_range_cannot_be_used_in_multivector():
+    with assert_raises(InvalidRangeReference):
+        build_ast("""namespace foo{
+            struct A {
+                @range_with_next(my_range)
+                ref_n : u64 : 64;
+            }
+            archive R {
+                resourceA : multivector< 40, A >;
+            }
+            }
+            """)
+
+def test_range_cannot_be_used_in_struct_resource():
+    with assert_raises(InvalidRangeReference):
+        build_ast("""namespace foo{
+            struct A {
+                @range_with_next(my_range)
+                ref_n : u64 : 64;
+            }
+            archive R {
+                resourceA : A;
+            }
+            }
+            """)
+
+def test_ranges_can_be_used_in_normally():
+    build_ast("""namespace foo{
+        struct A {
+            @range_with_next(my_range)
+            ref_n : u64 : 64;
+        }
+
+        @bound_implicitly( B: resourceA )
+        archive R {
+            @explicit_reference( A.ref_n, resourceA )
+            resourceA : vector< A >;
+        }
+        }
+        """)
 
 def test_explicit_reference_decoration_fails_when_unknown_type_is_referenced():
     with assert_raises(MissingSymbol):
@@ -44,7 +94,6 @@ def test_explicit_reference_decoration_fails_when_unknown_type_is_referenced():
             }
             }
             """)
-
 
 def test_explicit_reference_decoration_fails_when_unknown_field_is_referenced():
     with assert_raises(MissingSymbol):

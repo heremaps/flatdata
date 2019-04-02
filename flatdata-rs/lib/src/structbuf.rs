@@ -2,7 +2,7 @@
 // implementation, since Rust does not allow module names to be one of the
 // language keywords.
 use crate::memory;
-use crate::structs::Struct;
+use crate::structs::{NoOverlap, RefFactory, Struct};
 
 use std::fmt;
 use std::marker;
@@ -77,7 +77,7 @@ use std::marker;
 /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L183
 pub struct StructBuf<T>
 where
-    T: for<'a> Struct<'a>,
+    T: RefFactory + NoOverlap,
 {
     data: Vec<u8>,
     _phantom: marker::PhantomData<T>,
@@ -85,7 +85,7 @@ where
 
 impl<T> StructBuf<T>
 where
-    T: for<'a> Struct<'a>,
+    T: RefFactory + NoOverlap,
 {
     /// Creates an empty struct buffer.
     ///
@@ -116,7 +116,7 @@ where
 
 impl<T> fmt::Debug for StructBuf<T>
 where
-    T: for<'a> Struct<'a>,
+    T: RefFactory + NoOverlap,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "StructBuf {{ resource: {:?} }}", self.get())
@@ -125,7 +125,7 @@ where
 
 impl<T> Default for StructBuf<T>
 where
-    T: for<'a> Struct<'a>,
+    T: RefFactory + NoOverlap,
 {
     fn default() -> Self {
         Self::new()
@@ -134,7 +134,7 @@ where
 
 impl<T> AsRef<[u8]> for StructBuf<T>
 where
-    T: for<'a> Struct<'a>,
+    T: RefFactory + NoOverlap,
 {
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()

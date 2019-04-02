@@ -12,6 +12,17 @@ ArrayView< T >::ArrayView( ConstStreamType data_begin, ConstStreamType data_end 
     : m_data( data_begin )
     , m_size( ( data_end - data_begin ) / T::size_in_bytes( ) )
 {
+    if ( T::IS_OVERLAPPING_WITH_NEXT )
+    {
+        m_size--;
+    }
+}
+
+template < typename T >
+ArrayView< T >::ArrayView( ConstStreamType data, size_t size )
+    : m_data( data )
+    , m_size( size )
+{
 }
 
 template < typename T >
@@ -38,7 +49,7 @@ template < typename T >
 size_t
 ArrayView< T >::size_in_bytes( ) const
 {
-    return m_size * T::size_in_bytes( );
+    return ( m_size + ( T::IS_OVERLAPPING_WITH_NEXT ? 1 : 0 ) ) * T::size_in_bytes( );
 }
 
 template < typename T >
@@ -66,23 +77,28 @@ template < typename T >
 ArrayView< T >
 ArrayView< T >::slice( size_t pos, size_t length ) const
 {
-    return ArrayView( m_data + pos * T::size_in_bytes( ),
-                      m_data + ( pos + length ) * T::size_in_bytes( ) );
+    return ArrayView( m_data + pos * T::size_in_bytes( ), length );
+}
+
+template < typename T >
+ArrayView< T >
+ArrayView< T >::slice( std::pair< size_t /*start*/, size_t /*end*/ > range ) const
+{
+    return ArrayView( m_data + range.first * T::size_in_bytes( ), range.second - range.first );
 }
 
 template < typename T >
 ArrayView< T >
 ArrayView< T >::slice_before( size_t pos ) const
 {
-    return ArrayView( m_data, m_data + pos * T::size_in_bytes( ) );
+    return ArrayView( m_data, pos );
 }
 
 template < typename T >
 ArrayView< T >
 ArrayView< T >::slice_after( size_t pos ) const
 {
-    return ArrayView( m_data + pos * T::size_in_bytes( ),
-                      m_data + m_size * T::size_in_bytes( ) );
+    return ArrayView( m_data + pos * T::size_in_bytes( ), m_size - pos );
 }
 
 template < typename T >
@@ -116,7 +132,7 @@ template < typename T >
 typename ArrayView< T >::const_iterator
 ArrayView< T >::end( ) const
 {
-    return const_iterator( m_data + size_in_bytes( ) );
+    return const_iterator( m_data + size( ) * T::size_in_bytes( ) );
 }
 
 template < typename T >

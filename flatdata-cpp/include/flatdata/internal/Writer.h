@@ -24,14 +24,12 @@ namespace flatdata
  *
  * @note The class expects data streams with 8 byte padding in the end when reading/writing
  */
-template < typename T, int offset = 0, int num_bits = sizeof( T ) * 8 >
+template < typename T, int offset = 0, int num_bits = sizeof( T ) * 8, int struct_size_bytes = 0 >
 struct Writer
 {
     using StreamType = unsigned char*;
-    using UnsignedType =
-        typename BitsToUnsigned< int_choice< num_bits,
-                                             num_bits + offset % 8,
-                                             num_bits + offset % 8 <= 64 >::value >::type;
+    using UnsignedType = typename BitsToUnsigned<
+        int_choice< num_bits, num_bits + offset % 8, num_bits + offset % 8 <= 64 >::value >::type;
     enum
     {
         bit_width = num_bits
@@ -39,7 +37,8 @@ struct Writer
 
     StreamType data;
 
-    Writer& operator=( T t )
+    Writer&
+    operator=( T t )
     {
         /* Does the following:
          * - takes the smallest data type available that can write the necessary amount of bytes
@@ -90,6 +89,16 @@ struct Writer
     {
         return Reader< T, offset, num_bits >{data};
     }
+};
+
+template < typename T, int offset, int num_bits, int struct_size_bytes >
+struct Writer< std::pair< T, T >, offset, num_bits, struct_size_bytes >
+{
+    using StreamType = const unsigned char*;
+
+    StreamType data;
+
+    // We do not support writing to a range, just reading it after the fact
 };
 
 }  // namespace flatdata

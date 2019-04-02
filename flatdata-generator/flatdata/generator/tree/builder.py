@@ -7,12 +7,12 @@ from pyparsing import ParseException, ParseSyntaxException
 
 import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
-from flatdata.generator.tree.errors import InvalidEnumWidthError
+from flatdata.generator.tree.errors import InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.syntax_tree import SyntaxTree
-from flatdata.generator.tree.nodes.resources import Multivector
-from flatdata.generator.tree.nodes.references import BuiltinStructureReference, ConstantReference, EnumerationReference
+from flatdata.generator.tree.nodes.resources import Multivector, Vector, ResourceBase
+from flatdata.generator.tree.nodes.references import BuiltinStructureReference, ConstantReference, EnumerationReference, StructureReference
 from flatdata.generator.tree.nodes.root import Root
 from flatdata.generator.tree.errors import ParsingError
 from flatdata.generator.tree.traversal import DfsTraversal
@@ -152,6 +152,23 @@ def _compute_structure_sizes(root):
             offset += int(field.type.width)
         struct.size_in_bits = offset
 
+def _check_ranges(root):
+    # First check that names are unique
+    for field in root.iterate(nodes.Field):
+        name = field.range_with_next
+        if not name:
+            continue
+        for sibling in field.parent.fields:
+            if sibling.name == name:
+                raise InvalidRangeName(name = name)
+
+    # Now check that structs with ranges are only used in vectors
+    for reference in root.iterate(StructureReference):
+        if isinstance(reference.node, nodes.Structure) and reference.node.has_range_with_next  \
+            and isinstance(reference.parent, ResourceBase) and not isinstance(reference.parent, Vector):
+                raise InvalidRangeReference(name = reference.target)
+
+
 
 def build_ast(definition):
     """Build the Flatdata syntax tree from a definition"""
@@ -159,6 +176,7 @@ def build_ast(definition):
     _append_builtin_structures(root)
     _append_constant_references(root)
     resolve_references(root)
+    _check_ranges(root)
     # now compute data based on resolved references
     _update_field_type_references(root)
     _compute_structure_sizes(root)

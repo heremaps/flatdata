@@ -60,6 +60,7 @@ struct Coappearance {
     a_ref : u32 : 16;
     b_ref : u32 : 16;
     count : u32 : 16;
+    @range_with_next(chapters_range)
     first_chapter_ref: u32 : 16;
 }
 

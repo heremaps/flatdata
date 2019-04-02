@@ -107,3 +107,16 @@ class InvalidConstantValueError(FlatdataSyntaxError):
         super().__init__(
             "Constant {name} has not enough bits for value {value}"
             .format(name=name, value=value))
+
+
+class InvalidRangeName(FlatdataSyntaxError):
+    def __init__(self, name):
+        super().__init__(
+            "@range_with_next name {name} is already in use for a field"
+            .format(name=name))
+
+class InvalidRangeReference(FlatdataSyntaxError):
+    def __init__(self, name):
+        super().__init__(
+            "Structs with @range_with_next can only be used in vectors: {name}"
+            .format(name=name))

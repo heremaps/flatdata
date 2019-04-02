@@ -14,5 +14,11 @@ define_struct!(
     {%- if not loop.last %},
     {% endif %}
     {% endfor %}
+    {% for field in struct.fields %}
+    {%- if field.range_with_next -%}
+    ,
+    range({{ field.range_with_next | escape_rust_keywords }}, {{ field.type.name }}, {{ field.offset }}, {{ field.type.width }})
+    {% endif %}
+    {% endfor %}
 );
 {%- endmacro %}
