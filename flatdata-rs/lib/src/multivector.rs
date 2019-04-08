@@ -1,14 +1,13 @@
-use crate::error::ResourceStorageError;
-use crate::memory;
-use crate::multiarrayview::MultiArrayView;
-use crate::storage::ResourceHandle;
-use crate::structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
-use crate::vector::ExternalVector;
+use crate::{
+    error::ResourceStorageError,
+    memory,
+    multiarrayview::MultiArrayView,
+    storage::ResourceHandle,
+    structs::{IndexStruct, VariadicRefFactory, VariadicStruct},
+    vector::ExternalVector,
+};
 
-use std::borrow::BorrowMut;
-use std::fmt;
-use std::io;
-use std::marker;
+use std::{borrow::BorrowMut, fmt, io, marker};
 
 /// A container for writing an indexed sequence of heterogeneous data items.
 ///
@@ -232,7 +231,7 @@ where
     }
 }
 
-impl<'a, Ts: VariadicRef> fmt::Debug for MultiVector<'a, Ts>
+impl<'a, Ts> fmt::Debug for MultiVector<'a, Ts>
 where
     Ts: VariadicRefFactory,
 {
@@ -244,11 +243,12 @@ where
 #[cfg(test)]
 #[allow(dead_code)]
 mod tests {
-    use crate::arrayview::ArrayView;
-    use crate::memstorage::MemoryResourceStorage;
-    use crate::multiarrayview::MultiArrayView;
-    use crate::storage::create_multi_vector;
-    use crate::storage::ResourceStorage;
+    use crate::{
+        arrayview::ArrayView,
+        memstorage::MemoryResourceStorage,
+        multiarrayview::MultiArrayView,
+        storage::{create_multi_vector, ResourceStorage},
+    };
 
     define_index!(Idx, RefIdx, RefMutIdx, "some_idx_schema", 4, 32);
 

@@ -1,11 +1,9 @@
 // Note: This module is called `structbuf` in contrast to `struct` in the C++
 // implementation, since Rust does not allow module names to be one of the
 // language keywords.
-use crate::memory;
-use crate::structs::Struct;
+use crate::{memory, structs::Struct};
 
-use std::fmt;
-use std::marker;
+use std::{fmt, marker};
 
 /// A container holding a single flatdata struct in memory, and providing read
 /// and write access to it.
