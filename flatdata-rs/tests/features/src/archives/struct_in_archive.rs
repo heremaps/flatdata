@@ -4,8 +4,7 @@ include!(concat!(env!("OUT_DIR"), "/archives/struct.rs"));
 
 #[test]
 fn test() {
-    use flatdata::Archive;
-    use flatdata::ArchiveBuilder;
+    use flatdata::{Archive, ArchiveBuilder};
 
     for &set_optional in &[false, true] {
         let storage = flatdata::MemoryResourceStorage::new("/my_test");

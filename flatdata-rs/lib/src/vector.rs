@@ -1,14 +1,12 @@
-use crate::arrayview::{debug_format, ArrayView};
-use crate::error::ResourceStorageError;
-use crate::structs::{RefFactory, Struct};
+use crate::{
+    arrayview::{debug_format, ArrayView},
+    error::ResourceStorageError,
+    structs::{RefFactory, Struct},
+};
 
-use crate::memory;
-use crate::storage::ResourceHandle;
+use crate::{memory, storage::ResourceHandle};
 
-use std::borrow::{Borrow, BorrowMut};
-use std::fmt;
-use std::io;
-use std::marker;
+use std::{borrow::BorrowMut, fmt, io, marker};
 
 /// A container holding a contiguous sequence of flatdata structs of the same
 /// type `T` in memory, and providing read and write access to it.
@@ -373,12 +371,6 @@ where
 
         self.data.resize(memory::PADDING_SIZE, 0);
         Ok(())
-    }
-
-    /// Returns `true` if this vector was not closed yet and more elements can
-    /// be added to it.
-    pub fn is_open(&self) -> bool {
-        self.resource_handle.borrow().is_open()
     }
 
     /// Flushes the remaining not yet flushed elements in this vector and

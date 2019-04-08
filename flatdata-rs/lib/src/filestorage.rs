@@ -2,13 +2,15 @@ use crate::storage::{ResourceStorage, Stream};
 
 use memmap::Mmap;
 
-use std::cell::RefCell;
-use std::collections::BTreeMap;
-use std::fs::{self, File};
-use std::io;
-use std::path::PathBuf;
-use std::rc::Rc;
-use std::slice;
+use std::{
+    cell::RefCell,
+    collections::BTreeMap,
+    fs::{self, File},
+    io,
+    path::PathBuf,
+    rc::Rc,
+    slice,
+};
 
 /// Internal storage of data as files.
 #[derive(Debug, Default)]
@@ -30,8 +32,6 @@ impl MemoryMappedFileStorage {
         Ok(&extended_lifetime_data)
     }
 }
-
-impl Stream for File {}
 
 /// Resource storage on disk using memory mapped files.
 ///
@@ -70,7 +70,6 @@ pub struct FileResourceStorage {
 
 impl FileResourceStorage {
     /// Create an empty memory mapped file storage at a given path.
-    #[allow(clippy::new_ret_no_self)]
     pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
         Rc::new(Self {
             storage: MemoryMappedFileStorage::default(),
