@@ -1,14 +1,16 @@
-use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 /// A helper function wrapping the flatdata generator.
 ///
-/// Can be used to write build.rs build scripts, generating outputs either from a single schema,
-/// or recursively from a folder of schemas.
+/// Can be used to write build.rs build scripts, generating outputs either from
+/// a single schema, or recursively from a folder of schemas.
 ///
 /// `schemas_path` can either be a single file, or a filder containing schemas.
-/// In both cases the function will only handle files with the `.flatdata` extension.
+/// In both cases the function will only handle files with the `.flatdata`
+/// extension.
 ///
 /// Generated files are in the same relative location, e.g.
 /// ``` text

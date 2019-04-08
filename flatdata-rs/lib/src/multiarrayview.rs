@@ -1,10 +1,12 @@
-use crate::arrayview::ArrayView;
-use crate::structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
+use crate::{
+    arrayview::ArrayView,
+    structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct},
+};
 
-use std::fmt;
-use std::iter;
-use std::marker;
-use std::ops::{Bound, RangeBounds};
+use std::{
+    fmt, iter, marker,
+    ops::{Bound, RangeBounds},
+};
 
 /// A read-only view on a multivector.
 ///
@@ -266,8 +268,7 @@ where
 #[allow(dead_code)]
 mod tests {
     use super::*;
-    use crate::memstorage::MemoryResourceStorage;
-    use crate::storage::create_multi_vector;
+    use crate::{memstorage::MemoryResourceStorage, storage::create_multi_vector};
 
     define_index!(Idx, RefIdx, RefMutIdx, "some_idx_schema", 4, 32);
 

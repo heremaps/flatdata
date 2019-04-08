@@ -1,15 +1,18 @@
-use crate::structs::{RefFactory, Struct};
-use crate::vector::Vector;
+use crate::{
+    structs::{RefFactory, Struct},
+    vector::Vector,
+};
 
-use std::fmt;
-use std::iter;
-use std::marker;
-use std::ops::{Bound, RangeBounds};
+use std::{
+    fmt, iter, marker,
+    ops::{Bound, RangeBounds},
+};
 
 /// A read-only view on a contiguous sequence of flatdata structs of the same
 /// type `T`.
 ///
-/// The sequence is written using [`Vector`] or [`ExternalVector`]. For detailed examples see either of the two.
+/// The sequence is written using [`Vector`] or [`ExternalVector`]. For detailed
+/// examples see either of the two.
 ///
 /// An archive provides a getter for each vector resource, which returns an
 /// array view.
@@ -236,8 +239,7 @@ where
 #[allow(dead_code)]
 mod test {
     use super::*;
-    use crate::memory;
-    use crate::structs::Struct;
+    use crate::{memory, structs::Struct};
 
     define_struct!(
         Value,

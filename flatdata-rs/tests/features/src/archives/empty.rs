@@ -4,8 +4,7 @@ include!(concat!(env!("OUT_DIR"), "/archives/empty.rs"));
 
 #[test]
 fn test() {
-    use flatdata::Archive;
-    use flatdata::ArchiveBuilder;
+    use flatdata::{Archive, ArchiveBuilder};
 
     let storage = flatdata::MemoryResourceStorage::new("/my_test");
 

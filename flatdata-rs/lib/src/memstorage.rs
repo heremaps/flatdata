@@ -1,12 +1,14 @@
 use crate::storage::{ResourceStorage, Stream};
 
-use std::cell::RefCell;
-use std::collections::BTreeMap;
-use std::fmt;
-use std::io::{self, Cursor};
-use std::path::PathBuf;
-use std::rc::Rc;
-use std::slice;
+use std::{
+    cell::RefCell,
+    collections::BTreeMap,
+    fmt,
+    io::{self, Cursor},
+    path::PathBuf,
+    rc::Rc,
+    slice,
+};
 
 type MemoryStorageStream = Rc<RefCell<Cursor<Vec<u8>>>>;
 
@@ -86,8 +88,6 @@ impl MemoryResourceStorage {
         })
     }
 }
-
-impl Stream for Cursor<Vec<u8>> {}
 
 impl ResourceStorage for MemoryResourceStorage {
     fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {

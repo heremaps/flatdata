@@ -1,7 +1,4 @@
-use std::error;
-use std::fmt;
-use std::io;
-use std::str::Utf8Error;
+use std::{error, fmt, io, str::Utf8Error};
 
 /// Error indicating failures when reading and writing data from/to a
 /// [`Storage`].

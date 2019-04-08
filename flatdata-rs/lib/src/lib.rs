@@ -288,18 +288,21 @@ mod storage;
 mod structbuf;
 mod vector;
 
-pub use crate::archive::*;
-pub use crate::arrayview::ArrayView;
-pub use crate::error::*;
-pub use crate::filestorage::FileResourceStorage;
-pub use crate::generator::*;
-pub use crate::memory::PADDING_SIZE;
-pub use crate::memstorage::MemoryResourceStorage;
-pub use crate::multiarrayview::MultiArrayView;
-pub use crate::multivector::MultiVector;
-pub use crate::storage::{
-    create_archive, create_external_vector, create_multi_vector, MemoryDescriptor, ResourceStorage,
+pub use crate::{
+    archive::*,
+    arrayview::ArrayView,
+    error::*,
+    filestorage::FileResourceStorage,
+    generator::*,
+    memory::PADDING_SIZE,
+    memstorage::MemoryResourceStorage,
+    multiarrayview::MultiArrayView,
+    multivector::MultiVector,
+    storage::{
+        create_archive, create_external_vector, create_multi_vector, MemoryDescriptor,
+        ResourceStorage,
+    },
+    structbuf::StructBuf,
+    structs::*,
+    vector::*,
 };
-pub use crate::structbuf::StructBuf;
-pub use crate::structs::*;
-pub use crate::vector::*;
