@@ -1,8 +1,10 @@
 // Note: This module is called `structbuf` in contrast to `struct` in the C++
 // implementation, since Rust does not allow module names to be one of the
 // language keywords.
-use crate::{memory, structs::Struct};
-use crate::structs::{NoOverlap, RefFactory, Struct};
+use crate::{
+    memory,
+    structs::{NoOverlap, RefFactory, Struct},
+};
 
 use std::{fmt, marker};
 

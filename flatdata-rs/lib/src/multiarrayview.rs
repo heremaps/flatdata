@@ -3,10 +3,7 @@ use crate::{
     structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct},
 };
 
-use std::{
-    fmt, iter, marker,
-    ops::{Bound, RangeBounds},
-};
+use std::{fmt, iter, marker, ops::RangeBounds};
 
 /// A read-only view on a multivector.
 ///

@@ -409,8 +409,10 @@ macro_rules! define_variadic_struct {
 
 #[cfg(test)]
 mod test {
-    use super::super::{helper::Int, structbuf::StructBuf};
-    use super::*;
+    use super::{
+        super::{helper::Int, structbuf::StructBuf},
+        *,
+    };
 
     #[test]
     #[allow(dead_code)]
