@@ -208,15 +208,13 @@ macro_rules! define_archive {
                 })
             })*
 
-            $(pub fn $raw_data_resource(&self) -> opt!(&[u8], $is_optional_raw_data) {
+            $(pub fn $raw_data_resource(&self) -> opt!($crate::RawData, $is_optional_raw_data) {
                 static_if!($is_optional_raw_data, {
                     self.$raw_data_resource.as_ref().map(|mem_desc| {
-                        unsafe { mem_desc.as_bytes() }
+                        $crate::RawData::new(unsafe { mem_desc.as_bytes() })
                     })
                 }, {
-                    unsafe {
-                        self.$raw_data_resource.as_bytes()
-                    }
+                    $crate::RawData::new(unsafe { self.$raw_data_resource.as_bytes() })
                 })
             })*
 

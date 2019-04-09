@@ -9,14 +9,8 @@ use flatdata::{Archive, ArchiveBuilder};
 
 pub mod coappearances;
 
-fn substring(strings: &str, start: u32) -> &str {
-    let start = start as usize;
-    let end = strings[start..].find('\0').expect("invalid string");
-    &strings[start..start + end]
-}
-
 #[test]
-fn read_and_validate_coappearances() {
+fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
     let storage =
         flatdata::FileResourceStorage::new(path::PathBuf::from("assets/karenina.archive"));
     let g = coappearances::Graph::open(storage).expect("invalid archive");
@@ -27,41 +21,39 @@ fn read_and_validate_coappearances() {
     assert_eq!(vertices.len(), 138);
     assert_eq!(edges.len(), 494);
 
-    // Note: We could use `from_utf8_unchecked` here, which simply does a raw
-    // pointer conversion, however we use the safe version of the function,
-    // which does exactly the same except it validates that the string is utf8.
-    // For that, it need to scan the whole string once, which is
-    // usually undesirable for huge data.
-    let strings = str::from_utf8(g.strings()).expect("invalid utf8 string");
-
     let meta = g.meta();
     assert_eq!(meta, g.meta());
 
     assert_eq!(
-        substring(strings, meta.title_ref()),
+        g.strings().substring(meta.title_ref() as usize)?,
         "Anna Karenina (Анна Каренина)"
     );
     assert_eq!(
-        substring(strings, meta.author_ref()),
+        g.strings().substring(meta.author_ref() as usize)?,
         "Leo Tolstoy (Лев Николаевич Толстой)"
     );
 
     let num_chapters = edges.iter().map(|e| e.count() as usize).sum();
     assert_eq!(g.chapters().len(), num_chapters);
 
-    assert_eq!(substring(strings, vertices.at(0).name_ref()), "Annushka");
     assert_eq!(
-        substring(strings, vertices.at(3).name_ref()),
+        g.strings().substring(vertices.at(0).name_ref() as usize)?,
+        "Annushka"
+    );
+    assert_eq!(
+        g.strings().substring(vertices.at(3).name_ref() as usize)?,
         "Anna Arkadyevna Karenina"
     );
 
     let e0 = edges.at(0);
     assert_eq!(
-        substring(strings, vertices.at(e0.a_ref() as usize).name_ref()),
+        g.strings()
+            .substring(vertices.at(e0.a_ref() as usize).name_ref() as usize)?,
         "Annushka"
     );
     assert_eq!(
-        substring(strings, vertices.at(e0.b_ref() as usize).name_ref()),
+        g.strings()
+            .substring(vertices.at(e0.b_ref() as usize).name_ref() as usize)?,
         "Anna Arkadyevna Karenina"
     );
 
@@ -97,9 +89,10 @@ fn read_and_validate_coappearances() {
     assert_eq!(data.len(), 1);
     match data[0] {
         coappearances::RefVerticesData::UnaryRelation(ref data) => {
-            assert_eq!(substring(strings, data.kind_ref()), "maid");
+            assert_eq!(g.strings().substring(data.kind_ref() as usize)?, "maid");
             assert_eq!(
-                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
+                g.strings()
+                    .substring(vertices.at(data.to_ref() as usize).name_ref() as usize)?,
                 "Anna Arkadyevna Karenina"
             );
         }
@@ -110,9 +103,13 @@ fn read_and_validate_coappearances() {
     assert_eq!(data.len(), 1);
     match data[0] {
         coappearances::RefVerticesData::UnaryRelation(ref data) => {
-            assert_eq!(substring(strings, data.kind_ref()), "housekeeper");
             assert_eq!(
-                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
+                g.strings().substring(data.kind_ref() as usize)?,
+                "housekeeper"
+            );
+            assert_eq!(
+                g.strings()
+                    .substring(vertices.at(data.to_ref() as usize).name_ref() as usize)?,
                 "Konstantin Dmitrievitch Levin"
             );
         }
@@ -123,14 +120,19 @@ fn read_and_validate_coappearances() {
     assert_eq!(data.len(), 1);
     match data[0] {
         coappearances::RefVerticesData::UnaryRelation(ref data) => {
-            assert_eq!(substring(strings, data.kind_ref()), "gambling friend");
             assert_eq!(
-                substring(strings, vertices.at(data.to_ref() as usize).name_ref()),
+                g.strings().substring(data.kind_ref() as usize)?,
+                "gambling friend"
+            );
+            assert_eq!(
+                g.strings()
+                    .substring(vertices.at(data.to_ref() as usize).name_ref() as usize)?,
                 "Count Alexey Kirillovitch Vronsky"
             );
         }
         _ => assert!(false),
     };
+    Ok(())
 }
 
 fn compare_files(name_a: &path::Path, name_b: &path::Path) -> bool {
@@ -262,7 +264,7 @@ fn copy_coappearances_archive(
         "chapters"
     ));
 
-    gb.set_strings(g.strings()).expect("set_strings failed");
+    gb.set_strings(&g.strings()).expect("set_strings failed");
     assert!(compare_resource(
         &source_archive_path,
         &archive_path,
