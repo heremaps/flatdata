@@ -44,7 +44,6 @@ where
     /// Note that this is not the *total* number of overall elements stored in
     /// the array. An item may be also empty.
     pub fn len(&self) -> usize {
-        // last index element is a sentinel
         self.index.len()
     }
 

@@ -128,7 +128,7 @@ fn read_and_validate_coappearances() {
     };
 }
 
-fn compare_files(name_a: &path::Path, name_b: &path::Path) {
+fn check_files(name_a: &path::Path, name_b: &path::Path) {
     let mut fa = fs::File::open(name_a).unwrap();
     let mut buf_a = Vec::new();
     fa.read_to_end(&mut buf_a).unwrap();
@@ -140,9 +140,9 @@ fn compare_files(name_a: &path::Path, name_b: &path::Path) {
     assert_eq!(buf_a, buf_b);
 }
 
-fn compare_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &str) {
-    compare_files(&from.join(resource_name), &to.join(resource_name));
-    compare_files(
+fn check_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &str) {
+    check_files(&from.join(resource_name), &to.join(resource_name));
+    check_files(
         &from.join(format!("{}.schema", resource_name)),
         &to.join(format!("{}.schema", resource_name)),
     );
@@ -171,7 +171,7 @@ fn copy_coappearances_archive(
     let mut meta = flatdata::StructBuf::<coappearances::Meta>::new();
     meta.get_mut().fill_from(&g.meta());
     gb.set_meta(meta.get()).expect("set_meta failed");
-    compare_resource(&source_archive_path, &archive_path, "meta");
+    check_resource(&source_archive_path, &archive_path, "meta");
 
     {
         let mut vertices = gb.start_vertices().expect("start_vertices failed");
@@ -181,7 +181,7 @@ fn copy_coappearances_archive(
         }
         vertices.close().expect("close failed");
     }
-    compare_resource(&source_archive_path, &archive_path, "vertices");
+    check_resource(&source_archive_path, &archive_path, "vertices");
 
     let mut edges = flatdata::Vector::<coappearances::Coappearance>::new();
     for e in g.edges().iter() {
@@ -194,7 +194,7 @@ fn copy_coappearances_archive(
     sentinel.set_b_ref(std::u16::MAX as u32);
     gb.set_edges(&edges.as_view()).expect("set_edges failed");
 
-    compare_resource(&source_archive_path, &archive_path, "edges");
+    check_resource(&source_archive_path, &archive_path, "edges");
 
     {
         let mut vertices_data = gb
@@ -226,8 +226,8 @@ fn copy_coappearances_archive(
         vertices_data.close().expect("close failed");
     }
 
-    compare_resource(&source_archive_path, &archive_path, "vertices_data");
-    compare_resource(&source_archive_path, &archive_path, "vertices_data_index");
+    check_resource(&source_archive_path, &archive_path, "vertices_data");
+    check_resource(&source_archive_path, &archive_path, "vertices_data_index");
 
     let mut chapters = flatdata::Vector::<coappearances::Chapter>::new();
     for ch in g.chapters().iter() {
@@ -236,10 +236,10 @@ fn copy_coappearances_archive(
 
     gb.set_chapters(&chapters.as_view())
         .expect("set_chapters failed");
-    compare_resource(&source_archive_path, &archive_path, "chapters");
+    check_resource(&source_archive_path, &archive_path, "chapters");
 
     gb.set_strings(g.strings()).expect("set_strings failed");
-    compare_resource(&source_archive_path, &archive_path, "strings");
+    check_resource(&source_archive_path, &archive_path, "strings");
 
     (archive_path, gb)
 }

@@ -79,10 +79,10 @@ where
             Bound::Excluded(&idx) => self.data_index(idx + 1),
             Bound::Unbounded => 0,
         };
-        let extra = <T as Struct>::IS_OVERLAPPING_WITH_NEXT as usize;
+        let sentinel = <T as Struct>::IS_OVERLAPPING_WITH_NEXT as usize;
         let data_end = match range.end_bound() {
-            Bound::Included(&idx) => self.data_index(idx + 1 + extra),
-            Bound::Excluded(&idx) => self.data_index(idx + extra),
+            Bound::Included(&idx) => self.data_index(idx + 1 + sentinel),
+            Bound::Excluded(&idx) => self.data_index(idx + sentinel),
             Bound::Unbounded => self.data.len(),
         };
         Self::new(&self.data[data_start..data_end])
