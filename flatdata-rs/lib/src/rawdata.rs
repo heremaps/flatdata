@@ -1,5 +1,5 @@
 /// Exposes blocks of raw data, providing auxiliary functionality like
-/// extracting substrings
+/// extracting substrings.
 #[derive(Debug, Clone, Copy)]
 pub struct RawData<'a> {
     data: &'a [u8],
