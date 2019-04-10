@@ -57,11 +57,11 @@ fn read_and_validate_coappearances() {
 
     let e0 = edges.at(0);
     assert_eq!(
-        substring(strings, vertices.at(e0.a_ref() as usize).name_ref()),
+        substring(strings, vertices.at(e0.a_ref()).name_ref()),
         "Annushka"
     );
     assert_eq!(
-        substring(strings, vertices.at(e0.b_ref() as usize).name_ref()),
+        substring(strings, vertices.at(e0.b_ref()).name_ref()),
         "Anna Arkadyevna Karenina"
     );
 

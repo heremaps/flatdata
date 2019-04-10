@@ -1,10 +1,12 @@
 use crate::{
     arrayview::{debug_format, ArrayView},
     error::ResourceStorageError,
+    memory,
+    storage::ResourceHandle,
     structs::{RefFactory, Struct},
 };
 
-use crate::{memory, storage::ResourceHandle};
+use num_traits::ToPrimitive;
 
 use std::{borrow::BorrowMut, fmt, io, marker};
 
@@ -169,14 +171,16 @@ where
     /// Return an accessor handle to the element at position `index` in the
     /// vector.
     #[inline]
-    pub fn at(&self, index: usize) -> <T as Struct>::Item {
+    pub fn at<I: ToPrimitive>(&self, index: I) -> <T as Struct>::Item {
+        let index = index.to_usize().expect("invalid index");
         T::create(&self.data[index * <T as Struct>::SIZE_IN_BYTES..])
     }
 
     /// Return a mutable handle to the element at position `index` in the
     /// vector.
     #[inline]
-    pub fn at_mut(&mut self, index: usize) -> <T as Struct>::ItemMut {
+    pub fn at_mut<I: ToPrimitive>(&mut self, index: I) -> <T as Struct>::ItemMut {
+        let index = index.to_usize().expect("invalid index");
         T::create_mut(&mut self.data[index * <T as Struct>::SIZE_IN_BYTES..])
     }
 

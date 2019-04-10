@@ -3,6 +3,8 @@ use crate::{
     vector::Vector,
 };
 
+use num_traits::ToPrimitive;
+
 use std::{
     fmt, iter, marker,
     ops::{Bound, RangeBounds},
@@ -58,8 +60,8 @@ where
     /// # Panics
     ///
     /// Panics if index is greater than or equal to `ArrayView::len()`.
-    pub fn at(&self, index: usize) -> <T as Struct<'a>>::Item {
-        let index = self.data_index(index);
+    pub fn at<I: ToPrimitive>(&self, index: I) -> <T as Struct<'a>>::Item {
+        let index = self.data_index(index.to_usize().expect("invalid index"));
         assert!(index + <T as Struct>::SIZE_IN_BYTES <= self.data.len());
         T::create(&self.data[index..])
     }
@@ -69,15 +71,15 @@ where
     /// # Panics
     ///
     /// Panics if the range is outside of bounds of array view.
-    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
+    pub fn slice<I: ToPrimitive, R: RangeBounds<I>>(&self, range: R) -> Self {
         let data_start = match range.start_bound() {
-            Bound::Included(&idx) => self.data_index(idx),
-            Bound::Excluded(&idx) => self.data_index(idx + 1),
+            Bound::Included(idx) => self.data_index(idx.to_usize().expect("invalid index")),
+            Bound::Excluded(idx) => self.data_index(idx.to_usize().expect("invalid index") + 1),
             Bound::Unbounded => 0,
         };
         let data_end = match range.end_bound() {
-            Bound::Included(&idx) => self.data_index(idx + 1),
-            Bound::Excluded(&idx) => self.data_index(idx),
+            Bound::Included(idx) => self.data_index(idx.to_usize().expect("invalid index") + 1),
+            Bound::Excluded(idx) => self.data_index(idx.to_usize().expect("invalid index")),
             Bound::Unbounded => self.data.len(),
         };
         Self::new(&self.data[data_start..data_end])

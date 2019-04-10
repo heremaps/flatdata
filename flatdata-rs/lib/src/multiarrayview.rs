@@ -3,6 +3,8 @@ use crate::{
     structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct},
 };
 
+use num_traits::ToPrimitive;
+
 use std::{
     fmt, iter, marker,
     ops::{Bound, RangeBounds},
@@ -62,10 +64,10 @@ where
     /// # Panics
     ///
     /// Panics if index is greater than or equal to `MultiArrayView::len()`.
-    pub fn at(&self, index: usize) -> MultiArrayViewItemIter<'a, Ts> {
-        let start = <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::index(self.index.at(index));
-        let end =
-            <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::index(self.index.at(index + 1));
+    pub fn at<I: ToPrimitive>(&self, index: I) -> MultiArrayViewItemIter<'a, Ts> {
+        let index = index.to_usize().expect("invalid index");
+        let start = <Ts::Index as IndexStruct>::index(self.index.at(index));
+        let end = <Ts::Index as IndexStruct>::index(self.index.at(index + 1));
         MultiArrayViewItemIter {
             data: &self.data[start..end],
             _phantom: marker::PhantomData,
@@ -77,16 +79,16 @@ where
     /// # Panics
     ///
     /// Panics if the range is outside of bounds of array view.
-    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
+    pub fn slice<I: ToPrimitive, R: RangeBounds<I>>(&self, range: R) -> Self {
         let index_start = match range.start_bound() {
-            Bound::Included(&idx) => idx,
-            Bound::Excluded(&idx) => idx + 1,
+            Bound::Included(idx) => idx.to_usize().expect("invalid index"),
+            Bound::Excluded(idx) => idx.to_usize().expect("invalid index") + 1,
             Bound::Unbounded => 0,
         };
         // include one more element (sentinel)
         let index_end = match range.end_bound() {
-            Bound::Included(&idx) => idx + 2,
-            Bound::Excluded(&idx) => idx + 1,
+            Bound::Included(idx) => idx.to_usize().expect("invalid index") + 2,
+            Bound::Excluded(idx) => idx.to_usize().expect("invalid index") + 1,
             Bound::Unbounded => self.index.len(),
         };
         Self::new(self.index.slice(index_start..index_end), self.data)
