@@ -111,7 +111,7 @@ pub trait ResourceStorage: std::fmt::Debug {
             return Err(ResourceStorageError::UnexpectedDataSize);
         }
 
-        let size = read_bytes!(SizeType, data.as_ptr()) as usize;
+        let size = flatdata_read_bytes!(SizeType, data.as_ptr()) as usize;
         if size + mem::size_of::<SizeType>() + PADDING_SIZE != data.len() {
             return Err(ResourceStorageError::UnexpectedDataSize);
         }
@@ -398,7 +398,7 @@ fn write_schema(schema: &str, stream: &mut Stream) -> io::Result<()> {
 fn write_size(value: SizeType, stream: &mut Stream) -> io::Result<()> {
     const SIZE_OF_SIZE_TYPE: usize = mem::size_of::<SizeType>();
     let mut buffer: [u8; SIZE_OF_SIZE_TYPE] = [0; SIZE_OF_SIZE_TYPE];
-    write_bytes!(SizeType; value, &mut buffer, 0, SIZE_OF_SIZE_TYPE * 8);
+    flatdata_write_bytes!(SizeType; value, &mut buffer, 0, SIZE_OF_SIZE_TYPE * 8);
     stream.write_all(&buffer)
 }
 

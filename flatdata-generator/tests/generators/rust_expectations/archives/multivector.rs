@@ -32,29 +32,12 @@ define_variadic_struct!(DataU64Index, RefDataU64Index, BuilderDataU64Index,
     0 => ( S, super::n::S, add_s),
     1 => ( T, super::n::T, add_t));
 
-define_archive!(A, ABuilder,
-    schema::a::A;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-    (data, start_data,
-        Data,
-        schema::a::resources::DATA,
-        data_index, super::_builtin::multivector::IndexType8, false),
-    (optional_data, start_optional_data,
-        OptionalData,
-        schema::a::resources::OPTIONAL_DATA,
-        optional_data_index, super::_builtin::multivector::IndexType16, true),
-    (data_u64_index, start_data_u64_index,
-        DataU64Index,
-        schema::a::resources::DATA_U64_INDEX,
-        data_u64_index_index, super::_builtin::multivector::IndexType64, false);
-    // raw data resources
-;
-    // subarchives
+define_archive!(A, ABuilder, schema::a::A;
+    multivector(data, false, schema::a::resources::DATA, start_data, Data, data_index, super::_builtin::multivector::IndexType8),
+    multivector(optional_data, true, schema::a::resources::OPTIONAL_DATA, start_optional_data, OptionalData, optional_data_index, super::_builtin::multivector::IndexType16),
+    multivector(data_u64_index, false, schema::a::resources::DATA_U64_INDEX, start_data_u64_index, DataU64Index, data_u64_index_index, super::_builtin::multivector::IndexType64),
 );
+
 
 }
 

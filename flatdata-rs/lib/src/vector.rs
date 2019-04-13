@@ -47,19 +47,8 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// #     (x, set_x, u32, u32, 0, 16),
 /// #     (y, set_y, u32, u32, 16, 16));
 /// #
-/// # define_archive!(X, XBuilder,
-/// #     "Schema of X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// #     (data, set_data, start_data,
-/// #         A,
-/// #         "Schema of data", false);
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
+/// # define_archive!(X, XBuilder, "Schema of X";
+/// #     vector(data, false, "Schema of data", set_data, start_data, A),
 /// # );
 /// #
 /// let storage = MemoryResourceStorage::new("/root/extvec");
@@ -265,19 +254,8 @@ where
 /// #     (x, set_x, u32, u32, 0, 16),
 /// #     (y, set_y, u32, u32, 16, 16));
 /// #
-/// # define_archive!(X, XBuilder,
-/// #     "Schema of X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// #     (data, set_data, start_data,
-/// #         A,
-/// #         "Schema of data", false);
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
+/// # define_archive!(X, XBuilder, "Schema of X";
+/// #     vector(data, false, "Schema of data", set_data, start_data, A),
 /// # );
 /// #
 /// let storage = MemoryResourceStorage::new("/root/extvec");

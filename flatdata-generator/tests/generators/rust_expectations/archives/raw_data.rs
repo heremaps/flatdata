@@ -1,15 +1,4 @@
-define_archive!(A, ABuilder,
-    schema::a::A;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-;
-    // raw data resources
-    (data, set_data,
-        schema::a::resources::DATA, false),
-    (optional_data, set_optional_data,
-        schema::a::resources::OPTIONAL_DATA, true);
-    // subarchives
+define_archive!(A, ABuilder, schema::a::A;
+    raw_data(data, false, schema::a::resources::DATA, set_data),
+    raw_data(optional_data, true, schema::a::resources::OPTIONAL_DATA, set_optional_data),
 );

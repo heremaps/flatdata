@@ -49,18 +49,7 @@ impl fmt::Debug for MemoryStorage {
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
 /// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder };
-/// # define_archive!(X, XBuilder,
-/// #     "Schema for X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// # ;
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
-/// # );
+/// # define_archive!(X, XBuilder, "Schema for X"; );
 /// let storage = MemoryResourceStorage::new("/root/extvec");
 /// let _builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// // Write some data
