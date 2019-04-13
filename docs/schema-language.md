@@ -266,12 +266,12 @@ In this case the edges of a node `i` are then retrieved as
 edges.slice(nodes[i].first_edge_ref..nodes[i + 1].first_edge_ref)
 ```
 Additionally the last element of the `nodes` vector is usually a sentinel (only used to retrieve `first_edge_index`).
-To simplify this flatdata offers the `@range_with_next(name_of_range_attribute)` annotation:
+To simplify this flatdata offers the `@range(name_of_range_attribute)` annotation:
 
 ```cpp
 struct Node {
     ...
-    @range_with_next(edges_range)
+    @range(edges_range)
     first_edge_ref : u32;
 }
 ```

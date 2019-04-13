@@ -42,7 +42,7 @@ class Multivector(ResourceBase):
         class MemberDict(dict):
             def __getattr__(self, attr):
                 return self.get(attr)
-        decorations = [MemberDict({"range_with_next" : MemberDict({"name":"range"})})]
+        decorations = [MemberDict({"range" : MemberDict({"name":"range"})})]
         field = MemberDict({"decorations":decorations, "name":"value", "width":self._width, "type":"u64"})
         properties = MemberDict({
             "name":"IndexType{width}".format(width=self._width),

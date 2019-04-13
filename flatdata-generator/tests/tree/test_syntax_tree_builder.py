@@ -34,7 +34,7 @@ def test_range_with_duplicate_name():
     with assert_raises(InvalidRangeName):
         build_ast("""namespace foo{
             struct A {
-                @range_with_next(ref_n)
+                @range(ref_n)
                 ref_n : u64 : 64;
             }
             }
@@ -44,7 +44,7 @@ def test_range_cannot_be_used_in_multivector():
     with assert_raises(InvalidRangeReference):
         build_ast("""namespace foo{
             struct A {
-                @range_with_next(my_range)
+                @range(my_range)
                 ref_n : u64 : 64;
             }
             archive R {
@@ -57,7 +57,7 @@ def test_range_cannot_be_used_in_struct_resource():
     with assert_raises(InvalidRangeReference):
         build_ast("""namespace foo{
             struct A {
-                @range_with_next(my_range)
+                @range(my_range)
                 ref_n : u64 : 64;
             }
             archive R {
@@ -69,7 +69,7 @@ def test_range_cannot_be_used_in_struct_resource():
 def test_ranges_can_be_used_in_normally():
     build_ast("""namespace foo{
         struct A {
-            @range_with_next(my_range)
+            @range(my_range)
             ref_n : u64 : 64;
         }
 

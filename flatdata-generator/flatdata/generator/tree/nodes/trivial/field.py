@@ -32,10 +32,10 @@ class Field(Node):
                      width=width)
 
     @property
-    def range_with_next(self):
+    def range(self):
         for d in self.decorations:
-            if "range_with_next" in d:
-                return d.range_with_next.name
+            if "range" in d:
+                return d.range.name
         return None
 
     @property

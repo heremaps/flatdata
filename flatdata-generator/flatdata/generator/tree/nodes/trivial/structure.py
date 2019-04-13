@@ -22,8 +22,8 @@ class Structure(Node):
         return result
 
     @property
-    def has_range_with_next(self):
-        return any(f for f in self.fields if f.range_with_next)
+    def has_range(self):
+        return any(f for f in self.fields if f.range)
 
     @property
     def doc(self):

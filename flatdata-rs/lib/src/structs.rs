@@ -75,7 +75,7 @@ pub trait Struct<'a>: Clone {
 pub trait RefFactory: for<'a> Struct<'a> {}
 impl<T> RefFactory for T where T: for<'a> Struct<'a> {}
 
-/// Marks structs that can be used stand-alone, e.g. no range_with_next
+/// Marks structs that can be used stand-alone, e.g. no range
 pub trait NoOverlap {}
 
 /// A specialized Struct factory producing Index items.
@@ -440,7 +440,7 @@ mod test {
 
     #[test]
     #[allow(dead_code)]
-    fn range_with_next() {
+    fn range() {
         // check that this compiles
         define_struct!(
             A,

@@ -112,11 +112,11 @@ class InvalidConstantValueError(FlatdataSyntaxError):
 class InvalidRangeName(FlatdataSyntaxError):
     def __init__(self, name):
         super().__init__(
-            "@range_with_next name {name} is already in use for a field"
+            "@range name {name} is already in use for a field"
             .format(name=name))
 
 class InvalidRangeReference(FlatdataSyntaxError):
     def __init__(self, name):
         super().__init__(
-            "Structs with @range_with_next can only be used in vectors: {name}"
+            "Structs with @range can only be used in vectors: {name}"
             .format(name=name))

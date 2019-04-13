@@ -15,9 +15,9 @@ define_struct!(
     {% endif %}
     {% endfor %}
     {% for field in struct.fields %}
-    {%- if field.range_with_next -%}
+    {%- if field.range -%}
     ,
-    range({{ field.range_with_next | escape_rust_keywords }}, {{ field.type.name }}, {{ field.offset }}, {{ field.type.width }})
+    range({{ field.range | escape_rust_keywords }}, {{ field.type.name }}, {{ field.offset }}, {{ field.type.width }})
     {% endif %}
     {% endfor %}
 );

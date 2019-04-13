@@ -4,7 +4,7 @@ class n_S(flatdata.structure.Structure):
 struct S
 {
     x : u64 : 64;
-    @range_with_next( y_range )
+    @range( y_range )
     first_y : u32 : 14;
 }
 }

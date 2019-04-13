@@ -14,9 +14,9 @@ union {{ template_name }}
     {% endif %}
     using {{ field|typedef_name }} = Member< {{ field.type|cpp_base_type}}, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
     {{ field|typedef_name }} {{ field.name }};
-    {% if field.range_with_next %}
-    using {{ field.range_with_next|snake_to_upper_camel_case }}Type = Member< std::pair< {{ field.type|cpp_base_type}}, {{ field.type|cpp_base_type}} >, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
-    {{ field.range_with_next|snake_to_upper_camel_case }}Type {{ field.range_with_next }};
+    {% if field.range %}
+    using {{ field.range|snake_to_upper_camel_case }}Type = Member< std::pair< {{ field.type|cpp_base_type}}, {{ field.type|cpp_base_type}} >, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
+    {{ field.range|snake_to_upper_camel_case }}Type {{ field.range }};
     {% endif %}
     {% endfor %}
 
@@ -48,7 +48,7 @@ union {{ template_name }}
     std::string to_string( ) const;
     std::string describe( ) const;
 
-    static constexpr bool IS_OVERLAPPING_WITH_NEXT = {{ struct.has_range_with_next|lower}};
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = {{ struct.has_range|lower}};
 
     /**
     * Private data member, should not be directly used.

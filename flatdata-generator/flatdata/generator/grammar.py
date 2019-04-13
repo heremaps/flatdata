@@ -43,15 +43,15 @@ enum = Group(
     '}'
 )
 
-range_with_next = Group(
-    Keyword("@range_with_next") +
+range = Group(
+    Keyword("@range") +
     "(" +
     identifier("name") +
     ")"
 )
 
 field_decorations = Group(
-    range_with_next("range_with_next")
+    range("range")
 )
 
 field = Group(

@@ -159,7 +159,7 @@ def _compute_structure_sizes(root):
 def _check_ranges(root):
     # First check that names are unique
     for field in root.iterate(nodes.Field):
-        name = field.range_with_next
+        name = field.range
         if not name:
             continue
         for sibling in field.parent.fields:
@@ -168,7 +168,7 @@ def _check_ranges(root):
 
     # Now check that structs with ranges are only used in vectors
     for reference in root.iterate(StructureReference):
-        if (isinstance(reference.node, nodes.Structure) and reference.node.has_range_with_next
+        if (isinstance(reference.node, nodes.Structure) and reference.node.has_range
                 and isinstance(reference.parent, ResourceBase) and not isinstance(reference.parent, Vector)):
             raise InvalidRangeReference(reference.target)
 
