@@ -140,9 +140,9 @@ public:
 
     private:
         friend class FlatdataGraph;
-        EdgeRange( uint32_t current, uint32_t end, const FlatdataGraph* graph )
-            : m_current( current )
-            , m_end( end )
+        EdgeRange( std::pair< uint32_t, uint32_t > range, const FlatdataGraph* graph )
+            : m_current( range.first )
+            , m_end( range.second )
             , m_graph( graph )
         {
         }
@@ -191,8 +191,7 @@ public:
         EdgeRange
         edges( ) const
         {
-            return EdgeRange( m_graph->m_nodes[ m_current ].first_adjacent_edge,
-                              m_graph->m_nodes[ m_current + 1 ].first_adjacent_edge, m_graph );
+            return EdgeRange( m_graph->m_nodes[ m_current ].adjacent_edges, m_graph );
         }
 
     private:
@@ -271,12 +270,12 @@ public:
     uint32_t
     node_count( ) const
     {
-        return m_nodes.size( ) - 1;
+        return m_nodes.size( );
     }
     uint32_t
     edge_count( ) const
     {
-        return m_data.size( ) - 1;
+        return m_data.size( );
     }
 
     NodeRange
