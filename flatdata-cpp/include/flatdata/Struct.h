@@ -26,6 +26,9 @@ public:
     using StreamType = typename T::MutatorType::StreamType;
     using ConstStreamType = typename T::AccessorType::StreamType;
 
+    static_assert( !T::IS_OVERLAPPING_WITH_NEXT,
+                   "Cannot use range/overlapping structs standalone" );
+
 public:
 
     Struct( );

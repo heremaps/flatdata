@@ -22,14 +22,14 @@ const char* to_string( EnumI8 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumI8Template
 {
-    using FType = Member< ::n::EnumI8, 0, 1 >;
+    using FType = Member< ::n::EnumI8, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumI8Template< flatdata::Writer >;
     /// Immutable structure type
@@ -56,13 +56,15 @@ union StructEnumI8Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -87,14 +89,14 @@ const char* to_string( EnumU8 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumU8Template
 {
-    using FType = Member< ::n::EnumU8, 0, 1 >;
+    using FType = Member< ::n::EnumU8, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumU8Template< flatdata::Writer >;
     /// Immutable structure type
@@ -121,13 +123,15 @@ union StructEnumU8Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -152,14 +156,14 @@ const char* to_string( EnumI16 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumI16Template
 {
-    using FType = Member< ::n::EnumI16, 0, 1 >;
+    using FType = Member< ::n::EnumI16, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumI16Template< flatdata::Writer >;
     /// Immutable structure type
@@ -186,13 +190,15 @@ union StructEnumI16Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -217,14 +223,14 @@ const char* to_string( EnumU16 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumU16Template
 {
-    using FType = Member< ::n::EnumU16, 0, 1 >;
+    using FType = Member< ::n::EnumU16, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumU16Template< flatdata::Writer >;
     /// Immutable structure type
@@ -251,13 +257,15 @@ union StructEnumU16Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -282,14 +290,14 @@ const char* to_string( EnumI32 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumI32Template
 {
-    using FType = Member< ::n::EnumI32, 0, 1 >;
+    using FType = Member< ::n::EnumI32, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumI32Template< flatdata::Writer >;
     /// Immutable structure type
@@ -316,13 +324,15 @@ union StructEnumI32Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -347,14 +357,14 @@ const char* to_string( EnumU32 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumU32Template
 {
-    using FType = Member< ::n::EnumU32, 0, 1 >;
+    using FType = Member< ::n::EnumU32, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumU32Template< flatdata::Writer >;
     /// Immutable structure type
@@ -381,13 +391,15 @@ union StructEnumU32Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -412,14 +424,14 @@ const char* to_string( EnumI64 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumI64Template
 {
-    using FType = Member< ::n::EnumI64, 0, 1 >;
+    using FType = Member< ::n::EnumI64, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumI64Template< flatdata::Writer >;
     /// Immutable structure type
@@ -446,13 +458,15 @@ union StructEnumI64Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -477,14 +491,14 @@ const char* to_string( EnumU64 value );
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union StructEnumU64Template
 {
-    using FType = Member< ::n::EnumU64, 0, 1 >;
+    using FType = Member< ::n::EnumU64, 0, 1, 1 >;
     FType f;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = StructEnumU64Template< flatdata::Writer >;
     /// Immutable structure type
@@ -511,13 +525,15 @@ union StructEnumU64Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -568,44 +584,44 @@ struct StructEnumI8
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI8Template< Member >::StructEnumI8Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI8Template< Member >::StructEnumI8Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI8Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumI8Template< Member >::StreamType StructEnumI8Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI8Template< Member >::schema( ) { return internal::StructEnumI8__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI8Template< Member >::name( ) { return "StructEnumI8"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumI8Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI8Template< Member >::operator==( const StructEnumI8Template& other ) const
 {
@@ -619,14 +635,14 @@ bool StructEnumI8Template< Member >::operator==( const StructEnumI8Template& oth
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI8Template< Member >::operator!=( const StructEnumI8Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI8Template< Member >::operator<( const StructEnumI8Template& other ) const
 {
@@ -634,14 +650,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI8Template< Member >::operator StructEnumI8Template< flatdata::Reader >( ) const
 {
     return StructEnumI8Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI8Template< Member >::to_string( ) const
 {
@@ -653,7 +669,7 @@ std::string StructEnumI8Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI8Template< Member >::describe( ) const
 {
@@ -700,44 +716,44 @@ struct StructEnumU8
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU8Template< Member >::StructEnumU8Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU8Template< Member >::StructEnumU8Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU8Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumU8Template< Member >::StreamType StructEnumU8Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU8Template< Member >::schema( ) { return internal::StructEnumU8__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU8Template< Member >::name( ) { return "StructEnumU8"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumU8Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU8Template< Member >::operator==( const StructEnumU8Template& other ) const
 {
@@ -751,14 +767,14 @@ bool StructEnumU8Template< Member >::operator==( const StructEnumU8Template& oth
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU8Template< Member >::operator!=( const StructEnumU8Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU8Template< Member >::operator<( const StructEnumU8Template& other ) const
 {
@@ -766,14 +782,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU8Template< Member >::operator StructEnumU8Template< flatdata::Reader >( ) const
 {
     return StructEnumU8Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU8Template< Member >::to_string( ) const
 {
@@ -785,7 +801,7 @@ std::string StructEnumU8Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU8Template< Member >::describe( ) const
 {
@@ -832,44 +848,44 @@ struct StructEnumI16
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI16Template< Member >::StructEnumI16Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI16Template< Member >::StructEnumI16Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI16Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumI16Template< Member >::StreamType StructEnumI16Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI16Template< Member >::schema( ) { return internal::StructEnumI16__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI16Template< Member >::name( ) { return "StructEnumI16"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumI16Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI16Template< Member >::operator==( const StructEnumI16Template& other ) const
 {
@@ -883,14 +899,14 @@ bool StructEnumI16Template< Member >::operator==( const StructEnumI16Template& o
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI16Template< Member >::operator!=( const StructEnumI16Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI16Template< Member >::operator<( const StructEnumI16Template& other ) const
 {
@@ -898,14 +914,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI16Template< Member >::operator StructEnumI16Template< flatdata::Reader >( ) const
 {
     return StructEnumI16Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI16Template< Member >::to_string( ) const
 {
@@ -917,7 +933,7 @@ std::string StructEnumI16Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI16Template< Member >::describe( ) const
 {
@@ -964,44 +980,44 @@ struct StructEnumU16
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU16Template< Member >::StructEnumU16Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU16Template< Member >::StructEnumU16Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU16Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumU16Template< Member >::StreamType StructEnumU16Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU16Template< Member >::schema( ) { return internal::StructEnumU16__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU16Template< Member >::name( ) { return "StructEnumU16"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumU16Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU16Template< Member >::operator==( const StructEnumU16Template& other ) const
 {
@@ -1015,14 +1031,14 @@ bool StructEnumU16Template< Member >::operator==( const StructEnumU16Template& o
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU16Template< Member >::operator!=( const StructEnumU16Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU16Template< Member >::operator<( const StructEnumU16Template& other ) const
 {
@@ -1030,14 +1046,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU16Template< Member >::operator StructEnumU16Template< flatdata::Reader >( ) const
 {
     return StructEnumU16Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU16Template< Member >::to_string( ) const
 {
@@ -1049,7 +1065,7 @@ std::string StructEnumU16Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU16Template< Member >::describe( ) const
 {
@@ -1096,44 +1112,44 @@ struct StructEnumI32
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI32Template< Member >::StructEnumI32Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI32Template< Member >::StructEnumI32Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI32Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumI32Template< Member >::StreamType StructEnumI32Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI32Template< Member >::schema( ) { return internal::StructEnumI32__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI32Template< Member >::name( ) { return "StructEnumI32"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumI32Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI32Template< Member >::operator==( const StructEnumI32Template& other ) const
 {
@@ -1147,14 +1163,14 @@ bool StructEnumI32Template< Member >::operator==( const StructEnumI32Template& o
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI32Template< Member >::operator!=( const StructEnumI32Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI32Template< Member >::operator<( const StructEnumI32Template& other ) const
 {
@@ -1162,14 +1178,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI32Template< Member >::operator StructEnumI32Template< flatdata::Reader >( ) const
 {
     return StructEnumI32Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI32Template< Member >::to_string( ) const
 {
@@ -1181,7 +1197,7 @@ std::string StructEnumI32Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI32Template< Member >::describe( ) const
 {
@@ -1228,44 +1244,44 @@ struct StructEnumU32
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU32Template< Member >::StructEnumU32Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU32Template< Member >::StructEnumU32Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU32Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumU32Template< Member >::StreamType StructEnumU32Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU32Template< Member >::schema( ) { return internal::StructEnumU32__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU32Template< Member >::name( ) { return "StructEnumU32"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumU32Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU32Template< Member >::operator==( const StructEnumU32Template& other ) const
 {
@@ -1279,14 +1295,14 @@ bool StructEnumU32Template< Member >::operator==( const StructEnumU32Template& o
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU32Template< Member >::operator!=( const StructEnumU32Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU32Template< Member >::operator<( const StructEnumU32Template& other ) const
 {
@@ -1294,14 +1310,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU32Template< Member >::operator StructEnumU32Template< flatdata::Reader >( ) const
 {
     return StructEnumU32Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU32Template< Member >::to_string( ) const
 {
@@ -1313,7 +1329,7 @@ std::string StructEnumU32Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU32Template< Member >::describe( ) const
 {
@@ -1360,44 +1376,44 @@ struct StructEnumI64
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI64Template< Member >::StructEnumI64Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI64Template< Member >::StructEnumI64Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI64Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumI64Template< Member >::StreamType StructEnumI64Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI64Template< Member >::schema( ) { return internal::StructEnumI64__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI64Template< Member >::name( ) { return "StructEnumI64"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumI64Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI64Template< Member >::operator==( const StructEnumI64Template& other ) const
 {
@@ -1411,14 +1427,14 @@ bool StructEnumI64Template< Member >::operator==( const StructEnumI64Template& o
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI64Template< Member >::operator!=( const StructEnumI64Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumI64Template< Member >::operator<( const StructEnumI64Template& other ) const
 {
@@ -1426,14 +1442,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumI64Template< Member >::operator StructEnumI64Template< flatdata::Reader >( ) const
 {
     return StructEnumI64Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI64Template< Member >::to_string( ) const
 {
@@ -1445,7 +1461,7 @@ std::string StructEnumI64Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumI64Template< Member >::describe( ) const
 {
@@ -1492,44 +1508,44 @@ struct StructEnumU64
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU64Template< Member >::StructEnumU64Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU64Template< Member >::StructEnumU64Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU64Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename StructEnumU64Template< Member >::StreamType StructEnumU64Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU64Template< Member >::schema( ) { return internal::StructEnumU64__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU64Template< Member >::name( ) { return "StructEnumU64"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t StructEnumU64Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU64Template< Member >::operator==( const StructEnumU64Template& other ) const
 {
@@ -1543,14 +1559,14 @@ bool StructEnumU64Template< Member >::operator==( const StructEnumU64Template& o
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU64Template< Member >::operator!=( const StructEnumU64Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool StructEnumU64Template< Member >::operator<( const StructEnumU64Template& other ) const
 {
@@ -1558,14 +1574,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 StructEnumU64Template< Member >::operator StructEnumU64Template< flatdata::Reader >( ) const
 {
     return StructEnumU64Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU64Template< Member >::to_string( ) const
 {
@@ -1577,7 +1593,7 @@ std::string StructEnumU64Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string StructEnumU64Template< Member >::describe( ) const
 {

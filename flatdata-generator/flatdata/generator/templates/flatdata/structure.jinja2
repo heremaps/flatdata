@@ -2,6 +2,9 @@
 struct {{ struct.name }}
 {
     {% for field in struct.fields %}
+    {% if field.range %}
+    @range( {{ field.range }} )
+    {% endif %}
     {{ field.name }} : {{field.type.name | field_type}} : {{ field.type.width }};
     {% endfor %}
 }

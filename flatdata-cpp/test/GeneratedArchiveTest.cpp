@@ -240,7 +240,7 @@ Resource                             Optional  Loaded    Details
 ================================================================================
 object_resource                      NO        YES       Structure of size 1
 vector_resource                      NO        YES       Array of size: 11 in 11 bytes
-multivector_resource                 NO        YES       MultiArray of size 1, with index: Array of size: 2 in 10 bytes
+multivector_resource                 NO        YES       MultiArray of size 1, with index: Array of size: 1 in 10 bytes
 raw_data_resource                    NO        YES       Raw data of size 8
 optional_resource                    YES       YES       Raw data of size 3
 ================================================================================

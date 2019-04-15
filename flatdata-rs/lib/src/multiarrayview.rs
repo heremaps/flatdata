@@ -3,10 +3,7 @@ use crate::{
     structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct},
 };
 
-use std::{
-    fmt, iter, marker,
-    ops::{Bound, RangeBounds},
-};
+use std::{fmt, iter, marker, ops::RangeBounds};
 
 /// A read-only view on a multivector.
 ///
@@ -47,13 +44,12 @@ where
     /// Note that this is not the *total* number of overall elements stored in
     /// the array. An item may be also empty.
     pub fn len(&self) -> usize {
-        // last index element is a sentinel
-        self.index.len() - 1
+        self.index.len()
     }
 
     /// Returns `true` if no item is stored in the array.
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.index.is_empty()
     }
 
     /// Returns a read-only iterator to the elements of the item at position
@@ -63,11 +59,9 @@ where
     ///
     /// Panics if index is greater than or equal to `MultiArrayView::len()`.
     pub fn at(&self, index: usize) -> MultiArrayViewItemIter<'a, Ts> {
-        let start = <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::index(self.index.at(index));
-        let end =
-            <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::index(self.index.at(index + 1));
+        let range = <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::range(self.index.at(index));
         MultiArrayViewItemIter {
-            data: &self.data[start..end],
+            data: &self.data[range],
             _phantom: marker::PhantomData,
         }
     }
@@ -78,18 +72,7 @@ where
     ///
     /// Panics if the range is outside of bounds of array view.
     pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
-        let index_start = match range.start_bound() {
-            Bound::Included(&idx) => idx,
-            Bound::Excluded(&idx) => idx + 1,
-            Bound::Unbounded => 0,
-        };
-        // include one more element (sentinel)
-        let index_end = match range.end_bound() {
-            Bound::Included(&idx) => idx + 2,
-            Bound::Excluded(&idx) => idx + 1,
-            Bound::Unbounded => self.index.len(),
-        };
-        Self::new(self.index.slice(index_start..index_end), self.data)
+        Self::new(self.index.slice(range), self.data)
     }
 
     /// Returns an iterator through the indexed items of the array.

@@ -3,6 +3,7 @@
  * See the LICENSE file in the root of this project for license details.
  */
 
+#include "ranges.hpp"
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
@@ -83,6 +84,29 @@ TEST_CASE( "Signed struct works", "[SerializedStruct]" )
     REQUIRE( data[ 7 ] == 0x00 );
     REQUIRE( data[ 8 ] == 0x00 );
     REQUIRE( data[ 9 ] == 0x00 );
+}
+
+TEST_CASE( "Struct with ranges works", "[SerializedStruct]" )
+{
+    Vector< n::S > vec;
+    for ( size_t i = 0; i < 100; i++ )
+    {
+        auto item = vec.grow( );
+        item.x = i;
+        item.first_y = 10 * i;
+    }
+
+    ArrayView< n::S > view = vec;
+    REQUIRE( view.size( ) == 99 );
+
+    for ( size_t i = 0; i < 99; i++ )
+    {
+        REQUIRE( view[ i ].x == i );
+        REQUIRE( view[ i ].first_y == i * 10 );
+        std::pair< uint32_t, uint32_t > range = view[ i ].y_range;
+        REQUIRE( range.first == ( i * 10 ) );
+        REQUIRE( range.second == ( ( i + 1 ) * 10 ) );
+    }
 }
 
 TEST_CASE( "Struct schemas are different", "[SerializedStruct]" )

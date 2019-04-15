@@ -11,44 +11,44 @@ struct U8
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 U8Template< Member >::U8Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 U8Template< Member >::U8Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 U8Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename U8Template< Member >::StreamType U8Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string U8Template< Member >::schema( ) { return internal::U8__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string U8Template< Member >::name( ) { return "U8"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t U8Template< Member >::size_in_bytes( ) { return 1; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool U8Template< Member >::operator==( const U8Template& other ) const
 {
@@ -62,14 +62,14 @@ bool U8Template< Member >::operator==( const U8Template& other ) const
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool U8Template< Member >::operator!=( const U8Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool U8Template< Member >::operator<( const U8Template& other ) const
 {
@@ -77,14 +77,14 @@ return
     f < other.f ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 U8Template< Member >::operator U8Template< flatdata::Reader >( ) const
 {
     return U8Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string U8Template< Member >::to_string( ) const
 {
@@ -96,7 +96,7 @@ std::string U8Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string U8Template< Member >::describe( ) const
 {

@@ -1,0 +1,13 @@
+/* This test tests that a vector can contain ranges
+ */
+namespace n{
+struct S {
+	x : u64;
+	@range(y_range)
+	first_y : u32 : 14;
+}
+
+archive A {
+	data : vector< S >;
+}
+}

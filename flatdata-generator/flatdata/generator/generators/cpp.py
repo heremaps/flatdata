@@ -50,9 +50,14 @@ class CppGenerator(BaseGenerator):
 
         env.filters["to_type_params"] = _to_type_params
 
+        def _snake_to_upper_camel_case(expr):
+            return ''.join(p.title() for p in expr.split('_'))
+
+        env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
+
         def _typedef_name(entity, extra_suffix=""):
             assert isinstance(entity, (Field, ResourceBase)), "Got: %s" % entity.__class__
-            return "".join([c.title() for c in entity.name.split('_')]) + extra_suffix + "Type"
+            return _snake_to_upper_camel_case(entity.name) + extra_suffix + "Type"
 
         env.filters["typedef_name"] = _typedef_name
 

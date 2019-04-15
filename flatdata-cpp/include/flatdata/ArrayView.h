@@ -33,6 +33,7 @@ public:
     ConstValueType back( ) const;
 
     ArrayView slice( size_t pos, size_t length ) const;
+    ArrayView slice( std::pair< size_t /*start*/, size_t /*end*/ > range ) const;
     ArrayView slice_before( size_t pos ) const;
     ArrayView slice_after( size_t pos ) const;
 
@@ -48,6 +49,8 @@ public:
     bool empty( ) const;
 
 private:
+    ArrayView( ConstStreamType data, size_t size );
+
     ConstStreamType m_data;
     size_t m_size;
 };

@@ -44,7 +44,11 @@ where
 
     /// Number of elements in the array.
     pub fn len(&self) -> usize {
-        self.data.len() / <T as Struct>::SIZE_IN_BYTES
+        if <T as Struct>::IS_OVERLAPPING_WITH_NEXT {
+            self.data.len() / <T as Struct>::SIZE_IN_BYTES - 1
+        } else {
+            self.data.len() / <T as Struct>::SIZE_IN_BYTES
+        }
     }
 
     /// Return `true` if the array is empty.
@@ -59,8 +63,8 @@ where
     ///
     /// Panics if index is greater than or equal to `ArrayView::len()`.
     pub fn at(&self, index: usize) -> <T as Struct<'a>>::Item {
+        assert!(index < self.len());
         let index = self.data_index(index);
-        assert!(index + <T as Struct>::SIZE_IN_BYTES <= self.data.len());
         T::create(&self.data[index..])
     }
 
@@ -75,9 +79,10 @@ where
             Bound::Excluded(&idx) => self.data_index(idx + 1),
             Bound::Unbounded => 0,
         };
+        let sentinel = <T as Struct>::IS_OVERLAPPING_WITH_NEXT as usize;
         let data_end = match range.end_bound() {
-            Bound::Included(&idx) => self.data_index(idx + 1),
-            Bound::Excluded(&idx) => self.data_index(idx),
+            Bound::Included(&idx) => self.data_index(idx + 1 + sentinel),
+            Bound::Excluded(&idx) => self.data_index(idx + sentinel),
             Bound::Unbounded => self.data.len(),
         };
         Self::new(&self.data[data_start..data_end])
@@ -259,6 +264,32 @@ mod test {
         (x, set_x, u32, u32, 0, 16),
         (y, set_y, u32, u32, 16, 16)
     );
+
+    define_struct!(
+        R,
+        RefR,
+        RefMutR,
+        "no_schema",
+        4,
+        (first_x, set_first_x, u32, u32, 0, 16),
+        range(x, u32, 0, 16)
+    );
+
+    #[test]
+    fn range() {
+        let mut vec: Vector<R> = Vector::with_len(3);
+        vec.at_mut(0).set_first_x(10);
+        vec.at_mut(1).set_first_x(20);
+        vec.at_mut(2).set_first_x(30);
+
+        let view = vec.as_view();
+        assert_eq!(view.len(), 2);
+        assert_eq!(view.at(0).x(), 10..20);
+        assert_eq!(view.at(1).x(), 20..30);
+
+        assert_eq!(view.slice(0..1).len(), 1);
+        assert_eq!(view.slice(0..1).at(0).x(), 10..20);
+    }
 
     #[test]
     fn into_iter() {
