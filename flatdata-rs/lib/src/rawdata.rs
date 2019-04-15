@@ -33,3 +33,29 @@ impl<'a> RawData<'a> {
         self.data
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn empty() {
+        let data: &[u8] = b"";
+        let raw_data = RawData::new(data);
+        assert_eq!(raw_data.substring(0), Ok(""));
+    }
+
+    #[test]
+    fn last_without_terminator() {
+        let data: &[u8] = b"abc";
+        let raw_data = RawData::new(data);
+        assert_eq!(raw_data.substring(1), Ok("bc"));
+    }
+
+    #[test]
+    fn until_terminator() {
+        let data: &[u8] = b"ab\0c";
+        let raw_data = RawData::new(data);
+        assert_eq!(raw_data.substring(1), Ok("b"));
+    }
+}
