@@ -20,7 +20,7 @@ impl<'a> RawData<'a> {
     }
 
     /// Read a \0 terminated substring starting at specified offset
-    pub fn substring(&self, start: usize) -> Result<&str, std::str::Utf8Error> {
+    pub fn substring(&self, start: usize) -> Result<&'a str, std::str::Utf8Error> {
         let suffix = &self.data[start..];
         match suffix.iter().position(|&c| c == 0) {
             Some(idx) => std::str::from_utf8(&suffix[..idx]),
