@@ -41,18 +41,8 @@ define_struct!(
 
 
 
-define_archive!(X, XBuilder,
-    schema::x::X;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-;
-    // raw data resources
-    (payload, set_payload,
-        schema::x::resources::PAYLOAD, false);
-    // subarchives
+define_archive!(X, XBuilder, schema::x::X;
+    raw_data(payload, false, schema::x::resources::PAYLOAD, set_payload),
 );
 
 }
@@ -99,18 +89,8 @@ define_struct!(
 
 
 
-define_archive!(X, XBuilder,
-    schema::x::X;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-;
-    // raw data resources
-    (payload, set_payload,
-        schema::x::resources::PAYLOAD, false);
-    // subarchives
+define_archive!(X, XBuilder, schema::x::X;
+    raw_data(payload, false, schema::x::resources::PAYLOAD, set_payload),
 );
 
 }
@@ -217,27 +197,12 @@ define_variadic_struct!(Multi, RefMulti, BuilderMulti,
     super::_builtin::multivector::IndexType32,
     0 => ( S, super::n::S, add_s));
 
-define_archive!(A, ABuilder,
-    schema::a::A;
-    // struct resources
-    (single, set_single,
-        super::n::S,
-        schema::a::resources::SINGLE, false);
-    // vector resources
-    (list, set_list, start_list,
-        super::m::S,
-        schema::a::resources::LIST, false);
-    // multivector resources
-    (multi, start_multi,
-        Multi,
-        schema::a::resources::MULTI,
-        multi_index, super::_builtin::multivector::IndexType32, false);
-    // raw data resources
-;
-    // subarchives
-    (inner,
-        super::n::X, super::n::XBuilder,
-        schema::a::resources::INNER, false));
+define_archive!(A, ABuilder, schema::a::A;
+    struct(single, false, schema::a::resources::SINGLE, set_single, super::n::S),
+    vector(list, false, schema::a::resources::LIST, set_list, start_list, super::m::S),
+    multivector(multi, false, schema::a::resources::MULTI, start_multi, Multi, multi_index, super::_builtin::multivector::IndexType32),
+    archive(inner, false, schema::a::resources::INNER, super::n::X, super::n::XBuilder),
+);
 
 }
 
@@ -263,3 +228,4 @@ define_index!(
 pub mod schema {
 pub mod structs {}}
 }
+

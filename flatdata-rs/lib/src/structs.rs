@@ -178,6 +178,23 @@ macro_rules! implement_no_overlap {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_struct {
+    // prelude of internal helpers (see https://danielkeep.github.io/tlborm/book/pat-internal-rules.html)
+
+    // has overlap from ranges
+    (@has_overlap, $($range:ident),+) => {
+        true
+    };
+    (@has_overlap,) => {
+        false
+    };
+
+    // implement NoOverlap
+    (@no_overlap, $name:ident, $($range:ident),+) => {};
+    (@no_overlap, $name:ident,) => {
+        impl $crate::NoOverlap for $name {}
+    };
+
+    // main entry point
     ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr,
         $(($field:ident, $field_setter:ident, $type:path, $primitive_type:tt, $offset:expr, $bit_size:expr)),*
         $(,range($range:ident, $range_type:tt, $range_offset:expr, $range_bit_size:expr))*
@@ -196,7 +213,7 @@ macro_rules! define_struct {
         {
             const SCHEMA: &'static str = $schema;
             const SIZE_IN_BYTES: usize = $size_in_bytes;
-            const IS_OVERLAPPING_WITH_NEXT : bool = has_overlap_due_to_ranges!($($range),*);
+            const IS_OVERLAPPING_WITH_NEXT : bool = define_struct!(@has_overlap, $($range),*);
 
             type Item = $name<'a>;
 
@@ -215,19 +232,19 @@ macro_rules! define_struct {
             }
         }
 
-        implement_no_overlap!($factory, $($range),*);
+        define_struct!(@no_overlap, $factory, $($range),*);
 
         impl<'a> $name<'a> {
             #[inline]
             $(pub fn $field(&self) -> $type {
-                let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
+                let value = flatdata_read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
 
             #[inline]
             $(pub fn $range(&self) -> std::ops::Range<$range_type> {
-                read_bytes!($range_type, self.data, $range_offset, $range_bit_size)..
-                read_bytes!($range_type, self.data, $range_offset + $size_in_bytes * 8, $range_bit_size)
+                flatdata_read_bytes!($range_type, self.data, $range_offset, $range_bit_size)..
+                flatdata_read_bytes!($range_type, self.data, $range_offset + $size_in_bytes * 8, $range_bit_size)
             })*
 
             #[inline]
@@ -240,7 +257,7 @@ macro_rules! define_struct {
             fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                 write!(f,
                     concat!(stringify!($factory), " {{ ",
-                        intersperse!($(concat!( stringify!($field), ": {:?}")), *), " }}"),
+                        flatdata_intersperse!($(concat!( stringify!($field), ": {:?}")),*), " }}"),
                     $(self.$field(),)*)
             }
         }
@@ -262,7 +279,7 @@ macro_rules! define_struct {
         impl<'a> $name_mut<'a> {
             #[inline]
             $(pub fn $field(&self) -> $type {
-                let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
+                let value = flatdata_read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
 
@@ -271,7 +288,7 @@ macro_rules! define_struct {
                 let buffer = unsafe {
                     ::std::slice::from_raw_parts_mut(self.data, $size_in_bytes)
                 };
-                write_bytes!($primitive_type; value, buffer, $offset, $bit_size)
+                flatdata_write_bytes!($primitive_type; value, buffer, $offset, $bit_size)
             })*
 
             #[inline]

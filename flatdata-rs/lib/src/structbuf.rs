@@ -44,19 +44,8 @@ use std::{fmt, marker};
 /// #     (x, set_x, u32, u32, 0, 16),
 /// #     (y, set_y, u32, u32, 16, 16));
 /// #
-/// # define_archive!(X, XBuilder,
-/// #     "schema of X";
-/// #     // struct resources
-/// #     (data, set_data,
-/// #         A,
-/// #         "schema of data", false);
-/// #     // vector resources
-/// # ;
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
+/// # define_archive!(X, XBuilder, "schema of X";
+/// #     struct(data, false, "schema of data", set_data, A),
 /// # );
 /// #
 /// let storage = MemoryResourceStorage::new("/root/structbuf");
@@ -66,6 +55,7 @@ use std::{fmt, marker};
 /// a.get_mut().set_y(2);
 /// builder.set_data(a.get());
 ///
+/// println!("{:?}", storage);
 /// let archive = X::open(storage).expect("failed to open");
 /// let view = archive.data();
 ///

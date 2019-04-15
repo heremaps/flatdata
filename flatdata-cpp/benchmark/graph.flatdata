@@ -35,6 +35,7 @@ struct AdjacentEdge{
 struct Node{
     x: u32;
     y: u32;
+    @range(adjacent_edges)
     first_adjacent_edge: u32;
 }
 

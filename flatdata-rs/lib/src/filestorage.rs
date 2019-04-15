@@ -42,18 +42,7 @@ impl MemoryMappedFileStorage {
 /// # #[macro_use] extern crate flatdata;
 /// # fn main() {
 /// # use flatdata::{ FileResourceStorage, Archive, ArchiveBuilder };
-/// # define_archive!(X, XBuilder,
-/// #     "Schema for X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// # ;
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
-/// # );
+/// # define_archive!(X, XBuilder, "Schema for X"; );
 /// let storage = FileResourceStorage::new(PathBuf::from("/root/to/my/archive"));
 /// let _builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// // Write some data, store archive, etc...
