@@ -178,6 +178,8 @@ macro_rules! implement_no_overlap {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_struct {
+    // prelude of internal helpers (see https://danielkeep.github.io/tlborm/book/pat-internal-rules.html)
+
     // has overlap from ranges
     (@has_overlap, $($range:ident),+) => {
         true

@@ -19,6 +19,8 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! flatdata_read_bytes {
+    // prelude of internal helpers (see https://danielkeep.github.io/tlborm/book/pat-internal-rules.html)
+
     // extend sign
     (@extend, $T:tt, $value:expr, $num_bits:expr) => {
         if <$T as $crate::helper::Int>::IS_SIGNED {

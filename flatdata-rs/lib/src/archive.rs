@@ -76,6 +76,8 @@ pub trait ArchiveBuilder: Clone {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_archive {
+    // prelude of internal helpers (see https://danielkeep.github.io/tlborm/book/pat-internal-rules.html)
+
     // static if
     (@if, true, $true_block:block, $false_block:block) => {
         $true_block
@@ -105,10 +107,10 @@ macro_rules! define_archive {
     };
 
     // check resources
-    (@check, $res:expr,false) => {
+    (@check, $res:expr, false) => {
         $res?
     };
-    (@check, $res:expr,true) => {
+    (@check, $res:expr, true) => {
         $res.ok()
     };
 
