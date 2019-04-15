@@ -162,13 +162,13 @@ macro_rules! define_archive {
 
     // resource getters
     (@get, raw_data($name:ident, true, $schema:expr, $setter:ident)) => {
-        pub fn $name(&self) -> Option<&[u8]> {
-            self.$name.as_ref().map(|mem_desc| {unsafe{mem_desc.as_bytes()}})
+        pub fn $name(&self) -> Option<crate::RawData> {
+            self.$name.as_ref().map(|mem_desc| crate::RawData::new({unsafe{mem_desc.as_bytes()}}))
         }
     };
     (@get, raw_data($name:ident, false, $schema:expr, $setter:ident)) => {
-        pub fn $name(&self) -> &[u8] {
-            unsafe {self.$name.as_bytes()}
+        pub fn $name(&self) -> crate::RawData {
+            crate::RawData::new(unsafe {self.$name.as_bytes()})
         }
     };
     (@get, struct($name:ident, true, $schema:expr, $setter:ident, $type:path)) => {
