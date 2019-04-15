@@ -284,6 +284,7 @@ mod memory;
 mod memstorage;
 mod multiarrayview;
 mod multivector;
+mod rawdata;
 mod storage;
 mod structbuf;
 mod vector;
@@ -298,6 +299,7 @@ pub use crate::{
     memstorage::MemoryResourceStorage,
     multiarrayview::MultiArrayView,
     multivector::MultiVector,
+    rawdata::RawData,
     storage::{
         create_archive, create_external_vector, create_multi_vector, MemoryDescriptor,
         ResourceStorage,
