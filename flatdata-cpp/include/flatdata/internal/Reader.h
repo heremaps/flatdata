@@ -22,14 +22,12 @@ namespace flatdata
  *
  * @note The class expects data streams with 8 byte padding in the end when reading
  */
-template < typename T, int offset = 0, int num_bits = sizeof( T ) * 8 >
+template < typename T, int offset = 0, int num_bits = sizeof( T ) * 8, int struct_size_bytes = 0 >
 struct Reader
 {
     using StreamType = const unsigned char*;
-    using UnsignedType =
-        typename BitsToUnsigned< int_choice< num_bits,
-                                             num_bits + offset % 8,
-                                             num_bits + offset % 8 <= 64 >::value >::type;
+    using UnsignedType = typename BitsToUnsigned<
+        int_choice< num_bits, num_bits + offset % 8, num_bits + offset % 8 <= 64 >::value >::type;
     enum
     {
         bit_width = num_bits
@@ -77,4 +75,21 @@ struct Reader
         return static_cast< U >( this->operator T( ) );
     }
 };
+
+template < typename T, int offset, int num_bits, int struct_size_bytes >
+struct Reader< std::pair< T, T >, offset, num_bits, struct_size_bytes >
+{
+    using StreamType = const unsigned char*;
+
+    StreamType data;
+
+    template < typename U >
+    operator std::pair< U, U >( ) const
+    {
+        Reader< T, offset, num_bits > start{data};
+        Reader< T, offset, num_bits > end{data + struct_size_bytes};
+        return std::pair< T, T >( start, end );
+    }
+};
+
 }  // namespace flatdata

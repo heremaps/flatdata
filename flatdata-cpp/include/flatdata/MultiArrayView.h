@@ -191,7 +191,7 @@ template < typename IndexType, typename... Args >
 size_t
 MultiArrayView< IndexType, Args... >::size( ) const
 {
-    return m_index.size( ) - 1;
+    return m_index.size( );
 }
 
 template < typename IndexType, typename... Args >
@@ -214,8 +214,8 @@ template < typename F >
 void
 MultiArrayView< IndexType, Args... >::for_each_impl( uint64_t index, F&& callback ) const
 {
-    auto end = m_data_begin + m_index[ index + 1 ].value;
-    for ( auto data = m_data_begin + m_index[ index ].value; data < end; )
+    std::pair< size_t, size_t > range = m_index[ index ].range;
+    for ( auto data = m_data_begin + range.first, end = m_data_begin + range.second; data < end; )
     {
         unsigned char type = *data;
         data++;
@@ -266,8 +266,9 @@ template < typename ElementType >
 typename MultiArrayView< IndexType, Args... >::TEMPLATE_WORKAROUND Iterator< ElementType >
 MultiArrayView< IndexType, Args... >::iterator( uint64_t index ) const
 {
+    std::pair< size_t, size_t > range = m_index[ index ].range;
     return MultiArrayView< IndexType, Args... >::Iterator< ElementType >(
-        m_data_begin + m_index[ index ].value, m_data_begin + m_index[ index + 1 ].value );
+        m_data_begin + range.first, m_data_begin + range.second );
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -290,10 +291,7 @@ template < typename ElementType >
 void MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator++( )
 {
     bool found = false;
-    auto callback = [&]( ElementType )
-    {
-        found = true;
-    };
+    auto callback = [&]( ElementType ) { found = true; };
     while ( !found && m_data_current != m_data_end )
     {
         unsigned char type = *m_data_current;

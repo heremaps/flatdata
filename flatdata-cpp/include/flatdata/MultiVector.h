@@ -71,6 +71,10 @@ public:
      */
     View close( );
 
+public:
+    static_assert( all_true< ( !Args::IS_OVERLAPPING_WITH_NEXT )... >::value,
+                   "Cannot use range/overlapping structs in MultiVector" );
+
 private:
     void add_to_index( );
 

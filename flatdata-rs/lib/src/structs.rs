@@ -52,6 +52,8 @@ pub trait Struct<'a>: Clone {
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
+    /// Whether this structs requires data of the next instance
+    const IS_OVERLAPPING_WITH_NEXT: bool;
 
     /// Item this factory will produce.
     type Item: Ref;
@@ -73,11 +75,14 @@ pub trait Struct<'a>: Clone {
 pub trait RefFactory: for<'a> Struct<'a> {}
 impl<T> RefFactory for T where T: for<'a> Struct<'a> {}
 
+/// Marks structs that can be used stand-alone, e.g. no range
+pub trait NoOverlap {}
+
 /// A specialized Struct factory producing Index items.
 /// Used primarily by the MultiVector/MultiArrayView.
 pub trait IndexStruct<'a>: Struct<'a> {
     /// Provide getter for index
-    fn index(data: Self::Item) -> usize;
+    fn range(data: Self::Item) -> std::ops::Range<usize>;
 
     /// Provide setter for index
     fn set_index(data: Self::ItemMut, value: usize);
@@ -149,12 +154,34 @@ impl<T> VariadicRefFactory for T where T: for<'a> VariadicStruct<'a> {}
 // Generator macros
 //
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! has_overlap_due_to_ranges {
+    ($($range:ident),+) => {
+        true
+    };
+    () => {
+        false
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! implement_no_overlap {
+    ($name:ident, $($range:ident),+) => {};
+    ($name:ident,) => {
+        impl $crate::NoOverlap for $name {}
+    };
+}
+
 /// Macro used by generator to define a flatdata struct.
 #[doc(hidden)]
 #[macro_export]
 macro_rules! define_struct {
-    ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr
-        $(,($field:ident, $field_setter:ident, $type:path, $primitive_type:tt, $offset:expr, $bit_size:expr))*) =>
+    ($factory:ident, $name:ident, $name_mut:ident, $schema:expr, $size_in_bytes:expr,
+        $(($field:ident, $field_setter:ident, $type:path, $primitive_type:tt, $offset:expr, $bit_size:expr)),*
+        $(,range($range:ident, $range_type:tt, $range_offset:expr, $range_bit_size:expr))*
+    ) =>
     {
         #[derive(Clone, Copy)]
         pub struct $name<'a> {
@@ -169,6 +196,7 @@ macro_rules! define_struct {
         {
             const SCHEMA: &'static str = $schema;
             const SIZE_IN_BYTES: usize = $size_in_bytes;
+            const IS_OVERLAPPING_WITH_NEXT : bool = has_overlap_due_to_ranges!($($range),*);
 
             type Item = $name<'a>;
 
@@ -187,11 +215,19 @@ macro_rules! define_struct {
             }
         }
 
+        implement_no_overlap!($factory, $($range),*);
+
         impl<'a> $name<'a> {
             #[inline]
             $(pub fn $field(&self) -> $type {
                 let value = read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
+            })*
+
+            #[inline]
+            $(pub fn $range(&self) -> std::ops::Range<$range_type> {
+                read_bytes!($range_type, self.data, $range_offset, $range_bit_size)..
+                read_bytes!($range_type, self.data, $range_offset + $size_in_bytes * 8, $range_bit_size)
             })*
 
             #[inline]
@@ -244,11 +280,6 @@ macro_rules! define_struct {
             }
 
             #[inline]
-            pub fn into_ref(self) -> $name<'a> {
-                $name{ data : self.data, _phantom : $crate::marker::PhantomData }
-            }
-
-            #[inline]
             pub fn as_ptr(&self) -> *const u8 {
                 self.data
             }
@@ -281,13 +312,15 @@ macro_rules! define_index {
             $name_mut,
             $schema,
             $size_in_bytes,
-            (value, set_value, u64, u64, 0, $size_in_bits)
+            (value, set_value, u64, u64, 0, $size_in_bits),
+            range(range, u64, 0, $size_in_bits)
         );
 
         impl<'a> $crate::IndexStruct<'a> for $factory {
             #[inline]
-            fn index(data: Self::Item) -> usize {
-                data.value() as usize
+            fn range(data: Self::Item) -> std::ops::Range<usize> {
+                let range = data.range();
+                range.start as usize..range.end as usize
             }
 
             #[inline]
@@ -376,7 +409,10 @@ macro_rules! define_variadic_struct {
 
 #[cfg(test)]
 mod test {
-    use super::super::{helper::Int, structbuf::StructBuf};
+    use super::{
+        super::{helper::Int, structbuf::StructBuf},
+        *,
+    };
 
     #[test]
     #[allow(dead_code)]
@@ -396,9 +432,28 @@ mod test {
             (y, set_y, u32, u32, 16, 16),
             (e, set_e, MyEnum, u32, 32, 16)
         );
+        assert_eq!(<A as Struct>::IS_OVERLAPPING_WITH_NEXT, false);
         let a = StructBuf::<A>::new();
         let output = format!("{:?}", a);
         assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0, e: Value } }");
+    }
+
+    #[test]
+    #[allow(dead_code)]
+    fn range() {
+        // check that this compiles
+        define_struct!(
+            A,
+            RefA,
+            RefMutA,
+            "no_schema",
+            4,
+            (first_x, set_first_x, u32, u32, 0, 16),
+            (y, set_y, u32, u32, 16, 16),
+            range(x, u32, 0, 16)
+        );
+
+        assert_eq!(<A as Struct>::IS_OVERLAPPING_WITH_NEXT, true);
     }
 
     macro_rules! define_enum_test {

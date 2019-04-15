@@ -70,7 +70,8 @@ struct overload< F > : F
  *          Cf. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=72779
  */
 template < typename... Fn >
-overload< Fn... > make_overload( Fn... fn )
+overload< Fn... >
+make_overload( Fn... fn )
 {
     return overload< Fn... >( fn... );
 }
@@ -120,4 +121,10 @@ struct has_args_list
     static const bool value
         = !std::is_same< typename get_args_list< F >::type, static_list::emptylist >::value;
 };
+
+template < bool... >
+struct bool_list;
+
+template < bool... bs >
+using all_true = std::is_same< bool_list< bs..., true >, bool_list< true, bs... > >;
 }  // namespace flatdata

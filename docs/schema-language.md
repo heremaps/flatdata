@@ -237,3 +237,50 @@ namespace N {
 ```
 
 Local paths must be available in the current namespace.
+
+## Index Ranges
+
+When flattening a data model into a flatdata schema one often encounters
+a pattern of storing index ranges as members of consecutive vector items:
+
+```cpp
+struct Node {
+    ...
+    first_edge_ref : u32;
+}
+
+struct Edge {
+    ...
+}
+
+archive Archive {
+    // contains sentinel
+    @explicit_reference( Nodes.first_edge_ref, edges )
+    nodes : vector< Nodes >;
+    edges : vector< Edges >;
+}
+```
+
+In this case the edges of a node `i` are then retrieved as
+```cpp
+edges.slice(nodes[i].first_edge_ref..nodes[i + 1].first_edge_ref)
+```
+Additionally the last element of the `nodes` vector is usually a sentinel (only used to retrieve `first_edge_index`).
+To simplify this flatdata offers the `@range(name_of_range_attribute)` annotation:
+
+```cpp
+struct Node {
+    ...
+    @range(edges_range)
+    first_edge_ref : u32;
+}
+```
+
+This will have two effects:
+* Adding `edges_range` attribute exposing range `(nodes[i].first_edge_ref, nodes[i + 1].first_edge_ref)`
+* Hiding the sentinel in views (it still needs to be populated first, though)
+
+Retrieving all edges is now as easy as this:
+```cpp
+edges.slice(nodes[i].edges_range)
+```

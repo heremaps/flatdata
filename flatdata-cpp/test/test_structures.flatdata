@@ -71,10 +71,12 @@ struct CStruct {
 }
 
 struct TestIndexType48 {
+    @range(range)
     value : u64 : 48;
 }
 
 struct TestIndexType32 {
+    @range(range)
     value : u64 : 48;
 }
 

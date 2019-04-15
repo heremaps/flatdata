@@ -41,7 +41,7 @@ uint16_t as_numeric( uint8_t value ) { return static_cast< uint16_t >( value ); 
 /* clang-format on */
 #endif  // GENERATE_PYTHON_READER_TESTS
 
-template < template < typename, int, int > class Reader,
+template < template < typename, int, int, int > class Reader,
            typename type,
            int offset,
            int num_bits,
@@ -57,7 +57,7 @@ test_value( type value )
             value = 0xff;
         }
     }
-    Writer< type, offset, num_bits > writer{buffer.data( )};
+    Writer< type, offset, num_bits, 0 > writer{buffer.data( )};
     writer = value;
 
 #if ( GENERATE_PYTHON_READER_TESTS )
@@ -73,13 +73,16 @@ test_value( type value )
               << std::endl;
 #endif  // GENERATE_PYTHON_READER_TESTS
 
-    Reader< type, offset, num_bits > reader{buffer.data( )};
+    Reader< type, offset, num_bits, 0 > reader{buffer.data( )};
     type result = reader;
     REQUIRE( result == value );
 }
 
 /// tests all possible num_bits
-template < template < typename, int, int > class Reader, typename type, int offset, int num_bits >
+template < template < typename, int, int, int > class Reader,
+           typename type,
+           int offset,
+           int num_bits >
 struct TestBits
 {
     void
@@ -100,7 +103,7 @@ struct TestBits
     }
 };
 
-template < template < typename, int, int > class Reader, typename type, int offset >
+template < template < typename, int, int, int > class Reader, typename type, int offset >
 struct TestBits< Reader, type, offset, 0 >
 {
     void
@@ -109,7 +112,7 @@ struct TestBits< Reader, type, offset, 0 >
     }
 };
 
-template < template < typename, int, int > class Reader, typename type, int offset >
+template < template < typename, int, int, int > class Reader, typename type, int offset >
 struct TestOffsets
 {
     void
@@ -120,7 +123,7 @@ struct TestOffsets
     }
 };
 
-template < template < typename, int, int > class Reader, typename type >
+template < template < typename, int, int, int > class Reader, typename type >
 struct TestOffsets< Reader, type, 0 >
 {
     void
@@ -177,6 +180,20 @@ TEST_CASE( "Read enum", "[Reader]" )
 {
     test_value< Reader, TestEnum, 3, 2, true >( TestEnum::Value_1 );
     test_value< Reader, TestEnum, 3, 2, false >( TestEnum::Value_1 );
+}
+
+TEST_CASE( "Range", "[Read/Write]" )
+{
+    std::array< uint8_t, 64 > buffer = {{0}};
+    Writer< uint32_t, 7, 7, 0 > writer_start{buffer.data( )};
+    writer_start = 16;
+    Writer< uint32_t, 7, 7, 0 > writer_end{buffer.data( ) + 32};
+    writer_end = 32;
+
+    Reader< std::pair< uint32_t, uint32_t >, 7, 7, 32 > reader{buffer.data( )};
+    std::pair< uint32_t, uint32_t > result = reader;
+    REQUIRE( result.first == 16 );
+    REQUIRE( result.second == 32 );
 }
 
 #if ( GENERATE_PYTHON_READER_TESTS )

@@ -22,6 +22,10 @@ class Structure(Node):
         return result
 
     @property
+    def has_range(self):
+        return any(f for f in self.fields if f.range)
+
+    @property
     def doc(self):
         return self._properties.doc
 
