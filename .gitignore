@@ -8,3 +8,5 @@ venv*
 **/coverage.out
 **/flatdata-fuzz.zip
 **/corpus/**
+**/dist/**
+*.egg-info

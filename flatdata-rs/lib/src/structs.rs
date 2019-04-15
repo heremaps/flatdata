@@ -154,6 +154,26 @@ impl<T> VariadicRefFactory for T where T: for<'a> VariadicStruct<'a> {}
 // Generator macros
 //
 
+#[doc(hidden)]
+#[macro_export]
+macro_rules! has_overlap_due_to_ranges {
+    ($($range:ident),+) => {
+        true
+    };
+    () => {
+        false
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! implement_no_overlap {
+    ($name:ident, $($range:ident),+) => {};
+    ($name:ident,) => {
+        impl $crate::NoOverlap for $name {}
+    };
+}
+
 /// Macro used by generator to define a flatdata struct.
 #[doc(hidden)]
 #[macro_export]
