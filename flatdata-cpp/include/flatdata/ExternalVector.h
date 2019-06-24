@@ -83,7 +83,7 @@ template < typename T >
 typename ExternalVector< T >::ValueType
 ExternalVector< T >::grow( )
 {
-    if ( m_data.size( ) > 1024 * 1024 * 32 )
+    if ( m_data.size( ) * sizeof( T ) > 1024 * 1024 * 32 )
     {
         flush( );
     }
