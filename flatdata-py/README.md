@@ -17,6 +17,16 @@ flatdata-generator --gen python --schema locations.flatdata --output-file locati
 
 `flatdata-py` comes with a handy tool called the `flatdata-inspector` to inspect the contents of an archive:
 
+* from the `flatdata-py` source directory:
+
+```sh
+./inspector.py
+# or
+python3 -m flatdata.lib.inspector
+```
+
+* if you want to install `flatdata-py`:
+
 ```sh
 pip3 install flatdata-py[inspector]  # the inspector feature requires IPython
 flatdata-inspector -p /path/to/my/flatdata.archive
