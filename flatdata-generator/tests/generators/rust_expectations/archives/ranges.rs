@@ -3,10 +3,12 @@ define_struct!(
     RefS,
     RefMutS,
     schema::structs::S,
-    8,
-    (x, set_x, u64, u64, 0, 64));
+    10,
+    (x, set_x, u64, u64, 0, 64),
+    (first_y, set_first_y, u32, u32, 64, 14),
+    range(y_range, u32, 64, 14)
+);
 
 define_archive!(A, ABuilder, schema::a::A;
     vector(data, false, schema::a::resources::DATA, set_data, start_data, super::n::S),
-    vector(optional_data, true, schema::a::resources::OPTIONAL_DATA, set_optional_data, start_optional_data, super::n::S),
 );

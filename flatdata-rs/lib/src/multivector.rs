@@ -97,20 +97,8 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// #     16
 /// # );
 /// #
-/// # define_archive!(X, XBuilder,
-/// #     "Schema for X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// # ;
-/// #     // multivector resources
-/// #     (ab, start_ab,
-/// #         Ab,
-/// #         "Schema for AB",
-/// #         ab_index, IndexType16, false);
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
+/// # define_archive!(X, XBuilder, "Schema for X";
+/// #     multivector(ab, false, "Schema for AB", start_ab, Ab, ab_index, IndexType16),
 /// # );
 /// #
 /// // create multivector and serialize some data

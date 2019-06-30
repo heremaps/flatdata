@@ -8,6 +8,9 @@ class Field(Node):
         super(Field, self).__init__(name=name, properties=properties)
         self._offset = offset
         self._width = width
+        self._decorations = list()
+        if properties and 'decorations' in properties:
+            self._decorations = properties.decorations
 
         if type is not None:
             if not BasicType.is_basic_type(type):
@@ -27,6 +30,17 @@ class Field(Node):
                      type=properties.type,
                      offset=offset,
                      width=width)
+
+    @property
+    def range(self):
+        for d in self.decorations:
+            if "range" in d:
+                return d.range.name
+        return None
+
+    @property
+    def decorations(self):
+        return self._decorations
 
     @property
     def type(self):

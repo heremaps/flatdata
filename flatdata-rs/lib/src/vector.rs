@@ -47,19 +47,8 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// #     (x, set_x, u32, u32, 0, 16),
 /// #     (y, set_y, u32, u32, 16, 16));
 /// #
-/// # define_archive!(X, XBuilder,
-/// #     "Schema of X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// #     (data, set_data, start_data,
-/// #         A,
-/// #         "Schema of data", false);
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
+/// # define_archive!(X, XBuilder, "Schema of X";
+/// #     vector(data, false, "Schema of data", set_data, start_data, A),
 /// # );
 /// #
 /// let storage = MemoryResourceStorage::new("/root/extvec");
@@ -97,6 +86,13 @@ impl<T> Vector<T>
 where
     T: RefFactory,
 {
+    fn padding() -> usize {
+        if <T as Struct>::IS_OVERLAPPING_WITH_NEXT {
+            <T as Struct>::SIZE_IN_BYTES + memory::PADDING_SIZE
+        } else {
+            memory::PADDING_SIZE
+        }
+    }
     /// Creates an empty `Vector<T>`.
     #[inline]
     pub fn new() -> Self {
@@ -118,7 +114,7 @@ where
     /// Size of the vector in bytes.
     #[inline]
     pub fn size_in_bytes(&self) -> usize {
-        self.data.len() - memory::PADDING_SIZE
+        self.data.len() - Self::padding()
     }
 
     /// Number of elements in the vector.
@@ -184,7 +180,7 @@ where
     /// elements.
     #[inline]
     fn calc_size(len: usize) -> usize {
-        len * <T as Struct>::SIZE_IN_BYTES + memory::PADDING_SIZE
+        len * <T as Struct>::SIZE_IN_BYTES + Self::padding()
     }
 }
 
@@ -258,19 +254,8 @@ where
 /// #     (x, set_x, u32, u32, 0, 16),
 /// #     (y, set_y, u32, u32, 16, 16));
 /// #
-/// # define_archive!(X, XBuilder,
-/// #     "Schema of X";
-/// #     // struct resources
-/// # ;
-/// #     // vector resources
-/// #     (data, set_data, start_data,
-/// #         A,
-/// #         "Schema of data", false);
-/// #     // multivector resources
-/// # ;
-/// #     // raw data resources
-/// # ;
-/// #     // subarchives
+/// # define_archive!(X, XBuilder, "Schema of X";
+/// #     vector(data, false, "Schema of data", set_data, start_data, A),
 /// # );
 /// #
 /// let storage = MemoryResourceStorage::new("/root/extvec");
@@ -361,6 +346,7 @@ where
             .borrow_mut()
             .write(&self.data[..self.data.len() - memory::PADDING_SIZE])?;
         self.data.resize(0, 0);
+
         self.data.resize(memory::PADDING_SIZE, 0);
         Ok(())
     }
@@ -405,10 +391,32 @@ mod tests {
         (y, set_y, u32, u32, 16, 16)
     );
 
+    define_struct!(
+        R,
+        RefR,
+        RefMutR,
+        "no_schema",
+        4,
+        (first_x, set_first_x, u32, u32, 0, 16),
+        range(x, u32, 0, 16)
+    );
+
     #[test]
     fn test_vector_new() {
         let v: Vector<A> = Vector::new();
         assert_eq!(v.len(), 0);
+    }
+
+    #[test]
+    fn test_vector_range() {
+        let mut v: Vector<R> = Vector::with_len(3);
+        v.at_mut(0).set_first_x(10);
+        v.at_mut(1).set_first_x(20);
+        v.at_mut(2).set_first_x(30);
+
+        assert_eq!(v.at(0).x(), 10..20);
+        assert_eq!(v.at(1).x(), 20..30);
+        assert_eq!(v.at(2).x(), 30..0);
     }
 
     #[test]

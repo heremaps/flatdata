@@ -9,14 +9,14 @@
 namespace n { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union STemplate
 {
-    using XType = Member< uint64_t, 0, 64 >;
+    using XType = Member< uint64_t, 0, 64, 8 >;
     XType x;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = STemplate< flatdata::Writer >;
     /// Immutable structure type
@@ -43,13 +43,15 @@ union STemplate
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -126,14 +128,14 @@ private:
 namespace m { 
 
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union STemplate
 {
-    using XType = Member< uint64_t, 0, 64 >;
+    using XType = Member< uint64_t, 0, 64, 8 >;
     XType x;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = STemplate< flatdata::Writer >;
     /// Immutable structure type
@@ -160,13 +162,15 @@ union STemplate
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 
@@ -243,14 +247,16 @@ private:
 namespace _builtin { namespace multivector { 
 
 /** Builtin type to for MultiVector index */
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 union IndexType32Template
 {
-    using ValueType = Member< uint64_t, 0, 32 >;
+    using ValueType = Member< uint64_t, 0, 32, 4 >;
     ValueType value;
+    using RangeType = Member< std::pair< uint64_t, uint64_t >, 0, 32, 4 >;
+    RangeType range;
 
     /// Stream type accepted by the class
-    using StreamType = typename Member< uint32_t, 0, 0 >::StreamType;
+    using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
     using MutatorType = IndexType32Template< flatdata::Writer >;
     /// Immutable structure type
@@ -277,13 +283,15 @@ union IndexType32Template
     std::string to_string( ) const;
     std::string describe( ) const;
 
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = true;
+
     /**
     * Private data member, should not be directly used.
     * Cannot be made private.
     * Please refer to C++ Standard, Chapter 9.2, Paragraph 19.
     * This union has to be kept standard-layout, which different access control prevents.
     */
-    Member< uint32_t, 0, 0 > _data;
+    Member< uint32_t, 0, 0, 0 > _data;
 };
 
 /** Builtin type to for MultiVector index */
@@ -399,44 +407,44 @@ struct S
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::STemplate( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::STemplate( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename STemplate< Member >::StreamType STemplate< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::schema( ) { return internal::S__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::name( ) { return "S"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t STemplate< Member >::size_in_bytes( ) { return 8; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool STemplate< Member >::operator==( const STemplate& other ) const
 {
@@ -450,14 +458,14 @@ bool STemplate< Member >::operator==( const STemplate& other ) const
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool STemplate< Member >::operator!=( const STemplate& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool STemplate< Member >::operator<( const STemplate& other ) const
 {
@@ -465,14 +473,14 @@ return
     x < other.x ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::operator STemplate< flatdata::Reader >( ) const
 {
     return STemplate< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::to_string( ) const
 {
@@ -484,7 +492,7 @@ std::string STemplate< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::describe( ) const
 {
@@ -638,44 +646,44 @@ struct S
 )schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::STemplate( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::STemplate( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename STemplate< Member >::StreamType STemplate< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::schema( ) { return internal::S__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::name( ) { return "S"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t STemplate< Member >::size_in_bytes( ) { return 8; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool STemplate< Member >::operator==( const STemplate& other ) const
 {
@@ -689,14 +697,14 @@ bool STemplate< Member >::operator==( const STemplate& other ) const
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool STemplate< Member >::operator!=( const STemplate& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool STemplate< Member >::operator<( const STemplate& other ) const
 {
@@ -704,14 +712,14 @@ return
     x < other.x ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 STemplate< Member >::operator STemplate< flatdata::Reader >( ) const
 {
     return STemplate< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::to_string( ) const
 {
@@ -723,7 +731,7 @@ std::string STemplate< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string STemplate< Member >::describe( ) const
 {
@@ -870,44 +878,44 @@ namespace internal
     const char* const IndexType32__schema__ = R"schema()schema";
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 IndexType32Template< Member >::IndexType32Template( )
-: _data( Member< uint32_t, 0, 0 >{nullptr} )
+: _data( Member< uint32_t, 0, 0, 0 >{nullptr} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 IndexType32Template< Member >::IndexType32Template( StreamType data )
-: _data( Member< uint32_t, 0, 0 >{data} )
+: _data( Member< uint32_t, 0, 0, 0 >{data} )
 {
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 IndexType32Template< Member >::operator bool( ) const
 {
 return _data.data != nullptr;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 typename IndexType32Template< Member >::StreamType IndexType32Template< Member >::data( ) const { return _data.data; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string IndexType32Template< Member >::schema( ) { return internal::IndexType32__schema__; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string IndexType32Template< Member >::name( ) { return "IndexType32"; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 constexpr size_t IndexType32Template< Member >::size_in_bytes( ) { return 4; }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool IndexType32Template< Member >::operator==( const IndexType32Template& other ) const
 {
@@ -921,14 +929,14 @@ bool IndexType32Template< Member >::operator==( const IndexType32Template& other
     return true;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool IndexType32Template< Member >::operator!=( const IndexType32Template& other ) const
 {
     return !( *this == other );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 bool IndexType32Template< Member >::operator<( const IndexType32Template& other ) const
 {
@@ -936,14 +944,14 @@ return
     value < other.value ;
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 IndexType32Template< Member >::operator IndexType32Template< flatdata::Reader >( ) const
 {
     return IndexType32Template< flatdata::Reader >( _data.data );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string IndexType32Template< Member >::to_string( ) const
 {
@@ -955,7 +963,7 @@ std::string IndexType32Template< Member >::to_string( ) const
     return ss.str( );
 }
 
-template< template < typename, int, int > class Member >
+template< template < typename, int, int, int > class Member >
 inline
 std::string IndexType32Template< Member >::describe( ) const
 {

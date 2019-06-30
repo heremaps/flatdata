@@ -1,18 +1,22 @@
 template< template < typename, int, int, int > class Member >
-union U8Template
+union STemplate
 {
-    using FType = Member< uint8_t, 0, 8, 1 >;
-    FType f;
+    using XType = Member< uint64_t, 0, 64, 10 >;
+    XType x;
+    using FirstYType = Member< uint32_t, 64, 14, 10 >;
+    FirstYType first_y;
+    using YRangeType = Member< std::pair< uint32_t, uint32_t >, 64, 14, 10 >;
+    YRangeType y_range;
 
     /// Stream type accepted by the class
     using StreamType = typename Member< uint32_t, 0, 0, 0 >::StreamType;
     /// Mutable structure type
-    using MutatorType = U8Template< flatdata::Writer >;
+    using MutatorType = STemplate< flatdata::Writer >;
     /// Immutable structure type
-    using AccessorType = U8Template< flatdata::Reader >;
+    using AccessorType = STemplate< flatdata::Reader >;
 
-    U8Template( );
-    explicit U8Template( StreamType data );
+    STemplate( );
+    explicit STemplate( StreamType data );
 
     /// Get raw data stream
     StreamType data( ) const;
@@ -23,16 +27,16 @@ union U8Template
     /// Get structure size in bytes
     static constexpr size_t size_in_bytes( );
 
-    bool operator==( const U8Template& other ) const;
-    bool operator!=( const U8Template& other ) const;
-    bool operator<( const U8Template& other ) const;
-    operator U8Template< flatdata::Reader >( ) const;
+    bool operator==( const STemplate& other ) const;
+    bool operator!=( const STemplate& other ) const;
+    bool operator<( const STemplate& other ) const;
+    operator STemplate< flatdata::Reader >( ) const;
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
     std::string describe( ) const;
 
-    static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
+    static constexpr bool IS_OVERLAPPING_WITH_NEXT = true;
 
     /**
     * Private data member, should not be directly used.
@@ -42,8 +46,3 @@ union U8Template
     */
     Member< uint32_t, 0, 0, 0 > _data;
 };
-
-typedef U8Template< flatdata::Reader > U8;
-typedef U8Template< flatdata::Writer > U8Mutator;
-
-} // namespace n

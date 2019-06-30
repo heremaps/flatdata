@@ -19,10 +19,13 @@ fn test() {
         }
 
         let archive = n::A::open(storage).expect("Failed to open archive");
-        assert_eq!(archive.data(), b"My Data");
+        assert_eq!(archive.data().as_bytes(), b"My Data");
         if set_optional {
             assert_eq!(
-                archive.optional_data().expect("Optional data missing"),
+                archive
+                    .optional_data()
+                    .expect("Optional data missing")
+                    .as_bytes(),
                 b"My Other Data"
             );
         }

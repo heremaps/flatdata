@@ -18,11 +18,11 @@
 /// * `num_bits` – how many bits of the value to write.
 ///
 /// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
-/// [`read_bytes`]: macro.read_bytes.html
+/// [`read_bytes`]: macro.flatdata_read_bytes.html
 /// [`std::mem::size_of::<T>`]: https://doc.rust-lang.org/std/mem/fn.size_of.html
 #[doc(hidden)]
 #[macro_export]
-macro_rules! write_bytes {
+macro_rules! flatdata_write_bytes {
     ($T:tt; $value:expr, $data:expr, $offset:expr, $num_bits:expr) => {{
         debug_assert!($num_bits <= 64, "num_bits cannot be > 64");
 
@@ -31,17 +31,18 @@ macro_rules! write_bytes {
 
         let mut value_to_store = $value as u64;
         if <$T as $crate::helper::Int>::IS_SIGNED {
-            value_to_store = masked!(value_to_store, $num_bits);
+            value_to_store = flatdata_read_bytes!(@mask, value_to_store, $num_bits);
         }
-        let mut value_mask = masked!(u64::max_value(), $num_bits);
+        let mut value_mask = flatdata_read_bytes!(@mask, u64::max_value(), $num_bits);
         let mut value: u64 = 0;
 
         // read previous data from destination to value
+        let num_bytes = std::cmp::min( 8, ($num_bits + bit_offset + 7) / 8);
         unsafe {
             ::std::ptr::copy(
                 destination,
                 &mut value as *mut u64 as *mut u8,
-                num_bytes!($offset, $num_bits),
+                num_bytes,
             )
         };
         value = u64::from_le(value);
@@ -57,16 +58,16 @@ macro_rules! write_bytes {
             ::std::ptr::copy(
                 &value as *const u64 as *const u8,
                 destination,
-                num_bytes!($offset, $num_bits),
+                num_bytes,
             )
         };
 
         // one byte might be missing
-        let batched_bits_written = num_bytes!($offset, $num_bits) * 8 - bit_offset;
+        let batched_bits_written = num_bytes * 8 - bit_offset;
         if batched_bits_written < $num_bits {
-            let destination = &mut $data[num_bytes!($offset, $num_bits)] as *mut u8;
-            value_to_store >>= batched_bits_written % (num_bytes!($offset, $num_bits) * 8);
-            value_mask >>= batched_bits_written % (num_bytes!($offset, $num_bits) * 8);
+            let destination = &mut $data[num_bytes] as *mut u8;
+            value_to_store >>= batched_bits_written % (num_bytes * 8);
+            value_mask >>= batched_bits_written % (num_bytes * 8);
             unsafe {
                 // remove previous value, but keep surrounding data
                 let byte_value = *destination & !value_mask as u8;
@@ -76,10 +77,10 @@ macro_rules! write_bytes {
         }
     }};
     ($T:tt; $value:expr, $data:expr, $offset:expr) => {
-        write_bytes!($T; $value, $data, $offset, ::std::mem::size_of::<$T>() * 8)
+        flatdata_write_bytes!($T; $value, $data, $offset, ::std::mem::size_of::<$T>() * 8)
     };
     ($T:tt; $value:expr, $data:expr) => {
-        write_bytes!($T, $value, $data, 0, ::std::mem::size_of::<$T>() * 8)
+        flatdata_write_bytes!($T, $value, $data, 0, ::std::mem::size_of::<$T>() * 8)
     };
 }
 
@@ -87,7 +88,7 @@ macro_rules! write_bytes {
 mod test {
     fn test_writer(value: u64, offset: usize, num_bits: usize, expected: &[u8]) {
         let mut buffer = vec![0u8; expected.len()];
-        write_bytes!(u64; value, &mut buffer[..], offset, num_bits);
+        flatdata_write_bytes!(u64; value, &mut buffer[..], offset, num_bits);
         assert_eq!(buffer, expected);
     }
 
@@ -1179,7 +1180,7 @@ mod test {
 
     fn test_reader_unsigned(value: i64, offset: usize, num_bits: usize, expected: &[u8]) {
         let mut buffer = vec![0u8; expected.len()];
-        write_bytes!(i64; value, &mut buffer[..], offset, num_bits);
+        flatdata_write_bytes!(i64; value, &mut buffer[..], offset, num_bits);
         assert_eq!(buffer, expected);
     }
 

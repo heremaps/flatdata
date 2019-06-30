@@ -43,9 +43,21 @@ enum = Group(
     '}'
 )
 
+range = Group(
+    Keyword("@range") +
+    "(" +
+    identifier("name") +
+    ")"
+)
+
+field_decorations = Group(
+    range("range")
+)
+
 field = Group(
     Optional(comment)("doc") +
-    identifier("name") +':' -
+    ZeroOrMore(field_decorations)("decorations") +
+    identifier("name") - ':' +
     qualified_identifier("type") +
     Optional(':' + bit_width("width")) +
     ';'

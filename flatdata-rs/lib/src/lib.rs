@@ -166,23 +166,10 @@
 //! #         (first_factor_ref, set_first_factor_ref, u32, u32, 0, 32)
 //! #     );
 //! #
-//! #     define_archive!(Archive, ArchiveBuilder,
-//! #     schema::archive::ARCHIVE;
-//! #     // struct resources
-//! # ;
-//! #     // vector resources
-//! #     (numbers, set_numbers, start_numbers,
-//! #         super::prime::Number,
-//! #         schema::archive::resources::NUMBERS, false),
-//! #     (factors, set_factors, start_factors,
-//! #         super::prime::Factor,
-//! #         schema::archive::resources::FACTORS, false);
-//! #     // multivector resources
-//! # ;
-//! #     // raw data resources
-//! # ;
-//! #     // subarchives
-//! # );
+//! #     define_archive!(Archive, ArchiveBuilder, schema::archive::ARCHIVE;
+//! #         vector(numbers, false, schema::archive::resources::NUMBERS, set_numbers, start_numbers, super::prime::Number),
+//! #         vector(factors, false, schema::archive::resources::FACTORS, set_factors, start_factors, super::prime::Factor),
+//! #     );
 //! #
 //! # }
 //! pub fn calculate_prime_factors(
@@ -284,6 +271,7 @@ mod memory;
 mod memstorage;
 mod multiarrayview;
 mod multivector;
+mod rawdata;
 mod storage;
 mod structbuf;
 mod vector;
@@ -298,6 +286,7 @@ pub use crate::{
     memstorage::MemoryResourceStorage,
     multiarrayview::MultiArrayView,
     multivector::MultiVector,
+    rawdata::RawData,
     storage::{
         create_archive, create_external_vector, create_multi_vector, MemoryDescriptor,
         ResourceStorage,

@@ -1,31 +1,8 @@
-define_archive!(X, XBuilder,
-    schema::x::X;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-;
-    // raw data resources
-    (payload, set_payload,
-        schema::x::resources::PAYLOAD, false);
-    // subarchives
+define_archive!(X, XBuilder, schema::x::X;
+    raw_data(payload, false, schema::x::resources::PAYLOAD, set_payload),
 );
 
-define_archive!(A, ABuilder,
-    schema::a::A;
-    // struct resources
-;
-    // vector resources
-;
-    // multivector resources
-;
-    // raw data resources
-;
-    // subarchives
-    (data,
-        super::n::X, super::n::XBuilder,
-        schema::a::resources::DATA, false),
-    (optional_data,
-        super::n::X, super::n::XBuilder,
-        schema::a::resources::OPTIONAL_DATA, true));
+define_archive!(A, ABuilder, schema::a::A;
+    archive(data, false, schema::a::resources::DATA, super::n::X, super::n::XBuilder),
+    archive(optional_data, true, schema::a::resources::OPTIONAL_DATA, super::n::X, super::n::XBuilder),
+);

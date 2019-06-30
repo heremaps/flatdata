@@ -13,14 +13,36 @@
 /// * `offset` – offset in bits in `data`, where the value should be read,
 /// * `num_bits` – number of bits to read.
 ///
-/// [`write_bytes`]: macro.write_bytes.html
+/// [`write_bytes`]: macro.flatdata_write_bytes.html
 /// [`Archive`]: trait.Archive.html
 /// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
 #[doc(hidden)]
 #[macro_export]
-macro_rules! read_bytes {
+macro_rules! flatdata_read_bytes {
+    // prelude of internal helpers (see https://danielkeep.github.io/tlborm/book/pat-internal-rules.html)
+
+    // extend sign
+    (@extend, $T:tt, $value:expr, $num_bits:expr) => {
+        if <$T as $crate::helper::Int>::IS_SIGNED {
+            let num_otherbits = (::std::mem::size_of::<$T>() * 8 - $num_bits) as u32;
+            ($value as $T)
+                .wrapping_shl(num_otherbits)
+                .wrapping_shr(num_otherbits)
+        } else {
+            $value as $T
+        }
+    };
+
+    // mask
+    (@mask, $value:expr, $num_bits:expr) => {
+        1u64.checked_shl($num_bits as u32)
+            .map(|mask| $value & (mask - 1))
+            .unwrap_or($value)
+    };
+
+    // main entry point
     (bool, $data:expr, $offset:expr, $num_bits:expr) => {{
-        read_bytes!(u8, $data, $offset, $num_bits) != 0
+        flatdata_read_bytes!(u8, $data, $offset, $num_bits) != 0
     }};
     ($T:tt, $data:expr, $offset:expr, $num_bits:expr) => {{
         let byte_offset: usize = $offset / 8;
@@ -33,32 +55,33 @@ macro_rules! read_bytes {
         if $num_bits == 1 {
             (unsafe { *data } & (1 << bit_offset) != 0) as $T
         } else {
-            let num_bytes: usize = num_bytes!($offset, $num_bits);
+            let num_bytes: usize = std::cmp::min( 8, ($num_bits + bit_offset + 7) / 8);
             let mut result: u64 = 0;
             unsafe { ::std::ptr::copy(data, &mut result as *mut u64 as *mut u8, num_bytes) };
             result = u64::from_le(result);
             result >>= bit_offset;
 
-            if num_bytes * 8 - bit_offset < $num_bits {
+            let read_bits = num_bytes * 8 - bit_offset;
+            if read_bits < $num_bits {
                 let temp = u64::from(unsafe { *data.add(byte_offset + num_bytes) });
-                result |= temp << (num_bytes * 8 - bit_offset) % (num_bytes * 8);
+                result |= temp << read_bits % (num_bytes * 8);
             }
-            result = masked!(result, $num_bits);
-            extend_sign!($T, result, $num_bits)
+            result = flatdata_read_bytes!(@mask, result, $num_bits);
+            flatdata_read_bytes!(@extend, $T, result, $num_bits)
         }
     }};
     ($T:tt, $data:expr, $offset:expr) => {
-        read_bytes!($T, $data, $offset, ::std::mem::size_of::<$T>() * 8)
+        flatdata_read_bytes!($T, $data, $offset, ::std::mem::size_of::<$T>() * 8)
     };
     ($T:tt, $data:expr) => {
-        read_bytes!($T, $data, 0, ::std::mem::size_of::<$T>() * 8)
+        flatdata_read_bytes!($T, $data, 0, ::std::mem::size_of::<$T>() * 8)
     };
 }
 
 #[cfg(test)]
 mod tests {
     fn test_reader(data: &[u8], offset: usize, num_bits: usize, expected: u8) {
-        let result = read_bytes!(u8, &data[0], offset, num_bits);
+        let result = flatdata_read_bytes!(u8, &data[0], offset, num_bits);
         assert_eq!(result, expected);
     }
 
@@ -1148,7 +1171,7 @@ mod tests {
     }
 
     fn test_reader_signed(data: &[u8], offset: usize, num_bits: usize, expected: i16) {
-        let result = read_bytes!(i16, &data[0], offset, num_bits);
+        let result = flatdata_read_bytes!(i16, &data[0], offset, num_bits);
         assert_eq!(result, expected);
     }
 

@@ -7,12 +7,14 @@ from pyparsing import ParseException, ParseSyntaxException
 
 import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
-from flatdata.generator.tree.errors import InvalidEnumWidthError
+from flatdata.generator.tree.errors import (
+    InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference)
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.syntax_tree import SyntaxTree
-from flatdata.generator.tree.nodes.resources import Multivector
-from flatdata.generator.tree.nodes.references import BuiltinStructureReference, ConstantReference, EnumerationReference
+from flatdata.generator.tree.nodes.resources import Multivector, Vector, ResourceBase
+from flatdata.generator.tree.nodes.references import (
+    BuiltinStructureReference, ConstantReference, EnumerationReference, StructureReference)
 from flatdata.generator.tree.nodes.root import Root
 from flatdata.generator.tree.errors import ParsingError
 from flatdata.generator.tree.traversal import DfsTraversal
@@ -20,6 +22,7 @@ from flatdata.generator.tree.helpers.basictype import BasicType
 from flatdata.generator.tree.helpers.enumtype import EnumType
 
 from .resolver import resolve_references
+
 
 def _create_nested_namespaces(path):
     assert not path.startswith(Node.PATH_SEPARATOR)
@@ -153,12 +156,30 @@ def _compute_structure_sizes(root):
         struct.size_in_bits = offset
 
 
+def _check_ranges(root):
+    # First check that names are unique
+    for field in root.iterate(nodes.Field):
+        name = field.range
+        if not name:
+            continue
+        for sibling in field.parent.fields:
+            if sibling.name == name:
+                raise InvalidRangeName(name)
+
+    # Now check that structs with ranges are only used in vectors
+    for reference in root.iterate(StructureReference):
+        if (isinstance(reference.node, nodes.Structure) and reference.node.has_range
+                and isinstance(reference.parent, ResourceBase) and not isinstance(reference.parent, Vector)):
+            raise InvalidRangeReference(reference.target)
+
+
 def build_ast(definition):
     """Build the Flatdata syntax tree from a definition"""
     root = _build_node_tree(definition=definition)
     _append_builtin_structures(root)
     _append_constant_references(root)
     resolve_references(root)
+    _check_ranges(root)
     # now compute data based on resolved references
     _update_field_type_references(root)
     _compute_structure_sizes(root)

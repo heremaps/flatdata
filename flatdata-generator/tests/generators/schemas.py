@@ -1,6 +1,6 @@
 import os
 
-NUM_TEST_CASES = 23
+NUM_TEST_CASES = 24
 
 def schemas_and_expectations(generator, extension):
     """

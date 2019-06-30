@@ -19,47 +19,23 @@ define_variadic_struct!({{ r.name | snake_to_upper_camel_case }}, Ref{{ r.name |
 {# archive definition #}
 {%- set archive_ns = archive.name | camel_to_snake_case %}
 
-define_archive!({{archive.name}}, {{archive.name}}Builder,
-    schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
-    // struct resources
-    {% for r in archive.resources | instance_resources %}
-    ({{ r.name }}, set_{{ r.name }},
-        {{ fully_qualified_name(archive, r.referenced_structures[0].node) }},
-        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
-        {%- if not loop.last %},
-        {% endif %}
-    {% endfor %};
-    // vector resources
-    {% for r in archive.resources | vector_resources %}
-    ({{ r.name }}, set_{{ r.name }}, start_{{ r.name }},
-        {{ fully_qualified_name(archive, r.referenced_structures[0].node) }},
-        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
-        {%- if not loop.last %},
-        {% endif %}
-    {% endfor %};
-    // multivector resources
-    {% for r in archive.resources | multivector_resources %}
-    ({{ r.name }}, start_{{ r.name }},
-        {{ r.name | snake_to_upper_camel_case }},
-        schema::{{ archive_ns }}::resources::{{ r.name | upper }},
-        {{ r.name }}_index, {{ fully_qualified_name(archive, r.index_reference.node) }}, {{ r.optional | lower }})
-        {%- if not loop.last %},
-        {% endif %}
-    {% endfor %};
-    // raw data resources
-    {% for r in archive.resources | rawdata_resources %}
-    ({{ r.name }}, set_{{ r.name }},
-        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
-        {%- if not loop.last %},
-        {% endif %}
-    {% endfor %};
-    // subarchives
-    {% for r in archive.resources | subarchive_resources %}
-    ({{ r.name }},
-        {{ fully_qualified_name(archive, r.target.node) }}, {{ fully_qualified_name(archive, r.target.node) }}Builder,
-        schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ r.optional | lower }})
-        {%- if not loop.last %},
-        {% endif %}
+define_archive!({{archive.name}}, {{archive.name}}Builder, schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
+    {% for r in archive.resources %}
+    {% if [r] | instance_resources %}
+    struct({{ r.name }}, {{ r.optional | lower }}, schema::{{ archive_ns }}::resources::{{ r.name | upper }}, set_{{ r.name }}, {{ fully_qualified_name(archive, r.referenced_structures[0].node) }}),
+    {% endif %}
+    {% if [r] | vector_resources %}
+    vector({{ r.name }}, {{ r.optional | lower }}, schema::{{ archive_ns }}::resources::{{ r.name | upper }}, set_{{ r.name }}, start_{{ r.name }}, {{ fully_qualified_name(archive, r.referenced_structures[0].node) }}),
+    {% endif %}
+    {% if [r] | multivector_resources %}
+    multivector({{ r.name }}, {{ r.optional | lower }}, schema::{{ archive_ns }}::resources::{{ r.name | upper }}, start_{{ r.name }}, {{ r.name | snake_to_upper_camel_case }}, {{ r.name }}_index, {{ fully_qualified_name(archive, r.index_reference.node) }}),
+    {% endif %}
+    {% if [r] | rawdata_resources %}
+    raw_data({{ r.name }}, {{ r.optional | lower }}, schema::{{ archive_ns }}::resources::{{ r.name | upper }}, set_{{ r.name }}),
+    {% endif %}
+    {% if [r] | subarchive_resources %}
+    archive({{ r.name }}, {{ r.optional | lower }}, schema::{{ archive_ns }}::resources::{{ r.name | upper }}, {{ fully_qualified_name(archive, r.target.node) }}, {{ fully_qualified_name(archive, r.target.node) }}Builder),
+    {% endif %}
     {% endfor %}
 );
 {% endmacro %}
