@@ -1,8 +1,9 @@
 [package]
 name = "flatdata_tests_coappearances"
 version = "0.1.0"
-authors = ["boxdot <d@zerovolt.org>"]
+authors = ["boxdot <d@zerovolt.org>", "Christian Vetter <veaac.fdirct@gmail.com>"]
 edition = "2018"
+publish = false
 
 [dependencies]
 flatdata = { path = "../../lib" }
