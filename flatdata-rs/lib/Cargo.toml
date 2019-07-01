@@ -7,7 +7,7 @@ description = "Rust implementation of flatdata"
 repository = "https://github.com/heremaps/flatdata"
 keywords = ["serialization", "flatdata", "mmap"]
 categories = ["encoding"]
-readme = "README.md"
+readme = "../README.md"
 edition = "2018"
 
 [dependencies]
