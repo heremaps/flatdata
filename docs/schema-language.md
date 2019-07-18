@@ -109,11 +109,6 @@ Archive resources can be one of following types:
    associative container for storing multiple properties for a single
    entity. Allows efficient storage of the data whose properties are
    sparsily assigned to each item. Think of it as a multimap of
-   variants.
--  ``multivector< IndexSize, T1, T2, ... >`` - a heterogenuous
-   associative container for storing multiple properties for a single
-   entity. Allows efficient storage of the data whose properties are
-   sparsily assigned to each item. Think of it as a multimap of
    variants. ``IndexSize`` is the number of bits used for indexing the
    entities. An index is addressing the start of the offset of a
    variant in the data.
