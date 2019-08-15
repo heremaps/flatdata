@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from setuptools import find_packages, setup
 
-
 setup(
     name="flatdata-generator",
-    version="0.2.4",
+    version="0.3.0-2",
     author="Flatdata Developers",
     description="Generate source code for C++, Rust, Go or Python from a Flatdata schema file",
     long_description=open("README.md").read(),
@@ -16,11 +15,12 @@ setup(
         '': ['*.jinja2'],
     },
     entry_points={
-        'console_scripts': [
-            'flatdata-generator=flatdata.generator.app:main'
-        ],
+        'console_scripts': ['flatdata-generator=flatdata.generator.app:main'],
     },
-    install_requires=open("requirements.txt").readlines(),
+    install_requires=[
+        "pyparsing>=2.0",
+        "jinja2>=2.2",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
