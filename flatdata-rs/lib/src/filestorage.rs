@@ -68,7 +68,7 @@ impl FileResourceStorage {
 }
 
 impl ResourceStorage for FileResourceStorage {
-    fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {
+    fn subdir(&self, dir: &str) -> Rc<dyn ResourceStorage> {
         Self::new(self.path.join(dir))
     }
 
@@ -94,7 +94,10 @@ impl ResourceStorage for FileResourceStorage {
         }
     }
 
-    fn create_output_stream(&self, resource_name: &str) -> Result<Rc<RefCell<Stream>>, io::Error> {
+    fn create_output_stream(
+        &self,
+        resource_name: &str,
+    ) -> Result<Rc<RefCell<dyn Stream>>, io::Error> {
         if !self.path.exists() {
             fs::create_dir_all(self.path.clone())?;
         }

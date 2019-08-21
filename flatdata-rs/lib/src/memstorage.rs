@@ -79,7 +79,7 @@ impl MemoryResourceStorage {
 }
 
 impl ResourceStorage for MemoryResourceStorage {
-    fn subdir(&self, dir: &str) -> Rc<ResourceStorage> {
+    fn subdir(&self, dir: &str) -> Rc<dyn ResourceStorage> {
         Rc::new(Self {
             storage: self.storage.clone(),
             path: self.path.join(dir),
@@ -122,7 +122,10 @@ impl ResourceStorage for MemoryResourceStorage {
         Ok(&extended_lifetime_data)
     }
 
-    fn create_output_stream(&self, resource_name: &str) -> Result<Rc<RefCell<Stream>>, io::Error> {
+    fn create_output_stream(
+        &self,
+        resource_name: &str,
+    ) -> Result<Rc<RefCell<dyn Stream>>, io::Error> {
         let resource_path = self.path.join(resource_name);
         let stream = self
             .storage

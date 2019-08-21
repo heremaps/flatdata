@@ -61,7 +61,7 @@ pub trait ResourceStorage: std::fmt::Debug {
     //
 
     /// Creates a resource storage at a given subdirectory.
-    fn subdir(&self, dir: &str) -> Rc<ResourceStorage>;
+    fn subdir(&self, dir: &str) -> Rc<dyn ResourceStorage>;
 
     /// Returns `true` if resource exists in the storage.
     fn exists(&self, resource_name: &str) -> bool;
@@ -77,7 +77,7 @@ pub trait ResourceStorage: std::fmt::Debug {
 
     /// Creates a resource with given name and returns an output stream for
     /// writing to it.
-    fn create_output_stream(&self, resource_name: &str) -> io::Result<Rc<RefCell<Stream>>>;
+    fn create_output_stream(&self, resource_name: &str) -> io::Result<Rc<RefCell<dyn Stream>>>;
 
     //
     // Implementation helper
@@ -141,7 +141,7 @@ pub trait ResourceStorage: std::fmt::Debug {
 /// storage.
 #[doc(hidden)]
 pub fn create_external_vector<'a, T>(
-    storage: &'a ResourceStorage,
+    storage: &'a dyn ResourceStorage,
     resource_name: &str,
     schema: &str,
 ) -> io::Result<ExternalVector<'a, T>>
@@ -167,7 +167,7 @@ where
 /// storage.
 #[doc(hidden)]
 pub fn create_multi_vector<'a, Ts>(
-    storage: &'a ResourceStorage,
+    storage: &'a dyn ResourceStorage,
     resource_name: &str,
     schema: &str,
 ) -> io::Result<MultiVector<'a, Ts>>
@@ -204,7 +204,7 @@ where
 /// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
 #[doc(hidden)]
 pub fn create_archive<T: ArchiveBuilder>(
-    storage: &Rc<ResourceStorage>,
+    storage: &Rc<dyn ResourceStorage>,
 ) -> Result<(), ResourceStorageError> {
     let signature_name = format!("{}.archive", T::NAME);
     {
@@ -269,9 +269,9 @@ impl MemoryDescriptor {
 /// [`create_output_stream`]: trait.ResourceStorage.html#tycreate_output_stream
 #[derive(Clone)]
 pub struct ResourceHandle<'a> {
-    stream: Rc<RefCell<Stream>>,
+    stream: Rc<RefCell<dyn Stream>>,
     size_in_bytes: usize,
-    storage: &'a ResourceStorage,
+    storage: &'a dyn ResourceStorage,
     name: String,
     schema: String,
     finalized: bool,
@@ -285,10 +285,10 @@ impl<'a> ResourceHandle<'a> {
     /// Resource storage will try to reserve space in the beginning of the
     /// stream for the size of the resource, will may result in an `io::Error`.
     pub(crate) fn try_new(
-        storage: &'a ResourceStorage,
+        storage: &'a dyn ResourceStorage,
         name: String,
         schema: String,
-        stream: Rc<RefCell<Stream>>,
+        stream: Rc<RefCell<dyn Stream>>,
     ) -> io::Result<Self> {
         // Reserve space for size in the beginning of the stream, which will be updated
         // later.
@@ -321,8 +321,7 @@ impl<'a> ResourceHandle<'a> {
         self.finalize()?;
 
         // return underlying memory descriptor to the written data
-        let res = self.storage.read(&self.name, &self.schema);
-        res
+        self.storage.read(&self.name, &self.schema)
     }
 
     pub(crate) fn name(&self) -> &str {
@@ -385,24 +384,24 @@ fn compute_diff(left: &str, right: &str) -> String {
 // Write helpers
 //
 
-fn write_to_stream(data: &[u8], stream: &mut Stream) -> io::Result<()> {
+fn write_to_stream(data: &[u8], stream: &mut dyn Stream) -> io::Result<()> {
     write_size(data.len() as u64, stream)?;
     stream.write_all(data)?;
     write_padding(stream)
 }
 
-fn write_schema(schema: &str, stream: &mut Stream) -> io::Result<()> {
+fn write_schema(schema: &str, stream: &mut dyn Stream) -> io::Result<()> {
     stream.write_all(schema.as_bytes())
 }
 
-fn write_size(value: SizeType, stream: &mut Stream) -> io::Result<()> {
+fn write_size(value: SizeType, stream: &mut dyn Stream) -> io::Result<()> {
     const SIZE_OF_SIZE_TYPE: usize = mem::size_of::<SizeType>();
     let mut buffer: [u8; SIZE_OF_SIZE_TYPE] = [0; SIZE_OF_SIZE_TYPE];
     flatdata_write_bytes!(SizeType; value, &mut buffer, 0, SIZE_OF_SIZE_TYPE * 8);
     stream.write_all(&buffer)
 }
 
-fn write_padding(stream: &mut Stream) -> io::Result<()> {
+fn write_padding(stream: &mut dyn Stream) -> io::Result<()> {
     let zeroes: [u8; PADDING_SIZE] = [0; PADDING_SIZE];
     stream.write_all(&zeroes)
 }
