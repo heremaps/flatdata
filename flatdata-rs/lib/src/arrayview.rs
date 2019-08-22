@@ -51,7 +51,7 @@ where
         }
     }
 
-    /// Return `true` if the array is empty.
+    /// Returns `true` if the array is empty.
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -68,7 +68,7 @@ where
         T::create(&self.data[index..])
     }
 
-    /// Slice this array view by a given range.
+    /// Slices this array view by a given range.
     ///
     /// # Panics
     ///

@@ -37,7 +37,7 @@ pub trait Archive: Debug + Clone {
     /// verified. If any non-optional resource is missing or has a wrong
     /// signature (unexpected schema), the operation will fail. Therefore,
     /// it is not possible to open partially written archive.
-    fn open(storage: Rc<ResourceStorage>) -> Result<Self, ResourceStorageError>;
+    fn open(storage: Rc<dyn ResourceStorage>) -> Result<Self, ResourceStorageError>;
 }
 
 /// A flatdata archive builder for serializing data.
@@ -68,7 +68,7 @@ pub trait ArchiveBuilder: Clone {
     /// [coappearances] example.
     ///
     /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
-    fn new(storage: Rc<ResourceStorage>) -> Result<Self, ResourceStorageError>;
+    fn new(storage: Rc<dyn ResourceStorage>) -> Result<Self, ResourceStorageError>;
 }
 
 /// Macro used by generator to define a flatdata archive and corresponding
@@ -271,7 +271,7 @@ macro_rules! define_archive {
     ) => {
         #[derive(Clone)]
         pub struct $name {
-            _storage: ::std::rc::Rc<$crate::ResourceStorage>
+            _storage: ::std::rc::Rc<dyn $crate::ResourceStorage>
             $(, $resource_name: define_archive!(@members, $resource_type($is_optional $($args)*)))*
         }
 
@@ -307,7 +307,7 @@ macro_rules! define_archive {
             const NAME: &'static str = stringify!($name);
             const SCHEMA: &'static str = $archive_schema;
 
-            fn open(storage: ::std::rc::Rc<$crate::ResourceStorage>)
+            fn open(storage: ::std::rc::Rc<dyn $crate::ResourceStorage>)
                 -> ::std::result::Result<Self, $crate::ResourceStorageError>
             {
                 storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
@@ -323,7 +323,7 @@ macro_rules! define_archive {
 
         #[derive(Clone, Debug)]
         pub struct $builder_name {
-            storage: ::std::rc::Rc<$crate::ResourceStorage>
+            storage: ::std::rc::Rc<dyn $crate::ResourceStorage>
         }
 
         impl $builder_name {
@@ -335,7 +335,7 @@ macro_rules! define_archive {
             const SCHEMA: &'static str = $archive_schema;
 
             fn new(
-                storage: ::std::rc::Rc<$crate::ResourceStorage>,
+                storage: ::std::rc::Rc<dyn $crate::ResourceStorage>,
             ) -> Result<Self, $crate::ResourceStorageError> {
                 $crate::create_archive::<Self>(&storage)?;
                 Ok(Self { storage })
