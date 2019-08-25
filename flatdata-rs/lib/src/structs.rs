@@ -235,14 +235,14 @@ macro_rules! define_struct {
         define_struct!(@no_overlap, $factory, $($range),*);
 
         impl<'a> $name<'a> {
-            #[inline]
-            $(pub fn $field(&self) -> $type {
+            $(#[inline]
+                pub fn $field(&self) -> $type {
                 let value = flatdata_read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
 
-            #[inline]
-            $(pub fn $range(&self) -> std::ops::Range<$range_type> {
+            $(#[inline]
+                pub fn $range(&self) -> std::ops::Range<$range_type> {
                 flatdata_read_bytes!($range_type, self.data, $range_offset, $range_bit_size)..
                 flatdata_read_bytes!($range_type, self.data, $range_offset + $size_in_bytes * 8, $range_bit_size)
             })*
@@ -277,14 +277,14 @@ macro_rules! define_struct {
         }
 
         impl<'a> $name_mut<'a> {
-            #[inline]
-            $(pub fn $field(&self) -> $type {
+            $(#[inline]
+                pub fn $field(&self) -> $type {
                 let value = flatdata_read_bytes!($primitive_type, self.data, $offset, $bit_size);
                 unsafe { ::std::mem::transmute::<$primitive_type, $type>(value) }
             })*
 
-            #[inline]
-            $(pub fn $field_setter(&mut self, value: $type) {
+            $(#[inline]
+                pub fn $field_setter(&mut self, value: $type) {
                 let buffer = unsafe {
                     ::std::slice::from_raw_parts_mut(self.data, $size_in_bytes)
                 };
@@ -384,7 +384,8 @@ macro_rules! define_variadic_struct {
 
         impl<'a> $item_builder_name<'a> {
             #[inline]
-            $(pub fn $add_type_fn<'b>(&'b mut self) -> <$inner_type as $crate::Struct<'b>>::ItemMut {
+            $(#[inline]
+                pub fn $add_type_fn<'b>(&'b mut self) -> <$inner_type as $crate::Struct<'b>>::ItemMut {
                 let old_len = self.data.len();
                 let increment = 1 + <$inner_type as $crate::Struct<'b>>::SIZE_IN_BYTES;
                 self.data.resize(old_len + increment, 0);

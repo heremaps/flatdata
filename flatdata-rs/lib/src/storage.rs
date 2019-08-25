@@ -234,6 +234,7 @@ pub struct MemoryDescriptor {
 }
 
 impl Default for MemoryDescriptor {
+    #[inline]
     fn default() -> MemoryDescriptor {
         MemoryDescriptor {
             ptr: ptr::null(),
@@ -247,6 +248,7 @@ impl Default for MemoryDescriptor {
 /// Sibling-Borrow woes
 impl MemoryDescriptor {
     /// Creates a new memory descriptor from a pointer and its size in bytes.
+    #[inline]
     pub fn new(data: &[u8]) -> MemoryDescriptor {
         MemoryDescriptor {
             ptr: data.as_ptr(),
@@ -257,6 +259,7 @@ impl MemoryDescriptor {
     /// Converts back to bytes (lifetime corresponds to the descriptor's)
     /// Inherently unsafe, since there is no guarantee that the original buffer
     /// is still alive
+    #[inline]
     pub unsafe fn as_bytes(&self) -> &[u8] {
         slice::from_raw_parts(self.ptr, self.size)
     }

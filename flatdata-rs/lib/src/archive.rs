@@ -164,40 +164,47 @@ macro_rules! define_archive {
 
     // resource getters
     (@get, raw_data($name:ident, true, $schema:expr, $setter:ident)) => {
+        #[inline]
         pub fn $name(&self) -> Option<$crate::RawData> {
             self.$name.as_ref().map(|mem_desc| $crate::RawData::new({unsafe{mem_desc.as_bytes()}}))
         }
     };
     (@get, raw_data($name:ident, false, $schema:expr, $setter:ident)) => {
+        #[inline]
         pub fn $name(&self) -> $crate::RawData {
             $crate::RawData::new(unsafe {self.$name.as_bytes()})
         }
     };
     (@get, struct($name:ident, true, $schema:expr, $setter:ident, $type:path)) => {
+        #[inline]
         pub fn $name(&self) -> Option<<$type as $crate::Struct>::Item>
         {
             self.$name.as_ref().map(|mem_desc| {<$type as $crate::Struct>::create(&unsafe{mem_desc.as_bytes()})})
         }
     };
     (@get, struct($name:ident, false, $schema:expr, $setter:ident, $type:path)) => {
+        #[inline]
         pub fn $name(&self) -> <$type as $crate::Struct>::Item
         {
             <$type as $crate::Struct>::create(&unsafe{self.$name.as_bytes()})
         }
     };
     (@get, vector($name:ident, true, $schema:expr, $setter:ident, $starter:ident, $type:path)) => {
+        #[inline]
         pub fn $name(&self) -> Option<$crate::ArrayView<$type>>
         {
             self.$name.as_ref().map(|x|$crate::ArrayView::new(unsafe{x.as_bytes()}))
         }
     };
     (@get, vector($name:ident, false, $schema:expr, $setter:ident, $starter:ident, $type:path)) => {
+        #[inline]
         pub fn $name(&self) -> $crate::ArrayView<$type>
         {
             $crate::ArrayView::new(&unsafe{self.$name.as_bytes()})
         }
     };
     (@get, multivector($name:ident, true, $schema:expr, $starter:ident, $variadic_type:path, $index:ident, $index_type:path)) => {
+        #[inline]
         pub fn $name(&self) -> Option<$crate::MultiArrayView<$variadic_type>>
         {
             self.$name.as_ref()
@@ -207,6 +214,7 @@ macro_rules! define_archive {
         }
     };
     (@get, multivector($name:ident, false, $schema:expr, $starter:ident, $variadic_type:path, $index:ident, $index_type:path)) => {
+        #[inline]
         pub fn $name(&self) -> $crate::MultiArrayView<$variadic_type>
         {
             $crate::MultiArrayView::new(
@@ -216,12 +224,14 @@ macro_rules! define_archive {
         }
     };
     (@get, archive($name:ident, true, $schema:expr, $type:path, $builder_type:path)) => {
+        #[inline]
         pub fn $name(&self) -> Option<&$type>
         {
             self.$name.as_ref()
         }
     };
     (@get, archive($name:ident, false, $schema:expr, $type:path, $builder_type:path)) => {
+        #[inline]
         pub fn $name(&self) -> &$type
         {
             &self.$name
@@ -230,11 +240,13 @@ macro_rules! define_archive {
 
     // resource setters
     (@set, raw_data($name:ident, $optional:ident, $schema:expr, $setter:ident)) => {
+        #[inline]
         pub fn $setter(&self, data: &[u8]) -> ::std::io::Result<()> {
             self.storage.write(stringify!($name), $schema, data)
         }
     };
     (@set, struct($name:ident, $optional:ident, $schema:expr, $setter:ident, $type:path)) => {
+        #[inline]
         pub fn $setter(&self, resource: <$type as $crate::Struct>::Item) -> ::std::io::Result<()> {
             let data = unsafe {
                 ::std::slice::from_raw_parts(resource.as_ptr(), <$type as $crate::Struct>::SIZE_IN_BYTES)
@@ -243,20 +255,24 @@ macro_rules! define_archive {
         }
     };
     (@set, vector($name:ident, $optional:ident, $schema:expr, $setter:ident, $starter:ident, $type:path)) => {
+        #[inline]
         pub fn $setter(&self, vector: &$crate::ArrayView<$type>) -> ::std::io::Result<()> {
             self.storage.write(stringify!($name), $schema, vector.as_ref())
         }
 
+        #[inline]
         pub fn $starter(&self) -> ::std::io::Result<$crate::ExternalVector<$type>> {
             $crate::create_external_vector(&*self.storage, stringify!($name), $schema)
         }
     };
     (@set, multivector($name:ident, $optional:ident, $schema:expr, $starter:ident, $variadic_type:path, $index:ident, $index_type:path)) => {
+        #[inline]
         pub fn $starter(&self) -> ::std::io::Result<$crate::MultiVector<$variadic_type>> {
             $crate::create_multi_vector(&*self.storage, stringify!($name), $schema)
         }
     };
     (@set, archive($name:ident, $optional:ident, $schema:expr, $type:path, $builder_type:path)) => {
+        #[inline]
         pub fn $name(&self) -> Result<$builder_type, $crate::ResourceStorageError> {
             use $crate::ArchiveBuilder;
             let storage = self.storage.subdir(stringify!($name));
