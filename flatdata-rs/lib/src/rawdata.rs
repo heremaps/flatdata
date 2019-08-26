@@ -11,6 +11,7 @@ pub struct RawData<'a> {
 impl<'a> std::ops::Deref for RawData<'a> {
     type Target = [u8];
 
+    #[inline]
     fn deref(&self) -> &[u8] {
         self.data
     }
@@ -18,27 +19,32 @@ impl<'a> std::ops::Deref for RawData<'a> {
 
 impl<'a> RawData<'a> {
     /// Creates a new object from raw memory reference.
+    #[inline]
     pub fn new(data: &'a [u8]) -> Self {
         Self { data }
     }
 
     /// Reads a \0 terminated substring starting at specified offset.
+    #[inline]
     pub fn substring(&self, start: usize) -> Result<&'a str, str::Utf8Error> {
         self.substring_with(start, str::from_utf8)
     }
 
     /// Reads a \0 terminated substring starting at specified offset, including invalid characters.
+    #[inline]
     pub fn substring_lossy(&self, start: usize) -> Cow<'a, str> {
         self.substring_with(start, String::from_utf8_lossy)
     }
 
     /// Reads a \0 terminated substring starting at specified offset as raw bytes.
+    #[inline]
     pub fn substring_raw(&self, start: usize) -> &'a [u8] {
         self.substring_with(start, std::convert::identity)
     }
 
     /// Reads a \0 terminated substring starting at specified offset without checking that the
     /// string contains valid UTF-8.
+    #[inline]
     pub unsafe fn substring_unchecked(&self, start: usize) -> &'a str {
         self.substring_with(start, |bytes| str::from_utf8_unchecked(bytes))
     }
@@ -52,6 +58,7 @@ impl<'a> RawData<'a> {
     }
 
     /// Converts RawData back into bytes.
+    #[inline]
     pub fn as_bytes(&self) -> &'a [u8] {
         self.data
     }
