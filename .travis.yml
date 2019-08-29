@@ -10,6 +10,7 @@ matrix:
   include:
     # flatdata-generator
     - language: python
+      name: "flatdata-generator"
       python: 3.6
       install:
         - cd flatdata-generator
