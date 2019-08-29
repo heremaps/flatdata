@@ -4,6 +4,7 @@ language: minimal
 
 matrix:
   allow_failures:
+    - rust: beta # see: https://github.com/rust-lang/rust/issues/63888
     - rust: nightly
 
   include:
