@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf, process::Command};
+use std::{env, path::Path, path::PathBuf, process::Command};
 
 /// A helper function wrapping the flatdata generator.
 ///
@@ -31,8 +31,10 @@ use std::{env, path::PathBuf, process::Command};
 ///
 /// `build.rs`
 /// ``` ignore
+/// use std::env;
+///
 /// fn main() {
-///     flatdata::generate("schemas_path/", env!("OUT_DIR")).unwrap();
+///     flatdata::generate("schemas_path/", &env::var("OUT_DIR").unwrap()).unwrap();
 /// }
 /// ```
 ///
@@ -51,16 +53,19 @@ use std::{env, path::PathBuf, process::Command};
 /// picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to the
 /// `flatdata-generator` folder.
 /// ```
-pub fn generate(schemas_path: &str) -> Result<(), GeneratorError> {
-    let schemas_path = PathBuf::from(schemas_path).canonicalize()?;
-    let out_dir = PathBuf::from(env::var("OUT_DIR").expect("not running in a build.rs script?"));
+pub fn generate<P>(schemas_path: P, out_dir: P) -> Result<(), GeneratorError>
+where
+    P: AsRef<Path>,
+{
+    let schemas_path = schemas_path.as_ref();
+    let out_dir = out_dir.as_ref();
 
     // create a virtualenv in the target folder
     eprintln!("creating python virtualenv");
     let _ = Command::new("python3")
         .arg("-m")
         .arg("venv")
-        .arg(&out_dir)
+        .arg(out_dir)
         .spawn()
         .map_err(GeneratorError::PythonError)?
         .wait()?;
