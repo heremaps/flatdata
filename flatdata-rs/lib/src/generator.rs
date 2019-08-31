@@ -53,10 +53,10 @@ use std::{env, path::Path, path::PathBuf, process::Command};
 /// picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to the
 /// `flatdata-generator` folder.
 /// ```
-pub fn generate<P>(schemas_path: P, out_dir: P) -> Result<(), GeneratorError>
-where
-    P: AsRef<Path>,
-{
+pub fn generate(
+    schemas_path: impl AsRef<Path>,
+    out_dir: impl AsRef<Path>,
+) -> Result<(), GeneratorError> {
     let schemas_path = schemas_path.as_ref();
     let out_dir = out_dir.as_ref();
 

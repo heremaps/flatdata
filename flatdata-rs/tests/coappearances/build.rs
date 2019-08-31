@@ -1,5 +1,7 @@
-use std::env;
-
 fn main() {
-    flatdata::generate("../../../examples/coappearances/coappearances.flatdata", &env::var("OUT_DIR").unwrap()).unwrap();
+    flatdata::generate(
+        "assets/coappearances.flatdata",
+        &std::env::var("OUT_DIR").unwrap(),
+    )
+    .expect("generator failed");
 }
