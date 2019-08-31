@@ -1,6 +1,6 @@
 # <img align="left" src="https://github.com/heremaps/flatdata/blob/master/docs/logo.svg" width="48" height="48"> flatdata [![Build Status](https://api.travis-ci.com/heremaps/flatdata.svg?branch=master)](https://travis-ci.com/heremaps/flatdata/)
 
-_Write once, read-many, minimal overhead binary structured file format._
+_Write-once, read-many, minimal overhead binary structured file format._
 
 Flatdata is a library providing data structures for convenient creation, storage and access of packed memory-mappable structures with minimal overhead.
 
@@ -31,6 +31,7 @@ For more details read [why flatdata](docs/why-flatdata.md).
 ### Creating a schema
 
 Define a flatdata archive:
+
 ```cpp
 namespace loc {
     struct Point {
@@ -52,14 +53,13 @@ generates a module for one of the supported languages.
 
 The following languages are supported:
 
-  * First-class citizen implementations:
-    * **[C++](./flatdata-cpp)** - used extensively, tested excessively normally receives features first
-    * **[Rust](./flatdata-rs)** - the newest addition to the family
-  * Read-only implementations:
-    * **[Python](./flatdata-py)** - used mostly for inspecting the data
-    * **[Dot](./flatdata-dot)** - used to generate diagrams of the schema
-    * **[Go](./flatdata-go)** - beta implementation
-
+* First-class citizen implementations:
+  * **[C++](./flatdata-cpp)** - used extensively, tested excessively normally receives features first
+  * **[Rust](./flatdata-rs)** - the newest addition to the family
+* Read-only implementations:
+  * **[Python](./flatdata-py)** - used mostly for inspecting the data
+  * **[Dot](./flatdata-dot)** - used to generate diagrams of the schema
+  * **[Go](./flatdata-go)** - beta implementation
 
 ### Generate code
 

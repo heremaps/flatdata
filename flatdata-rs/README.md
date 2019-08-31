@@ -1,6 +1,7 @@
 # flatdata-rs [![latest version]][crates.io] [![docs]][docs.rs]
 
-Rust implementation.
+Rust implementation of [flatdata](https://github.com/heremaps/flatdata),
+a write-once, read-many, minimal overhead binary structured file format.
 
 ## Example
 

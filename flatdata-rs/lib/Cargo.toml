@@ -1,7 +1,7 @@
 [package]
 name = "flatdata"
-version = "0.3.0"
-authors = ["boxdot <d@zerovolt.org>", "Christian Vetter <veaac.fdirct@gmail.com>"]
+version = "0.3.1"
+authors = ["boxdot <d@zerovolt.org>", "Christian Vetter <veaac.fdirct@gmail.com>", "Gabriel Féron <feron.gabriel@gmail.com>"]
 license = "Apache-2.0"
 description = "Rust implementation of flatdata"
 repository = "https://github.com/heremaps/flatdata"
