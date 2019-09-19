@@ -95,7 +95,7 @@ main( int argc, char const* argv[] )
             return 1;
         }
     }
-    catch ( std::runtime_error err )
+    catch ( std::runtime_error& err )
     {
         std::cerr << "Error: " << err.what( ) << std::endl;
     }

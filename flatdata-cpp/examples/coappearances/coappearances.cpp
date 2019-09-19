@@ -220,7 +220,7 @@ convert( const char* json_path, const char* archive_path )
 // Note: The linear search below is slow for big graphs for obvious reasons, where it is much better
 // to build a lookup table. However, for our small graph this works fine.
 std::vector< uint32_t >
-get_neighbors( co::Graph graph, uint32_t vertex_ref )
+get_neighbors( const co::Graph& graph, uint32_t vertex_ref )
 {
     std::vector< uint32_t > neighbors;
     for ( auto e : graph.edges( ) )
@@ -238,7 +238,7 @@ get_neighbors( co::Graph graph, uint32_t vertex_ref )
 }
 
 size_t
-calculate_num_connected_components( co::Graph graph )
+calculate_num_connected_components( const co::Graph& graph )
 {
     size_t num_connected_components = 0;
 
