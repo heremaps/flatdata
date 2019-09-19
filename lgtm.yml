@@ -1,0 +1,18 @@
+extraction:
+  cpp:
+    prepare:    # Customizable step used by all languages.
+      packages:
+        - python3-pip
+        - python3-setuptools
+        - libboost-filesystem-dev
+    after_prepare:    # Customizable step used by all languages.
+      - pip3 install ./flatdata-generator
+    configure:    # Customizable step used only by C/C++ extraction.
+      command:
+        - mkdir build
+        - cd build
+        - cmake ../flatdata-cpp -DCMAKE_CXX_FLAGS="-Wall -pedantic -Wextra"
+    index:    # Customizable step used by all languages.
+      build_command:
+        - cd build
+        - make -j$(nproc)
