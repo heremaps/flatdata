@@ -4,7 +4,7 @@ from flatdata.generator.tree.errors import InvalidConstantValueError
 
 class Constant(Node):
     def __init__(self, name, properties=None):
-        super(Constant, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         if properties:
             self._value = int(properties.value, 0)
             if self.type.bits_required(self.value) > self.type.width:

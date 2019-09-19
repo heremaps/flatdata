@@ -6,7 +6,7 @@ from .enumeration_value import EnumerationValue
 
 class Enumeration(Node):
     def __init__(self, name, properties=None, type=None):
-        super(Enumeration, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._type = type
 
         if self._type is not None:

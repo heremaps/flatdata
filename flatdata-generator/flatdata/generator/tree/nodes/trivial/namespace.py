@@ -8,4 +8,4 @@ from flatdata.generator.tree.nodes.node import Node
 
 class Namespace(Node):
     def __init__(self, name, properties=None):
-        super(Namespace, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)

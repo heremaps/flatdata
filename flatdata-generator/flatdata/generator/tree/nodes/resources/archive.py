@@ -4,7 +4,7 @@ from .base import ResourceBase
 
 class Archive(ResourceBase):
     def __init__(self, name, properties=None, target=None):
-        super(Archive, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._target = target
 
     @staticmethod

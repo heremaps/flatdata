@@ -38,25 +38,25 @@ class MissingSymbol(FlatdataSyntaxError):
                     options=options[0][1])
         except ImportError:
             pass
-        super(MissingSymbol, self).__init__(message)
+        super().__init__(message)
 
 
 class IncorrectReferenceType(FlatdataSyntaxError):
     def __init__(self, name, actual, expected):
-        super(IncorrectReferenceType, self).__init__(
+        super().__init__(
             "{name} referring to incorrect type. Expected {expected}, actual {actual}".format(
                 name=name, expected=expected, actual=actual))
 
 
 class UnexpectedResourceType(FlatdataSyntaxError):
     def __init__(self, name):
-        super(UnexpectedResourceType, self).__init__(
+        super().__init__(
             "Unexpected resource type: {name}".format(name=name))
 
 
 class ParsingError(FlatdataSyntaxError):
     def __init__(self, pyparsing_error):
-        super(ParsingError, self).__init__(
+        super().__init__(
             self.create_message(pyparsing_error))
 
     @staticmethod

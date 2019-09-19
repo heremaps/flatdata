@@ -4,7 +4,7 @@ from .base import ResourceBase
 
 class Instance(ResourceBase):
     def __init__(self, name, properties=None, resource_type=None):
-        super(Instance, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._type = resource_type
 
     @staticmethod

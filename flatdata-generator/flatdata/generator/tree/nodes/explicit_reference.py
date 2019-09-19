@@ -4,7 +4,7 @@ from flatdata.generator.tree.nodes.references import ResourceReference, FieldRef
 
 class ExplicitReference(Node):
     def __init__(self, name, properties=None):
-        super(ExplicitReference, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
 
     @staticmethod
     def create(properties):
