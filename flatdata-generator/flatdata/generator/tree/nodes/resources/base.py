@@ -8,7 +8,7 @@ from flatdata.generator.tree.nodes.references import BuiltinStructureReference, 
 
 class ResourceBase(Node, ABC):
     def __init__(self, name, properties=None,):
-        super(ResourceBase, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._decorations = []
         if properties is not None and 'decorations' in properties:
             self._decorations = properties.decorations

@@ -11,7 +11,7 @@ class Structure(Node):
         :param name: name
         :param properties: properties. can be missing.
         """
-        super(Structure, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
 
     @staticmethod
     def create(properties, definition):

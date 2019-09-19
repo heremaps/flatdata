@@ -37,4 +37,4 @@ class MissingResourceError(KeyError, CorruptArchiveError):
     Resource or schema is missing.
     """
     def __init__(self, key):
-        super(MissingResourceError, self).__init__("Resource {key} not found".format(key=key))
+        super().__init__("Resource {key} not found".format(key=key))

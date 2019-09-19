@@ -2,7 +2,7 @@ from flatdata.generator.tree.nodes.node import Node
 
 class EnumerationValue(Node):
     def __init__(self, name, value, properties=None):
-        super(EnumerationValue, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._value = value
 
     @staticmethod

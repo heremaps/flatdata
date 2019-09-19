@@ -5,7 +5,7 @@ from flatdata.generator.tree.helpers.basictype import BasicType
 
 class Field(Node):
     def __init__(self, name, properties=None, type=None, offset=None, width=None):
-        super(Field, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._offset = offset
         self._width = width
         self._decorations = list()

@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 from flatdata.generator.tree.nodes.references import StructureReference, BuiltinStructureReference
 from flatdata.generator.tree.nodes.trivial import Structure
 from .base import ResourceBase
@@ -7,7 +5,7 @@ from .base import ResourceBase
 
 class Multivector(ResourceBase):
     def __init__(self, name, properties=None, types=None, width=None):
-        super(Multivector, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._types = []
         if types is not None:
             self._types = types

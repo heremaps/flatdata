@@ -4,7 +4,7 @@ from .base import ResourceBase
 
 class Vector(ResourceBase):
     def __init__(self, name, properties=None, type=None):
-        super(Vector, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._type = type
 
     @staticmethod

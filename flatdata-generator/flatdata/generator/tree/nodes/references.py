@@ -11,7 +11,7 @@ class Reference(Node):
     """
 
     def __init__(self, name):
-        super(Reference, self).__init__(name=Reference._referencify(name))
+        super().__init__(name=Reference._referencify(name))
 
     @property
     def target(self):
@@ -86,7 +86,7 @@ class EnumerationReference(TypeReference):
     - Field Type -> Enumeration
     """
     def __init__(self, name, width=None):
-        super(Reference, self).__init__(name=Reference._referencify(name))
+        super().__init__(name)
         self._width = width
 
     @property

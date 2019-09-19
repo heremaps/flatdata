@@ -4,7 +4,7 @@ from .base import ResourceBase
 
 class BoundResource(ResourceBase):
     def __init__(self, name, properties=None, resources=None):
-        super(BoundResource, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
         self._resources = resources
 
     @staticmethod

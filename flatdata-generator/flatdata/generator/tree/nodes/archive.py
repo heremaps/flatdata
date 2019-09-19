@@ -27,7 +27,7 @@ def _create_resource(properties):
 
 class Archive(Node):
     def __init__(self, name, properties=None):
-        super(Archive, self).__init__(name=name, properties=properties)
+        super().__init__(name=name, properties=properties)
 
     #pylint: disable=unused-argument
     @staticmethod
