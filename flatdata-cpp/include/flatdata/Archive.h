@@ -3,6 +3,8 @@
  * See the LICENSE file in the root of this project for license details.
  */
 
+#pragma once
+
 #include "ResourceStorage.h"
 
 #include <boost/optional.hpp>
