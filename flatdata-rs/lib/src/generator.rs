@@ -1,4 +1,8 @@
-use std::{env, path::Path, path::PathBuf, process::Command};
+use std::{
+    env,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 /// A helper function wrapping the flatdata generator.
 ///
@@ -30,7 +34,8 @@ use std::{env, path::Path, path::PathBuf, process::Command};
 /// ## Examples
 ///
 /// `build.rs`
-/// ``` ignore
+///
+/// ```ignore
 /// use std::env;
 ///
 /// fn main() {
@@ -39,20 +44,21 @@ use std::{env, path::Path, path::PathBuf, process::Command};
 /// ```
 ///
 /// `my_schema.rs`
-/// ``` ignore
+///
+/// ```ignore
 /// #![allow(dead_code)]
 ///
 /// include!(concat!(env!("OUT_DIR"), "/example_a/my_schema.rs"));
 ///
 /// // re-export if desired
 /// pub use my_schema::*;
+/// ```
 ///
 /// ## Development
 ///
-/// If you are working on the generator, you can make sure your `build.rs` script
-/// picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to the
-/// `flatdata-generator` folder.
-/// ```
+/// If you are working on the generator, you can make sure your `build.rs`
+/// script picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to
+/// the `flatdata-generator` folder.
 pub fn generate(
     schemas_path: impl AsRef<Path>,
     out_dir: impl AsRef<Path>,
