@@ -1,12 +1,18 @@
+{% import "rust/structure.jinja2" as structure %}
 {% macro declaration(index) %}
 {# multivector index structs #}
-{{ index.doc | rust_doc }}
-define_index!(
-    {{ index.name }},
-    Ref{{ index.name }},
-    RefMut{{ index.name }},
-    schema::structs::{{ index.name | camel_to_snake_case | upper }},
-    {{ index.size_in_bytes }},
-    {{ index.fields[0].type.width }}
-);
+{{ structure.declaration(index) }}
+
+impl<'a> flatdata::IndexStruct<'a> for {{index.name}} {
+    #[inline]
+    fn range(data: Self::Item) -> std::ops::Range<usize> {
+        let range = data.range();
+        range.start as usize..range.end as usize
+    }
+
+    #[inline]
+    fn set_index(mut data: Self::ItemMut, value: usize) {
+        data.set_value(value as u64);
+    }
+}
 {% endmacro %}

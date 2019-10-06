@@ -1,24 +1,137 @@
 {%- macro declaration(struct) %}
-{{ struct.doc | rust_doc }}
-define_struct!(
-    {{ struct.name }},
-    Ref{{ struct.name }},
-    RefMut{{ struct.name }},
-    schema::structs::{{ struct.name | camel_to_snake_case | upper }},
-    {{ struct.size_in_bytes }},
+#[derive(Clone, Debug)]
+pub struct {{struct.name}} {}
+
+#[derive(Clone, Copy)]
+pub struct {{struct.name}}Ref<'a> {
+    data: *const u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> flatdata::Struct<'a> for {{ struct.name }}
+{
+    const SCHEMA: &'static str = schema::structs::{{ struct.name | camel_to_snake_case | upper }};
+    const SIZE_IN_BYTES: usize = {{ struct.size_in_bytes }};
+    const IS_OVERLAPPING_WITH_NEXT : bool = {% if struct | has_range %}true{%else%}false{%endif%};
+
+    type Item = {{ struct.name }}Ref<'a>;
+
+    #[inline]
+    fn create(data : &'a[u8]) -> Self::Item
+    {
+        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+    }
+
+    type ItemMut = {{ struct.name }}Mut<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+    {
+        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+    }
+}
+
+{% if not struct | has_range %}
+impl flatdata::NoOverlap for {{struct.name}} {}
+{% endif %}
+
+impl<'a> {{ struct.name }}Ref<'a> {
     {% for field in struct.fields %}
-    {% if field.doc %}
-        {{ field.doc | rust_doc }}
-    {% endif %}
-    ({{ field.name | escape_rust_keywords }}, set_{{ field.name }}, {{ field | field_type }}, {{ field.offset }}, {{ field.type.width }})
-    {%- if not loop.last %},
-    {% endif %}
-    {% endfor %}
-    {% for field in struct.fields %}
+    #[inline]
+    pub fn {{ field.name | escape_rust_keywords }}(&self) -> {{ field | field_type }} {
+        let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
+        unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
+    }
+
     {%- if field.range -%}
-    ,
-    range({{ field.range | escape_rust_keywords }}, {{ field.type.name }}, {{ field.offset }}, {{ field.type.width }})
+    #[inline]
+    pub fn {{ field.range | escape_rust_keywords }}(&self) -> std::ops::Range<{{ field | field_type }}> {
+        let start = flatdata_read_bytes!({{ field.type.name }}, self.data, {{ field.offset }}, {{ field.type.width }});
+        let end = flatdata_read_bytes!({{ field.type.name }}, self.data, {{ field.offset }} + {{ struct.size_in_bytes }} * 8, {{ field.type.width }});
+        start..end
+    }
+
     {% endif %}
     {% endfor %}
-);
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for {{ struct.name }}Ref<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("{{ struct.name }}")
+            {% for field in struct.fields %}
+            {% set name = field.name | escape_rust_keywords %}
+            .field("{{ name }}", &self.{{ name }}())
+            {% endfor %}
+            .finish()
+    }
+}
+
+impl<'a> std::cmp::PartialEq for {{ struct.name }}Ref<'a> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        {% for field in struct.fields %}
+        {% set name = field.name | escape_rust_keywords %}
+        self.{{ name }}() == other.{{ name }}() {% if not loop.last %}&&{% endif %}
+        {% endfor %}
+    }
+}
+
+impl<'a> flatdata::Ref for {{ struct.name }}Ref<'a> {}
+
+pub struct {{ struct.name }}Mut<'a> {
+    data: *mut u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> {{ struct.name }}Mut<'a> {
+    {% for field in struct.fields %}
+    {% set name = field.name | escape_rust_keywords %}
+    #[inline]
+    pub fn {{ name }}(&self) -> {{ field | field_type }} {
+        let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
+        unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
+    }
+
+    #[inline]
+    pub fn set_{{ name }}(&mut self, value: {{ field | field_type }}) {
+        let buffer = unsafe {
+            std::slice::from_raw_parts_mut(self.data, {{ struct.size_in_bytes }})
+        };
+        flatdata_write_bytes!({{ field | primitive_type }}; value, buffer, {{ field.offset }}, {{ field.type.width }})
+    }
+
+    {% endfor %}
+
+    #[inline]
+    pub fn fill_from(&mut self, other: &{{ struct.name }}Ref) {
+        {% for field in struct.fields %}
+        {% set name = field.name | escape_rust_keywords %}
+        self.set_{{ name }}(other.{{ name }}());
+        {% endfor %}
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+
+    #[inline]
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for {{ struct.name }}Mut<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        {{ struct.name }}Ref { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
+    }
+}
+
+impl<'a> flatdata::RefMut for {{ struct.name }}Mut<'a> {}
+
 {%- endmacro %}
