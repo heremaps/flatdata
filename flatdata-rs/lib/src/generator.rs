@@ -117,7 +117,7 @@ pub fn generate(
         );
 
         std::fs::create_dir_all(result.parent().unwrap())?;
-        let success = std::process::Command::new(out_dir.join("bin/flatdata-generator"))
+        let exit_code = Command::new(out_dir.join("bin/flatdata-generator"))
             .arg("-g")
             .arg("rust")
             .arg("-s")
@@ -131,13 +131,19 @@ pub fn generate(
                 error: e,
             })?
             .wait()?
-            .success();
+            .code();
 
-        if !success {
+        if exit_code != Some(0) {
             return Err(GeneratorError::Failure {
                 schema: entry.path().into(),
                 destination: result,
-                error: io::Error::new(io::ErrorKind::Other, "Failed to run the generator"),
+                error: io::Error::new(
+                    io::ErrorKind::Other,
+                    match exit_code {
+                        Some(code) => format!("Failed to run the generator, exit code {}", code),
+                        None => "Failed to run the generator, no exit code".into(),
+                    },
+                ),
             });
         }
 
