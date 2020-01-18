@@ -10,14 +10,34 @@ struct A {
     e : E : 16;
 }
 
+struct B {
+    id : u32 : 16;
+}
+
 struct R {
     @range(x)
     first_x : u32 : 16;
     y : u32 : 16;
 }
 
+archive S {
+    data: A;
+}
+
 archive X {
-    data : vector< A >;
+    data: vector<A>;
+}
+
+archive Y {
+    data: vector<R>;
+}
+
+archive Z {
+    data: multivector<16, A, B>;
+}
+
+archive W {
+    blob: raw_data;
 }
 
 } // namespace test

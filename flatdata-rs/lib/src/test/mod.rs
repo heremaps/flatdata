@@ -10,10 +10,14 @@
 //! folder:
 //!
 //! ```shell
-//! ../generator -g rust -s lib/src/test/test.flatdata -O lib/src/test/test_generated.rs
+//! ../generator -g rust -s lib/src/test/test.flatdata -O lib/src/test/test_generated.rs && \
+//! sed -i.bak -e s/flatdata::/crate::/g lib/src/test/test_generated.rs
 //! ```
 //!
-#![allow(dead_code)]
+
+// TODO: Implement missing docs
+// TODO: Implement missing debugs
+#![allow(dead_code, missing_debug_implementations, missing_docs)]
 
 include!("test_generated.rs");
 
