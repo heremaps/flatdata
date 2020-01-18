@@ -276,6 +276,8 @@ mod storage;
 mod structbuf;
 mod vector;
 
+pub mod test;
+
 pub use crate::{
     archive::*,
     arrayview::ArrayView,

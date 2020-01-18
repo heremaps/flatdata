@@ -427,108 +427,19 @@ macro_rules! define_variadic_struct {
 
 #[cfg(test)]
 mod test {
-    use super::{
-        super::{helper::Int, structbuf::StructBuf},
-        *,
-    };
+    use super::*;
+    use crate::test::{A, R};
+    use crate::StructBuf;
 
     #[test]
-    #[allow(dead_code)]
     fn test_debug() {
-        #[derive(Debug, PartialEq, Eq)]
-        #[repr(u32)]
-        pub enum MyEnum {
-            Value,
-        }
-        define_struct!(
-            A,
-            RefA,
-            RefMutA,
-            "no_schema",
-            4,
-            (x, set_x, u32, u32, 0, 16),
-            (y, set_y, u32, u32, 16, 16),
-            (e, set_e, MyEnum, u32, 32, 16)
-        );
-        assert_eq!(<A as Struct>::IS_OVERLAPPING_WITH_NEXT, false);
         let a = StructBuf::<A>::new();
         let output = format!("{:?}", a);
         assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0, e: Value } }");
     }
 
     #[test]
-    #[allow(dead_code)]
-    fn range() {
-        // check that this compiles
-        define_struct!(
-            A,
-            RefA,
-            RefMutA,
-            "no_schema",
-            4,
-            (first_x, set_first_x, u32, u32, 0, 16),
-            (y, set_y, u32, u32, 16, 16),
-            range(x, u32, 0, 16)
-        );
-
-        assert_eq!(<A as Struct>::IS_OVERLAPPING_WITH_NEXT, true);
+    fn test_range() {
+        assert_eq!(<R as Struct>::IS_OVERLAPPING_WITH_NEXT, true);
     }
-
-    macro_rules! define_enum_test {
-        ($test_name:ident, $type:tt, $is_signed:expr, $val1:expr, $val2:expr) => {
-            #[test]
-            #[allow(dead_code)]
-            fn $test_name() {
-                #[derive(Debug, PartialEq, Eq)]
-                #[repr($type)]
-                pub enum Variant {
-                    X = $val1,
-                    Y = $val2,
-                }
-
-                impl Int for Variant {
-                    const IS_SIGNED: bool = $is_signed;
-                }
-
-                define_struct!(
-                    A,
-                    RefA,
-                    RefMutA,
-                    "no_schema",
-                    1,
-                    (x, set_x, Variant, $type, 0, 2)
-                );
-                let mut a = StructBuf::<A>::new();
-                let output = format!("{:?}", a);
-                assert_eq!(output, "StructBuf { resource: A { x: X } }");
-
-                a.get_mut().set_x(Variant::Y);
-                let output = format!("{:?}", a);
-                assert_eq!(output, "StructBuf { resource: A { x: Y } }");
-            }
-        };
-    }
-
-    define_enum_test!(test_enum_u8_1, u8, false, 0, 1);
-    define_enum_test!(test_enum_u8_2, u8, false, 0, 2);
-    define_enum_test!(test_enum_u16_1, u16, false, 0, 1);
-    define_enum_test!(test_enum_u16_2, u16, false, 0, 2);
-    define_enum_test!(test_enum_u32_1, u32, false, 0, 1);
-    define_enum_test!(test_enum_u32_2, u32, false, 0, 2);
-    define_enum_test!(test_enum_u64_1, u64, false, 0, 1);
-    define_enum_test!(test_enum_u64_2, u64, false, 0, 2);
-
-    // Note: Right now, there a regression bug for binary enums with underlying
-    // type i8: https://github.com/rust-lang/rust/issues/51582
-    //
-    // Until it is backported into stable release, we have to disable this test.
-    //
-    // define_enum_test!(test_enum_i8, i8, true, 0, 1);
-    // define_enum_test!(test_enum_i8, i8, true, 0, -1);
-    define_enum_test!(test_enum_i16_1, i16, true, 0, 1);
-    define_enum_test!(test_enum_i16_2, i16, true, 0, -1);
-    define_enum_test!(test_enum_i32_1, i32, true, 0, 1);
-    define_enum_test!(test_enum_i32_2, i32, true, 0, -1);
-    define_enum_test!(test_enum_i64_1, i64, true, 0, 1);
-    define_enum_test!(test_enum_i64_2, i64, true, 0, -1);
 }

@@ -1,0 +1,23 @@
+namespace test {
+
+enum E : u32 {
+    Value,
+}
+
+struct A {
+    x : u32 : 16;
+    y : u32 : 16;
+    e : E : 16;
+}
+
+struct R {
+    @range(x)
+    first_x : u32 : 16;
+    y : u32 : 16;
+}
+
+archive X {
+    data : vector< A >;
+}
+
+} // namespace test
