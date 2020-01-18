@@ -63,6 +63,10 @@
 //! Now you can create a (disk-based) archive and fill it with data:
 //!
 //! ```rust,ignore
+//! include!("prime_generated.rs");
+//!
+//! use flatdata::{Archive, ArchiveBuilder, MemoryResourceStorage};
+//!
 //! pub fn calculate_prime_factors(
 //!     builder: &mut prime::ArchiveBuilder,
 //!     max_number: u32,
@@ -92,7 +96,6 @@
 //! }
 //!
 //! pub fn main() {
-//!     use flatdata::{Archive, ArchiveBuilder, MemoryResourceStorage};
 //!     let storage = MemoryResourceStorage::new("/primes");
 //! let mut builder =
 //!     prime::ArchiveBuilder::new(storage.clone()).expect("failed to create builder");

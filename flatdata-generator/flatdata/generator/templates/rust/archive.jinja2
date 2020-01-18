@@ -16,7 +16,7 @@
 #[derive(Clone)]
 pub struct {{archive.name}} {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    {% for r in archive.resources %}
+    {% for r in archive.resources | supported_resources %}
     {{r.name}}: {% if r.optional %}Option<{% endif %}{% if [r] | instance_resources or [r] | vector_resources or [r] | rawdata_resources %}flatdata::MemoryDescriptor{% elif [r] | multivector_resources %}(flatdata::MemoryDescriptor, flatdata::MemoryDescriptor){% elif [r] | subarchive_resources %}{{ fully_qualified_name(archive, r.target.node) }}{% endif %}{% if r.optional %}>{% endif %},
     {% endfor %}
 }
@@ -35,7 +35,7 @@ impl {{archive.name}} {
         format!("{}.archive", archive_name)
     }
 
-    {% for r in archive.resources %}
+    {% for r in archive.resources | supported_resources %}
     {% if [r] | rawdata_resources %}
     {% if r.optional %}
     #[inline]
@@ -126,7 +126,7 @@ impl {{archive.name}} {
 impl ::std::fmt::Debug for {{archive.name}} {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.debug_struct("{{archive.name}}")
-            {% for r in archive.resources %}
+            {% for r in archive.resources | supported_resources %}
             .field("{{r.name}}", &self.{{r.name}}())
             {% endfor %}
             .finish()
@@ -142,7 +142,7 @@ impl flatdata::Archive for {{archive.name}} {
     {
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
-        {% for r in archive.resources %}
+        {% for r in archive.resources | supported_resources %}
         {% if [r] | instance_resources or [r] | vector_resources or [r] | rawdata_resources %}
         let {{r.name}} = Self::read_resource(&*storage, "{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}){% if r.optional %}.ok(){% else %}?{% endif %};
         {% elif [r] | multivector_resources %}
@@ -167,7 +167,7 @@ impl flatdata::Archive for {{archive.name}} {
 
         Ok(Self {
             _storage: storage,
-            {% for r in archive.resources %}
+            {% for r in archive.resources | supported_resources %}
             {{r.name}},
             {% endfor %}
         })
@@ -180,7 +180,7 @@ pub struct {{archive.name}}Builder {
 }
 
 impl {{archive.name}}Builder {
-    {% for r in archive.resources %}
+    {% for r in archive.resources | supported_resources %}
     {% if [r] | rawdata_resources %}
     #[inline]
     pub fn set_{{r.name}}(&self, data: &[u8]) -> ::std::io::Result<()> {
