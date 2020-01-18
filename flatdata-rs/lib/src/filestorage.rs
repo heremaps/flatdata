@@ -35,21 +35,23 @@ impl MemoryMappedFileStorage {
 
 /// Resource storage on disk using memory mapped files.
 ///
-/// Can be used to create and read archives from the file system.
+/// Used to create and read archives from the file system.
 ///
 /// # Examples
-/// ``` ignore
-/// # #[macro_use] extern crate flatdata;
-/// # fn main() {
-/// # use flatdata::{ FileResourceStorage, Archive, ArchiveBuilder };
-/// # define_archive!(X, XBuilder, "Schema for X"; );
-/// let storage = FileResourceStorage::new(PathBuf::from("/root/to/my/archive"));
-/// let _builder = XBuilder::new(storage.clone()).expect("failed to create builder");
-/// // Write some data, store archive, etc...
 ///
-/// let _archive = X::open(storage).expect("failed to open");
-/// // read some data
-/// # }
+/// ```rust,no_run
+/// use flatdata::{FileResourceStorage, Archive, ArchiveBuilder, Vector};
+/// use flatdata::test::{X, XBuilder};
+///
+/// let storage = FileResourceStorage::new("/root/to/my/archive");
+/// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
+/// // Write some data and store it archive, e.g.
+/// let v = Vector::new();
+/// builder.set_data(&v.as_view());
+///
+/// let archive = X::open(storage).expect("failed to open");
+/// // read data
+/// archive.data();
 /// ```
 #[derive(Debug)]
 pub struct FileResourceStorage {
