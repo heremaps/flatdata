@@ -244,36 +244,11 @@ where
 #[allow(dead_code)]
 mod test {
     use super::*;
-    use crate::{memory, structs::Struct};
-
-    define_struct!(
-        Value,
-        RefValue,
-        RefMutValue,
-        "no_schema",
-        4,
-        (value, set_value, u32, u32, 0, 32)
-    );
-
-    define_struct!(
-        Point,
-        RefPoint,
-        RefMutPoint,
-        "no_schema",
-        4,
-        (x, set_x, u32, u32, 0, 16),
-        (y, set_y, u32, u32, 16, 16)
-    );
-
-    define_struct!(
-        R,
-        RefR,
-        RefMutR,
-        "no_schema",
-        4,
-        (first_x, set_first_x, u32, u32, 0, 16),
-        range(x, u32, 0, 16)
-    );
+    use crate::{
+        memory,
+        structs::Struct,
+        test::{A, B, R},
+    };
 
     #[test]
     fn range() {
@@ -298,11 +273,11 @@ mod test {
     }
 
     #[test]
-    fn test() {
-        let mut buffer = vec![255_u8; 4];
-        buffer.extend(vec![0_u8; Point::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
+    fn new_and_clone() {
+        let mut buffer = vec![255_u8; A::SIZE_IN_BYTES];
+        buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
         let data = &buffer[..buffer.len() - memory::PADDING_SIZE];
-        let view: ArrayView<Point> = ArrayView::new(&data);
+        let view: ArrayView<A> = ArrayView::new(&data);
         assert_eq!(11, view.len());
         let first = view.at(0);
         assert_eq!(65535, first.x());
@@ -329,11 +304,11 @@ mod test {
         assert_eq!(65535, x.y());
     }
 
-    fn create_values(size: usize) -> Vector<Value> {
-        let mut v: Vector<Value> = Vector::with_len(size);
+    fn create_values(size: usize) -> Vector<B> {
+        let mut v: Vector<B> = Vector::with_len(size);
         for i in 0..size as u32 {
             let mut a = v.at_mut(i as usize);
-            a.set_value(i);
+            a.set_id(i);
         }
         v
     }
@@ -349,7 +324,7 @@ mod test {
     fn reverse() {
         let v = create_values(10);
         let iter = v.as_view().iter().rev();
-        let data: Vec<_> = iter.map(|x| x.value()).collect();
+        let data: Vec<_> = iter.map(|x| x.id()).collect();
         assert_eq!(data, [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]);
     }
 
@@ -373,17 +348,17 @@ mod test {
     }
 
     #[test]
-    fn test_slice() {
+    fn slice() {
         let v = create_values(10);
         let view: ArrayView<_> = (&v).into();
 
         assert_eq!(view.len(), 10);
         assert_eq!(view.slice(2..).len(), 8);
-        assert_eq!(view.slice(2..).iter().next().unwrap().value(), 2);
+        assert_eq!(view.slice(2..).iter().next().unwrap().id(), 2);
         assert_eq!(view.slice(..8).len(), 8);
-        assert_eq!(view.slice(..8).iter().next().unwrap().value(), 0);
+        assert_eq!(view.slice(..8).iter().next().unwrap().id(), 0);
         assert_eq!(view.slice(2..8).len(), 6);
-        assert_eq!(view.slice(2..8).iter().next().unwrap().value(), 2);
+        assert_eq!(view.slice(2..8).iter().next().unwrap().id(), 2);
     }
 
     #[test]
@@ -392,16 +367,16 @@ mod test {
         let view = v.as_view();
 
         let content = " { len: 100, data: [\
-                       Value { value: 0 }, \
-                       Value { value: 1 }, \
-                       Value { value: 2 }, \
-                       Value { value: 3 }, \
-                       Value { value: 4 }, \
-                       Value { value: 5 }, \
-                       Value { value: 6 }, \
-                       Value { value: 7 }, \
-                       Value { value: 8 }, \
-                       Value { value: 9 }\
+                       B { id: 0 }, \
+                       B { id: 1 }, \
+                       B { id: 2 }, \
+                       B { id: 3 }, \
+                       B { id: 4 }, \
+                       B { id: 5 }, \
+                       B { id: 6 }, \
+                       B { id: 7 }, \
+                       B { id: 8 }, \
+                       B { id: 9 }\
                        ]... }";
 
         assert_eq!(format!("{:?}", view), "ArrayView".to_string() + content);
@@ -415,7 +390,7 @@ mod test {
         }
         assert_eq!(
             format!("{:?}", iter),
-            "ArrayViewIter { len: 1, data: [Value { value: 99 }] }"
+            "ArrayViewIter { len: 1, data: [B { id: 99 }] }"
         );
     }
 }
