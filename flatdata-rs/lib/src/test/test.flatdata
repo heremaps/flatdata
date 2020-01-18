@@ -33,7 +33,7 @@ archive Y {
 }
 
 archive Z {
-    data: multivector<16, A, B>;
+    ab: multivector<16, A, B>;
 }
 
 archive W {

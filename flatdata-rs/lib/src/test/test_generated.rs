@@ -200,12 +200,12 @@ struct B
 namespace test {
 archive Z
 {
-    data : multivector< 16, .test.A, .test.B >;
+    ab : multivector< 16, .test.A, .test.B >;
 }
 }
 
 "#;
-pub mod resources {pub const DATA: &str = r#"namespace test {
+pub mod resources {pub const AB: &str = r#"namespace test {
 enum E : u32
 {
     Value = 0,
@@ -231,7 +231,7 @@ struct B
 namespace test {
 archive Z
 {
-    data : multivector< 16, .test.A, .test.B >;
+    ab : multivector< 16, .test.A, .test.B >;
 }
 }
 
@@ -922,33 +922,33 @@ impl crate::ArchiveBuilder for YBuilder {
 
 /// Builtin union type of .test.A, .test.B.
 #[derive(Clone, PartialEq)]
-pub enum DataRef<'a> {
+pub enum AbRef<'a> {
     A(<super::test::A as crate::Struct<'a>>::Item),    B(<super::test::B as crate::Struct<'a>>::Item),}
 
-impl<'a> ::std::fmt::Debug for DataRef<'a> {
+impl<'a> ::std::fmt::Debug for AbRef<'a> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match *self {
-            DataRef::A(ref inner) => write!(f, "{:?}", inner),
-            DataRef::B(ref inner) => write!(f, "{:?}", inner),
+            AbRef::A(ref inner) => write!(f, "{:?}", inner),
+            AbRef::B(ref inner) => write!(f, "{:?}", inner),
         }
     }
 }
 
-impl<'a> crate::VariadicRef for DataRef<'a> {
+impl<'a> crate::VariadicRef for AbRef<'a> {
     #[inline]
     fn size_in_bytes(&self) -> usize {
         match *self {
-            DataRef::A(_) => <super::test::A as crate::Struct<'a>>::SIZE_IN_BYTES,
-            DataRef::B(_) => <super::test::B as crate::Struct<'a>>::SIZE_IN_BYTES,
+            AbRef::A(_) => <super::test::A as crate::Struct<'a>>::SIZE_IN_BYTES,
+            AbRef::B(_) => <super::test::B as crate::Struct<'a>>::SIZE_IN_BYTES,
         }
     }
 }
 
-pub struct DataBuilder<'a> {
+pub struct AbBuilder<'a> {
     data: &'a mut Vec<u8>
 }
 
-impl<'a> DataBuilder<'a> {
+impl<'a> AbBuilder<'a> {
     #[inline]
     pub fn add_a<'b>(&'b mut self) -> <super::test::A as crate::Struct<'b>>::ItemMut {
         let old_len = self.data.len();
@@ -972,24 +972,24 @@ impl<'a> DataBuilder<'a> {
 }
 
 #[derive(Clone)]
-pub struct Data {}
+pub struct Ab {}
 
-impl<'a> crate::VariadicStruct<'a> for Data {
+impl<'a> crate::VariadicStruct<'a> for Ab {
     type Index = super::_builtin::multivector::IndexType16;
 
-    type Item = DataRef<'a>;
+    type Item = AbRef<'a>;
 
     #[inline]
     fn create(index: crate::TypeIndex, data: &'a [u8]) -> Self::Item
     {
         match index {
-                0 => DataRef::A(<super::test::A as crate::Struct<'a>>::create(data)),
-                1 => DataRef::B(<super::test::B as crate::Struct<'a>>::create(data)),
-            _ => panic!("invalid type index {} for variadic type DataRef", index),
+                0 => AbRef::A(<super::test::A as crate::Struct<'a>>::create(data)),
+                1 => AbRef::B(<super::test::B as crate::Struct<'a>>::create(data)),
+            _ => panic!("invalid type index {} for variadic type AbRef", index),
         }
     }
 
-    type ItemMut = DataBuilder<'a>;
+    type ItemMut = AbBuilder<'a>;
 
     #[inline]
     fn create_mut(data: &'a mut Vec<u8>) -> Self::ItemMut
@@ -1001,7 +1001,7 @@ impl<'a> crate::VariadicStruct<'a> for Data {
 #[derive(Clone)]
 pub struct Z {
     _storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
-    data: (crate::MemoryDescriptor, crate::MemoryDescriptor),
+    ab: (crate::MemoryDescriptor, crate::MemoryDescriptor),
 }
 
 impl Z {
@@ -1019,11 +1019,11 @@ impl Z {
     }
 
     #[inline]
-    pub fn data(&self) -> crate::MultiArrayView<Data>
+    pub fn ab(&self) -> crate::MultiArrayView<Ab>
     {
         crate::MultiArrayView::new(
-            crate::ArrayView::new(&unsafe {self.data.0.as_bytes()}),
-            &unsafe {self.data.1.as_bytes()},
+            crate::ArrayView::new(&unsafe {self.ab.0.as_bytes()}),
+            &unsafe {self.ab.1.as_bytes()},
         )
     }
 
@@ -1032,7 +1032,7 @@ impl Z {
 impl ::std::fmt::Debug for Z {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         f.debug_struct("Z")
-            .field("data", &self.data())
+            .field("ab", &self.ab())
             .finish()
     }
 }
@@ -1046,15 +1046,15 @@ impl crate::Archive for Z {
     {
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
-        let data = {
-            let index_schema = &format!("index({})", schema::z::resources::DATA);
-            let index = Self::read_resource(&*storage, "data_index", &index_schema)?;
-            let data = Self::read_resource(&*storage, "data", schema::z::resources::DATA)?;            (index, data)
+        let ab = {
+            let index_schema = &format!("index({})", schema::z::resources::AB);
+            let index = Self::read_resource(&*storage, "ab_index", &index_schema)?;
+            let data = Self::read_resource(&*storage, "ab", schema::z::resources::AB)?;            (index, data)
         };
 
         Ok(Self {
             _storage: storage,
-            data,
+            ab,
         })
     }
 }
@@ -1066,8 +1066,8 @@ pub struct ZBuilder {
 
 impl ZBuilder {
     #[inline]
-    pub fn start_data(&self) -> ::std::io::Result<crate::MultiVector<Data>> {
-        crate::create_multi_vector(&*self.storage, "data", schema::z::resources::DATA)
+    pub fn start_ab(&self) -> ::std::io::Result<crate::MultiVector<Ab>> {
+        crate::create_multi_vector(&*self.storage, "ab", schema::z::resources::AB)
     }
 
 }
