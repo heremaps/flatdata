@@ -1,7 +1,11 @@
 [workspace]
 
 members = [
+    "gen",
     "lib",
     "tests/features",
     "tests/coappearances",
 ]
+
+[patch.crates-io]
+flatdata-gen = { path = "gen" }

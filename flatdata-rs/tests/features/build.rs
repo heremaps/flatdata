@@ -1,4 +1,4 @@
 fn main() {
-    flatdata::generate("../../../test_cases", &std::env::var("OUT_DIR").unwrap())
+    flatdata_gen::generate("../../../test_cases", &std::env::var("OUT_DIR").unwrap())
         .expect("generator failed");
 }
