@@ -29,7 +29,7 @@
 //!
 //! `build.rs`
 //!
-//! ```ignore
+//! ```rust,no_run
 //! use std::env;
 //!
 //! fn main() {
@@ -39,7 +39,7 @@
 //!
 //! `my_schema.rs`
 //!
-//! ```ignore
+//! ```rust,no_run
 //! #![allow(dead_code)]
 //!
 //! include!(concat!(env!("OUT_DIR"), "/example_a/my_schema.rs"));
@@ -49,6 +49,8 @@
 //! ```
 //!
 //! [flatdata generator]: https://github.com/heremaps/flatdata/tree/master/flatdata-generator
+
+#![doc(test(attr(allow(clippy::needless_doctest_main))))]
 
 use std::{
     env, io,
