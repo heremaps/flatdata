@@ -266,7 +266,6 @@ mod archive;
 mod arrayview;
 mod error;
 mod filestorage;
-mod generator;
 mod memory;
 mod memstorage;
 mod multiarrayview;
@@ -281,7 +280,6 @@ pub use crate::{
     arrayview::ArrayView,
     error::*,
     filestorage::FileResourceStorage,
-    generator::*,
     memory::PADDING_SIZE,
     memstorage::MemoryResourceStorage,
     multiarrayview::MultiArrayView,
