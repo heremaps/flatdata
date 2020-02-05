@@ -34,7 +34,7 @@ func (v *XPayloadRawData) GetSizeInBytes() int {
 func (v *XPayloadRawData) ToString() string {
     return fmt.Sprintf(`{"container_type": "RawData", "size": %d, "size_in_bytes": %d, "element_types": []}`, v.GetSize(), v.GetSizeInBytes())
 }
-    
+
 type XArchive struct {
     IsOptional bool
     IsOpen bool
@@ -59,8 +59,6 @@ func (v *XArchive) ToString() string {
     buffer := bytes.Buffer{}
     buffer.WriteString(fmt.Sprintf(`{"name": "X", "container_type": "Archive", "size_in_bytes": %d, "resources": [`, v.GetSizeInBytes()))
     buffer.WriteString(v.PayloadRawData.ToString())
-    buffer.WriteString(",")
-      
     buffer.WriteString("]}")
 	return buffer.String()
 }
@@ -134,9 +132,7 @@ func (v *AArchive) ToString() string {
     buffer.WriteString(fmt.Sprintf(`{"name": "A", "container_type": "Archive", "size_in_bytes": %d, "resources": [`, v.GetSizeInBytes()))
     buffer.WriteString(v.DataArchive.ToString())
     buffer.WriteString(",")
-      
     buffer.WriteString(v.OptionalDataArchive.ToString())
-      
     buffer.WriteString("]}")
 	return buffer.String()
 }

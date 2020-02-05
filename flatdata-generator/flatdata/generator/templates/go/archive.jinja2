@@ -86,9 +86,9 @@ func (v *{{ archive.name|to_go_case }}Archive) ToString() string {
     {% elif resource|is_instance %}
     buffer.WriteString(v.{{ resource.name|to_go_case }}Instance.ToString())
     {% endif %}
-    {% if loop.length != loop.index %}
+    {% if not loop.last %}
     buffer.WriteString(",")
-    {% endif %}      
+    {% endif %}
     {% endfor %}
     buffer.WriteString("]}")
 	return buffer.String()
