@@ -6,11 +6,11 @@
 #include <iostream>
 #include <iomanip>
 
-namespace n { 
+namespace n {
 
 enum class EnumI8 : int8_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -19,7 +19,7 @@ const char* to_string( EnumI8 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -73,11 +73,11 @@ typedef StructEnumI8Template< flatdata::Writer > StructEnumI8Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumU8 : uint8_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -86,7 +86,7 @@ const char* to_string( EnumU8 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -140,11 +140,11 @@ typedef StructEnumU8Template< flatdata::Writer > StructEnumU8Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumI16 : int16_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -153,7 +153,7 @@ const char* to_string( EnumI16 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -207,11 +207,11 @@ typedef StructEnumI16Template< flatdata::Writer > StructEnumI16Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumU16 : uint16_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -220,7 +220,7 @@ const char* to_string( EnumU16 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -274,11 +274,11 @@ typedef StructEnumU16Template< flatdata::Writer > StructEnumU16Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumI32 : int32_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -287,7 +287,7 @@ const char* to_string( EnumI32 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -341,11 +341,11 @@ typedef StructEnumI32Template< flatdata::Writer > StructEnumI32Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumU32 : uint32_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -354,7 +354,7 @@ const char* to_string( EnumU32 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -408,11 +408,11 @@ typedef StructEnumU32Template< flatdata::Writer > StructEnumU32Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumI64 : int64_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -421,7 +421,7 @@ const char* to_string( EnumI64 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -475,11 +475,11 @@ typedef StructEnumI64Template< flatdata::Writer > StructEnumI64Mutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 enum class EnumU64 : uint64_t
 {
-    VALUE = 0 
+    VALUE = 0
 };
 
 inline
@@ -488,7 +488,7 @@ const char* to_string( EnumU64 value );
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -547,7 +547,7 @@ typedef StructEnumU64Template< flatdata::Writer > StructEnumU64Mutator;
 // -------------------------------------- Implementations ------------------------------------------
 // -------------------------------------------------------------------------------------------------
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumI8 value )
@@ -564,7 +564,7 @@ const char* to_string( EnumI8 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumI8__schema__ = R"schema(namespace n {
@@ -647,7 +647,7 @@ inline
 bool StructEnumI8Template< Member >::operator<( const StructEnumI8Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -679,7 +679,7 @@ std::string StructEnumI8Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumU8 value )
@@ -696,7 +696,7 @@ const char* to_string( EnumU8 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumU8__schema__ = R"schema(namespace n {
@@ -779,7 +779,7 @@ inline
 bool StructEnumU8Template< Member >::operator<( const StructEnumU8Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -811,7 +811,7 @@ std::string StructEnumU8Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumI16 value )
@@ -828,7 +828,7 @@ const char* to_string( EnumI16 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumI16__schema__ = R"schema(namespace n {
@@ -911,7 +911,7 @@ inline
 bool StructEnumI16Template< Member >::operator<( const StructEnumI16Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -943,7 +943,7 @@ std::string StructEnumI16Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumU16 value )
@@ -960,7 +960,7 @@ const char* to_string( EnumU16 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumU16__schema__ = R"schema(namespace n {
@@ -1043,7 +1043,7 @@ inline
 bool StructEnumU16Template< Member >::operator<( const StructEnumU16Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -1075,7 +1075,7 @@ std::string StructEnumU16Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumI32 value )
@@ -1092,7 +1092,7 @@ const char* to_string( EnumI32 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumI32__schema__ = R"schema(namespace n {
@@ -1175,7 +1175,7 @@ inline
 bool StructEnumI32Template< Member >::operator<( const StructEnumI32Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -1207,7 +1207,7 @@ std::string StructEnumI32Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumU32 value )
@@ -1224,7 +1224,7 @@ const char* to_string( EnumU32 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumU32__schema__ = R"schema(namespace n {
@@ -1307,7 +1307,7 @@ inline
 bool StructEnumU32Template< Member >::operator<( const StructEnumU32Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -1339,7 +1339,7 @@ std::string StructEnumU32Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumI64 value )
@@ -1356,7 +1356,7 @@ const char* to_string( EnumI64 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumI64__schema__ = R"schema(namespace n {
@@ -1439,7 +1439,7 @@ inline
 bool StructEnumI64Template< Member >::operator<( const StructEnumI64Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -1471,7 +1471,7 @@ std::string StructEnumI64Template< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 
 inline
 const char* to_string( EnumU64 value )
@@ -1488,7 +1488,7 @@ const char* to_string( EnumU64 value )
 
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const StructEnumU64__schema__ = R"schema(namespace n {
@@ -1571,7 +1571,7 @@ inline
 bool StructEnumU64Template< Member >::operator<( const StructEnumU64Template& other ) const
 {
 return
-    f < other.f ;
+    f < other.f;
 }
 
 template< template < typename, int, int, int > class Member >
