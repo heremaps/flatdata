@@ -8,19 +8,19 @@
 {{ go_base.generate(tree, nodes) }}
 
 {% macro structure_definition(tree, struct) %}
-{{ go_struct.generate(tree, struct) }}    
+{{ go_struct.generate(tree, struct) }}
 {% endmacro %}
 
 {% macro archive_definition(tree, archive) %}
 {% for resource in archive.resources if not resource|is_bound_resource %}
 {% if resource|is_instance %}
-{{ go_instance.generate(tree, archive, resource) }}    
+{{ go_instance.generate(tree, archive, resource) }}
 {% elif resource|is_vector %}
 {{ go_vector.generate(tree, archive, resource) }}
 {% elif resource|is_raw_data %}
-{{ go_rawdata.generate(tree, archive, resource) }}    
+{{ go_rawdata.generate(tree, archive, resource) }}
 {% elif resource|is_multivector %}
-{{ go_multivector.generate(tree, archive, resource) }}    
+{{ go_multivector.generate(tree, archive, resource) }}
 {% endif %}
 {% endfor %}
 {{ go_archive.generate(tree, archive) }}

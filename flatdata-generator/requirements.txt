@@ -1,2 +1,2 @@
 pyparsing>=2.0
-jinja2>=2.2
+jinja2>=2.10

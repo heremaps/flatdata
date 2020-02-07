@@ -6,7 +6,7 @@
 #include <iostream>
 #include <iomanip>
 
-namespace n { 
+namespace n {
 
 
 template< template < typename, int, int, int > class Member >
@@ -60,7 +60,7 @@ typedef STemplate< flatdata::Writer > SMutator;
 
 } // namespace n
 
-namespace n { 
+namespace n {
 
 class X : public flatdata::Archive
 {
@@ -125,7 +125,7 @@ private:
 
 } // namespace n
 
-namespace m { 
+namespace m {
 
 
 template< template < typename, int, int, int > class Member >
@@ -179,7 +179,7 @@ typedef STemplate< flatdata::Writer > SMutator;
 
 } // namespace m
 
-namespace m { 
+namespace m {
 
 class X : public flatdata::Archive
 {
@@ -244,7 +244,8 @@ private:
 
 } // namespace m
 
-namespace _builtin { namespace multivector { 
+namespace _builtin {
+namespace multivector {
 
 /** Builtin type to for MultiVector index */
 template< template < typename, int, int, int > class Member >
@@ -300,7 +301,7 @@ typedef IndexType32Template< flatdata::Writer > IndexType32Mutator;
 
 }} // namespace _builtin.multivector
 
-namespace a { 
+namespace a {
 
 class A : public flatdata::Archive
 {
@@ -394,7 +395,7 @@ private:
 // -------------------------------------- Implementations ------------------------------------------
 // -------------------------------------------------------------------------------------------------
 
-namespace n { 
+namespace n {
 namespace internal
 {
     const char* const S__schema__ = R"schema(namespace n {
@@ -470,7 +471,7 @@ inline
 bool STemplate< Member >::operator<( const STemplate& other ) const
 {
 return
-    x < other.x ;
+    x < other.x;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -502,7 +503,7 @@ std::string STemplate< Member >::describe( ) const
 }
 } // namespace n
 
-namespace n { 
+namespace n {
 namespace internal
 {
 const char* const X__schema__ =
@@ -633,7 +634,7 @@ XBuilder::set_payload( PayloadReaderType data )
 
 } // namespace n
 
-namespace m { 
+namespace m {
 namespace internal
 {
     const char* const S__schema__ = R"schema(namespace m {
@@ -709,7 +710,7 @@ inline
 bool STemplate< Member >::operator<( const STemplate& other ) const
 {
 return
-    x < other.x ;
+    x < other.x;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -741,7 +742,7 @@ std::string STemplate< Member >::describe( ) const
 }
 } // namespace m
 
-namespace m { 
+namespace m {
 namespace internal
 {
 const char* const X__schema__ =
@@ -872,7 +873,8 @@ XBuilder::set_payload( PayloadReaderType data )
 
 } // namespace m
 
-namespace _builtin { namespace multivector { 
+namespace _builtin {
+namespace multivector {
 namespace internal
 {
     const char* const IndexType32__schema__ = R"schema()schema";
@@ -941,7 +943,7 @@ inline
 bool IndexType32Template< Member >::operator<( const IndexType32Template& other ) const
 {
 return
-    value < other.value ;
+    value < other.value;
 }
 
 template< template < typename, int, int, int > class Member >
@@ -973,7 +975,7 @@ std::string IndexType32Template< Member >::describe( ) const
 }
 }} // namespace _builtin.multivector
 
-namespace a { 
+namespace a {
 namespace internal
 {
 const char* const A__schema__ =
