@@ -333,7 +333,6 @@ impl<'a> ResourceHandle<'a> {
 
     fn finalize(&mut self) -> Result<(), ResourceStorageError> {
         assert!(!self.finalized);
-        // Mark as finalized even in case of failure, otherwise Drop would complain
         self.finalized = true;
 
         let resource_name = self.name.clone();
@@ -350,14 +349,6 @@ impl<'a> ResourceHandle<'a> {
             .map_err(into_storage_error)?;
 
         Ok(())
-    }
-}
-
-impl<'a> Drop for ResourceHandle<'a> {
-    fn drop(&mut self) {
-        if !self.finalized && !std::thread::panicking() {
-            panic!("Resource not closed: {}", self.name);
-        }
     }
 }
 
@@ -413,30 +404,6 @@ fn write_padding(stream: &mut dyn Stream) -> io::Result<()> {
 mod test {
     use super::*;
     use crate::memstorage::MemoryResourceStorage;
-
-    #[test]
-    #[should_panic]
-    fn test_panic_on_drop() {
-        let storage = MemoryResourceStorage::new("/root/extvec");
-
-        let stream = storage
-            .create_output_stream("/root/extvec/blubb.schema")
-            .unwrap();
-        stream
-            .borrow_mut()
-            .write_all("myschema".as_bytes())
-            .unwrap();
-
-        let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
-        let _h = ResourceHandle::try_new(
-            &*storage,
-            "/root/extvec/blubb".into(),
-            "myschema".into(),
-            stream,
-        )
-        .unwrap();
-        // leak h without closing it -> should panic
-    }
 
     #[test]
     fn test_not_panic_on_close() -> Result<(), ResourceStorageError> {

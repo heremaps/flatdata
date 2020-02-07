@@ -225,8 +225,7 @@ where
 /// [`grow`] can be accessed and written.
 ///
 /// An external vector *must* be closed, after the last element was written to
-/// it. After closing, it can not be used anymore. Not closing the vector will
-/// result in panic on drop (in debug mode).
+/// it. After closing, it can not be used anymore.
 ///
 /// # Examples
 /// ``` flatdata
@@ -354,7 +353,7 @@ where
     /// Flushes the remaining not yet flushed elements in this vector and
     /// finalizes the data inside the storage.
     ///
-    /// An external vector *must* be closed, otherwise it will panic on drop
+    /// An external vector *must* be closed
     pub fn close(mut self) -> Result<ArrayView<'a, T>, ResourceStorageError> {
         self.flush().map_err(|e| {
             ResourceStorageError::from_io_error(e, self.resource_handle.name().into())

@@ -29,8 +29,7 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// [`MultiArrayView`].
 ///
 /// A multivector *must* be closed, after the last element was written to it.
-/// After closing, it can not be used anymore. Not closing the multivector will
-/// result in panic on drop (in debug mode).
+/// After closing, it can not be used anymore.
 ///
 /// Internally data is stored like this:
 ///
@@ -207,7 +206,7 @@ where
     /// Flushes the remaining not yet flushed elements in this multivector and
     /// finalizes the data inside the storage.
     ///
-    /// A multivector *must* be closed, otherwise it will panic on drop
+    /// A multivector *must* be closed
     pub fn close(mut self) -> Result<MultiArrayView<'a, Ts>, ResourceStorageError> {
         let name: String = self.data_handle.name().into();
         let into_storage_error = |e| ResourceStorageError::from_io_error(e, name.clone());
