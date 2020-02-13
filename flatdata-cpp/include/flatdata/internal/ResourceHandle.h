@@ -21,7 +21,6 @@ namespace flatdata
 class ResourceHandle : private boost::noncopyable
 {
 public:
-    ~ResourceHandle( ) noexcept( false );
     template < typename T >
     void write( T* data, size_t size_in_bytes );
     MemoryDescriptor close( );
@@ -37,15 +36,6 @@ private:
 };
 
 // -------------------------------------------------------------------------------------------------
-
-inline ResourceHandle::~ResourceHandle( ) noexcept( false )
-{
-    if ( m_stream != nullptr )
-    {
-        throw std::logic_error(
-            "Resource not closed before destruction. Close and check for errors." );
-    }
-}
 
 template < typename T >
 void

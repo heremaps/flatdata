@@ -136,7 +136,7 @@ bool {{ template_spec }}::operator<( const {{ struct.name }}Template& other ) co
 {
 return
 {% for member in struct.fields %}
-    {{ member.name }} < other.{{ member.name }} {% if not loop.last %}&&
+    {{ member.name }} < other.{{ member.name }}{% if not loop.last %} &&
 {%endif%}
 {% endfor %};
 }
