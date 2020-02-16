@@ -67,7 +67,7 @@ See the [generator's README](./flatdata-py/generator/README.md#usage) for instru
 
 ## License
 
-Copyright (c) 2017-2019 HERE Europe B.V.
+Copyright (c) 2017-2020 HERE Europe B.V.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
