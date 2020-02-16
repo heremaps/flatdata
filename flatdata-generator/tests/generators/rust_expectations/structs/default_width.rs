@@ -66,8 +66,10 @@ struct I64
 }
 }
 
-"#;}}
-#[derive(Clone, Debug)]
+"#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct U8 {}
 
 #[derive(Clone, Copy)]
@@ -173,7 +175,6 @@ impl<'a> std::fmt::Debug for U8Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for U8Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct I8 {}
 
@@ -280,7 +281,6 @@ impl<'a> std::fmt::Debug for I8Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for I8Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct U16 {}
 
@@ -387,7 +387,6 @@ impl<'a> std::fmt::Debug for U16Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for U16Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct I16 {}
 
@@ -494,7 +493,6 @@ impl<'a> std::fmt::Debug for I16Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for I16Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct U32 {}
 
@@ -601,7 +599,6 @@ impl<'a> std::fmt::Debug for U32Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for U32Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct I32 {}
 
@@ -708,7 +705,6 @@ impl<'a> std::fmt::Debug for I32Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for I32Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct U64 {}
 
@@ -815,7 +811,6 @@ impl<'a> std::fmt::Debug for U64Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for U64Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct I64 {}
 
@@ -923,5 +918,3 @@ impl<'a> std::fmt::Debug for I64Mut<'a> {
 
 impl<'a> flatdata::RefMut for I64Mut<'a> {}
 }
-
-

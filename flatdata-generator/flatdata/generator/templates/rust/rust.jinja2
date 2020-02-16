@@ -12,28 +12,27 @@ pub mod {{ ns.name }} {
 {{ loop(ns.children) }}
 pub mod schema {
 pub mod structs {
-{%- for node in ns.children if node | is_structure %}
-
+{% for node in ns.children if node | is_structure %}
 pub const {{ node.name | camel_to_snake_case | upper }}: &str = r#"{{ tree.schema(node) }}"#;
-{%- endfor %}
+{% endfor %}
 }
 
-{%- for node in ns.children if node | is_archive %}
-
-{%- set archive_ns = node.name | camel_to_snake_case %}
+{% for node in ns.children if node | is_archive %}
+{% set archive_ns = node.name | camel_to_snake_case %}
 pub mod {{ archive_ns }} {
+
 pub const {{ node.name | camel_to_snake_case | upper }}: &str = r#"{{ tree.schema(node) }}"#;
+
 pub mod resources {
-{%- for r in node.resources | supported_resources %}
+{% for r in node.resources | supported_resources %}
 pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
-{%- endfor %}
+{% endfor %}
 }
 }
 {% endfor %}
 }
 
 {%- for node in ns.children %}
-
     {% if node | is_structure and not node | is_multivector_index %}
         {{- structure.declaration(node) }}
     {% elif node | is_structure and node | is_multivector_index %}
@@ -49,4 +48,3 @@ pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
 }
 {% endif %}
 {%- endfor %}
-

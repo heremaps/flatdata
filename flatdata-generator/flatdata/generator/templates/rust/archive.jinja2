@@ -179,6 +179,7 @@ pub struct {{archive.name}}Builder {
     storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
 }
 
+{% if archive.resources | supported_resources | length %}
 impl {{archive.name}}Builder {
     {% for r in archive.resources | supported_resources %}
     {% if [r] | rawdata_resources %}
@@ -228,6 +229,7 @@ impl {{archive.name}}Builder {
     {% endif %}
     {% endfor %}
 }
+{%- endif -%}
 
 impl flatdata::ArchiveBuilder for {{archive.name}}Builder {
     const NAME: &'static str = "{{archive.name}}";
@@ -240,5 +242,4 @@ impl flatdata::ArchiveBuilder for {{archive.name}}Builder {
         Ok(Self { storage })
     }
 }
-
 {% endmacro %}

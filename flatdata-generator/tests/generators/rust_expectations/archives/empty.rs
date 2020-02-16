@@ -2,7 +2,11 @@
 pub mod n {
 
 pub mod schema {
-pub mod structs {}pub mod a {
+pub mod structs {
+}
+
+pub mod a {
+
 pub const A: &str = r#"namespace n {
 archive A
 {
@@ -10,10 +14,11 @@ archive A
 }
 
 "#;
-pub mod resources {}
-}
-}
 
+pub mod resources {
+}
+}
+}
 
 
 #[derive(Clone)]
@@ -65,9 +70,6 @@ pub struct ABuilder {
     storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
 }
 
-impl ABuilder {
-}
-
 impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
@@ -79,6 +81,5 @@ impl flatdata::ArchiveBuilder for ABuilder {
         Ok(Self { storage })
     }
 }
-
 
 }

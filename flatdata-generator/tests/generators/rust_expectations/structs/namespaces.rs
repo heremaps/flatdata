@@ -10,8 +10,10 @@ struct Foo
 }
 }
 
-"#;}}
-#[derive(Clone, Debug)]
+"#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct Foo {}
 
 #[derive(Clone, Copy)]
@@ -130,8 +132,10 @@ struct Foo
 }
 }
 
-"#;}}
-#[derive(Clone, Debug)]
+"#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct Foo {}
 
 #[derive(Clone, Copy)]
@@ -238,4 +242,3 @@ impl<'a> std::fmt::Debug for FooMut<'a> {
 
 impl<'a> flatdata::RefMut for FooMut<'a> {}
 }
-

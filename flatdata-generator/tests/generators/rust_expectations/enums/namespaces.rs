@@ -2,8 +2,10 @@
 pub mod a {
 
 pub mod schema {
-pub mod structs {}}
-#[derive(Debug, PartialEq, Eq)]
+pub mod structs {
+}
+
+}#[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
@@ -17,8 +19,10 @@ impl flatdata::helper::Int for Bar {
 pub mod b {
 
 pub mod schema {
-pub mod structs {}}
-#[derive(Debug, PartialEq, Eq)]
+pub mod structs {
+}
+
+}#[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
@@ -47,8 +51,10 @@ struct Foo
 }
 }
 
-"#;}}
-#[derive(Clone, Debug)]
+"#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct Foo {}
 
 #[derive(Clone, Copy)]
@@ -174,8 +180,10 @@ struct Foo
 }
 }
 
-"#;}}
-#[derive(Clone, Debug)]
+"#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct Foo {}
 
 #[derive(Clone, Copy)]

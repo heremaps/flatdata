@@ -122,8 +122,10 @@ struct StructEnumU64
 }
 }
 
-"#;}}
-#[derive(Clone, Debug)]
+"#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct StructEnumI8 {}
 
 #[derive(Clone, Copy)]
@@ -229,7 +231,6 @@ impl<'a> std::fmt::Debug for StructEnumI8Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumI8Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumU8 {}
 
@@ -336,7 +337,6 @@ impl<'a> std::fmt::Debug for StructEnumU8Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumU8Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumI16 {}
 
@@ -443,7 +443,6 @@ impl<'a> std::fmt::Debug for StructEnumI16Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumI16Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumU16 {}
 
@@ -550,7 +549,6 @@ impl<'a> std::fmt::Debug for StructEnumU16Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumU16Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumI32 {}
 
@@ -657,7 +655,6 @@ impl<'a> std::fmt::Debug for StructEnumI32Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumI32Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumU32 {}
 
@@ -764,7 +761,6 @@ impl<'a> std::fmt::Debug for StructEnumU32Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumU32Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumI64 {}
 
@@ -871,7 +867,6 @@ impl<'a> std::fmt::Debug for StructEnumI64Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumI64Mut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct StructEnumU64 {}
 
@@ -978,7 +973,6 @@ impl<'a> std::fmt::Debug for StructEnumU64Mut<'a> {
 }
 
 impl<'a> flatdata::RefMut for StructEnumU64Mut<'a> {}
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(i8)]
 pub enum EnumI8 {
@@ -988,7 +982,6 @@ pub enum EnumI8 {
 impl flatdata::helper::Int for EnumI8 {
     const IS_SIGNED: bool = true;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum EnumU8 {
@@ -998,7 +991,6 @@ pub enum EnumU8 {
 impl flatdata::helper::Int for EnumU8 {
     const IS_SIGNED: bool = false;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(i16)]
 pub enum EnumI16 {
@@ -1008,7 +1000,6 @@ pub enum EnumI16 {
 impl flatdata::helper::Int for EnumI16 {
     const IS_SIGNED: bool = true;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u16)]
 pub enum EnumU16 {
@@ -1018,7 +1009,6 @@ pub enum EnumU16 {
 impl flatdata::helper::Int for EnumU16 {
     const IS_SIGNED: bool = false;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(i32)]
 pub enum EnumI32 {
@@ -1028,7 +1018,6 @@ pub enum EnumI32 {
 impl flatdata::helper::Int for EnumI32 {
     const IS_SIGNED: bool = true;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u32)]
 pub enum EnumU32 {
@@ -1038,7 +1027,6 @@ pub enum EnumU32 {
 impl flatdata::helper::Int for EnumU32 {
     const IS_SIGNED: bool = false;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(i64)]
 pub enum EnumI64 {
@@ -1048,7 +1036,6 @@ pub enum EnumI64 {
 impl flatdata::helper::Int for EnumI64 {
     const IS_SIGNED: bool = true;
 }
-
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u64)]
 pub enum EnumU64 {

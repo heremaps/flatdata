@@ -18,7 +18,11 @@ struct T
 }
 }
 
-"#;}pub mod a {
+"#;
+}
+
+pub mod a {
+
 pub const A: &str = r#"namespace n {
 struct S
 {
@@ -44,7 +48,9 @@ archive A
 }
 
 "#;
-pub mod resources {pub const DATA: &str = r#"namespace n {
+
+pub mod resources {
+pub const DATA: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -65,7 +71,8 @@ archive A
 }
 }
 
-"#;pub const OPTIONAL_DATA: &str = r#"namespace n {
+"#;
+pub const OPTIONAL_DATA: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -87,7 +94,8 @@ archive A
 }
 }
 
-"#;pub const DATA_U64_INDEX: &str = r#"namespace n {
+"#;
+pub const DATA_U64_INDEX: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -108,10 +116,10 @@ archive A
 }
 }
 
-"#;}
+"#;
 }
 }
-#[derive(Clone, Debug)]
+}#[derive(Clone, Debug)]
 pub struct S {}
 
 #[derive(Clone, Copy)]
@@ -217,7 +225,6 @@ impl<'a> std::fmt::Debug for SMut<'a> {
 }
 
 impl<'a> flatdata::RefMut for SMut<'a> {}
-
 #[derive(Clone, Debug)]
 pub struct T {}
 
@@ -324,7 +331,6 @@ impl<'a> std::fmt::Debug for TMut<'a> {
 }
 
 impl<'a> flatdata::RefMut for TMut<'a> {}
-
 
 
 /// Builtin union type of .n.S, .n.T.
@@ -677,9 +683,7 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "data_u64_index", schema::a::resources::DATA_U64_INDEX)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for ABuilder {
+}impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
@@ -691,7 +695,6 @@ impl flatdata::ArchiveBuilder for ABuilder {
     }
 }
 
-
 }
 
 pub mod _builtin {
@@ -702,8 +705,10 @@ pub mod schema {
 pub mod structs {
 pub const INDEX_TYPE8: &str = r#""#;
 pub const INDEX_TYPE16: &str = r#""#;
-pub const INDEX_TYPE64: &str = r#""#;}}
-#[derive(Clone, Debug)]
+pub const INDEX_TYPE64: &str = r#""#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct IndexType8 {}
 
 #[derive(Clone, Copy)]
@@ -828,7 +833,6 @@ impl<'a> flatdata::IndexStruct<'a> for IndexType8 {
         data.set_value(value as u64);
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct IndexType16 {}
@@ -955,7 +959,6 @@ impl<'a> flatdata::IndexStruct<'a> for IndexType16 {
         data.set_value(value as u64);
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct IndexType64 {}
@@ -1086,6 +1089,7 @@ impl<'a> flatdata::IndexStruct<'a> for IndexType64 {
 }
 
 pub mod schema {
-pub mod structs {}}
+pub mod structs {
 }
 
+}}

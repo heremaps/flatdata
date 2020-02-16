@@ -2,7 +2,11 @@
 pub mod n {
 
 pub mod schema {
-pub mod structs {}pub mod a {
+pub mod structs {
+}
+
+pub mod a {
+
 pub const A: &str = r#"namespace n {
 archive A
 {
@@ -13,14 +17,17 @@ archive A
 }
 
 "#;
-pub mod resources {pub const DATA: &str = r#"namespace n {
+
+pub mod resources {
+pub const DATA: &str = r#"namespace n {
 archive A
 {
     data : raw_data;
 }
 }
 
-"#;pub const OPTIONAL_DATA: &str = r#"namespace n {
+"#;
+pub const OPTIONAL_DATA: &str = r#"namespace n {
 archive A
 {
     @optional
@@ -28,10 +35,10 @@ archive A
 }
 }
 
-"#;}
+"#;
 }
 }
-
+}
 
 
 #[derive(Clone)]
@@ -112,9 +119,7 @@ impl ABuilder {
         self.storage.write("optional_data", schema::a::resources::OPTIONAL_DATA, data)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for ABuilder {
+}impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
@@ -125,6 +130,5 @@ impl flatdata::ArchiveBuilder for ABuilder {
         Ok(Self { storage })
     }
 }
-
 
 }

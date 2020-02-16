@@ -2,7 +2,11 @@
 pub mod n {
 
 pub mod schema {
-pub mod structs {}pub mod x {
+pub mod structs {
+}
+
+pub mod x {
+
 pub const X: &str = r#"namespace n {
 archive X
 {
@@ -11,16 +15,20 @@ archive X
 }
 
 "#;
-pub mod resources {pub const PAYLOAD: &str = r#"namespace n {
+
+pub mod resources {
+pub const PAYLOAD: &str = r#"namespace n {
 archive X
 {
     payload : raw_data;
 }
 }
 
-"#;}
+"#;
+}
 }
 pub mod a {
+
 pub const A: &str = r#"namespace n {
 archive X
 {
@@ -38,7 +46,9 @@ archive A
 }
 
 "#;
-pub mod resources {pub const DATA: &str = r#"namespace n {
+
+pub mod resources {
+pub const DATA: &str = r#"namespace n {
 archive X
 {
     payload : raw_data;
@@ -52,7 +62,8 @@ archive A
 }
 }
 
-"#;pub const OPTIONAL_DATA: &str = r#"namespace n {
+"#;
+pub const OPTIONAL_DATA: &str = r#"namespace n {
 archive X
 {
     payload : raw_data;
@@ -67,10 +78,10 @@ archive A
 }
 }
 
-"#;}
+"#;
 }
 }
-
+}
 
 
 #[derive(Clone)]
@@ -137,9 +148,7 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for XBuilder {
+}impl flatdata::ArchiveBuilder for XBuilder {
     const NAME: &'static str = "X";
     const SCHEMA: &'static str = schema::x::X;
 
@@ -150,8 +159,6 @@ impl flatdata::ArchiveBuilder for XBuilder {
         Ok(Self { storage })
     }
 }
-
-
 
 
 
@@ -240,9 +247,7 @@ impl ABuilder {
         super::n::XBuilder::new(storage)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for ABuilder {
+}impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
@@ -254,6 +259,4 @@ impl flatdata::ArchiveBuilder for ABuilder {
     }
 }
 
-
 }
-

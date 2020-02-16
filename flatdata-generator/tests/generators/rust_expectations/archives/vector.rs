@@ -10,7 +10,11 @@ struct S
 }
 }
 
-"#;}pub mod a {
+"#;
+}
+
+pub mod a {
+
 pub const A: &str = r#"namespace n {
 struct S
 {
@@ -28,7 +32,9 @@ archive A
 }
 
 "#;
-pub mod resources {pub const DATA: &str = r#"namespace n {
+
+pub mod resources {
+pub const DATA: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -42,7 +48,8 @@ archive A
 }
 }
 
-"#;pub const OPTIONAL_DATA: &str = r#"namespace n {
+"#;
+pub const OPTIONAL_DATA: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -57,10 +64,10 @@ archive A
 }
 }
 
-"#;}
+"#;
 }
 }
-#[derive(Clone, Debug)]
+}#[derive(Clone, Debug)]
 pub struct S {}
 
 #[derive(Clone, Copy)]
@@ -169,7 +176,6 @@ impl<'a> flatdata::RefMut for SMut<'a> {}
 
 
 
-
 #[derive(Clone)]
 pub struct A {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
@@ -260,9 +266,7 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "optional_data", schema::a::resources::OPTIONAL_DATA)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for ABuilder {
+}impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
@@ -273,6 +277,5 @@ impl flatdata::ArchiveBuilder for ABuilder {
         Ok(Self { storage })
     }
 }
-
 
 }

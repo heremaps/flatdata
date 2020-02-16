@@ -10,7 +10,11 @@ struct S
 }
 }
 
-"#;}pub mod x {
+"#;
+}
+
+pub mod x {
+
 pub const X: &str = r#"namespace n {
 archive X
 {
@@ -19,17 +23,19 @@ archive X
 }
 
 "#;
-pub mod resources {pub const PAYLOAD: &str = r#"namespace n {
+
+pub mod resources {
+pub const PAYLOAD: &str = r#"namespace n {
 archive X
 {
     payload : raw_data;
 }
 }
 
-"#;}
+"#;
 }
 }
-#[derive(Clone, Debug)]
+}#[derive(Clone, Debug)]
 pub struct S {}
 
 #[derive(Clone, Copy)]
@@ -138,7 +144,6 @@ impl<'a> flatdata::RefMut for SMut<'a> {}
 
 
 
-
 #[derive(Clone)]
 pub struct X {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
@@ -203,9 +208,7 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for XBuilder {
+}impl flatdata::ArchiveBuilder for XBuilder {
     const NAME: &'static str = "X";
     const SCHEMA: &'static str = schema::x::X;
 
@@ -216,7 +219,6 @@ impl flatdata::ArchiveBuilder for XBuilder {
         Ok(Self { storage })
     }
 }
-
 
 }
 
@@ -231,7 +233,11 @@ struct S
 }
 }
 
-"#;}pub mod x {
+"#;
+}
+
+pub mod x {
+
 pub const X: &str = r#"namespace m {
 archive X
 {
@@ -240,17 +246,19 @@ archive X
 }
 
 "#;
-pub mod resources {pub const PAYLOAD: &str = r#"namespace m {
+
+pub mod resources {
+pub const PAYLOAD: &str = r#"namespace m {
 archive X
 {
     payload : raw_data;
 }
 }
 
-"#;}
+"#;
 }
 }
-#[derive(Clone, Debug)]
+}#[derive(Clone, Debug)]
 pub struct S {}
 
 #[derive(Clone, Copy)]
@@ -359,7 +367,6 @@ impl<'a> flatdata::RefMut for SMut<'a> {}
 
 
 
-
 #[derive(Clone)]
 pub struct X {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
@@ -424,9 +431,7 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for XBuilder {
+}impl flatdata::ArchiveBuilder for XBuilder {
     const NAME: &'static str = "X";
     const SCHEMA: &'static str = schema::x::X;
 
@@ -438,13 +443,16 @@ impl flatdata::ArchiveBuilder for XBuilder {
     }
 }
 
-
 }
 
 pub mod a {
 
 pub mod schema {
-pub mod structs {}pub mod a {
+pub mod structs {
+}
+
+pub mod a {
+
 pub const A: &str = r#"namespace n {
 struct S
 {
@@ -477,7 +485,9 @@ archive A
 }
 
 "#;
-pub mod resources {pub const SINGLE: &str = r#"namespace n {
+
+pub mod resources {
+pub const SINGLE: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -491,7 +501,8 @@ archive A
 }
 }
 
-"#;pub const LIST: &str = r#"namespace m {
+"#;
+pub const LIST: &str = r#"namespace m {
 struct S
 {
     x : u64 : 64;
@@ -505,7 +516,8 @@ archive A
 }
 }
 
-"#;pub const MULTI: &str = r#"namespace n {
+"#;
+pub const MULTI: &str = r#"namespace n {
 struct S
 {
     x : u64 : 64;
@@ -519,7 +531,8 @@ archive A
 }
 }
 
-"#;pub const INNER: &str = r#"namespace n {
+"#;
+pub const INNER: &str = r#"namespace n {
 archive X
 {
     payload : raw_data;
@@ -533,10 +546,10 @@ archive A
 }
 }
 
-"#;}
+"#;
 }
 }
-
+}
 
 /// Builtin union type of .n.S.
 #[derive(Clone, PartialEq)]
@@ -730,9 +743,7 @@ impl ABuilder {
         super::n::XBuilder::new(storage)
     }
 
-}
-
-impl flatdata::ArchiveBuilder for ABuilder {
+}impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
@@ -744,7 +755,6 @@ impl flatdata::ArchiveBuilder for ABuilder {
     }
 }
 
-
 }
 
 pub mod _builtin {
@@ -753,8 +763,10 @@ pub mod multivector {
 
 pub mod schema {
 pub mod structs {
-pub const INDEX_TYPE32: &str = r#""#;}}
-#[derive(Clone, Debug)]
+pub const INDEX_TYPE32: &str = r#""#;
+}
+
+}#[derive(Clone, Debug)]
 pub struct IndexType32 {}
 
 #[derive(Clone, Copy)]
@@ -883,6 +895,7 @@ impl<'a> flatdata::IndexStruct<'a> for IndexType32 {
 }
 
 pub mod schema {
-pub mod structs {}}
+pub mod structs {
 }
 
+}}
