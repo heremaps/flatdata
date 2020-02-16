@@ -208,7 +208,9 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
-}impl flatdata::ArchiveBuilder for XBuilder {
+}
+
+impl flatdata::ArchiveBuilder for XBuilder {
     const NAME: &'static str = "X";
     const SCHEMA: &'static str = schema::x::X;
 
@@ -431,7 +433,9 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
-}impl flatdata::ArchiveBuilder for XBuilder {
+}
+
+impl flatdata::ArchiveBuilder for XBuilder {
     const NAME: &'static str = "X";
     const SCHEMA: &'static str = schema::x::X;
 
@@ -743,7 +747,9 @@ impl ABuilder {
         super::n::XBuilder::new(storage)
     }
 
-}impl flatdata::ArchiveBuilder for ABuilder {
+}
+
+impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 

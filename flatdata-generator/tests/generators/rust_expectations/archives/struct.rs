@@ -262,7 +262,9 @@ impl ABuilder {
         self.storage.write("optional_data", schema::a::resources::OPTIONAL_DATA, data)
     }
 
-}impl flatdata::ArchiveBuilder for ABuilder {
+}
+
+impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 

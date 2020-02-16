@@ -266,7 +266,9 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "optional_data", schema::a::resources::OPTIONAL_DATA)
     }
 
-}impl flatdata::ArchiveBuilder for ABuilder {
+}
+
+impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 

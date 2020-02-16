@@ -70,6 +70,7 @@ pub struct ABuilder {
     storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
 }
 
+
 impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;

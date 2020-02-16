@@ -683,7 +683,9 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "data_u64_index", schema::a::resources::DATA_U64_INDEX)
     }
 
-}impl flatdata::ArchiveBuilder for ABuilder {
+}
+
+impl flatdata::ArchiveBuilder for ABuilder {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
