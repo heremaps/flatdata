@@ -26,6 +26,7 @@ struct Bar
 }#[derive(Clone, Debug)]
 pub struct Foo {}
 
+// This is a comment about Foo
 #[derive(Clone, Copy)]
 pub struct FooRef<'a> {
     data: *const u8,
@@ -152,6 +153,7 @@ impl<'a> flatdata::RefMut for FooMut<'a> {}
 #[derive(Clone, Debug)]
 pub struct Bar {}
 
+/// This is a comment about Bar
 #[derive(Clone, Copy)]
 pub struct BarRef<'a> {
     data: *const u8,

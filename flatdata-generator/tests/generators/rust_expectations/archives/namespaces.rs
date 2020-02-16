@@ -769,6 +769,7 @@ pub const INDEX_TYPE32: &str = r#""#;
 }#[derive(Clone, Debug)]
 pub struct IndexType32 {}
 
+/// Builtin type to for MultiVector index
 #[derive(Clone, Copy)]
 pub struct IndexType32Ref<'a> {
     data: *const u8,

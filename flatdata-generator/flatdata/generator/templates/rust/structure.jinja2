@@ -2,6 +2,9 @@
 #[derive(Clone, Debug)]
 pub struct {{struct.name}} {}
 
+{% if struct.doc %}
+{{ struct.doc | rust_doc }}
+{% endif %}
 #[derive(Clone, Copy)]
 pub struct {{struct.name}}Ref<'a> {
     data: *const u8,

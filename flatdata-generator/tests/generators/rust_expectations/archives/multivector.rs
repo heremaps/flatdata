@@ -711,6 +711,7 @@ pub const INDEX_TYPE64: &str = r#""#;
 }#[derive(Clone, Debug)]
 pub struct IndexType8 {}
 
+/// Builtin type to for MultiVector index
 #[derive(Clone, Copy)]
 pub struct IndexType8Ref<'a> {
     data: *const u8,
@@ -837,6 +838,7 @@ impl<'a> flatdata::IndexStruct<'a> for IndexType8 {
 #[derive(Clone, Debug)]
 pub struct IndexType16 {}
 
+/// Builtin type to for MultiVector index
 #[derive(Clone, Copy)]
 pub struct IndexType16Ref<'a> {
     data: *const u8,
@@ -963,6 +965,7 @@ impl<'a> flatdata::IndexStruct<'a> for IndexType16 {
 #[derive(Clone, Debug)]
 pub struct IndexType64 {}
 
+/// Builtin type to for MultiVector index
 #[derive(Clone, Copy)]
 pub struct IndexType64Ref<'a> {
     data: *const u8,
