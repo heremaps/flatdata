@@ -29,21 +29,194 @@ archive X
 "#;}
 }
 }
+#[derive(Clone, Debug)]
+pub struct S {}
 
-define_struct!(
-    S,
-    RefS,
-    RefMutS,
-    schema::structs::S,
-    8,
-    (x, set_x, u64, u64, 0, 64));
+#[derive(Clone, Copy)]
+pub struct SRef<'a> {
+    data: *const u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> flatdata::Struct<'a> for S
+{
+    const SCHEMA: &'static str = schema::structs::S;
+    const SIZE_IN_BYTES: usize = 8;
+    const IS_OVERLAPPING_WITH_NEXT : bool = false;
+
+    type Item = SRef<'a>;
+
+    #[inline]
+    fn create(data : &'a[u8]) -> Self::Item
+    {
+        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+    }
+
+    type ItemMut = SMut<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+    {
+        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+    }
+}
+
+impl flatdata::NoOverlap for S {}
+
+impl<'a> SRef<'a> {
+    #[inline]
+    pub fn x(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data, 0, 64);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for SRef<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("S")
+            .field("x", &self.x())
+            .finish()
+    }
+}
+
+impl<'a> std::cmp::PartialEq for SRef<'a> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.x() == other.x()     }
+}
+
+impl<'a> flatdata::Ref for SRef<'a> {}
+
+pub struct SMut<'a> {
+    data: *mut u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> SMut<'a> {
+    #[inline]
+    pub fn x(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data, 0, 64);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+    #[inline]
+    pub fn set_x(&mut self, value: u64) {
+        let buffer = unsafe {
+            std::slice::from_raw_parts_mut(self.data, 8)
+        };
+        flatdata_write_bytes!(u64; value, buffer, 0, 64)
+    }
+
+
+    #[inline]
+    pub fn fill_from(&mut self, other: &SRef) {
+        self.set_x(other.x());
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+
+    #[inline]
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for SMut<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        SRef { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
+    }
+}
+
+impl<'a> flatdata::RefMut for SMut<'a> {}
 
 
 
 
-define_archive!(X, XBuilder, schema::x::X;
-    raw_data(payload, false, schema::x::resources::PAYLOAD, set_payload),
-);
+#[derive(Clone)]
+pub struct X {
+    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    payload: flatdata::MemoryDescriptor,
+}
+
+impl X {
+    fn read_resource(
+        storage: &dyn flatdata::ResourceStorage,
+        name: &str,
+        schema: &str,
+    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
+    {
+        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
+    }
+
+    fn signature_name(archive_name: &str) -> String {
+        format!("{}.archive", archive_name)
+    }
+
+    #[inline]
+    pub fn payload(&self) -> flatdata::RawData {
+        flatdata::RawData::new(unsafe {self.payload.as_bytes()})
+    }
+
+}
+
+impl ::std::fmt::Debug for X {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.debug_struct("X")
+            .field("payload", &self.payload())
+            .finish()
+    }
+}
+
+impl flatdata::Archive for X {
+    const NAME: &'static str = "X";
+    const SCHEMA: &'static str = schema::x::X;
+
+    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
+    {
+        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+
+        let payload = Self::read_resource(&*storage, "payload", schema::x::resources::PAYLOAD)?;
+
+        Ok(Self {
+            _storage: storage,
+            payload,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct XBuilder {
+    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+}
+
+impl XBuilder {
+    #[inline]
+    pub fn set_payload(&self, data: &[u8]) -> ::std::io::Result<()> {
+        self.storage.write("payload", schema::x::resources::PAYLOAD, data)
+    }
+
+}
+
+impl flatdata::ArchiveBuilder for XBuilder {
+    const NAME: &'static str = "X";
+    const SCHEMA: &'static str = schema::x::X;
+
+    fn new(
+        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    ) -> Result<Self, flatdata::ResourceStorageError> {
+        flatdata::create_archive::<Self>(&storage)?;
+        Ok(Self { storage })
+    }
+}
+
 
 }
 
@@ -77,21 +250,194 @@ archive X
 "#;}
 }
 }
+#[derive(Clone, Debug)]
+pub struct S {}
 
-define_struct!(
-    S,
-    RefS,
-    RefMutS,
-    schema::structs::S,
-    8,
-    (x, set_x, u64, u64, 0, 64));
+#[derive(Clone, Copy)]
+pub struct SRef<'a> {
+    data: *const u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> flatdata::Struct<'a> for S
+{
+    const SCHEMA: &'static str = schema::structs::S;
+    const SIZE_IN_BYTES: usize = 8;
+    const IS_OVERLAPPING_WITH_NEXT : bool = false;
+
+    type Item = SRef<'a>;
+
+    #[inline]
+    fn create(data : &'a[u8]) -> Self::Item
+    {
+        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+    }
+
+    type ItemMut = SMut<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+    {
+        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+    }
+}
+
+impl flatdata::NoOverlap for S {}
+
+impl<'a> SRef<'a> {
+    #[inline]
+    pub fn x(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data, 0, 64);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for SRef<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("S")
+            .field("x", &self.x())
+            .finish()
+    }
+}
+
+impl<'a> std::cmp::PartialEq for SRef<'a> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.x() == other.x()     }
+}
+
+impl<'a> flatdata::Ref for SRef<'a> {}
+
+pub struct SMut<'a> {
+    data: *mut u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> SMut<'a> {
+    #[inline]
+    pub fn x(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data, 0, 64);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+    #[inline]
+    pub fn set_x(&mut self, value: u64) {
+        let buffer = unsafe {
+            std::slice::from_raw_parts_mut(self.data, 8)
+        };
+        flatdata_write_bytes!(u64; value, buffer, 0, 64)
+    }
+
+
+    #[inline]
+    pub fn fill_from(&mut self, other: &SRef) {
+        self.set_x(other.x());
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+
+    #[inline]
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for SMut<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        SRef { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
+    }
+}
+
+impl<'a> flatdata::RefMut for SMut<'a> {}
 
 
 
 
-define_archive!(X, XBuilder, schema::x::X;
-    raw_data(payload, false, schema::x::resources::PAYLOAD, set_payload),
-);
+#[derive(Clone)]
+pub struct X {
+    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    payload: flatdata::MemoryDescriptor,
+}
+
+impl X {
+    fn read_resource(
+        storage: &dyn flatdata::ResourceStorage,
+        name: &str,
+        schema: &str,
+    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
+    {
+        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
+    }
+
+    fn signature_name(archive_name: &str) -> String {
+        format!("{}.archive", archive_name)
+    }
+
+    #[inline]
+    pub fn payload(&self) -> flatdata::RawData {
+        flatdata::RawData::new(unsafe {self.payload.as_bytes()})
+    }
+
+}
+
+impl ::std::fmt::Debug for X {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.debug_struct("X")
+            .field("payload", &self.payload())
+            .finish()
+    }
+}
+
+impl flatdata::Archive for X {
+    const NAME: &'static str = "X";
+    const SCHEMA: &'static str = schema::x::X;
+
+    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
+    {
+        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+
+        let payload = Self::read_resource(&*storage, "payload", schema::x::resources::PAYLOAD)?;
+
+        Ok(Self {
+            _storage: storage,
+            payload,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct XBuilder {
+    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+}
+
+impl XBuilder {
+    #[inline]
+    pub fn set_payload(&self, data: &[u8]) -> ::std::io::Result<()> {
+        self.storage.write("payload", schema::x::resources::PAYLOAD, data)
+    }
+
+}
+
+impl flatdata::ArchiveBuilder for XBuilder {
+    const NAME: &'static str = "X";
+    const SCHEMA: &'static str = schema::x::X;
+
+    fn new(
+        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    ) -> Result<Self, flatdata::ResourceStorageError> {
+        flatdata::create_archive::<Self>(&storage)?;
+        Ok(Self { storage })
+    }
+}
+
 
 }
 
@@ -193,16 +539,211 @@ archive A
 
 
 /// Builtin union type of .n.S.
-define_variadic_struct!(Multi, RefMulti, BuilderMulti,
-    super::_builtin::multivector::IndexType32,
-    0 => ( S, super::n::S, add_s));
+#[derive(Clone, PartialEq)]
+pub enum MultiRef<'a> {
+    S(<super::n::S as flatdata::Struct<'a>>::Item),}
 
-define_archive!(A, ABuilder, schema::a::A;
-    struct(single, false, schema::a::resources::SINGLE, set_single, super::n::S),
-    vector(list, false, schema::a::resources::LIST, set_list, start_list, super::m::S),
-    multivector(multi, false, schema::a::resources::MULTI, start_multi, Multi, multi_index, super::_builtin::multivector::IndexType32),
-    archive(inner, false, schema::a::resources::INNER, super::n::X, super::n::XBuilder),
-);
+impl<'a> ::std::fmt::Debug for MultiRef<'a> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        match *self {
+            MultiRef::S(ref inner) => write!(f, "{:?}", inner),
+        }
+    }
+}
+
+impl<'a> flatdata::VariadicRef for MultiRef<'a> {
+    #[inline]
+    fn size_in_bytes(&self) -> usize {
+        match *self {
+            MultiRef::S(_) => <super::n::S as flatdata::Struct<'a>>::SIZE_IN_BYTES,
+        }
+    }
+}
+
+pub struct MultiBuilder<'a> {
+    data: &'a mut Vec<u8>
+}
+
+impl<'a> MultiBuilder<'a> {
+    #[inline]
+    pub fn add_s<'b>(&'b mut self) -> <super::n::S as flatdata::Struct<'b>>::ItemMut {
+        let old_len = self.data.len();
+        let increment = 1 + <super::n::S as flatdata::Struct<'b>>::SIZE_IN_BYTES;
+        self.data.resize(old_len + increment, 0);
+        self.data[old_len - flatdata::PADDING_SIZE] = 0;
+        <super::n::S as flatdata::Struct<'b>>::create_mut(
+            &mut self.data[1 + old_len - flatdata::PADDING_SIZE..]
+        )
+    }
+}
+
+#[derive(Clone)]
+pub struct Multi {}
+
+impl<'a> flatdata::VariadicStruct<'a> for Multi {
+    type Index = super::_builtin::multivector::IndexType32;
+
+    type Item = MultiRef<'a>;
+
+    #[inline]
+    fn create(index: flatdata::TypeIndex, data: &'a [u8]) -> Self::Item
+    {
+        match index {
+                0 => MultiRef::S(<super::n::S as flatdata::Struct<'a>>::create(data)),
+            _ => panic!("invalid type index {} for variadic type MultiRef", index),
+        }
+    }
+
+    type ItemMut = MultiBuilder<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut Vec<u8>) -> Self::ItemMut
+    {
+        Self::ItemMut { data }
+    }
+}
+
+#[derive(Clone)]
+pub struct A {
+    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    single: flatdata::MemoryDescriptor,
+    list: flatdata::MemoryDescriptor,
+    multi: (flatdata::MemoryDescriptor, flatdata::MemoryDescriptor),
+    inner: super::n::X,
+}
+
+impl A {
+    fn read_resource(
+        storage: &dyn flatdata::ResourceStorage,
+        name: &str,
+        schema: &str,
+    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
+    {
+        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
+    }
+
+    fn signature_name(archive_name: &str) -> String {
+        format!("{}.archive", archive_name)
+    }
+
+    #[inline]
+    pub fn single(&self) -> <super::n::S as flatdata::Struct>::Item
+    {
+        <super::n::S as flatdata::Struct>::create(&unsafe {self.single.as_bytes()})
+    }
+
+    #[inline]
+    pub fn list(&self) -> flatdata::ArrayView<super::m::S>
+    {
+        flatdata::ArrayView::new(&unsafe {self.list.as_bytes()})
+    }
+
+    #[inline]
+    pub fn multi(&self) -> flatdata::MultiArrayView<Multi>
+    {
+        flatdata::MultiArrayView::new(
+            flatdata::ArrayView::new(&unsafe {self.multi.0.as_bytes()}),
+            &unsafe {self.multi.1.as_bytes()},
+        )
+    }
+
+    #[inline]
+    pub fn inner(&self) -> &super::n::X
+    {
+        &self.inner
+    }
+
+}
+
+impl ::std::fmt::Debug for A {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.debug_struct("A")
+            .field("single", &self.single())
+            .field("list", &self.list())
+            .field("multi", &self.multi())
+            .field("inner", &self.inner())
+            .finish()
+    }
+}
+
+impl flatdata::Archive for A {
+    const NAME: &'static str = "A";
+    const SCHEMA: &'static str = schema::a::A;
+
+    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
+    {
+        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+
+        let single = Self::read_resource(&*storage, "single", schema::a::resources::SINGLE)?;
+        let list = Self::read_resource(&*storage, "list", schema::a::resources::LIST)?;
+        let multi = {
+            let index_schema = &format!("index({})", schema::a::resources::MULTI);
+            let index = Self::read_resource(&*storage, "multi_index", &index_schema)?;
+            let data = Self::read_resource(&*storage, "multi", schema::a::resources::MULTI)?;            (index, data)
+        };
+        let inner = super::n::X::open(storage.subdir("inner"))?;
+
+        Ok(Self {
+            _storage: storage,
+            single,
+            list,
+            multi,
+            inner,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct ABuilder {
+    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+}
+
+impl ABuilder {
+    #[inline]
+    pub fn set_single(&self, resource: <super::n::S as flatdata::Struct>::Item) -> ::std::io::Result<()> {
+        let data = unsafe {
+            ::std::slice::from_raw_parts(resource.as_ptr(), <super::n::S as flatdata::Struct>::SIZE_IN_BYTES)
+        };
+        self.storage.write("single", schema::a::resources::SINGLE, data)
+    }
+
+    #[inline]
+    pub fn set_list(&self, vector: &flatdata::ArrayView<super::m::S>) -> ::std::io::Result<()> {
+        self.storage.write("list", schema::a::resources::LIST, vector.as_ref())
+    }
+
+    #[inline]
+    pub fn start_list(&self) -> ::std::io::Result<flatdata::ExternalVector<super::m::S>> {
+        flatdata::create_external_vector(&*self.storage, "list", schema::a::resources::LIST)
+    }
+
+    #[inline]
+    pub fn start_multi(&self) -> ::std::io::Result<flatdata::MultiVector<Multi>> {
+        flatdata::create_multi_vector(&*self.storage, "multi", schema::a::resources::MULTI)
+    }
+
+    #[inline]
+    pub fn inner(&self) -> Result<super::n::XBuilder, flatdata::ResourceStorageError> {
+        use flatdata::ArchiveBuilder;
+        let storage = self.storage.subdir("inner");
+        super::n::XBuilder::new(storage)
+    }
+
+}
+
+impl flatdata::ArchiveBuilder for ABuilder {
+    const NAME: &'static str = "A";
+    const SCHEMA: &'static str = schema::a::A;
+
+    fn new(
+        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    ) -> Result<Self, flatdata::ResourceStorageError> {
+        flatdata::create_archive::<Self>(&storage)?;
+        Ok(Self { storage })
+    }
+}
+
 
 }
 
@@ -213,15 +754,131 @@ pub mod multivector {
 pub mod schema {
 pub mod structs {
 pub const INDEX_TYPE32: &str = r#""#;}}
-/// Builtin type to for MultiVector index
-define_index!(
-    IndexType32,
-    RefIndexType32,
-    RefMutIndexType32,
-    schema::structs::INDEX_TYPE32,
-    4,
-    32
-);
+#[derive(Clone, Debug)]
+pub struct IndexType32 {}
+
+#[derive(Clone, Copy)]
+pub struct IndexType32Ref<'a> {
+    data: *const u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> flatdata::Struct<'a> for IndexType32
+{
+    const SCHEMA: &'static str = schema::structs::INDEX_TYPE32;
+    const SIZE_IN_BYTES: usize = 4;
+    const IS_OVERLAPPING_WITH_NEXT : bool = true;
+
+    type Item = IndexType32Ref<'a>;
+
+    #[inline]
+    fn create(data : &'a[u8]) -> Self::Item
+    {
+        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+    }
+
+    type ItemMut = IndexType32Mut<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+    {
+        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+    }
+}
+
+
+impl<'a> IndexType32Ref<'a> {
+    #[inline]
+    pub fn value(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data, 0, 32);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }#[inline]
+    pub fn range(&self) -> std::ops::Range<u64> {
+        let start = flatdata_read_bytes!(u64, self.data, 0, 32);
+        let end = flatdata_read_bytes!(u64, self.data, 0 + 4 * 8, 32);
+        start..end
+    }
+
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for IndexType32Ref<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("IndexType32")
+            .field("value", &self.value())
+            .finish()
+    }
+}
+
+impl<'a> std::cmp::PartialEq for IndexType32Ref<'a> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.value() == other.value()     }
+}
+
+impl<'a> flatdata::Ref for IndexType32Ref<'a> {}
+
+pub struct IndexType32Mut<'a> {
+    data: *mut u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> IndexType32Mut<'a> {
+    #[inline]
+    pub fn value(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data, 0, 32);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+    #[inline]
+    pub fn set_value(&mut self, value: u64) {
+        let buffer = unsafe {
+            std::slice::from_raw_parts_mut(self.data, 4)
+        };
+        flatdata_write_bytes!(u64; value, buffer, 0, 32)
+    }
+
+
+    #[inline]
+    pub fn fill_from(&mut self, other: &IndexType32Ref) {
+        self.set_value(other.value());
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+
+    #[inline]
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for IndexType32Mut<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        IndexType32Ref { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
+    }
+}
+
+impl<'a> flatdata::RefMut for IndexType32Mut<'a> {}
+
+impl<'a> flatdata::IndexStruct<'a> for IndexType32 {
+    #[inline]
+    fn range(data: Self::Item) -> std::ops::Range<usize> {
+        let range = data.range();
+        range.start as usize..range.end as usize
+    }
+
+    #[inline]
+    fn set_index(mut data: Self::ItemMut, value: usize) {
+        data.set_value(value as u64);
+    }
+}
 
 }
 

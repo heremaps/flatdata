@@ -11,14 +11,112 @@ struct Foo
 }
 
 "#;}}
+#[derive(Clone, Debug)]
+pub struct Foo {}
 
-define_struct!(
-    Foo,
-    RefFoo,
-    RefMutFoo,
-    schema::structs::FOO,
-    4,
-    (f, set_f, u32, u32, 0, 32));
+#[derive(Clone, Copy)]
+pub struct FooRef<'a> {
+    data: *const u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> flatdata::Struct<'a> for Foo
+{
+    const SCHEMA: &'static str = schema::structs::FOO;
+    const SIZE_IN_BYTES: usize = 4;
+    const IS_OVERLAPPING_WITH_NEXT : bool = false;
+
+    type Item = FooRef<'a>;
+
+    #[inline]
+    fn create(data : &'a[u8]) -> Self::Item
+    {
+        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+    }
+
+    type ItemMut = FooMut<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+    {
+        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+    }
+}
+
+impl flatdata::NoOverlap for Foo {}
+
+impl<'a> FooRef<'a> {
+    #[inline]
+    pub fn f(&self) -> u32 {
+        let value = flatdata_read_bytes!(u32, self.data, 0, 32);
+        unsafe { std::mem::transmute::<u32, u32>(value) }
+    }
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for FooRef<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("Foo")
+            .field("f", &self.f())
+            .finish()
+    }
+}
+
+impl<'a> std::cmp::PartialEq for FooRef<'a> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.f() == other.f()     }
+}
+
+impl<'a> flatdata::Ref for FooRef<'a> {}
+
+pub struct FooMut<'a> {
+    data: *mut u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> FooMut<'a> {
+    #[inline]
+    pub fn f(&self) -> u32 {
+        let value = flatdata_read_bytes!(u32, self.data, 0, 32);
+        unsafe { std::mem::transmute::<u32, u32>(value) }
+    }
+
+    #[inline]
+    pub fn set_f(&mut self, value: u32) {
+        let buffer = unsafe {
+            std::slice::from_raw_parts_mut(self.data, 4)
+        };
+        flatdata_write_bytes!(u32; value, buffer, 0, 32)
+    }
+
+
+    #[inline]
+    pub fn fill_from(&mut self, other: &FooRef) {
+        self.set_f(other.f());
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+
+    #[inline]
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for FooMut<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        FooRef { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
+    }
+}
+
+impl<'a> flatdata::RefMut for FooMut<'a> {}
 }
 
 pub mod m {
@@ -33,12 +131,111 @@ struct Foo
 }
 
 "#;}}
+#[derive(Clone, Debug)]
+pub struct Foo {}
 
-define_struct!(
-    Foo,
-    RefFoo,
-    RefMutFoo,
-    schema::structs::FOO,
-    4,
-    (f, set_f, u32, u32, 0, 32));
+#[derive(Clone, Copy)]
+pub struct FooRef<'a> {
+    data: *const u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
 }
+
+impl<'a> flatdata::Struct<'a> for Foo
+{
+    const SCHEMA: &'static str = schema::structs::FOO;
+    const SIZE_IN_BYTES: usize = 4;
+    const IS_OVERLAPPING_WITH_NEXT : bool = false;
+
+    type Item = FooRef<'a>;
+
+    #[inline]
+    fn create(data : &'a[u8]) -> Self::Item
+    {
+        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+    }
+
+    type ItemMut = FooMut<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
+    {
+        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+    }
+}
+
+impl flatdata::NoOverlap for Foo {}
+
+impl<'a> FooRef<'a> {
+    #[inline]
+    pub fn f(&self) -> u32 {
+        let value = flatdata_read_bytes!(u32, self.data, 0, 32);
+        unsafe { std::mem::transmute::<u32, u32>(value) }
+    }
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for FooRef<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("Foo")
+            .field("f", &self.f())
+            .finish()
+    }
+}
+
+impl<'a> std::cmp::PartialEq for FooRef<'a> {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.f() == other.f()     }
+}
+
+impl<'a> flatdata::Ref for FooRef<'a> {}
+
+pub struct FooMut<'a> {
+    data: *mut u8,
+    _phantom: std::marker::PhantomData<&'a u8>,
+}
+
+impl<'a> FooMut<'a> {
+    #[inline]
+    pub fn f(&self) -> u32 {
+        let value = flatdata_read_bytes!(u32, self.data, 0, 32);
+        unsafe { std::mem::transmute::<u32, u32>(value) }
+    }
+
+    #[inline]
+    pub fn set_f(&mut self, value: u32) {
+        let buffer = unsafe {
+            std::slice::from_raw_parts_mut(self.data, 4)
+        };
+        flatdata_write_bytes!(u32; value, buffer, 0, 32)
+    }
+
+
+    #[inline]
+    pub fn fill_from(&mut self, other: &FooRef) {
+        self.set_f(other.f());
+    }
+
+    #[inline]
+    pub fn as_ptr(&self) -> *const u8 {
+        self.data
+    }
+
+    #[inline]
+    pub fn as_mut_ptr(&self) -> *mut u8 {
+        self.data
+    }
+}
+
+impl<'a> std::fmt::Debug for FooMut<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        FooRef { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
+    }
+}
+
+impl<'a> flatdata::RefMut for FooMut<'a> {}
+}
+
