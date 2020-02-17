@@ -25,43 +25,28 @@ use std::{fmt, marker};
 ///     y : u32 : 16;
 /// }
 ///
-/// archive X {
+/// archive S {
 ///    data : A;
 /// }
 /// ```
 ///
 /// ```
-/// # #[macro_use] extern crate flatdata;
-/// # fn main() {
-/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder, StructBuf };
-/// #
-/// # define_struct!(
-/// #     A,
-/// #     RefA,
-/// #     RefMutA,
-/// #     "schema of A",
-/// #     4,
-/// #     (x, set_x, u32, u32, 0, 16),
-/// #     (y, set_y, u32, u32, 16, 16));
-/// #
-/// # define_archive!(X, XBuilder, "schema of X";
-/// #     struct(data, false, "schema of data", set_data, A),
-/// # );
-/// #
+/// use flatdata::{MemoryResourceStorage, Archive, ArchiveBuilder, StructBuf};
+/// use flatdata::test::{A, S, SBuilder};
+///
 /// let storage = MemoryResourceStorage::new("/root/structbuf");
-/// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
+/// let builder = SBuilder::new(storage.clone()).expect("failed to create builder");
 /// let mut a = StructBuf::<A>::new();
 /// a.get_mut().set_x(1);
 /// a.get_mut().set_y(2);
 /// builder.set_data(a.get());
 ///
 /// println!("{:?}", storage);
-/// let archive = X::open(storage).expect("failed to open");
+/// let archive = S::open(storage).expect("failed to open");
 /// let view = archive.data();
 ///
 /// assert_eq!(view.x(), 1);
 /// assert_eq!(view.y(), 2);
-/// # }
 /// ```
 ///
 /// [`ArchiveBuilder`]: trait.ArchiveBuilder.html
@@ -136,16 +121,7 @@ where
 #[allow(dead_code)]
 mod test {
     use super::*;
-
-    define_struct!(
-        A,
-        RefA,
-        RefMutA,
-        "no_schema",
-        4,
-        (x, set_x, u32, u32, 0, 16),
-        (y, set_y, u32, u32, 16, 16)
-    );
+    use crate::test::A;
 
     #[test]
     fn test_new() {

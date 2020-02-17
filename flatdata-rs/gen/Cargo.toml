@@ -1,0 +1,18 @@
+[package]
+name = "flatdata-gen"
+version = "0.1.0"
+authors = [
+    "boxdot <d@zerovolt.org>",
+    "Christian Vetter <veaac.fdirct@gmail.com>",
+    "Gabriel Féron <feron.gabriel@gmail.com>"
+]
+license = "Apache-2.0"
+description = "Wrapper of flatdata's generator for usage in build.rs"
+repository = "https://github.com/heremaps/flatdata"
+keywords = ["serialization", "flatdata", "mmap", "generator"]
+categories = ["encoding"]
+readme = "../README.md"
+edition = "2018"
+
+[dependencies]
+walkdir = "2.3.1"

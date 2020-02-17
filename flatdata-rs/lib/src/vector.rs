@@ -34,23 +34,9 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// ```
 ///
 /// ```
-/// # #[macro_use] extern crate flatdata;
-/// # fn main() {
-/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder, Vector };
-/// #
-/// # define_struct!(
-/// #     A,
-/// #     RefA,
-/// #     RefMutA,
-/// #     "Schema of A",
-/// #     4,
-/// #     (x, set_x, u32, u32, 0, 16),
-/// #     (y, set_y, u32, u32, 16, 16));
-/// #
-/// # define_archive!(X, XBuilder, "Schema of X";
-/// #     vector(data, false, "Schema of data", set_data, start_data, A),
-/// # );
-/// #
+/// use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder, Vector };
+/// use flatdata::test::{A, X, XBuilder};
+///
 /// let storage = MemoryResourceStorage::new("/root/extvec");
 /// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// let mut v: Vector<A> = Vector::new();
@@ -68,7 +54,6 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// let archive = X::open(storage).expect("failed to open");
 /// let view = archive.data();
 /// assert_eq!(view.at(1).x(), 3);
-/// # }
 /// ```
 ///
 /// [`ExternalVector`]: struct.ExternalVector.html
@@ -240,23 +225,9 @@ where
 /// ```
 ///
 /// ```
-/// # #[macro_use] extern crate flatdata;
-/// # fn main() {
-/// # use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder };
-/// #
-/// # define_struct!(
-/// #     A,
-/// #     RefA,
-/// #     RefMutA,
-/// #     "Schema of A",
-/// #     4,
-/// #     (x, set_x, u32, u32, 0, 16),
-/// #     (y, set_y, u32, u32, 16, 16));
-/// #
-/// # define_archive!(X, XBuilder, "Schema of X";
-/// #     vector(data, false, "Schema of data", set_data, start_data, A),
-/// # );
-/// #
+/// use flatdata::{MemoryResourceStorage, Archive, ArchiveBuilder};
+/// use flatdata::test::{A, X, XBuilder};
+///
 /// let storage = MemoryResourceStorage::new("/root/extvec");
 /// let builder = XBuilder::new(storage.clone()).expect("failed to create builder");
 /// {
@@ -281,8 +252,6 @@ where
 /// let view = archive.data();
 /// assert_eq!(view.at(1).x(), 2);
 /// assert_eq!(view.at(1).y(), 3);
-///
-/// # }
 /// ```
 ///
 /// [`grow`]: #method.grow
@@ -379,26 +348,7 @@ mod tests {
     // Note: ExternalVector is tested in the corresponding example.
 
     use super::*;
-
-    define_struct!(
-        A,
-        RefA,
-        RefMutA,
-        "no_schema",
-        4,
-        (x, set_x, u32, u32, 0, 16),
-        (y, set_y, u32, u32, 16, 16)
-    );
-
-    define_struct!(
-        R,
-        RefR,
-        RefMutR,
-        "no_schema",
-        4,
-        (first_x, set_first_x, u32, u32, 0, 16),
-        range(x, u32, 0, 16)
-    );
+    use crate::test::{A, R};
 
     #[test]
     fn test_vector_new() {

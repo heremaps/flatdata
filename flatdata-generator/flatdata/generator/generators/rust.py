@@ -75,11 +75,14 @@ class RustGenerator(BaseGenerator):
 
         def _field_type(field):
             if isinstance(field.type, EnumType):
-                return "{}, {}".format(
-                    _fully_qualified_name(field.parent, field.type_reference.node),
-                    field.type_reference.node.type.name
-                )
-            return "{}, {}".format(field.type.name, field.type.name)
+                return "{}".format(
+                    _fully_qualified_name(field.parent, field.type_reference.node))
+            return "{}".format(field.type.name)
+
+        def _primitive_type(field):
+            if isinstance(field.type, EnumType):
+                return "{}".format(field.type_reference.node.type.name)
+            return "{}".format(field.type.name)
 
         def _fully_qualified_name(current, node):
             return "::".join((current.path_depth() - 1) * ["super"]) + node.path_with("::")
@@ -87,6 +90,7 @@ class RustGenerator(BaseGenerator):
         env.globals["fully_qualified_name"] = _fully_qualified_name
         env.filters["escape_rust_keywords"] = _escape_rust_keywords
         env.filters["field_type"] = _field_type
+        env.filters["primitive_type"] = _primitive_type
         env.filters['structure_references'] = lambda ls: [
             x for x in ls if (isinstance(x.node, Structure)
                               and "_builtin.multivector" not in SyntaxTree.namespace_path(x.node))]
@@ -105,3 +109,6 @@ class RustGenerator(BaseGenerator):
             x for x in l if not isinstance(x, BoundResource)]
 
         env.filters["format_numeric_literal"] = RustGenerator._format_numeric_literal
+
+        env.filters["has_range"] = lambda struct: any(
+            field.range for field in struct.fields)

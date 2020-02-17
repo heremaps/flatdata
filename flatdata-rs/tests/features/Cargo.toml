@@ -9,4 +9,4 @@ publish = false
 flatdata = { path = "../../lib" }
 
 [build-dependencies]
-flatdata = { path = "../../lib" }
+flatdata-gen = { path = "../../gen" }

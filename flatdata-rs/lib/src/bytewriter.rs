@@ -1219,4 +1219,64 @@ mod test {
         test_reader_unsigned(16384, 3, 16, &vec![0, 0, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         test_reader_unsigned(0, 3, 2, &vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
+
+    /// We want to test the following situation. Given a binary enum and a struct in flatdata
+    /// which reserves only 2 bits for the enum
+    ///
+    /// ```
+    /// enum Variant : $type {
+    ///     X = 0,
+    ///     Y = $val,
+    /// }
+    ///
+    /// struct A {
+    ///     e : Variant : 2;
+    /// }
+    /// ```
+    ///
+    /// we want to make sure that writing to e and reading it out always works. This is equivalent
+    /// to the test below.
+    /// ```
+    macro_rules! define_enum_write_read_test {
+        ($test_name:ident, $type:tt, $is_signed:expr, $val:expr) => {
+            #[test]
+            #[allow(dead_code)]
+            fn $test_name() {
+                #[repr($type)]
+                pub enum E {
+                    X = 0,
+                    Y = $val,
+                }
+
+                let mut buffer = vec![0; std::mem::size_of::<$type>()];
+                let value = E::Y;
+                flatdata_write_bytes!($type; value, buffer, 0, 2);
+                let raw_value = flatdata_read_bytes!($type, buffer.as_ptr(), 0, 2);
+                let value = unsafe { std::mem::transmute::<$type, E>(raw_value) };
+                match value {
+                    E::X => panic!("unexpected value X"),
+                    E::Y => (),
+                }
+            }
+        };
+    }
+
+    define_enum_write_read_test!(test_enum_u8_1, u8, false, 1);
+    define_enum_write_read_test!(test_enum_u8_2, u8, false, 2);
+    define_enum_write_read_test!(test_enum_u16_1, u16, false, 1);
+    define_enum_write_read_test!(test_enum_u16_2, u16, false, 2);
+    define_enum_write_read_test!(test_enum_u32_1, u32, false, 1);
+    define_enum_write_read_test!(test_enum_u32_2, u32, false, 2);
+    define_enum_write_read_test!(test_enum_u64_1, u64, false, 1);
+    define_enum_write_read_test!(test_enum_u64_2, u64, false, 2);
+    // Note: For older compilers, there a regression bug for binary enums with underlying
+    // type i8: https://github.com/rust-lang/rust/issues/51582
+    define_enum_write_read_test!(test_enum_i8_1, i8, true, 1);
+    define_enum_write_read_test!(test_enum_i8_2, i8, true, -1);
+    define_enum_write_read_test!(test_enum_i16_1, i16, true, 1);
+    define_enum_write_read_test!(test_enum_i16_2, i16, true, -1);
+    define_enum_write_read_test!(test_enum_i32_1, i32, true, 1);
+    define_enum_write_read_test!(test_enum_i32_2, i32, true, -1);
+    define_enum_write_read_test!(test_enum_i64_1, i64, true, 1);
+    define_enum_write_read_test!(test_enum_i64_2, i64, true, -1);
 }
