@@ -138,7 +138,7 @@ impl flatdata::Archive for {{archive.name}} {
     const SCHEMA: &'static str = schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
 
     fn open(storage: std::sync::Arc<dyn flatdata::ResourceStorage>)
-        -> Result<Self, flatdata::ResourceStorageError>
+        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 

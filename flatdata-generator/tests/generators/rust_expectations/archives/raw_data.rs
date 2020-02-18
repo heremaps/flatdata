@@ -43,7 +43,7 @@ archive A
 
 #[derive(Clone)]
 pub struct A {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: std::sync::Arc<dyn flatdata::ResourceStorage>,
     data: flatdata::MemoryDescriptor,
     optional_data: Option<flatdata::MemoryDescriptor>,
 }
@@ -87,7 +87,7 @@ impl flatdata::Archive for A {
     const NAME: &'static str = "A";
     const SCHEMA: &'static str = schema::a::A;
 
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    fn open(storage: std::sync::Arc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
@@ -105,7 +105,7 @@ impl flatdata::Archive for A {
 
 #[derive(Clone, Debug)]
 pub struct ABuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: std::sync::Arc<dyn flatdata::ResourceStorage>
 }
 
 impl ABuilder {
@@ -126,7 +126,7 @@ impl flatdata::ArchiveBuilder for ABuilder {
     const SCHEMA: &'static str = schema::a::A;
 
     fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: std::sync::Arc<dyn flatdata::ResourceStorage>,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive::<Self>(&storage)?;
         Ok(Self { storage })
