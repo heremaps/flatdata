@@ -15,7 +15,7 @@
 
 #[derive(Clone)]
 pub struct {{archive.name}} {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: std::sync::Arc<dyn flatdata::ResourceStorage>,
     {% for r in archive.resources | supported_resources %}
     {{r.name}}: {% if r.optional %}Option<{% endif %}{% if [r] | instance_resources or [r] | vector_resources or [r] | rawdata_resources %}flatdata::MemoryDescriptor{% elif [r] | multivector_resources %}(flatdata::MemoryDescriptor, flatdata::MemoryDescriptor){% elif [r] | subarchive_resources %}{{ fully_qualified_name(archive, r.target.node) }}{% endif %}{% if r.optional %}>{% endif %},
     {% endfor %}
@@ -137,8 +137,8 @@ impl flatdata::Archive for {{archive.name}} {
     const NAME: &'static str = "{{archive.name}}";
     const SCHEMA: &'static str = schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
 
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
-        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
+    fn open(storage: std::sync::Arc<dyn flatdata::ResourceStorage>)
+        -> Result<Self, flatdata::ResourceStorageError>
     {
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
@@ -176,7 +176,7 @@ impl flatdata::Archive for {{archive.name}} {
 
 #[derive(Clone, Debug)]
 pub struct {{archive.name}}Builder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: std::sync::Arc<dyn flatdata::ResourceStorage>
 }
 
 {% if archive.resources | supported_resources | length -%}
@@ -236,7 +236,7 @@ impl flatdata::ArchiveBuilder for {{archive.name}}Builder {
     const SCHEMA: &'static str = schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
 
     fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: std::sync::Arc<dyn flatdata::ResourceStorage>,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive::<Self>(&storage)?;
         Ok(Self { storage })

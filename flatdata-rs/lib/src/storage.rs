@@ -8,14 +8,12 @@ use crate::{
 };
 
 use std::{
-    cell::RefCell,
-    fmt,
+    fmt::{self, Debug},
     io::{self, Seek, Write},
     mem,
     ops::DerefMut,
-    ptr,
-    rc::Rc,
-    slice, str,
+    ptr, slice, str,
+    sync::{Arc, Mutex},
 };
 
 use diff;
@@ -29,7 +27,7 @@ impl<T: Write + Seek> Stream for T {}
 /// slash-separated('/'). Manages schema for each resource and checks it on
 /// query. Resource storage is expected to provide read-write access to
 /// resources.
-pub trait ResourceStorage: std::fmt::Debug {
+pub trait ResourceStorage: Debug + Send + Sync {
     /// Open a flatdata resource with given name and schema for reading.
     ///
     /// Also checks if the schema matches the stored schema in the storage. The
@@ -47,12 +45,12 @@ pub trait ResourceStorage: std::fmt::Debug {
     fn write(&self, resource_name: &str, schema: &str, data: &[u8]) -> io::Result<()> {
         // write data
         let stream = self.create_output_stream(resource_name)?;
-        let mut mut_stream = stream.borrow_mut();
+        let mut mut_stream = stream.lock().unwrap();
         write_to_stream(data, mut_stream.deref_mut())?;
         // write schema
         let schema_name = format!("{}.schema", resource_name);
         let stream = self.create_output_stream(&schema_name)?;
-        let mut mut_stream = stream.borrow_mut();
+        let mut mut_stream = stream.lock().unwrap();
         write_schema(schema, mut_stream.deref_mut())
     }
 
@@ -61,7 +59,7 @@ pub trait ResourceStorage: std::fmt::Debug {
     //
 
     /// Creates a resource storage at a given subdirectory.
-    fn subdir(&self, dir: &str) -> Rc<dyn ResourceStorage>;
+    fn subdir(&self, dir: &str) -> Arc<dyn ResourceStorage>;
 
     /// Returns `true` if resource exists in the storage.
     fn exists(&self, resource_name: &str) -> bool;
@@ -77,7 +75,7 @@ pub trait ResourceStorage: std::fmt::Debug {
 
     /// Creates a resource with given name and returns an output stream for
     /// writing to it.
-    fn create_output_stream(&self, resource_name: &str) -> io::Result<Rc<RefCell<dyn Stream>>>;
+    fn create_output_stream(&self, resource_name: &str) -> io::Result<Arc<Mutex<dyn Stream>>>;
 
     //
     // Implementation helper
@@ -151,7 +149,7 @@ where
     // write schema
     let schema_name = format!("{}.schema", resource_name);
     let stream = storage.create_output_stream(&schema_name)?;
-    stream.borrow_mut().write_all(schema.as_bytes())?;
+    stream.lock().unwrap().write_all(schema.as_bytes())?;
 
     // create external vector
     let data_writer = storage.create_output_stream(resource_name)?;
@@ -182,7 +180,7 @@ where
     // write schema
     let schema_name = format!("{}.schema", resource_name);
     let stream = storage.create_output_stream(&schema_name)?;
-    stream.borrow_mut().write_all(schema.as_bytes())?;
+    stream.lock().unwrap().write_all(schema.as_bytes())?;
 
     // create multi vector
     let data_writer = storage.create_output_stream(resource_name)?;
@@ -204,7 +202,7 @@ where
 /// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
 #[doc(hidden)]
 pub fn create_archive<T: ArchiveBuilder>(
-    storage: &Rc<dyn ResourceStorage>,
+    storage: &Arc<dyn ResourceStorage>,
 ) -> Result<(), ResourceStorageError> {
     let signature_name = format!("{}.archive", T::NAME);
     {
@@ -225,13 +223,19 @@ pub fn create_archive<T: ArchiveBuilder>(
     Ok(())
 }
 
-/// Describes a chunk of memory
+/// Describes a chunk of memory.
+///
+/// It has to be guaranteed that the referenced memory will never move.
+/// This is the case for memory mapped files and memory allocated by
+/// the `MemoryStorage`.
 #[doc(hidden)]
 #[derive(Debug, Clone)]
 pub struct MemoryDescriptor {
     ptr: *const u8,
     size: usize,
 }
+
+unsafe impl Send for MemoryDescriptor {}
 
 impl Default for MemoryDescriptor {
     #[inline]
@@ -272,7 +276,7 @@ impl MemoryDescriptor {
 /// [`create_output_stream`]: trait.ResourceStorage.html#tycreate_output_stream
 #[derive(Clone)]
 pub struct ResourceHandle<'a> {
-    stream: Rc<RefCell<dyn Stream>>,
+    stream: Arc<Mutex<dyn Stream>>,
     size_in_bytes: usize,
     storage: &'a dyn ResourceStorage,
     name: String,
@@ -291,12 +295,12 @@ impl<'a> ResourceHandle<'a> {
         storage: &'a dyn ResourceStorage,
         name: String,
         schema: String,
-        stream: Rc<RefCell<dyn Stream>>,
+        stream: Arc<Mutex<dyn Stream>>,
     ) -> io::Result<Self> {
         // Reserve space for size in the beginning of the stream, which will be updated
         // later.
         {
-            let mut mut_stream = stream.borrow_mut();
+            let mut mut_stream = stream.lock().unwrap();
             write_size(0u64, mut_stream.deref_mut())?;
         }
         Ok(Self {
@@ -311,7 +315,7 @@ impl<'a> ResourceHandle<'a> {
 
     /// Writes data to the underlying stream.
     pub(crate) fn write(&mut self, data: &[u8]) -> io::Result<()> {
-        let res = self.stream.borrow_mut().write_all(data);
+        let res = self.stream.lock().unwrap().write_all(data);
         if res.is_ok() {
             self.size_in_bytes += data.len();
         }
@@ -338,7 +342,7 @@ impl<'a> ResourceHandle<'a> {
         let resource_name = self.name.clone();
         let into_storage_error = |e| ResourceStorageError::from_io_error(e, resource_name.clone());
 
-        let mut mut_stream = self.stream.borrow_mut();
+        let mut mut_stream = self.stream.lock().unwrap();
         write_padding(mut_stream.deref_mut()).map_err(into_storage_error)?;
 
         // Update size in the beginning of the file
@@ -413,7 +417,8 @@ mod test {
             .create_output_stream("/root/extvec/blubb.schema")
             .unwrap();
         stream
-            .borrow_mut()
+            .lock()
+            .unwrap()
             .write_all("myschema".as_bytes())
             .unwrap();
 

@@ -3,7 +3,7 @@
 
 use crate::{error::ResourceStorageError, storage::ResourceStorage};
 
-use std::{fmt::Debug, rc::Rc};
+use std::{fmt::Debug, sync::Arc};
 
 #[doc(hidden)]
 pub use std::marker;
@@ -11,7 +11,7 @@ pub use std::marker;
 /// A flatdata archive representing serialized data.
 ///
 /// Each archive in generated code implements this trait.
-pub trait Archive: Debug + Clone {
+pub trait Archive: Debug + Clone + Send {
     /// Name of the archive.
     const NAME: &'static str;
     /// Schema of the archive.
@@ -32,14 +32,14 @@ pub trait Archive: Debug + Clone {
     /// verified. If any non-optional resource is missing or has a wrong
     /// signature (unexpected schema), the operation will fail. Therefore,
     /// it is not possible to open partially written archive.
-    fn open(storage: Rc<dyn ResourceStorage>) -> Result<Self, ResourceStorageError>;
+    fn open(storage: Arc<dyn ResourceStorage>) -> Result<Self, ResourceStorageError>;
 }
 
 /// A flatdata archive builder for serializing data.
 ///
 /// For each archive in generated code there is a corresponding archive builder
 /// which implements this trait.
-pub trait ArchiveBuilder: Clone {
+pub trait ArchiveBuilder: Clone + Send {
     /// Name of the archive associated with this archive builder.
     const NAME: &'static str;
     /// Schema of the archive associated with this archive builder.
@@ -63,5 +63,45 @@ pub trait ArchiveBuilder: Clone {
     /// [coappearances] example.
     ///
     /// [coappearances]: https://github.com/boxdot/flatdata-rs/blob/master/tests/coappearances_test.rs#L159
-    fn new(storage: Rc<dyn ResourceStorage>) -> Result<Self, ResourceStorageError>;
+    fn new(storage: Arc<dyn ResourceStorage>) -> Result<Self, ResourceStorageError>;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Archive, ArchiveBuilder};
+    use crate::test::{XBuilder, X};
+    use crate::MemoryResourceStorage;
+
+    use std::thread;
+
+    #[test]
+    fn test_send_builder() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let builder = XBuilder::new(storage.clone()).unwrap();
+
+        let th = thread::spawn(move || {
+            let mut data = builder.start_data().unwrap();
+            data.grow().unwrap();
+            data.close().unwrap();
+        });
+        th.join().unwrap();
+
+        let archive = X::open(storage).unwrap();
+        assert_eq!(archive.data().len(), 1);
+    }
+
+    #[test]
+    fn test_send_archive() {
+        let storage = MemoryResourceStorage::new("/root/resources");
+        let builder = XBuilder::new(storage.clone()).unwrap();
+        let mut data = builder.start_data().unwrap();
+        data.grow().unwrap();
+        data.close().unwrap();
+
+        let archive = X::open(storage).unwrap();
+        let th = thread::spawn(move || {
+            assert_eq!(archive.data().len(), 1);
+        });
+        th.join().unwrap();
+    }
 }
