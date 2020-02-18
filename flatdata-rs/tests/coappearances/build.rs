@@ -1,7 +1,7 @@
 fn main() {
-    flatdata_gen::generate(
+    flatdata::generate(
         "assets/coappearances.flatdata",
-        std::env::var("OUT_DIR").unwrap(),
+        &std::env::var("OUT_DIR").unwrap(),
     )
     .expect("generator failed");
 }
