@@ -1,78 +1,64 @@
-//! This crate provides a helper function wrapping the [flatdata generator].
-//!
-//! It can be used to write `build.rs` build scripts, generating outputs either from
-//! a single schema, or recursively from a folder of schemas.
-//!
-//! `schemas_path` can either be a single file, or a filder containing schemas.
-//! In both cases the function will only handle files with the `.flatdata`
-//! extension.
-//!
-//! Generated files are in the same relative location, e.g.
-//! ``` text
-//! schemas_path/
-//! ├────────────example_a/
-//! │            ├─────────my_schema.flatdata
-//! │            └─────────my_other_schema.flatdata
-//! └────────────example_b.flatdata
-//! ```
-//!
-//! results in
-//! ``` text
-//! out_dir/
-//! ├───────example_a/
-//! │       ├─────────my_schema.rs
-//! │       └─────────my_other_schema.rs
-//! └───────example_b.rs
-//! ```
-//!
-//! ## Examples
-//!
-//! `build.rs`
-//!
-//! ```ignore
-//! use std::env;
-//!
-//! fn main() {
-//!     flatdata::generate("schemas_path/", &env::var("OUT_DIR").unwrap()).unwrap();
-//! }
-//! ```
-//!
-//! `my_schema.rs`
-//!
-//! ```ignore
-//! #![allow(dead_code)]
-//!
-//! include!(concat!(env!("OUT_DIR"), "/example_a/my_schema.rs"));
-//!
-//! // re-export if desired
-//! pub use my_schema::*;
-//! ```
-//!
-//! [flatdata generator]: https://github.com/heremaps/flatdata/tree/master/flatdata-generator
-
 use std::{
     env, io,
     path::{Path, PathBuf},
     process::Command,
 };
 
-/// Generates Rust code from flatdata schema at `schemas_path` in `out_dir`.
+/// A helper function wrapping the flatdata generator.
 ///
-/// The `schemas_path` can point to a single schema, or to a folder containing multiple
-/// schemas. In the latter case, the folder is searched for schames recursively.
+/// Can be used to write build.rs build scripts, generating outputs either from
+/// a single schema, or recursively from a folder of schemas.
 ///
-/// For examples, see the crate documentation.
+/// `schemas_path` can either be a single file, or a filder containing schemas.
+/// In both cases the function will only handle files with the `.flatdata`
+/// extension.
 ///
-/// # Development
+/// Generated files are in the same relative location, e.g.
+/// ``` text
+/// schemas_path/
+/// ├────────────example_a/
+/// │            ├─────────my_schema.flatdata
+/// │            └─────────my_other_schema.flatdata
+/// └────────────example_b.flatdata
+/// ```
+///
+/// results in
+/// ``` text
+/// out_dir/
+/// ├───────example_a/
+/// │       ├─────────my_schema.rs
+/// │       └─────────my_other_schema.rs
+/// └───────example_b.rs
+/// ```
+///
+/// ## Examples
+///
+/// `build.rs`
+///
+/// ```ignore
+/// use std::env;
+///
+/// fn main() {
+///     flatdata::generate("schemas_path/", &env::var("OUT_DIR").unwrap()).unwrap();
+/// }
+/// ```
+///
+/// `my_schema.rs`
+///
+/// ```ignore
+/// #![allow(dead_code)]
+///
+/// include!(concat!(env!("OUT_DIR"), "/example_a/my_schema.rs"));
+///
+/// // re-export if desired
+/// pub use my_schema::*;
+/// ```
+///
+/// ## Development
 ///
 /// If you are working on the generator, you can make sure your `build.rs`
 /// script picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to
 /// the `flatdata-generator` folder.
-///
-/// # Implementation detail
-///
-/// The generator is implemented in Python 3. It is installed in virtualenv by `pip3`
-/// locally and used from there.
 pub fn generate(
     schemas_path: impl AsRef<Path>,
     out_dir: impl AsRef<Path>,
