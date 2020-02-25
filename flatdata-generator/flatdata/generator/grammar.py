@@ -44,6 +44,7 @@ enum = Group(
 )
 
 range = Group(
+    Optional(comment)("doc") +
     Keyword("@range") +
     "(" +
     identifier("name") +
@@ -101,7 +102,7 @@ resource_type = Group(
     vector("vector") |
     multivector("multivector") |
     archive_resource("archive") |
-    single_object("object") 
+    single_object("object")
 )
 
 def _combine_list(t):

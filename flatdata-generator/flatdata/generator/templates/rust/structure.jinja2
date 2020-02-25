@@ -1,11 +1,27 @@
 {%- macro declaration(struct) %}
 
-#[derive(Clone, Debug)]
-pub struct {{struct.name}} {}
-
 {% if struct.doc %}
 {{ struct.doc | rust_doc }}
 {% endif %}
+///
+/// ## Access pattern
+///
+/// This structure is used as a template parameter in containers.
+/// It does not contain any data, instead it references
+///
+/// * [`{{struct.name}}Ref`] for the read-only access, and
+/// * [`{{struct.name}}Mut`] for the mutable access
+///
+/// to the `{{struct.name}}` data.
+///
+/// [`{{struct.name}}Ref`]: struct.{{struct.name}}Ref.html
+/// [`{{struct.name}}Mut`]: struct.{{struct.name}}Mut.html
+#[derive(Clone, Debug)]
+pub struct {{struct.name}} {}
+
+/// Read-only access to [`{{struct.name}}`].
+///
+/// [`{{struct.name}}`]: struct.{{struct.name}}.html
 #[derive(Clone, Copy)]
 pub struct {{struct.name}}Ref<'a> {
     data: *const u8,
@@ -41,8 +57,12 @@ impl flatdata::NoOverlap for {{struct.name}} {}
 
 impl<'a> {{ struct.name }}Ref<'a> {
     {% for field in struct.fields %}
-    {% if field.doc %}
+    {% if field.doc and not field.range %}
     {{ field.doc | rust_doc }}
+    {% else %}
+    /// First element of the range [`{{ field.range | escape_rust_keywords }}`].
+    ///
+    /// [`{{ field.range | escape_rust_keywords }}`]: #method.{{ field.range | escape_rust_keywords }}
     {% endif %}
     #[inline]
     pub fn {{ field.name | escape_rust_keywords }}(&self) -> {{ field | field_type }} {
@@ -51,6 +71,9 @@ impl<'a> {{ struct.name }}Ref<'a> {
     }
 
     {%- if field.range -%}
+    {% if field.doc %}
+    {{ field.doc | rust_doc }}
+    {% endif %}
     #[inline]
     pub fn {{ field.range | escape_rust_keywords }}(&self) -> std::ops::Range<{{ field | field_type }}> {
         let start = flatdata_read_bytes!({{ field.type.name }}, self.data, {{ field.offset }}, {{ field.type.width }});
@@ -62,7 +85,7 @@ impl<'a> {{ struct.name }}Ref<'a> {
     {% endfor %}
 
     #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
+    fn as_ptr(&self) -> *const u8 {
         self.data
     }
 }
@@ -90,6 +113,9 @@ impl<'a> std::cmp::PartialEq for {{ struct.name }}Ref<'a> {
 
 impl<'a> flatdata::Ref for {{ struct.name }}Ref<'a> {}
 
+/// Mutable access to [`{{struct.name}}`].
+///
+/// [`{{struct.name}}`]: struct.{{struct.name}}.html
 pub struct {{ struct.name }}Mut<'a> {
     data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
@@ -98,6 +124,13 @@ pub struct {{ struct.name }}Mut<'a> {
 impl<'a> {{ struct.name }}Mut<'a> {
     {% for field in struct.fields %}
     {% set name = field.name | escape_rust_keywords %}
+    {% if field.doc and not field.range %}
+    {{ field.doc | rust_doc }}
+    {% else %}
+    /// First element of the range [`{{ field.range | escape_rust_keywords }}`].
+    ///
+    /// [`{{ field.range | escape_rust_keywords }}`]: struct.{{ struct.name }}Ref.html#method.{{ field.range | escape_rust_keywords }}
+    {% endif %}
     #[inline]
     pub fn {{ name }}(&self) -> {{ field | field_type }} {
         let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
@@ -114,6 +147,7 @@ impl<'a> {{ struct.name }}Mut<'a> {
 
     {% endfor %}
 
+    /// Copies the data from `other` into this struct.
     #[inline]
     pub fn fill_from(&mut self, other: &{{ struct.name }}Ref) {
         {% for field in struct.fields %}
@@ -123,12 +157,12 @@ impl<'a> {{ struct.name }}Mut<'a> {
     }
 
     #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
+    fn as_ptr(&self) -> *const u8 {
         self.data
     }
 
     #[inline]
-    pub fn as_mut_ptr(&self) -> *mut u8 {
+    fn as_mut_ptr(&self) -> *mut u8 {
         self.data
     }
 }
