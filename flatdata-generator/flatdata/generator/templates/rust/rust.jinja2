@@ -8,8 +8,12 @@
 {%- for ns in tree.root.children recursive %}
 {%- if ns | is_namespace %}
 
+{% if ns | is_builtin_namespace %}
+#[doc(hidden)]
+{% endif %}
 pub mod {{ ns.name }} {
 {{ loop(ns.children) }}
+#[doc(hidden)]
 pub mod schema {
 pub mod structs {
 {% for node in ns.children if node | is_structure %}
@@ -32,7 +36,7 @@ pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
 {% endfor %}
 }
 
-{%- for node in ns.children %}
+{% for node in ns.children %}
     {% if node | is_structure and not node | is_multivector_index %}
         {{- structure.declaration(node) }}
     {% elif node | is_structure and node | is_multivector_index %}

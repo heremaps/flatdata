@@ -1,5 +1,6 @@
 {%- macro declaration(node) %}
-{%- if node.doc %}
+
+{% if node.doc %}
     {{ node.doc | rust_doc }}
 {% endif %}
 pub const {{ node.name | camel_to_snake_case | upper }}: {{ node.type.name }} = {{ node.value | format_numeric_literal }};

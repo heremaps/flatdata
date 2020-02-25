@@ -105,6 +105,8 @@ class RustGenerator(BaseGenerator):
         env.filters['subarchive_resources'] = lambda ls: [
             x for x in ls if isinstance(x, ArchiveResource)]
 
+        env.filters["is_builtin_namespace"] = lambda ns: ns.name == "_builtin"
+
         env.filters["supported_resources"] = lambda l: [
             x for x in l if not isinstance(x, BoundResource)]
 
