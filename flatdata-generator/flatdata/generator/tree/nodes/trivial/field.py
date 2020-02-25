@@ -61,3 +61,7 @@ class Field(Node):
     @offset.setter
     def offset(self, value):
         self._offset = value
+
+    @property
+    def doc(self):
+        return self._properties.doc

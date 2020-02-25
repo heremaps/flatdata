@@ -41,6 +41,9 @@ impl flatdata::NoOverlap for {{struct.name}} {}
 
 impl<'a> {{ struct.name }}Ref<'a> {
     {% for field in struct.fields %}
+    {% if field.doc %}
+    {{ field.doc | rust_doc }}
+    {% endif %}
     #[inline]
     pub fn {{ field.name | escape_rust_keywords }}(&self) -> {{ field | field_type }} {
         let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
