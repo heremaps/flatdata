@@ -193,7 +193,7 @@ impl {{archive.name}}Builder {
     #[inline]
     pub fn set_{{r.name}}(&self, resource: <{{t}} as flatdata::Struct>::Item) -> ::std::io::Result<()> {
         let data = unsafe {
-            ::std::slice::from_raw_parts(resource.as_ptr(), <{{t}} as flatdata::Struct>::SIZE_IN_BYTES)
+            ::std::slice::from_raw_parts(resource.data, <{{t}} as flatdata::Struct>::SIZE_IN_BYTES)
         };
         self.storage.write("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}, data)
     }

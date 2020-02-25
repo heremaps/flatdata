@@ -39,7 +39,7 @@ impl<'a> flatdata::Struct<'a> for {{ struct.name }}
     #[inline]
     fn create(data : &'a[u8]) -> Self::Item
     {
-        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+        Self::Item { data : data.as_ptr(), _phantom : std::marker::PhantomData }
     }
 
     type ItemMut = {{ struct.name }}Mut<'a>;
@@ -47,7 +47,7 @@ impl<'a> flatdata::Struct<'a> for {{ struct.name }}
     #[inline]
     fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
     {
-        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+        Self::ItemMut { data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
     }
 }
 
@@ -83,11 +83,6 @@ impl<'a> {{ struct.name }}Ref<'a> {
 
     {% endif %}
     {% endfor %}
-
-    #[inline]
-    fn as_ptr(&self) -> *const u8 {
-        self.data
-    }
 }
 
 impl<'a> std::fmt::Debug for {{ struct.name }}Ref<'a> {
@@ -154,16 +149,6 @@ impl<'a> {{ struct.name }}Mut<'a> {
         {% set name = field.name | escape_rust_keywords %}
         self.set_{{ name }}(other.{{ name }}());
         {% endfor %}
-    }
-
-    #[inline]
-    fn as_ptr(&self) -> *const u8 {
-        self.data
-    }
-
-    #[inline]
-    fn as_mut_ptr(&self) -> *mut u8 {
-        self.data
     }
 }
 
