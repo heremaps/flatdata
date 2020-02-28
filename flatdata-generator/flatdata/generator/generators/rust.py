@@ -54,7 +54,7 @@ class RustGenerator(BaseGenerator):
 
         def _rust_doc(expr):
             lines = [
-                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)\s*(.*?)\s*(\*/)?$',
+                re.sub(r'^[ \t]*(/\*\*\s?|/\*\s?|\*/|\*\s?)(.*?)\s*(\*/)?$',
                        r"/// \2", line).strip()
                 for line in expr.split('\n')
             ]
