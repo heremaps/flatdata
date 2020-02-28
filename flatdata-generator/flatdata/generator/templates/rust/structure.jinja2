@@ -59,7 +59,7 @@ impl<'a> {{ struct.name }}Ref<'a> {
     {% for field in struct.fields %}
     {% if field.doc and not field.range %}
     {{ field.doc | rust_doc }}
-    {% else %}
+    {% elif field.range %}
     /// First element of the range [`{{ field.range | escape_rust_keywords }}`].
     ///
     /// [`{{ field.range | escape_rust_keywords }}`]: #method.{{ field.range | escape_rust_keywords }}
@@ -121,7 +121,7 @@ impl<'a> {{ struct.name }}Mut<'a> {
     {% set name = field.name | escape_rust_keywords %}
     {% if field.doc and not field.range %}
     {{ field.doc | rust_doc }}
-    {% else %}
+    {% elif field.range %}
     /// First element of the range [`{{ field.range | escape_rust_keywords }}`].
     ///
     /// [`{{ field.range | escape_rust_keywords }}`]: struct.{{ struct.name }}Ref.html#method.{{ field.range | escape_rust_keywords }}
