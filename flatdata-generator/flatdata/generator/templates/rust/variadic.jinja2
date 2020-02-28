@@ -2,9 +2,14 @@
 {% set name = resource.name | snake_to_upper_camel_case %}
 {% set types = resource.referenced_structures | structure_references %}
 
+/// Enum for read-only heterogeneous access to elements in a
+/// bucket of the [`{{resource.name}}`] resource.
+///
+/// [`{{resource.name}}`]: struct.{{archive}}.html#method.{{resource.name}}
 #[derive(Clone, PartialEq)]
 pub enum {{name}}Ref<'a> {
     {% for type in types %}
+    #[allow(missing_docs)]
     {{type.node.name }}(<{{fully_qualified_name(archive, type.node)}} as flatdata::Struct<'a>>::Item),
     {%- endfor %}
 }
@@ -30,6 +35,12 @@ impl<'a> flatdata::VariadicRef for {{name}}Ref<'a> {
     }
 }
 
+/// Builder of buckets in the [`{{resource.name}}`] resource.
+///
+/// Refers to a single bucket in the [`{{resource.name}}`] multivector and
+/// provides methods for adding heterogeneous data to the bucket.
+///
+/// [`{{resource.name}}`]: struct.{{archive}}.html#method.{{resource.name}}
 pub struct {{name}}Builder<'a> {
     data: &'a mut Vec<u8>
 }
@@ -37,6 +48,9 @@ pub struct {{name}}Builder<'a> {
 impl<'a> {{name}}Builder<'a> {
     {% for type in types %}
     {% set inner_type = fully_qualified_name(archive, type.node) %}
+    /// Adds data of the type [`{{type.node.name}}`] to the bucket.
+    ///
+    /// [`{{type.node.name}}`]: struct.{{type.node.name}}.html
     #[inline]
     pub fn add_{{ type.node.name | camel_to_snake_case }}<'b>(&'b mut self) -> <{{inner_type}} as flatdata::Struct<'b>>::ItemMut {
         let old_len = self.data.len();
@@ -50,6 +64,28 @@ impl<'a> {{name}}Builder<'a> {
     {% endfor %}
 }
 
+/// Variadic struct attached to the [`{{resource.name}}`] archive resource.
+///
+/// It unifies the following data types:
+//
+{% for type in types %}
+/// * [`{{type.node.name}}`]
+{% endfor %}
+///
+/// ## Access pattern
+///
+/// This structure is used as a template parameter in [`{{resource.name}}`] multivector/
+/// multiarray view. It does not contain any data, instead it references
+///
+/// * [`{{name}}Ref`] for the read-only heterogeneous access, and
+/// * [`{{name}}Builder`] for the mutable builder pattern access.
+///
+/// [`{{resource.name}}`]: struct.{{archive}}.html#method.{{resource.name}}
+/// [`{{name}}Ref`]: enum.{{name}}Ref.html
+/// [`{{name}}Builder`]: struct.{{name}}Builder.html
+{% for type in types %}
+/// [`{{type.node.name}}`]: struct.{{type.node.name}}.html
+{% endfor %}
 #[derive(Clone)]
 pub struct {{name}} {}
 

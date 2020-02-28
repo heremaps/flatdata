@@ -6,7 +6,6 @@
 {# variadic structs #}
 {% for r in archive.resources | multivector_resources %}
 
-/// Builtin union type of {% for type in r.referenced_structures | structure_references %}{{ type.node.path }}{%- if not loop.last %}, {% endif %}{% endfor %}.
 {{- variadic.declaration(archive, r) }}
 {%- endfor %}
 
