@@ -13,6 +13,9 @@
 {# archive definition #}
 {%- set archive_ns = archive.name | camel_to_snake_case %}
 
+{% if archive.doc %}
+{{ archive.doc | rust_doc }}
+{% endif %}
 #[derive(Clone)]
 pub struct {{archive.name}} {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
@@ -37,6 +40,9 @@ impl {{archive.name}} {
 
     {% for r in archive.resources | supported_resources %}
     {% if [r] | rawdata_resources %}
+    {% if r.doc %}
+    {{ r.doc | rust_doc }}
+    {% endif %}
     {% if r.optional %}
     #[inline]
     pub fn {{r.name}}(&self) -> Option<flatdata::RawData> {
@@ -51,6 +57,9 @@ impl {{archive.name}} {
 
     {% elif [r] | instance_resources %}
     {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
+    {% if r.doc %}
+    {{ r.doc | rust_doc }}
+    {% endif %}
     {% if r.optional %}
     #[inline]
     pub fn {{r.name}}(&self) -> Option<<{{t}} as flatdata::Struct>::Item>
@@ -67,6 +76,9 @@ impl {{archive.name}} {
 
     {% elif [r] | vector_resources %}
     {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
+    {% if r.doc %}
+    {{ r.doc | rust_doc }}
+    {% endif %}
     {% if r.optional %}
     #[inline]
     pub fn {{r.name}}(&self) -> Option<flatdata::ArrayView<{{t}}>>
@@ -83,6 +95,9 @@ impl {{archive.name}} {
 
     {% elif [r] | multivector_resources %}
     {% set t = r.name | snake_to_upper_camel_case %}
+    {% if r.doc %}
+    {{ r.doc | rust_doc }}
+    {% endif %}
     {% if r.optional %}
     #[inline]
     pub fn {{r.name}}(&self) -> Option<flatdata::MultiArrayView<{{t}}>>
@@ -105,6 +120,9 @@ impl {{archive.name}} {
 
     {% elif [r] | subarchive_resources %}
     {% set t = fully_qualified_name(archive, r.target.node) %}
+    {% if r.doc %}
+    {{ r.doc | rust_doc }}
+    {% endif %}
     {% if r.optional %}
     #[inline]
     pub fn {{r.name}}(&self) -> Option<&{{t}}>
@@ -174,6 +192,9 @@ impl flatdata::Archive for {{archive.name}} {
     }
 }
 
+/// Builder for creating [`{{archive.name}}`] archives.
+///
+///[`{{archive.name}}`]: struct.{{archive.name}}.html
 #[derive(Clone, Debug)]
 pub struct {{archive.name}}Builder {
     storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
@@ -183,6 +204,9 @@ pub struct {{archive.name}}Builder {
 impl {{archive.name}}Builder {
     {% for r in archive.resources | supported_resources %}
     {% if [r] | rawdata_resources %}
+    /// Stores [`{{r.name}}`] in the archive.
+    ///
+    /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
     #[inline]
     pub fn set_{{r.name}}(&self, data: &[u8]) -> ::std::io::Result<()> {
         self.storage.write("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}, data)
@@ -191,6 +215,9 @@ impl {{archive.name}}Builder {
     {% elif [r] | instance_resources %}
     {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
     #[inline]
+    /// Stores [`{{r.name}}`] in the archive.
+    ///
+    /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
     pub fn set_{{r.name}}(&self, resource: <{{t}} as flatdata::Struct>::Item) -> ::std::io::Result<()> {
         let data = unsafe {
             ::std::slice::from_raw_parts(resource.data, <{{t}} as flatdata::Struct>::SIZE_IN_BYTES)
@@ -201,10 +228,21 @@ impl {{archive.name}}Builder {
     {% elif [r] | vector_resources %}
     {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
     #[inline]
+    /// Stores [`{{r.name}}`] in the archive.
+    ///
+    /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
     pub fn set_{{ r.name }}(&self, vector: &flatdata::ArrayView<{{t}}>) -> ::std::io::Result<()> {
         self.storage.write("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}, vector.as_ref())
     }
 
+    /// Opens [`{{r.name}}`] in the archive for buffered writing.
+    ///
+    /// Elements can be added to the vector until the [`ExternalVector::close`] method
+    /// is called. To flush the data fully into the archive, this method must be called
+    /// in the end.
+    ///
+    /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
+    /// [`ExternalVector::close`]: flatdata/struct.ExternalVector.html#method.close
     #[inline]
     pub fn start_{{ r.name }}(&self) -> ::std::io::Result<flatdata::ExternalVector<{{t}}>> {
         flatdata::create_external_vector(&*self.storage, "{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }})
@@ -212,6 +250,14 @@ impl {{archive.name}}Builder {
 
     {% elif [r] | multivector_resources %}
     {% set t = r.name | snake_to_upper_camel_case %}
+    /// Opens [`{{r.name}}`] in the archive for buffered writing.
+    ///
+    /// Elements can be added to the multivector until the [`MultiVector::close`] method
+    /// is called. To flush the data fully into the archive, this method must be called
+    /// in the end.
+    ///
+    /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
+    /// [`MultiVector::close`]: flatdata/struct.MultiVector.html#method.close
     #[inline]
     pub fn start_{{ r.name }}(&self) -> ::std::io::Result<flatdata::MultiVector<{{t}}>> {
         flatdata::create_multi_vector(&*self.storage, "{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }})
@@ -219,6 +265,9 @@ impl {{archive.name}}Builder {
 
     {% elif [r] | subarchive_resources %}
     {% set t = fully_qualified_name(archive, r.target.node) %}
+    /// Stores [`{{r.name}}`] in the archive.
+    ///
+    /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
     #[inline]
     pub fn {{r.name}}(&self) -> Result<{{t}}Builder, flatdata::ResourceStorageError> {
         use flatdata::ArchiveBuilder;
