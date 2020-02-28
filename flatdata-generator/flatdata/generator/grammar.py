@@ -94,6 +94,7 @@ raw_data = Group(
 )
 
 archive_resource = Group(
+    Optional(comment)("doc") +
     Keyword("archive") + qualified_identifier("name")
 )
 
