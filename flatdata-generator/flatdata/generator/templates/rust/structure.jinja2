@@ -70,7 +70,7 @@ impl<'a> {{ struct.name }}Ref<'a> {
         unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
     }
 
-    {%- if field.range -%}
+    {% if field.range %}
     {% if field.doc %}
     {{ field.doc | rust_doc }}
     {% endif %}

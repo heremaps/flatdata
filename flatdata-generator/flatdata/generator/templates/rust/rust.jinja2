@@ -40,7 +40,7 @@ pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
 {% endfor %}
 }
 
-{% for node in ns.children %}
+{%- for node in ns.children %}
     {% if node | is_structure and not node | is_multivector_index %}
         {{- structure.declaration(node) }}
     {% elif node | is_structure and node | is_multivector_index %}
