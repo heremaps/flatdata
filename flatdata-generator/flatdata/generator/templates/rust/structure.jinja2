@@ -132,6 +132,7 @@ impl<'a> {{ struct.name }}Mut<'a> {
         unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
     }
 
+    #[allow(missing_docs)]
     #[inline]
     pub fn set_{{ name }}(&mut self, value: {{ field | field_type }}) {
         let buffer = unsafe {
