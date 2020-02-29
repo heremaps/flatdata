@@ -64,8 +64,8 @@ def _innermost_namespace(root):
     return namespace
 
 
-def _merge_roots(roots):
-    result = Root()
+def _merge_roots(roots, properties=None):
+    result = Root(properties=properties)
     for root in roots:
         innermost = _innermost_namespace(root)
         target = _ensure_namespace(
@@ -105,8 +105,10 @@ def _build_node_tree(definition):
 
         roots.append(root_namespace)
 
-    return _merge_roots(roots)
-
+    class MemberDict(dict):
+        def __getattr__(self, attr):
+            return self.get(attr)
+    return _merge_roots(roots, properties=MemberDict({"doc": parsed.doc}))
 
 def _append_builtin_structures(root):
     for node in root.iterate(Multivector):

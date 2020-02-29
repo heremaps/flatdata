@@ -10,6 +10,10 @@
 
 {% if ns | is_builtin_namespace %}
 #[doc(hidden)]
+{% else %}
+{% if loop.depth == 1 and tree.root.doc %}
+{{ tree.root.doc | rust_doc }}
+{% endif %}
 {% endif %}
 pub mod {{ ns.name }} {
 {{ loop(ns.children) }}
