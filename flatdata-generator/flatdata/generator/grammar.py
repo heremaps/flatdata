@@ -187,8 +187,6 @@ namespace = Group(
     Optional(comment)
 )
 
-flatdata_grammar = Group(
-    Optional(comment)("doc") +
-    free_comments +
-    OneOrMore(namespace)("namespace")
-)("flatdata")
+flatdata_grammar = Group(free_comments +
+                   OneOrMore(namespace)("namespace")
+                   )("flatdata")
