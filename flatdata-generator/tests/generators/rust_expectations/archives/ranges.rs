@@ -1,61 +1,3 @@
-pub mod n {
-
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-pub const S: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-    @range( y_range )
-    first_y : u32 : 14;
-}
-}
-
-"#;
-}
-
-pub mod a {
-
-pub const A: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-    @range( y_range )
-    first_y : u32 : 14;
-}
-}
-
-namespace n {
-archive A
-{
-    data : vector< .n.S >;
-}
-}
-
-"#;
-
-pub mod resources {
-pub const DATA: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-    @range( y_range )
-    first_y : u32 : 14;
-}
-}
-
-namespace n {
-archive A
-{
-    data : vector< .n.S >;
-}
-}
-
-"#;
-}
-}
-}
 ///
 /// ## Access pattern
 ///
@@ -304,6 +246,4 @@ impl flatdata::ArchiveBuilder for ABuilder {
         flatdata::create_archive::<Self>(&storage)?;
         Ok(Self { storage })
     }
-}
-
 }

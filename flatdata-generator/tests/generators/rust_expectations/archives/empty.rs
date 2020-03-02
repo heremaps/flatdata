@@ -1,26 +1,3 @@
-pub mod n {
-
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-}
-
-pub mod a {
-
-pub const A: &str = r#"namespace n {
-archive A
-{
-}
-}
-
-"#;
-
-pub mod resources {
-}
-}
-}
-
-
 #[derive(Clone)]
 pub struct A {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
@@ -84,6 +61,4 @@ impl flatdata::ArchiveBuilder for ABuilder {
         flatdata::create_archive::<Self>(&storage)?;
         Ok(Self { storage })
     }
-}
-
 }
