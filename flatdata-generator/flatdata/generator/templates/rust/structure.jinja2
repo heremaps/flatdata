@@ -24,7 +24,7 @@ pub struct {{struct.name}} {}
 /// [`{{struct.name}}`]: struct.{{struct.name}}.html
 #[derive(Clone, Copy)]
 pub struct {{struct.name}}Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -112,7 +112,7 @@ impl<'a> flatdata::Ref for {{ struct.name }}Ref<'a> {}
 ///
 /// [`{{struct.name}}`]: struct.{{struct.name}}.html
 pub struct {{ struct.name }}Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 

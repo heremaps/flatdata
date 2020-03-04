@@ -19,7 +19,7 @@ pub struct U8 {}
 /// [`U8`]: struct.U8.html
 #[derive(Clone, Copy)]
 pub struct U8Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -84,7 +84,7 @@ impl<'a> flatdata::Ref for U8Ref<'a> {}
 ///
 /// [`U8`]: struct.U8.html
 pub struct U8Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -157,7 +157,7 @@ pub struct I8 {}
 /// [`I8`]: struct.I8.html
 #[derive(Clone, Copy)]
 pub struct I8Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -222,7 +222,7 @@ impl<'a> flatdata::Ref for I8Ref<'a> {}
 ///
 /// [`I8`]: struct.I8.html
 pub struct I8Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -295,7 +295,7 @@ pub struct U16 {}
 /// [`U16`]: struct.U16.html
 #[derive(Clone, Copy)]
 pub struct U16Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -360,7 +360,7 @@ impl<'a> flatdata::Ref for U16Ref<'a> {}
 ///
 /// [`U16`]: struct.U16.html
 pub struct U16Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -433,7 +433,7 @@ pub struct I16 {}
 /// [`I16`]: struct.I16.html
 #[derive(Clone, Copy)]
 pub struct I16Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -498,7 +498,7 @@ impl<'a> flatdata::Ref for I16Ref<'a> {}
 ///
 /// [`I16`]: struct.I16.html
 pub struct I16Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -571,7 +571,7 @@ pub struct U32 {}
 /// [`U32`]: struct.U32.html
 #[derive(Clone, Copy)]
 pub struct U32Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -636,7 +636,7 @@ impl<'a> flatdata::Ref for U32Ref<'a> {}
 ///
 /// [`U32`]: struct.U32.html
 pub struct U32Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -709,7 +709,7 @@ pub struct I32 {}
 /// [`I32`]: struct.I32.html
 #[derive(Clone, Copy)]
 pub struct I32Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -774,7 +774,7 @@ impl<'a> flatdata::Ref for I32Ref<'a> {}
 ///
 /// [`I32`]: struct.I32.html
 pub struct I32Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -847,7 +847,7 @@ pub struct U64 {}
 /// [`U64`]: struct.U64.html
 #[derive(Clone, Copy)]
 pub struct U64Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -912,7 +912,7 @@ impl<'a> flatdata::Ref for U64Ref<'a> {}
 ///
 /// [`U64`]: struct.U64.html
 pub struct U64Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -985,7 +985,7 @@ pub struct I64 {}
 /// [`I64`]: struct.I64.html
 #[derive(Clone, Copy)]
 pub struct I64Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -1050,7 +1050,7 @@ impl<'a> flatdata::Ref for I64Ref<'a> {}
 ///
 /// [`I64`]: struct.I64.html
 pub struct I64Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 

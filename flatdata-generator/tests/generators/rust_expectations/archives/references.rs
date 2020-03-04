@@ -6,7 +6,7 @@ pub struct S {}
 /// [`S`]: struct.S.html
 #[derive(Clone, Copy)]
 pub struct SRef<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -64,7 +64,7 @@ impl<'a> flatdata::Ref for SRef<'a> {}
 ///
 /// [`S`]: struct.S.html
 pub struct SMut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -121,7 +121,7 @@ pub struct R {}
 /// [`R`]: struct.R.html
 #[derive(Clone, Copy)]
 pub struct RRef<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -179,7 +179,7 @@ impl<'a> flatdata::Ref for RRef<'a> {}
 ///
 /// [`R`]: struct.R.html
 pub struct RMut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -665,7 +665,7 @@ pub struct IndexType32 {}
 /// [`IndexType32`]: struct.IndexType32.html
 #[derive(Clone, Copy)]
 pub struct IndexType32Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -732,7 +732,7 @@ impl<'a> flatdata::Ref for IndexType32Ref<'a> {}
 ///
 /// [`IndexType32`]: struct.IndexType32.html
 pub struct IndexType32Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 

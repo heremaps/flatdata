@@ -19,7 +19,7 @@ pub struct S {}
 /// [`S`]: struct.S.html
 #[derive(Clone, Copy)]
 pub struct SRef<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -77,7 +77,7 @@ impl<'a> flatdata::Ref for SRef<'a> {}
 ///
 /// [`S`]: struct.S.html
 pub struct SMut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -134,7 +134,7 @@ pub struct T {}
 /// [`T`]: struct.T.html
 #[derive(Clone, Copy)]
 pub struct TRef<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -192,7 +192,7 @@ impl<'a> flatdata::Ref for TRef<'a> {}
 ///
 /// [`T`]: struct.T.html
 pub struct TMut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -771,7 +771,7 @@ pub struct IndexType8 {}
 /// [`IndexType8`]: struct.IndexType8.html
 #[derive(Clone, Copy)]
 pub struct IndexType8Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -838,7 +838,7 @@ impl<'a> flatdata::Ref for IndexType8Ref<'a> {}
 ///
 /// [`IndexType8`]: struct.IndexType8.html
 pub struct IndexType8Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -914,7 +914,7 @@ pub struct IndexType16 {}
 /// [`IndexType16`]: struct.IndexType16.html
 #[derive(Clone, Copy)]
 pub struct IndexType16Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -981,7 +981,7 @@ impl<'a> flatdata::Ref for IndexType16Ref<'a> {}
 ///
 /// [`IndexType16`]: struct.IndexType16.html
 pub struct IndexType16Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -1057,7 +1057,7 @@ pub struct IndexType64 {}
 /// [`IndexType64`]: struct.IndexType64.html
 #[derive(Clone, Copy)]
 pub struct IndexType64Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -1124,7 +1124,7 @@ impl<'a> flatdata::Ref for IndexType64Ref<'a> {}
 ///
 /// [`IndexType64`]: struct.IndexType64.html
 pub struct IndexType64Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 

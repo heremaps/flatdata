@@ -19,7 +19,7 @@ pub struct Foo {}
 /// [`Foo`]: struct.Foo.html
 #[derive(Clone, Copy)]
 pub struct FooRef<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -77,7 +77,7 @@ impl<'a> flatdata::Ref for FooRef<'a> {}
 ///
 /// [`Foo`]: struct.Foo.html
 pub struct FooMut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -152,7 +152,7 @@ pub struct Foo {}
 /// [`Foo`]: struct.Foo.html
 #[derive(Clone, Copy)]
 pub struct FooRef<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -210,7 +210,7 @@ impl<'a> flatdata::Ref for FooRef<'a> {}
 ///
 /// [`Foo`]: struct.Foo.html
 pub struct FooMut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 

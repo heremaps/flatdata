@@ -18,7 +18,7 @@ pub struct StructEnumI8 {}
 /// [`StructEnumI8`]: struct.StructEnumI8.html
 #[derive(Clone, Copy)]
 pub struct StructEnumI8Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -76,7 +76,7 @@ impl<'a> flatdata::Ref for StructEnumI8Ref<'a> {}
 ///
 /// [`StructEnumI8`]: struct.StructEnumI8.html
 pub struct StructEnumI8Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -133,7 +133,7 @@ pub struct StructEnumU8 {}
 /// [`StructEnumU8`]: struct.StructEnumU8.html
 #[derive(Clone, Copy)]
 pub struct StructEnumU8Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -191,7 +191,7 @@ impl<'a> flatdata::Ref for StructEnumU8Ref<'a> {}
 ///
 /// [`StructEnumU8`]: struct.StructEnumU8.html
 pub struct StructEnumU8Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -248,7 +248,7 @@ pub struct StructEnumI16 {}
 /// [`StructEnumI16`]: struct.StructEnumI16.html
 #[derive(Clone, Copy)]
 pub struct StructEnumI16Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -306,7 +306,7 @@ impl<'a> flatdata::Ref for StructEnumI16Ref<'a> {}
 ///
 /// [`StructEnumI16`]: struct.StructEnumI16.html
 pub struct StructEnumI16Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -363,7 +363,7 @@ pub struct StructEnumU16 {}
 /// [`StructEnumU16`]: struct.StructEnumU16.html
 #[derive(Clone, Copy)]
 pub struct StructEnumU16Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -421,7 +421,7 @@ impl<'a> flatdata::Ref for StructEnumU16Ref<'a> {}
 ///
 /// [`StructEnumU16`]: struct.StructEnumU16.html
 pub struct StructEnumU16Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -478,7 +478,7 @@ pub struct StructEnumI32 {}
 /// [`StructEnumI32`]: struct.StructEnumI32.html
 #[derive(Clone, Copy)]
 pub struct StructEnumI32Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -536,7 +536,7 @@ impl<'a> flatdata::Ref for StructEnumI32Ref<'a> {}
 ///
 /// [`StructEnumI32`]: struct.StructEnumI32.html
 pub struct StructEnumI32Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -593,7 +593,7 @@ pub struct StructEnumU32 {}
 /// [`StructEnumU32`]: struct.StructEnumU32.html
 #[derive(Clone, Copy)]
 pub struct StructEnumU32Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -651,7 +651,7 @@ impl<'a> flatdata::Ref for StructEnumU32Ref<'a> {}
 ///
 /// [`StructEnumU32`]: struct.StructEnumU32.html
 pub struct StructEnumU32Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -708,7 +708,7 @@ pub struct StructEnumI64 {}
 /// [`StructEnumI64`]: struct.StructEnumI64.html
 #[derive(Clone, Copy)]
 pub struct StructEnumI64Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -766,7 +766,7 @@ impl<'a> flatdata::Ref for StructEnumI64Ref<'a> {}
 ///
 /// [`StructEnumI64`]: struct.StructEnumI64.html
 pub struct StructEnumI64Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -823,7 +823,7 @@ pub struct StructEnumU64 {}
 /// [`StructEnumU64`]: struct.StructEnumU64.html
 #[derive(Clone, Copy)]
 pub struct StructEnumU64Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -881,7 +881,7 @@ impl<'a> flatdata::Ref for StructEnumU64Ref<'a> {}
 ///
 /// [`StructEnumU64`]: struct.StructEnumU64.html
 pub struct StructEnumU64Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
