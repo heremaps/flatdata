@@ -54,7 +54,7 @@ class RustGenerator(BaseGenerator):
 
         def _rust_doc(expr):
             lines = [
-                re.sub(r'^[ \t]*(/\*\*|/\*|\*/|\*)\s*(.*?)\s*(\*/)?$',
+                re.sub(r'^[ \t]*(/\*\*\s?|/\*\s?|\*/|\*\s?)(.*?)\s*(\*/)?$',
                        r"/// \2", line).strip()
                 for line in expr.split('\n')
             ]
@@ -104,6 +104,8 @@ class RustGenerator(BaseGenerator):
             x for x in ls if isinstance(x, RawData)]
         env.filters['subarchive_resources'] = lambda ls: [
             x for x in ls if isinstance(x, ArchiveResource)]
+
+        env.filters["is_builtin_namespace"] = lambda ns: ns.name == "_builtin"
 
         env.filters["supported_resources"] = lambda l: [
             x for x in l if not isinstance(x, BoundResource)]

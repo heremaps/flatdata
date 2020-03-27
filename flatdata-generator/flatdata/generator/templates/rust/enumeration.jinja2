@@ -1,4 +1,5 @@
 {%- macro declaration(enum) %}
+
 {%- if enum.doc %}
 {{ enum.doc | rust_doc }}
 {% endif %}
@@ -16,5 +17,4 @@ pub enum {{ enum.name }} {
 impl flatdata::helper::Int for {{ enum.name }} {
     const IS_SIGNED: bool = {{ enum.type.is_signed | lower }};
 }
-
 {%- endmacro %}

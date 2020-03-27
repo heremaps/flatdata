@@ -1,13 +1,30 @@
 {%- macro declaration(struct) %}
-#[derive(Clone, Debug)]
-pub struct {{struct.name}} {}
 
 {% if struct.doc %}
 {{ struct.doc | rust_doc }}
 {% endif %}
+///
+/// ## Access pattern
+///
+/// This structure is used as a template parameter in containers.
+/// It does not contain any data, instead it references
+///
+/// * [`{{struct.name}}Ref`] for the read-only access, and
+/// * [`{{struct.name}}Mut`] for the mutable access
+///
+/// to the `{{struct.name}}` data.
+///
+/// [`{{struct.name}}Ref`]: struct.{{struct.name}}Ref.html
+/// [`{{struct.name}}Mut`]: struct.{{struct.name}}Mut.html
+#[derive(Clone, Debug)]
+pub struct {{struct.name}} {}
+
+/// Read-only access to [`{{struct.name}}`].
+///
+/// [`{{struct.name}}`]: struct.{{struct.name}}.html
 #[derive(Clone, Copy)]
 pub struct {{struct.name}}Ref<'a> {
-    data: *const u8,
+    pub(crate) data: *const u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
@@ -22,7 +39,7 @@ impl<'a> flatdata::Struct<'a> for {{ struct.name }}
     #[inline]
     fn create(data : &'a[u8]) -> Self::Item
     {
-        Self::Item{ data : data.as_ptr(), _phantom : std::marker::PhantomData }
+        Self::Item { data : data.as_ptr(), _phantom : std::marker::PhantomData }
     }
 
     type ItemMut = {{ struct.name }}Mut<'a>;
@@ -30,7 +47,7 @@ impl<'a> flatdata::Struct<'a> for {{ struct.name }}
     #[inline]
     fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
     {
-        Self::ItemMut{ data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
+        Self::ItemMut { data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
     }
 }
 
@@ -40,13 +57,23 @@ impl flatdata::NoOverlap for {{struct.name}} {}
 
 impl<'a> {{ struct.name }}Ref<'a> {
     {% for field in struct.fields %}
+    {% if field.doc and not field.range %}
+    {{ field.doc | rust_doc }}
+    {% elif field.range %}
+    /// First element of the range [`{{ field.range | escape_rust_keywords }}`].
+    ///
+    /// [`{{ field.range | escape_rust_keywords }}`]: #method.{{ field.range | escape_rust_keywords }}
+    {% endif %}
     #[inline]
     pub fn {{ field.name | escape_rust_keywords }}(&self) -> {{ field | field_type }} {
         let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
         unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
     }
 
-    {%- if field.range -%}
+    {% if field.range %}
+    {% if field.doc %}
+    {{ field.doc | rust_doc }}
+    {% endif %}
     #[inline]
     pub fn {{ field.range | escape_rust_keywords }}(&self) -> std::ops::Range<{{ field | field_type }}> {
         let start = flatdata_read_bytes!({{ field.type.name }}, self.data, {{ field.offset }}, {{ field.type.width }});
@@ -56,11 +83,6 @@ impl<'a> {{ struct.name }}Ref<'a> {
 
     {% endif %}
     {% endfor %}
-
-    #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
-        self.data
-    }
 }
 
 impl<'a> std::fmt::Debug for {{ struct.name }}Ref<'a> {
@@ -86,20 +108,31 @@ impl<'a> std::cmp::PartialEq for {{ struct.name }}Ref<'a> {
 
 impl<'a> flatdata::Ref for {{ struct.name }}Ref<'a> {}
 
+/// Mutable access to [`{{struct.name}}`].
+///
+/// [`{{struct.name}}`]: struct.{{struct.name}}.html
 pub struct {{ struct.name }}Mut<'a> {
-    data: *mut u8,
+    pub(crate) data: *mut u8,
     _phantom: std::marker::PhantomData<&'a u8>,
 }
 
 impl<'a> {{ struct.name }}Mut<'a> {
     {% for field in struct.fields %}
     {% set name = field.name | escape_rust_keywords %}
+    {% if field.doc and not field.range %}
+    {{ field.doc | rust_doc }}
+    {% elif field.range %}
+    /// First element of the range [`{{ field.range | escape_rust_keywords }}`].
+    ///
+    /// [`{{ field.range | escape_rust_keywords }}`]: struct.{{ struct.name }}Ref.html#method.{{ field.range | escape_rust_keywords }}
+    {% endif %}
     #[inline]
     pub fn {{ name }}(&self) -> {{ field | field_type }} {
         let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
         unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
     }
 
+    #[allow(missing_docs)]
     #[inline]
     pub fn set_{{ name }}(&mut self, value: {{ field | field_type }}) {
         let buffer = unsafe {
@@ -110,22 +143,13 @@ impl<'a> {{ struct.name }}Mut<'a> {
 
     {% endfor %}
 
+    /// Copies the data from `other` into this struct.
     #[inline]
     pub fn fill_from(&mut self, other: &{{ struct.name }}Ref) {
         {% for field in struct.fields %}
         {% set name = field.name | escape_rust_keywords %}
         self.set_{{ name }}(other.{{ name }}());
         {% endfor %}
-    }
-
-    #[inline]
-    pub fn as_ptr(&self) -> *const u8 {
-        self.data
-    }
-
-    #[inline]
-    pub fn as_mut_ptr(&self) -> *mut u8 {
-        self.data
     }
 }
 

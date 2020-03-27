@@ -44,6 +44,7 @@ enum = Group(
 )
 
 range = Group(
+    Optional(comment)("doc") +
     Keyword("@range") +
     "(" +
     identifier("name") +
@@ -93,6 +94,7 @@ raw_data = Group(
 )
 
 archive_resource = Group(
+    Optional(comment)("doc") +
     Keyword("archive") + qualified_identifier("name")
 )
 
@@ -101,7 +103,7 @@ resource_type = Group(
     vector("vector") |
     multivector("multivector") |
     archive_resource("archive") |
-    single_object("object") 
+    single_object("object")
 )
 
 def _combine_list(t):
@@ -186,5 +188,5 @@ namespace = Group(
 )
 
 flatdata_grammar = Group(free_comments +
-                         OneOrMore(namespace)("namespace")
-                         )("flatdata")
+                   OneOrMore(namespace)("namespace")
+                   )("flatdata")

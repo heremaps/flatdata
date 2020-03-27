@@ -8,8 +8,14 @@
 {%- for ns in tree.root.children recursive %}
 {%- if ns | is_namespace %}
 
+{% if ns | is_builtin_namespace %}
+#[doc(hidden)]
+{% else %}
+#[allow(missing_docs)]
+{% endif %}
 pub mod {{ ns.name }} {
 {{ loop(ns.children) }}
+#[doc(hidden)]
 pub mod schema {
 pub mod structs {
 {% for node in ns.children if node | is_structure %}

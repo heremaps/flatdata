@@ -47,3 +47,7 @@ class Archive(Node):
     @property
     def resources(self):
         return self.children_like(resources.ResourceBase)
+
+    @property
+    def doc(self):
+        return self._properties.doc
