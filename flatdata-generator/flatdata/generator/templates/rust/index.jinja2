@@ -4,16 +4,16 @@
 {# multivector index structs #}
 {{ structure.declaration(index) }}
 
-impl<'a> flatdata::IndexStruct<'a> for {{index.name}} {
+impl flatdata::IndexStruct for {{index.name}} {
     #[inline]
-    fn range(data: Self::Item) -> std::ops::Range<usize> {
-        let range = data.range();
+    fn range(&self) -> std::ops::Range<usize> {
+        let range = self.range();
         range.start as usize..range.end as usize
     }
 
     #[inline]
-    fn set_index(mut data: Self::ItemMut, value: usize) {
-        data.set_value(value as u64);
+    fn set_index(&mut self, value: usize) {
+        self.set_value(value as u64);
     }
 }
 {% endmacro %}

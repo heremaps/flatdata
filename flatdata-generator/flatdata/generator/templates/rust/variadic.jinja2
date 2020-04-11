@@ -10,7 +10,7 @@
 pub enum {{name}}Ref<'a> {
     {% for type in types %}
     #[allow(missing_docs)]
-    {{type.node.name }}(<{{fully_qualified_name(archive, type.node)}} as flatdata::Struct<'a>>::Item),
+    {{type.node.name }}(&'a {{fully_qualified_name(archive, type.node)}}),
     {%- endfor %}
 }
 
@@ -29,7 +29,7 @@ impl<'a> flatdata::VariadicRef for {{name}}Ref<'a> {
     fn size_in_bytes(&self) -> usize {
         match *self {
             {% for type in types %}
-            {{name}}Ref::{{type.node.name}}(_) => <{{fully_qualified_name(archive, type.node)}} as flatdata::Struct<'a>>::SIZE_IN_BYTES,
+            {{name}}Ref::{{type.node.name}}(_) => <{{fully_qualified_name(archive, type.node)}} as flatdata::Struct>::SIZE_IN_BYTES,
             {% endfor %}
         }
     }
@@ -52,14 +52,13 @@ impl<'a> {{name}}Builder<'a> {
     ///
     /// [`{{type.node.name}}`]: struct.{{type.node.name}}.html
     #[inline]
-    pub fn add_{{ type.node.name | camel_to_snake_case }}<'b>(&'b mut self) -> <{{inner_type}} as flatdata::Struct<'b>>::ItemMut {
+    pub fn add_{{ type.node.name | camel_to_snake_case }}<'b>(&'b mut self) -> &'b mut {{inner_type}} {
         let old_len = self.data.len();
-        let increment = 1 + <{{inner_type}} as flatdata::Struct<'b>>::SIZE_IN_BYTES;
+        let increment = 1 + <{{inner_type}} as flatdata::Struct>::SIZE_IN_BYTES;
         self.data.resize(old_len + increment, 0);
-        self.data[old_len - flatdata::PADDING_SIZE] = {{loop.index0}};
-        <{{inner_type}} as flatdata::Struct<'b>>::create_mut(
-            &mut self.data[1 + old_len - flatdata::PADDING_SIZE..]
-        )
+        self.data[old_len] = {{loop.index0}};
+        let slice = &mut self.data[1 + old_len..];
+        {{inner_type}}::from_bytes_slice_mut(slice).expect("Logic error: Cannot create {{inner_type}} from slice")
     }
     {% endfor %}
 }
@@ -89,9 +88,11 @@ impl<'a> {{name}}Builder<'a> {
 #[derive(Clone)]
 pub struct {{name}} {}
 
-impl<'a> flatdata::VariadicStruct<'a> for {{name}} {
+impl flatdata::VariadicIndex for {{name}} {
     type Index = {{ fully_qualified_name(archive, resource.index_reference.node) }};
+}
 
+impl<'a> flatdata::VariadicStruct<'a> for {{name}} {
     type Item = {{name}}Ref<'a>;
 
     #[inline]
@@ -99,7 +100,8 @@ impl<'a> flatdata::VariadicStruct<'a> for {{name}} {
     {
         match index {
             {% for type in types %}
-                {{loop.index0}} => {{name}}Ref::{{type.node.name}}(<{{fully_qualified_name(archive, type.node)}} as flatdata::Struct<'a>>::create(data)),
+            {% set inner_type = fully_qualified_name(archive, type.node) %}
+                {{loop.index0}} => {{name}}Ref::{{type.node.name}}({{inner_type}}::from_bytes_slice(&data).expect("Corrupted data")),
             {% endfor %}
             _ => panic!("invalid type index {} for variadic type {{name}}Ref", index),
         }

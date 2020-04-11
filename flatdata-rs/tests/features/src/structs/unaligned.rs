@@ -18,70 +18,70 @@ fn test_sizes() {
 
 #[test]
 fn test_min_values() {
-    let mut buf = flatdata::StructBuf::<n::U8>::new();
-    buf.get_mut().set_f(0);
-    assert_eq!(buf.get().f(), 0);
+    let mut value = n::U8::new();
+    value.set_f(0);
+    assert_eq!(value.f(), 0);
 
-    let mut buf = flatdata::StructBuf::<n::I8>::new();
-    buf.get_mut().set_f(-(1 << (8 - 3 - 1)));
-    assert_eq!(buf.get().f(), -(1 << (8 - 3 - 1)));
+    let mut value = n::I8::new();
+    value.set_f(-(1 << (8 - 3 - 1)));
+    assert_eq!(value.f(), -(1 << (8 - 3 - 1)));
 
-    let mut buf = flatdata::StructBuf::<n::U16>::new();
-    buf.get_mut().set_f(0);
-    assert_eq!(buf.get().f(), 0);
+    let mut value = n::U16::new();
+    value.set_f(0);
+    assert_eq!(value.f(), 0);
 
-    let mut buf = flatdata::StructBuf::<n::I16>::new();
-    buf.get_mut().set_f(-(1 << (16 - 3 - 1)));
-    assert_eq!(buf.get().f(), -(1 << (16 - 3 - 1)));
+    let mut value = n::I16::new();
+    value.set_f(-(1 << (16 - 3 - 1)));
+    assert_eq!(value.f(), -(1 << (16 - 3 - 1)));
 
-    let mut buf = flatdata::StructBuf::<n::U32>::new();
-    buf.get_mut().set_f(0);
-    assert_eq!(buf.get().f(), 0);
+    let mut value = n::U32::new();
+    value.set_f(0);
+    assert_eq!(value.f(), 0);
 
-    let mut buf = flatdata::StructBuf::<n::I32>::new();
-    buf.get_mut().set_f(-(1 << (32 - 3 - 1)));
-    assert_eq!(buf.get().f(), -(1 << (32 - 3 - 1)));
+    let mut value = n::I32::new();
+    value.set_f(-(1 << (32 - 3 - 1)));
+    assert_eq!(value.f(), -(1 << (32 - 3 - 1)));
 
-    let mut buf = flatdata::StructBuf::<n::U64>::new();
-    buf.get_mut().set_f(0);
-    assert_eq!(buf.get().f(), 0);
+    let mut value = n::U64::new();
+    value.set_f(0);
+    assert_eq!(value.f(), 0);
 
-    let mut buf = flatdata::StructBuf::<n::I64>::new();
-    buf.get_mut().set_f(-(1 << (64 - 3 - 1)));
-    assert_eq!(buf.get().f(), -(1 << (64 - 3 - 1)));
+    let mut value = n::I64::new();
+    value.set_f(-(1 << (64 - 3 - 1)));
+    assert_eq!(value.f(), -(1 << (64 - 3 - 1)));
 }
 
 #[test]
 fn test_max_values() {
-    let mut buf = flatdata::StructBuf::<n::U8>::new();
-    buf.get_mut().set_f((1 << (8 - 3)) - 1);
-    assert_eq!(buf.get().f(), (1 << (8 - 3)) - 1);
+    let mut value = n::U8::new();
+    value.set_f((1 << (8 - 3)) - 1);
+    assert_eq!(value.f(), (1 << (8 - 3)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::I8>::new();
-    buf.get_mut().set_f((1 << (8 - 3) - 1) - 1);
-    assert_eq!(buf.get().f(), (1 << (8 - 3 - 1)) - 1);
+    let mut value = n::I8::new();
+    value.set_f((1 << (8 - 3) - 1) - 1);
+    assert_eq!(value.f(), (1 << (8 - 3 - 1)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::U16>::new();
-    buf.get_mut().set_f((1 << (16 - 3)) - 1);
-    assert_eq!(buf.get().f(), (1 << (16 - 3)) - 1);
+    let mut value = n::U16::new();
+    value.set_f((1 << (16 - 3)) - 1);
+    assert_eq!(value.f(), (1 << (16 - 3)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::I16>::new();
-    buf.get_mut().set_f((1 << (16 - 3 - 1)) - 1);
-    assert_eq!(buf.get().f(), (1 << (16 - 3 - 1)) - 1);
+    let mut value = n::I16::new();
+    value.set_f((1 << (16 - 3 - 1)) - 1);
+    assert_eq!(value.f(), (1 << (16 - 3 - 1)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::U32>::new();
-    buf.get_mut().set_f((1 << (32 - 3)) - 1);
-    assert_eq!(buf.get().f(), (1 << (32 - 3)) - 1);
+    let mut value = n::U32::new();
+    value.set_f((1 << (32 - 3)) - 1);
+    assert_eq!(value.f(), (1 << (32 - 3)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::I32>::new();
-    buf.get_mut().set_f((1 << (32 - 3 - 1)) - 1);
-    assert_eq!(buf.get().f(), (1 << (32 - 3 - 1)) - 1);
+    let mut value = n::I32::new();
+    value.set_f((1 << (32 - 3 - 1)) - 1);
+    assert_eq!(value.f(), (1 << (32 - 3 - 1)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::U64>::new();
-    buf.get_mut().set_f((1 << (64 - 3)) - 1);
-    assert_eq!(buf.get().f(), (1 << (64 - 3)) - 1);
+    let mut value = n::U64::new();
+    value.set_f((1 << (64 - 3)) - 1);
+    assert_eq!(value.f(), (1 << (64 - 3)) - 1);
 
-    let mut buf = flatdata::StructBuf::<n::I64>::new();
-    buf.get_mut().set_f((1 << (64 - 3 - 1)) - 1);
-    assert_eq!(buf.get().f(), (1 << (64 - 3 - 1)) - 1);
+    let mut value = n::I64::new();
+    value.set_f((1 << (64 - 3 - 1)) - 1);
+    assert_eq!(value.f(), (1 << (64 - 3 - 1)) - 1);
 }

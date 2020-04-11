@@ -11,7 +11,7 @@ fn test() {
 
     let mut data = flatdata::Vector::<n::S>::new();
     for x in 10..600 {
-        let mut next = data.grow();
+        let next = data.grow();
         next.set_x(x);
         next.set_first_y(x as u32 * 10);
     }
@@ -26,9 +26,9 @@ fn test() {
     let data = archive.data();
     assert_eq!(599 - 10, data.len());
     for x in (10..599).enumerate() {
-        assert_eq!(data.at(x.0).x(), x.1);
+        assert_eq!(data[x.0].x(), x.1);
         assert_eq!(
-            data.at(x.0).y_range(),
+            data[x.0].y_range(),
             (x.1 as u32 * 10..(x.1 as u32 + 1) * 10)
         );
     }

@@ -1,9 +1,6 @@
-use crate::{
-    arrayview::ArrayView,
-    structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct},
-};
+use crate::structs::{IndexStruct, VariadicRef, VariadicRefFactory, VariadicStruct};
 
-use std::{fmt, iter, marker, ops::RangeBounds};
+use std::{fmt, iter, marker};
 
 /// A read-only view on a multivector.
 ///
@@ -11,14 +8,22 @@ use std::{fmt, iter, marker, ops::RangeBounds};
 /// [`MultiVector`].
 ///
 /// [`MultiVector`]: struct.MultiVector.html
-#[derive(Clone)]
 pub struct MultiArrayView<'a, Ts>
 where
     Ts: VariadicRefFactory,
 {
-    index: ArrayView<'a, <Ts as VariadicStruct<'a>>::Index>,
+    index: &'a [Ts::Index],
     data: &'a [u8],
     _phantom: marker::PhantomData<Ts>,
+}
+
+impl<'a, Ts> Clone for MultiArrayView<'a, Ts>
+where
+    Ts: VariadicRefFactory,
+{
+    fn clone(&self) -> Self {
+        Self { ..*self }
+    }
 }
 
 impl<'a, Ts> MultiArrayView<'a, Ts>
@@ -28,13 +33,10 @@ where
     /// Creates a new `MultiArrayView` to the data at the given address.
     ///
     /// The returned array view does not own the data.
-    pub fn new(
-        index: ArrayView<'a, <Ts as VariadicStruct<'a>>::Index>,
-        data_mem_descr: &'a [u8],
-    ) -> Self {
+    pub fn new(index: &'a [Ts::Index], data: &'a [u8]) -> Self {
         Self {
             index,
-            data: &data_mem_descr,
+            data: &data,
             _phantom: marker::PhantomData,
         }
     }
@@ -59,7 +61,7 @@ where
     ///
     /// Panics if index is greater than or equal to `MultiArrayView::len()`.
     pub fn at(&self, index: usize) -> MultiArrayViewItemIter<'a, Ts> {
-        let range = <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::range(self.index.at(index));
+        let range = <Ts::Index>::range(&self.index[index]);
         MultiArrayViewItemIter {
             data: &self.data[range],
             _phantom: marker::PhantomData,
@@ -71,8 +73,11 @@ where
     /// # Panics
     ///
     /// Panics if the range is outside of bounds of array view.
-    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
-        Self::new(self.index.slice(range), self.data)
+    pub fn slice<R: std::slice::SliceIndex<[Ts::Index], Output = [Ts::Index]>>(
+        &self,
+        range: R,
+    ) -> Self {
+        Self::new(&self.index[range], self.data)
     }
 
     /// Returns an iterator through the indexed items of the array.
@@ -264,10 +269,10 @@ mod tests {
         for i in 0..size {
             let mut item = mv.grow().expect("grow failed");
 
-            let mut b = item.add_b();
+            let b = item.add_b();
             b.set_id(i as u32);
 
-            let mut a = item.add_a();
+            let a = item.add_a();
             a.set_x((i + size) as u32);
             a.set_y((i + 2 * size) as u32);
         }

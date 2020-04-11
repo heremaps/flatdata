@@ -8,6 +8,7 @@
 {%- for ns in tree.root.children recursive %}
 {%- if ns | is_namespace %}
 
+#[cfg_attr(rustfmt, rustfmt_skip)]
 {% if ns | is_builtin_namespace %}
 #[doc(hidden)]
 {% else %}
