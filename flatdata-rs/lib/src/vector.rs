@@ -71,7 +71,7 @@ where
         Self::with_len(0)
     }
 
-    /// Resets the 'Vector<T>' to its initial empty state
+    /// Resets the 'Vector<T>' to its initial empty state.
     #[inline]
     pub fn clear(&mut self) {
         self.data.clear();
@@ -84,9 +84,7 @@ where
     #[inline]
     pub fn with_len(len: usize) -> Self {
         let mut data = Vec::with_capacity(len + 1);
-        for _ in 0..=len {
-            data.push(unsafe { T::create_unchecked() });
-        }
+        data.resize_with(len + 1, || unsafe { T::create_unchecked() });
         Self { data }
     }
 
@@ -100,7 +98,10 @@ where
         self.data.reserve(self.data.len() + additional)
     }
 
-    /// Returns a slice for the vector contents. Hides sentinels in case T IS_OVERLAPPING_WITH_NEXT
+    /// Returns a slice for the vector contents.
+    ///
+    /// Hides sentinels in case T IS_OVERLAPPING_WITH_NEXT,
+    /// i.e. a vector of size 4 get's converted into a slice of size 3
     #[inline]
     pub fn as_view(&self) -> &[T] {
         if T::IS_OVERLAPPING_WITH_NEXT {

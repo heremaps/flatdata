@@ -36,11 +36,13 @@ pub use std::marker;
 /// Vector/ArrayView-like classes cannot be directly implemented over the
 /// structs since that binds lifetime too early. Instead this generic factory
 /// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
-pub trait Struct: 'static + Debug + Sized {
+pub trait Struct: Debug {
     /// Create a new struct
-    /// Unsafety: If the struct is not self-contained,
-    /// and no subsequent struct in memory, then some
-    /// of its members must never be used
+    ///
+    /// # Safety
+    /// If the struct is not self-contained (NoOverlap),
+    /// and there is no directly subsequent structure in memory,
+    /// then the resulting instance's data must not be accessed
     unsafe fn create_unchecked() -> Self;
 
     /// Schema of the type. Used only for debug and inspection purposes.
@@ -80,7 +82,7 @@ pub trait VariadicRef: Clone + Debug + PartialEq {
 
 /// A type used as element of 'MultiArrayView'.
 ///
-/// Provides the index type that should be used in the container
+/// Provides the index type that should be used in the container.
 pub trait VariadicIndex {
     /// Index type
     type Index: IndexStruct;

@@ -14,7 +14,6 @@ where
 {
     index: &'a [Ts::Index],
     data: &'a [u8],
-    _phantom: marker::PhantomData<Ts>,
 }
 
 impl<'a, Ts> Clone for MultiArrayView<'a, Ts>
@@ -36,8 +35,7 @@ where
     pub fn new(index: &'a [Ts::Index], data: &'a [u8]) -> Self {
         Self {
             index,
-            data: &data,
-            _phantom: marker::PhantomData,
+            data,
         }
     }
 

@@ -2,6 +2,7 @@ use crate::error::ResourceStorageError;
 use crate::structs::Struct;
 
 /// Enhanced slices of flatdata Structs so that they can be created from bytes / converted to bytes
+/// Note: TryFrom/AsRef cannot be used, since slice is a foreign type
 pub trait SliceExt<'a>
 where
     Self: Sized,
