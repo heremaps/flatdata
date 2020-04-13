@@ -33,10 +33,7 @@ where
     ///
     /// The returned array view does not own the data.
     pub fn new(index: &'a [Ts::Index], data: &'a [u8]) -> Self {
-        Self {
-            index,
-            data,
-        }
+        Self { index, data }
     }
 
     /// Number of indexed items in the array.
