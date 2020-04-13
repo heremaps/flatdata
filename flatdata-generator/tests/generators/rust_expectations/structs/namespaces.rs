@@ -114,7 +114,6 @@ impl Foo {
 }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod m {
 

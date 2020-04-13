@@ -9,7 +9,6 @@ impl flatdata::helper::Int for Bar {
 }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod b {
 
@@ -29,7 +28,6 @@ impl flatdata::helper::Int for Bar {
 }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod n {
 
@@ -169,7 +167,6 @@ impl Foo {
 }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod m {
 

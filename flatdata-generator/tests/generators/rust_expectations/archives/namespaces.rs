@@ -236,7 +236,6 @@ impl flatdata::ArchiveBuilder for XBuilder {
 
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod m {
 
@@ -476,7 +475,6 @@ impl flatdata::ArchiveBuilder for XBuilder {
 
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod a {
 
@@ -857,11 +855,9 @@ impl flatdata::ArchiveBuilder for ABuilder {
 
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[doc(hidden)]
 pub mod _builtin {
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
 #[allow(missing_docs)]
 pub mod multivector {
 
