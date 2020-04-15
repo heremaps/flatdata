@@ -2,19 +2,10 @@
 #[derive(Clone)]
 pub struct Foo {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    bar: flatdata::MemoryDescriptor,
+    bar : flatdata::RawData<'static>,
 }
 
 impl Foo {
-    fn read_resource(
-        storage: &dyn flatdata::ResourceStorage,
-        name: &str,
-        schema: &str,
-    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
-    {
-        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
-    }
-
     fn signature_name(archive_name: &str) -> String {
         format!("{}.archive", archive_name)
     }
@@ -22,7 +13,7 @@ impl Foo {
     // this is a comment about foo.bar
     #[inline]
     pub fn bar(&self) -> flatdata::RawData {
-        flatdata::RawData::new(unsafe {self.bar.as_bytes()})
+        self.bar
     }
 
 }
@@ -42,9 +33,16 @@ impl flatdata::Archive for Foo {
     fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
+        #[allow(unused_imports)]
+        use flatdata::SliceExt;
+        // extend lifetime since Rust cannot know that we reference a cache here
+        #[allow(unused_variables)]
+        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
-        let bar = Self::read_resource(&*storage, "bar", schema::foo::resources::BAR)?;
+        let resource = extend(storage.read("bar", schema::foo::resources::BAR));
+        let bar = resource.map(|x| flatdata::RawData::new(x))?;
 
         Ok(Self {
             _storage: storage,
@@ -91,19 +89,10 @@ impl flatdata::ArchiveBuilder for FooBuilder {
 #[derive(Clone)]
 pub struct Bar {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    foo: flatdata::MemoryDescriptor,
+    foo : flatdata::RawData<'static>,
 }
 
 impl Bar {
-    fn read_resource(
-        storage: &dyn flatdata::ResourceStorage,
-        name: &str,
-        schema: &str,
-    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
-    {
-        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
-    }
-
     fn signature_name(archive_name: &str) -> String {
         format!("{}.archive", archive_name)
     }
@@ -111,7 +100,7 @@ impl Bar {
     /// this is a comment about bar.foo
     #[inline]
     pub fn foo(&self) -> flatdata::RawData {
-        flatdata::RawData::new(unsafe {self.foo.as_bytes()})
+        self.foo
     }
 
 }
@@ -131,9 +120,16 @@ impl flatdata::Archive for Bar {
     fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
+        #[allow(unused_imports)]
+        use flatdata::SliceExt;
+        // extend lifetime since Rust cannot know that we reference a cache here
+        #[allow(unused_variables)]
+        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
-        let foo = Self::read_resource(&*storage, "foo", schema::bar::resources::FOO)?;
+        let resource = extend(storage.read("foo", schema::bar::resources::FOO));
+        let foo = resource.map(|x| flatdata::RawData::new(x))?;
 
         Ok(Self {
             _storage: storage,

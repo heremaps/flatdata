@@ -31,75 +31,40 @@ use std::fmt::Debug;
 #[doc(hidden)]
 pub use std::marker;
 
-/// A type in flatdata used for reading data.
-///
-/// Each struct reference in generated code implements this trait.
-pub trait Ref: Clone + Copy + Debug + PartialEq {}
-
-/// A mutable type in flatdata used for writing data.
-///
-/// Each struct reference in generated code has a corresponding type with suffix
-/// `Mut` which implements this trait.
-pub trait RefMut: Debug {}
-
 /// A factory trait used to bind lifetime to Ref implementations.
 ///
 /// Vector/ArrayView-like classes cannot be directly implemented over the
 /// structs since that binds lifetime too early. Instead this generic factory
 /// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
-pub trait Struct<'a>: Clone {
+pub trait Struct: Debug {
+    /// Create a new struct
+    ///
+    /// # Safety
+    /// If the struct is not self-contained (NoOverlap),
+    /// and there is no directly subsequent structure in memory,
+    /// then the resulting instance's data must not be accessed
+    unsafe fn create_unchecked() -> Self;
+
     /// Schema of the type. Used only for debug and inspection purposes.
     const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
     /// Whether this structs requires data of the next instance
     const IS_OVERLAPPING_WITH_NEXT: bool;
-
-    /// Item this factory will produce.
-    type Item: Ref;
-
-    /// Creates a new item from a slice.
-    fn create(data: &'a [u8]) -> Self::Item;
-
-    /// Item this factory will produce.
-    type ItemMut: RefMut;
-
-    /// Creates a new item from a slice.
-    fn create_mut(data: &'a mut [u8]) -> Self::ItemMut;
 }
-
-/// Shortcut trait for Structs that are able to produce references of any given
-/// lifetime
-///
-/// Equivalent to ```for<'a> Struct<'a>'''
-pub trait RefFactory: for<'a> Struct<'a> {}
-impl<T> RefFactory for T where T: for<'a> Struct<'a> {}
 
 /// Marks structs that can be used stand-alone, e.g. no range
 pub trait NoOverlap {}
 
 /// A specialized Struct factory producing Index items.
 /// Used primarily by the MultiVector/MultiArrayView.
-pub trait IndexStruct<'a>: Struct<'a> {
+pub trait IndexStruct: Struct {
     /// Provide getter for index
-    fn range(data: Self::Item) -> std::ops::Range<usize>;
+    fn range(&self) -> std::ops::Range<usize>;
 
     /// Provide setter for index
-    fn set_index(data: Self::ItemMut, value: usize);
+    fn set_index(&mut self, value: usize);
 }
-
-/// Shortcut trait for IndexStructs that are able to produce references of any
-/// given lifetime
-///
-/// Equivalent to ```for<'a> IndexStruct<'a>'''
-pub trait IndexRefFactory: for<'a> IndexStruct<'a> {}
-impl<T> IndexRefFactory for T where T: for<'a> IndexStruct<'a> {}
-
-/// A type in archive used as index of a `MultiArrayView`.
-pub trait Index: Ref {}
-
-/// A type in archive used as mutable index of a `MultiVector`.
-pub trait IndexMut: RefMut {}
 
 /// Index specifying a variadic type of `MultiArrayView`.
 pub type TypeIndex = u8;
@@ -115,15 +80,20 @@ pub trait VariadicRef: Clone + Debug + PartialEq {
     fn size_in_bytes(&self) -> usize;
 }
 
+/// A type used as element of 'MultiArrayView'.
+///
+/// Provides the index type that should be used in the container.
+pub trait VariadicIndex {
+    /// Index type
+    type Index: IndexStruct;
+}
+
 /// A type used to create VariadicStructs.
 ///
 /// Vector/ArrayView-like classes cannot be directly implemented over the
 /// structs since that binds lifetime too early. Instead this generic factory
 /// and Higher-Rank-Trait-Bounds are used to emulate higher-kinded-generics.
 pub trait VariadicStruct<'a>: Clone {
-    /// Index type
-    type Index: IndexRefFactory;
-
     /// Reader type
     type Item: VariadicRef;
 
@@ -147,20 +117,25 @@ pub trait VariadicStruct<'a>: Clone {
 /// any given lifetime
 ///
 /// Equivalent to ```for<'a> VariadicStruct<'a>'''
-pub trait VariadicRefFactory: for<'a> VariadicStruct<'a> {}
-impl<T> VariadicRefFactory for T where T: for<'a> VariadicStruct<'a> {}
+pub trait VariadicRefFactory: for<'a> VariadicStruct<'a> + VariadicIndex {}
+
+impl<T> VariadicRefFactory for T
+where
+    T: for<'a> VariadicStruct<'a>,
+    T: VariadicIndex,
+{
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::test::{A, R};
-    use crate::StructBuf;
 
     #[test]
     fn test_debug() {
-        let a = StructBuf::<A>::new();
+        let a = A::new();
         let output = format!("{:?}", a);
-        assert_eq!(output, "StructBuf { resource: A { x: 0, y: 0, e: Value } }");
+        assert_eq!(output, "A { x: 0, y: 0, e: Value }");
     }
 
     #[test]

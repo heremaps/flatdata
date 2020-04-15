@@ -13,9 +13,8 @@ use std::{
     io::{self, Seek, Write},
     mem,
     ops::DerefMut,
-    ptr,
     rc::Rc,
-    slice, str,
+    str,
 };
 
 use diff;
@@ -146,7 +145,7 @@ pub fn create_external_vector<'a, T>(
     schema: &str,
 ) -> io::Result<ExternalVector<'a, T>>
 where
-    T: for<'b> Struct<'b>,
+    T: Struct,
 {
     // write schema
     let schema_name = format!("{}.schema", resource_name);
@@ -223,46 +222,6 @@ pub fn create_archive<T: ArchiveBuilder>(
             .map_err(|e| ResourceStorageError::from_io_error(e, signature_name))?;
     }
     Ok(())
-}
-
-/// Describes a chunk of memory
-#[doc(hidden)]
-#[derive(Debug, Clone)]
-pub struct MemoryDescriptor {
-    ptr: *const u8,
-    size: usize,
-}
-
-impl Default for MemoryDescriptor {
-    #[inline]
-    fn default() -> MemoryDescriptor {
-        MemoryDescriptor {
-            ptr: ptr::null(),
-            size: 0,
-        }
-    }
-}
-
-/// Describes a contiguous constant chunk of memory without tracking lifetime
-/// Used to enabling caching files retrieved from ResourceStorage without
-/// Sibling-Borrow woes
-impl MemoryDescriptor {
-    /// Creates a new memory descriptor from a pointer and its size in bytes.
-    #[inline]
-    pub fn new(data: &[u8]) -> MemoryDescriptor {
-        MemoryDescriptor {
-            ptr: data.as_ptr(),
-            size: data.len(),
-        }
-    }
-
-    /// Converts back to bytes (lifetime corresponds to the descriptor's)
-    /// Inherently unsafe, since there is no guarantee that the original buffer
-    /// is still alive
-    #[inline]
-    pub unsafe fn as_bytes(&self) -> &[u8] {
-        slice::from_raw_parts(self.ptr, self.size)
-    }
 }
 
 /// A handle to a resource for writing to it.

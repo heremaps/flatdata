@@ -18,6 +18,8 @@ pub enum ResourceStorageError {
     /// Indicates that schema for the resource with stored name is missing in
     /// resource storage.
     MissingSchema(String),
+    /// Indicates that part of the data is missing, e.g. one file of a multi_vector
+    MissingData,
     /// Indicates that the schema stored in resource storage differs from the
     /// expected schema.
     WrongSignature {
@@ -55,6 +57,7 @@ impl error::Error for ResourceStorageError {
         match *self {
             ResourceStorageError::Io(_, _) => "resource io error",
             ResourceStorageError::MissingSchema(_) => "schema of resource is missing",
+            ResourceStorageError::MissingData => "resource has partially missing data",
             ResourceStorageError::UnexpectedDataSize => "resource has unexpected size",
             ResourceStorageError::Utf8Error(_) => "utf8 error in schema",
             ResourceStorageError::WrongSignature { .. } => "schema is not matching expected schema",

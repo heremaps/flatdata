@@ -37,31 +37,30 @@ fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
     assert_eq!(g.chapters().len(), num_chapters);
 
     assert_eq!(
-        g.strings().substring(vertices.at(0).name_ref() as usize)?,
+        g.strings().substring(vertices[0].name_ref() as usize)?,
         "Annushka"
     );
     assert_eq!(
-        g.strings().substring(vertices.at(3).name_ref() as usize)?,
+        g.strings().substring(vertices[3].name_ref() as usize)?,
         "Anna Arkadyevna Karenina"
     );
 
-    let e0 = edges.at(0);
+    let e0 = &edges[0];
     assert_eq!(
         g.strings()
-            .substring(vertices.at(e0.a_ref() as usize).name_ref() as usize)?,
+            .substring(vertices[e0.a_ref() as usize].name_ref() as usize)?,
         "Annushka"
     );
     assert_eq!(
         g.strings()
-            .substring(vertices.at(e0.b_ref() as usize).name_ref() as usize)?,
+            .substring(vertices[e0.b_ref() as usize].name_ref() as usize)?,
         "Anna Arkadyevna Karenina"
     );
 
-    let validate_chapters = |edge_ref, expected| {
-        let chapters_range = edges.at(edge_ref).chapters_range();
-        let e_chapters: Vec<String> = g
-            .chapters()
-            .slice(chapters_range.start as usize..chapters_range.end as usize)
+    let validate_chapters = |edge_ref: usize, expected| {
+        let chapters_range = edges[edge_ref].chapters_range();
+        let e_chapters: Vec<String> = g.chapters()
+            [chapters_range.start as usize..chapters_range.end as usize]
             .iter()
             .map(|ch| format!("{}.{}", ch.major(), ch.minor()))
             .collect();
@@ -87,7 +86,7 @@ fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
             assert_eq!(g.strings().substring(data.kind_ref() as usize)?, "maid");
             assert_eq!(
                 g.strings()
-                    .substring(vertices.at(data.to_ref() as usize).name_ref() as usize)?,
+                    .substring(vertices[data.to_ref() as usize].name_ref() as usize)?,
                 "Anna Arkadyevna Karenina"
             );
         }
@@ -104,7 +103,7 @@ fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
             );
             assert_eq!(
                 g.strings()
-                    .substring(vertices.at(data.to_ref() as usize).name_ref() as usize)?,
+                    .substring(vertices[data.to_ref() as usize].name_ref() as usize)?,
                 "Konstantin Dmitrievitch Levin"
             );
         }
@@ -121,7 +120,7 @@ fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
             );
             assert_eq!(
                 g.strings()
-                    .substring(vertices.at(data.to_ref() as usize).name_ref() as usize)?,
+                    .substring(vertices[data.to_ref() as usize].name_ref() as usize)?,
                 "Count Alexey Kirillovitch Vronsky"
             );
         }
@@ -139,7 +138,13 @@ fn check_files(name_a: &path::Path, name_b: &path::Path) {
     let mut buf_b = Vec::new();
     fb.read_to_end(&mut buf_b).unwrap();
 
-    assert_eq!(buf_a, buf_b);
+    assert_eq!(
+        buf_a,
+        buf_b,
+        "{}, vs {}",
+        name_a.display(),
+        name_b.display()
+    );
 }
 
 fn check_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &str) {
@@ -170,15 +175,15 @@ fn copy_coappearances_archive(
     let gb = coappearances::GraphBuilder::new(storage).expect("could not create archive");
 
     // copy data
-    let mut meta = flatdata::StructBuf::<coappearances::Meta>::new();
-    meta.get_mut().fill_from(&g.meta());
-    gb.set_meta(meta.get()).expect("set_meta failed");
+    let mut meta = coappearances::Meta::new();
+    meta.fill_from(&g.meta());
+    gb.set_meta(&meta).expect("set_meta failed");
     check_resource(&source_archive_path, &archive_path, "meta");
 
     {
         let mut vertices = gb.start_vertices().expect("start_vertices failed");
         for v in g.vertices().iter() {
-            let mut w = vertices.grow().expect("grow failed");
+            let w = vertices.grow().expect("grow failed");
             w.fill_from(&v);
         }
         vertices.close().expect("close failed");
@@ -190,8 +195,8 @@ fn copy_coappearances_archive(
         edges.grow().fill_from(&e);
     }
     // add final sentinel
-    let mut sentinel = edges.grow();
-    sentinel.set_first_chapter_ref(g.edges().at(g.edges().len() - 1).chapters_range().end);
+    let sentinel = edges.grow();
+    sentinel.set_first_chapter_ref(g.edges()[g.edges().len() - 1].chapters_range().end);
     sentinel.set_a_ref(std::u16::MAX as u32);
     sentinel.set_b_ref(std::u16::MAX as u32);
     gb.set_edges(&edges.as_view()).expect("set_edges failed");
@@ -207,19 +212,19 @@ fn copy_coappearances_archive(
             for element in item {
                 match element {
                     coappearances::VerticesDataRef::Nickname(ref nickname) => {
-                        let mut new_element = new_item.add_nickname();
+                        let new_element = new_item.add_nickname();
                         new_element.fill_from(nickname);
                     }
                     coappearances::VerticesDataRef::Description(ref desc) => {
-                        let mut new_element = new_item.add_description();
+                        let new_element = new_item.add_description();
                         new_element.fill_from(desc);
                     }
                     coappearances::VerticesDataRef::UnaryRelation(ref rel) => {
-                        let mut new_element = new_item.add_unary_relation();
+                        let new_element = new_item.add_unary_relation();
                         new_element.fill_from(rel);
                     }
                     coappearances::VerticesDataRef::BinaryRelation(ref rel) => {
-                        let mut new_element = new_item.add_binary_relation();
+                        let new_element = new_item.add_binary_relation();
                         new_element.fill_from(rel);
                     }
                 }
@@ -274,18 +279,15 @@ fn read_write_statistics_subarchive() {
     );
 
     let builder = gb.statistics().expect("statistics failed");
-    let mut inv_buf = flatdata::StructBuf::<coappearances::Invariants>::new();
+    let mut inv = coappearances::Invariants::new();
     {
-        let mut inv = inv_buf.get_mut();
         inv.set_max_degree(71);
         inv.set_max_degree_ref(46);
         inv.set_min_degree(1);
         inv.set_min_degree_ref(9);
         inv.set_num_connected_components(1);
     }
-    builder
-        .set_invariants(inv_buf.get())
-        .expect("set_invariants failed");
+    builder.set_invariants(&inv).expect("set_invariants failed");
 
     let degrees = vec![
         4, 11, 25, 43, 3, 3, 4, 7, 2, 1, 1, 1, 12, 3, 1, 4, 8, 2, 6, 40, 2, 5, 2, 1, 1, 6, 3, 16,
@@ -318,8 +320,8 @@ fn read_write_statistics_subarchive() {
     );
     for i in 0..orig_stats.vertex_degrees().len() {
         assert_eq!(
-            orig_stats.vertex_degrees().at(i),
-            copy_stats.vertex_degrees().at(i)
+            orig_stats.vertex_degrees()[i],
+            copy_stats.vertex_degrees()[i]
         );
     }
 }

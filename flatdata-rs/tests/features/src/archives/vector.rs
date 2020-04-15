@@ -37,12 +37,12 @@ fn test() {
         let archive = n::A::open(storage).expect("Failed to open archive");
         let data = archive.data();
         for x in (10..600).enumerate() {
-            assert_eq!(data.at(x.0).x(), x.1);
+            assert_eq!(data[x.0].x(), x.1);
         }
         if set_optional {
             let data = archive.optional_data().expect("Optional data not found");
             for x in (10..600).enumerate() {
-                assert_eq!(data.at(x.0).x(), x.1);
+                assert_eq!(data[x.0].x(), x.1);
             }
         }
     }

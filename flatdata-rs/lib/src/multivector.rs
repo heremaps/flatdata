@@ -1,6 +1,5 @@
 use crate::{
     error::ResourceStorageError,
-    memory,
     multiarrayview::MultiArrayView,
     storage::ResourceHandle,
     structs::{IndexStruct, VariadicRefFactory, VariadicStruct},
@@ -99,7 +98,7 @@ pub struct MultiVector<'a, Ts>
 where
     Ts: VariadicRefFactory,
 {
-    index: ExternalVector<'a, <Ts as VariadicStruct<'a>>::Index>,
+    index: ExternalVector<'a, Ts::Index>,
     data: Vec<u8>,
     data_handle: ResourceHandle<'a>,
     size_flushed: usize,
@@ -111,13 +110,10 @@ where
     Ts: VariadicRefFactory,
 {
     /// Creates an empty multivector.
-    pub fn new(
-        index: ExternalVector<'a, <Ts as VariadicStruct<'a>>::Index>,
-        data_handle: ResourceHandle<'a>,
-    ) -> Self {
+    pub fn new(index: ExternalVector<'a, Ts::Index>, data_handle: ResourceHandle<'a>) -> Self {
         Self {
             index,
-            data: vec![0; memory::PADDING_SIZE],
+            data: Vec::new(),
             data_handle,
             size_flushed: 0,
             _phantom: marker::PhantomData,
@@ -146,21 +142,15 @@ where
     ///
     /// Only data is flushed.
     fn flush(&mut self) -> io::Result<()> {
-        self.data_handle
-            .borrow_mut()
-            .write(&self.data[..self.data.len() - memory::PADDING_SIZE])?;
-        self.size_flushed += self.data.len() - memory::PADDING_SIZE;
+        self.data_handle.borrow_mut().write(&self.data)?;
+        self.size_flushed += self.data.len();
         self.data.clear();
-        self.data.resize(memory::PADDING_SIZE, 0);
         Ok(())
     }
 
     fn add_to_index(&mut self) -> io::Result<()> {
         let idx_mut = self.index.grow()?;
-        <<Ts as VariadicStruct<'a>>::Index as IndexStruct>::set_index(
-            idx_mut,
-            self.size_flushed + self.data.len() - memory::PADDING_SIZE,
-        );
+        Ts::Index::set_index(idx_mut, self.size_flushed + self.data.len());
         Ok(())
     }
 
@@ -192,7 +182,6 @@ where
 #[allow(dead_code)]
 mod tests {
     use crate::{
-        arrayview::ArrayView,
         memstorage::MemoryResourceStorage,
         multiarrayview::MultiArrayView,
         storage::{create_multi_vector, ResourceStorage},
@@ -208,14 +197,14 @@ mod tests {
             {
                 let mut item = mv.grow().expect("grow failed");
                 {
-                    let mut a = item.add_a();
+                    let a = item.add_a();
                     a.set_x(1);
                     a.set_y(2);
                     assert_eq!(a.x(), 1);
                     assert_eq!(a.y(), 2);
                 }
                 {
-                    let mut b = item.add_a();
+                    let b = item.add_a();
                     b.set_x(3);
                     b.set_y(4);
                     assert_eq!(b.x(), 3);
@@ -240,7 +229,8 @@ mod tests {
         let index_resource = storage
             .read_and_check_schema("multivector_index", "index(Some schema)")
             .expect("read_and_check_schema failed");
-        let index: ArrayView<IndexType16> = ArrayView::new(&index_resource);
+        use crate::SliceExt;
+        let index = <&[IndexType16]>::from_bytes(&index_resource).expect("Corrupted data");
         let resource = storage
             .read_and_check_schema("multivector", "Some schema")
             .expect("read_and_check_schema failed");

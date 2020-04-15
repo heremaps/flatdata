@@ -1,242 +1,48 @@
-use crate::{
-    structs::{RefFactory, Struct},
-    vector::Vector,
-};
+use crate::error::ResourceStorageError;
+use crate::structs::Struct;
 
-use std::{
-    fmt, iter, marker,
-    ops::{Bound, RangeBounds},
-};
-
-/// A read-only view on a contiguous sequence of flatdata structs of the same
-/// type `T`.
-///
-/// The sequence is written using [`Vector`] or [`ExternalVector`]. For detailed
-/// examples see either of the two.
-///
-/// An archive provides a getter for each vector resource, which returns an
-/// array view.
-///
-/// [`Vector`]: struct.Vector.html
-/// [`ExternalVector`]: struct.ExternalVector.html
-#[derive(Clone)]
-pub struct ArrayView<'a, T>
+/// Enhanced slices of flatdata Structs so that they can be created from bytes / converted to bytes
+/// Note: TryFrom/AsRef cannot be used, since slice is a foreign type
+pub trait SliceExt<'a>
 where
-    T: RefFactory,
+    Self: Sized,
 {
-    data: &'a [u8],
-    _phantom: marker::PhantomData<T>,
+    /// Create a slice from an array of bytes
+    fn from_bytes(data: &'a [u8]) -> Result<Self, ResourceStorageError>;
+
+    /// Get byte representation of the slice
+    fn as_bytes(&self) -> &'a [u8];
 }
 
-impl<'a, T> ArrayView<'a, T>
+impl<'a, T> SliceExt<'a> for &'a [T]
 where
-    T: RefFactory,
+    T: Struct,
 {
-    /// Creates a new `ArrayView` to the data at the given address.
-    ///
-    /// The returned array view does not own the data.
-    pub fn new(data: &'a [u8]) -> Self {
-        Self {
-            data,
-            _phantom: marker::PhantomData,
+    fn from_bytes(mut data: &[u8]) -> Result<Self, ResourceStorageError> {
+        if data.len() % T::SIZE_IN_BYTES != 0 {
+            return Err(ResourceStorageError::UnexpectedDataSize);
+        }
+        if T::IS_OVERLAPPING_WITH_NEXT {
+            if data.len() < T::SIZE_IN_BYTES {
+                return Err(ResourceStorageError::UnexpectedDataSize);
+            }
+            data = &data[..data.len() - T::SIZE_IN_BYTES];
+        }
+        unsafe {
+            Ok(std::slice::from_raw_parts(
+                data.as_ptr() as *const T,
+                data.len() / T::SIZE_IN_BYTES,
+            ))
         }
     }
 
-    /// Number of elements in the array.
-    pub fn len(&self) -> usize {
-        if <T as Struct>::IS_OVERLAPPING_WITH_NEXT {
-            self.data.len() / <T as Struct>::SIZE_IN_BYTES - 1
+    fn as_bytes(&self) -> &'a [u8] {
+        let len = if T::IS_OVERLAPPING_WITH_NEXT {
+            self.len() + 1
         } else {
-            self.data.len() / <T as Struct>::SIZE_IN_BYTES
-        }
-    }
-
-    /// Returns `true` if the array is empty.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// Returns a read-only handle to the element in the array at position
-    /// `index`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if index is greater than or equal to `ArrayView::len()`.
-    pub fn at(&self, index: usize) -> <T as Struct<'a>>::Item {
-        assert!(index < self.len());
-        let index = self.data_index(index);
-        T::create(&self.data[index..])
-    }
-
-    /// Slices this array view by a given range.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the range is outside of bounds of array view.
-    pub fn slice<R: RangeBounds<usize>>(&self, range: R) -> Self {
-        let data_start = match range.start_bound() {
-            Bound::Included(&idx) => self.data_index(idx),
-            Bound::Excluded(&idx) => self.data_index(idx + 1),
-            Bound::Unbounded => 0,
+            self.len()
         };
-        let sentinel = <T as Struct>::IS_OVERLAPPING_WITH_NEXT as usize;
-        let data_end = match range.end_bound() {
-            Bound::Included(&idx) => self.data_index(idx + 1 + sentinel),
-            Bound::Excluded(&idx) => self.data_index(idx + sentinel),
-            Bound::Unbounded => self.data.len(),
-        };
-        Self::new(&self.data[data_start..data_end])
-    }
-
-    /// Returns an iterator to the elements of the array.
-    pub fn iter(&self) -> ArrayViewIter<'a, T> {
-        ArrayViewIter { view: self.clone() }
-    }
-
-    /// Returns a raw bytes representation of the underlying array data.
-    pub fn as_bytes(&self) -> &[u8] {
-        self.data
-    }
-
-    fn data_index(&self, index: usize) -> usize {
-        index * <T as Struct>::SIZE_IN_BYTES
-    }
-}
-
-impl<'a, T> From<&'a Vector<T>> for ArrayView<'a, T>
-where
-    T: RefFactory,
-{
-    fn from(v: &'a Vector<T>) -> Self {
-        v.as_view()
-    }
-}
-
-pub(crate) fn debug_format<'a, T>(
-    name: &str,
-    iter: ArrayViewIter<'a, T>,
-    f: &mut fmt::Formatter,
-) -> fmt::Result
-where
-    T: RefFactory,
-{
-    let len = iter.len();
-    let preview: Vec<_> = iter.take(super::DEBUG_PREVIEW_LEN).collect();
-    write!(
-        f,
-        "{} {{ len: {}, data: {:?}{} }}",
-        name,
-        len,
-        preview,
-        if len <= super::DEBUG_PREVIEW_LEN {
-            ""
-        } else {
-            "..."
-        }
-    )
-}
-
-impl<'a, T> fmt::Debug for ArrayView<'a, T>
-where
-    T: RefFactory,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        debug_format("ArrayView", self.iter(), f)
-    }
-}
-
-impl<'a, T> IntoIterator for ArrayView<'a, T>
-where
-    T: RefFactory,
-{
-    type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
-    type IntoIter = ArrayViewIter<'a, T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
-
-impl<'a, T> IntoIterator for &ArrayView<'a, T>
-where
-    T: RefFactory,
-{
-    type Item = <ArrayViewIter<'a, T> as Iterator>::Item;
-    type IntoIter = ArrayViewIter<'a, T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
-
-impl<'a, T> AsRef<[u8]> for ArrayView<'a, T>
-where
-    T: RefFactory,
-{
-    fn as_ref(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
-/// Iterator through elements of `ArrayView`.
-#[derive(Clone)]
-pub struct ArrayViewIter<'a, T>
-where
-    T: RefFactory,
-{
-    view: ArrayView<'a, T>,
-}
-
-impl<'a, T> iter::Iterator for ArrayViewIter<'a, T>
-where
-    T: RefFactory,
-{
-    type Item = <T as Struct<'a>>::Item;
-    fn next(&mut self) -> Option<Self::Item> {
-        if !self.view.is_empty() {
-            let element = self.view.at(0);
-            self.view = self.view.slice(1..);
-            Some(element)
-        } else {
-            None
-        }
-    }
-}
-
-impl<'a, T> iter::ExactSizeIterator for ArrayViewIter<'a, T>
-where
-    T: RefFactory,
-{
-    fn len(&self) -> usize {
-        self.view.len()
-    }
-}
-
-impl<'a, T> iter::DoubleEndedIterator for ArrayViewIter<'a, T>
-where
-    T: RefFactory,
-{
-    fn next_back(&mut self) -> Option<Self::Item> {
-        if !self.view.is_empty() {
-            let last_pos = self.view.len() - 1;
-            let element = self.view.at(last_pos);
-            self.view = self.view.slice(..last_pos);
-            Some(element)
-        } else {
-            None
-        }
-    }
-}
-
-// we always check -> iterator is already fused
-impl<'a, T> iter::FusedIterator for ArrayViewIter<'a, T> where T: RefFactory {}
-
-impl<'a, T> fmt::Debug for ArrayViewIter<'a, T>
-where
-    T: RefFactory,
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        debug_format("ArrayViewIter", self.clone(), f)
+        unsafe { std::slice::from_raw_parts(self.as_ptr() as *const u8, len * T::SIZE_IN_BYTES) }
     }
 }
 
@@ -245,41 +51,48 @@ where
 mod test {
     use super::*;
     use crate::{
-        memory,
         structs::Struct,
         test::{A, B, R},
+        Vector,
     };
 
     #[test]
     fn range() {
         let mut vec: Vector<R> = Vector::with_len(3);
-        vec.at_mut(0).set_first_x(10);
-        vec.at_mut(1).set_first_x(20);
-        vec.at_mut(2).set_first_x(30);
+        vec[0].set_first_x(10);
+        vec[1].set_first_x(20);
+        vec[2].set_first_x(30);
+
+        assert_eq!(vec.len(), 3);
+        assert_eq!(vec[0].x(), 10..20);
+        assert_eq!(vec[1].x(), 20..30);
+        assert_eq!(vec[2].x(), 30..0);
+
+        assert_eq!(vec[0..1].len(), 1);
+        assert_eq!(vec[0..1][0].x(), 10..20);
 
         let view = vec.as_view();
         assert_eq!(view.len(), 2);
-        assert_eq!(view.at(0).x(), 10..20);
-        assert_eq!(view.at(1).x(), 20..30);
+        assert_eq!(view[0].x(), 10..20);
+        assert_eq!(view[1].x(), 20..30);
 
-        assert_eq!(view.slice(0..1).len(), 1);
-        assert_eq!(view.slice(0..1).at(0).x(), 10..20);
+        assert_eq!(vec[0..1].len(), 1);
+        assert_eq!(vec[0..1][0].x(), 10..20);
     }
 
     #[test]
     fn into_iter() {
         for _ in create_values(10).as_view() {}
-        for _ in &create_values(10).as_view() {}
     }
 
     #[test]
     fn new_and_clone() {
         let mut buffer = vec![255_u8; A::SIZE_IN_BYTES];
-        buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10 + memory::PADDING_SIZE]);
-        let data = &buffer[..buffer.len() - memory::PADDING_SIZE];
-        let view: ArrayView<A> = ArrayView::new(&data);
+        buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10]);
+        let data = &buffer[..];
+        let view = <&[A]>::from_bytes(&data).unwrap();
         assert_eq!(11, view.len());
-        let first = view.at(0);
+        let first = &view[0];
         assert_eq!(65535, first.x());
         assert_eq!(65535, first.y());
         for x in view.iter().skip(1) {
@@ -290,7 +103,7 @@ mod test {
         let x = {
             // test clone and lifetime of returned reference
             let view_copy = view.clone();
-            view_copy.at(0)
+            &view_copy[0]
         };
         assert_eq!(65535, x.x());
         assert_eq!(65535, x.y());
@@ -307,17 +120,10 @@ mod test {
     fn create_values(size: usize) -> Vector<B> {
         let mut v: Vector<B> = Vector::with_len(size);
         for i in 0..size as u32 {
-            let mut a = v.at_mut(i as usize);
+            let a = &mut v[i as usize];
             a.set_id(i);
         }
         v
-    }
-
-    #[test]
-    fn from() {
-        let v = create_values(10);
-        let x: ArrayView<_> = (&v).into();
-        assert_eq!(x.len(), 10);
     }
 
     #[test]
@@ -350,23 +156,23 @@ mod test {
     #[test]
     fn slice() {
         let v = create_values(10);
-        let view: ArrayView<_> = (&v).into();
+        let view = v.as_view();
 
         assert_eq!(view.len(), 10);
-        assert_eq!(view.slice(2..).len(), 8);
-        assert_eq!(view.slice(2..).iter().next().unwrap().id(), 2);
-        assert_eq!(view.slice(..8).len(), 8);
-        assert_eq!(view.slice(..8).iter().next().unwrap().id(), 0);
-        assert_eq!(view.slice(2..8).len(), 6);
-        assert_eq!(view.slice(2..8).iter().next().unwrap().id(), 2);
+        assert_eq!(view[2..].len(), 8);
+        assert_eq!(view[2..].iter().next().unwrap().id(), 2);
+        assert_eq!(view[..8].len(), 8);
+        assert_eq!(view[..8].iter().next().unwrap().id(), 0);
+        assert_eq!(view[2..8].len(), 6);
+        assert_eq!(view[2..8].iter().next().unwrap().id(), 2);
     }
 
     #[test]
     fn debug() {
-        let v = create_values(100);
+        let v = create_values(10);
         let view = v.as_view();
 
-        let content = " { len: 100, data: [\
+        let content = "[\
                        B { id: 0 }, \
                        B { id: 1 }, \
                        B { id: 2 }, \
@@ -377,20 +183,17 @@ mod test {
                        B { id: 7 }, \
                        B { id: 8 }, \
                        B { id: 9 }\
-                       ]... }";
+                       ]";
 
-        assert_eq!(format!("{:?}", view), "ArrayView".to_string() + content);
+        assert_eq!(format!("{:?}", view), content);
         assert_eq!(
             format!("{:?}", view.iter()),
-            "ArrayViewIter".to_string() + content
+            "Iter(".to_string() + content + ")"
         );
         let mut iter = view.iter();
-        for _ in 0..99 {
+        for _ in 0..9 {
             iter.next();
         }
-        assert_eq!(
-            format!("{:?}", iter),
-            "ArrayViewIter { len: 1, data: [B { id: 99 }] }"
-        );
+        assert_eq!(format!("{:?}", iter), "Iter([B { id: 9 }])");
     }
 }

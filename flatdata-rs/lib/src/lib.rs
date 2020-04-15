@@ -159,7 +159,6 @@ mod multiarrayview;
 mod multivector;
 mod rawdata;
 mod storage;
-mod structbuf;
 mod structs;
 mod vector;
 
@@ -171,7 +170,7 @@ pub mod test;
 
 pub use crate::{
     archive::*,
-    arrayview::ArrayView,
+    arrayview::SliceExt,
     error::*,
     filestorage::FileResourceStorage,
     generator::*,
@@ -180,11 +179,7 @@ pub use crate::{
     multiarrayview::MultiArrayView,
     multivector::MultiVector,
     rawdata::RawData,
-    storage::{
-        create_archive, create_external_vector, create_multi_vector, MemoryDescriptor,
-        ResourceStorage,
-    },
-    structbuf::StructBuf,
+    storage::{create_archive, create_external_vector, create_multi_vector, ResourceStorage},
     structs::*,
     vector::*,
 };

@@ -4,15 +4,6 @@ pub struct A {
 }
 
 impl A {
-    fn read_resource(
-        storage: &dyn flatdata::ResourceStorage,
-        name: &str,
-        schema: &str,
-    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
-    {
-        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
-    }
-
     fn signature_name(archive_name: &str) -> String {
         format!("{}.archive", archive_name)
     }
@@ -33,6 +24,12 @@ impl flatdata::Archive for A {
     fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
+        #[allow(unused_imports)]
+        use flatdata::SliceExt;
+        // extend lifetime since Rust cannot know that we reference a cache here
+        #[allow(unused_variables)]
+        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
 

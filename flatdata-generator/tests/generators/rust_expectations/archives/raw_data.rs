@@ -1,32 +1,23 @@
 #[derive(Clone)]
 pub struct A {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    data: flatdata::MemoryDescriptor,
-    optional_data: Option<flatdata::MemoryDescriptor>,
+    data : flatdata::RawData<'static>,
+    optional_data : Option<flatdata::RawData<'static>>,
 }
 
 impl A {
-    fn read_resource(
-        storage: &dyn flatdata::ResourceStorage,
-        name: &str,
-        schema: &str,
-    ) -> Result<flatdata::MemoryDescriptor, flatdata::ResourceStorageError>
-    {
-        storage.read(name, schema).map(|x| flatdata::MemoryDescriptor::new(&x))
-    }
-
     fn signature_name(archive_name: &str) -> String {
         format!("{}.archive", archive_name)
     }
 
     #[inline]
     pub fn data(&self) -> flatdata::RawData {
-        flatdata::RawData::new(unsafe {self.data.as_bytes()})
+        self.data
     }
 
     #[inline]
     pub fn optional_data(&self) -> Option<flatdata::RawData> {
-        self.optional_data.as_ref().map(|mem_desc| flatdata::RawData::new({unsafe {mem_desc.as_bytes()} }))
+        self.optional_data
     }
 
 }
@@ -47,10 +38,18 @@ impl flatdata::Archive for A {
     fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
+        #[allow(unused_imports)]
+        use flatdata::SliceExt;
+        // extend lifetime since Rust cannot know that we reference a cache here
+        #[allow(unused_variables)]
+        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
-        let data = Self::read_resource(&*storage, "data", schema::a::resources::DATA)?;
-        let optional_data = Self::read_resource(&*storage, "optional_data", schema::a::resources::OPTIONAL_DATA).ok();
+        let resource = extend(storage.read("data", schema::a::resources::DATA));
+        let data = resource.map(|x| flatdata::RawData::new(x))?;
+        let resource = extend(storage.read("optional_data", schema::a::resources::OPTIONAL_DATA));
+        let optional_data = resource.map(|x| flatdata::RawData::new(x)).ok();
 
         Ok(Self {
             _storage: storage,

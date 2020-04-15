@@ -1,61 +1,89 @@
 {%- macro declaration(struct) %}
-
 {% if struct.doc %}
 {{ struct.doc | rust_doc }}
 {% endif %}
-///
-/// ## Access pattern
-///
-/// This structure is used as a template parameter in containers.
-/// It does not contain any data, instead it references
-///
-/// * [`{{struct.name}}Ref`] for the read-only access, and
-/// * [`{{struct.name}}Mut`] for the mutable access
-///
-/// to the `{{struct.name}}` data.
-///
-/// [`{{struct.name}}Ref`]: struct.{{struct.name}}Ref.html
-/// [`{{struct.name}}Mut`]: struct.{{struct.name}}Mut.html
-#[derive(Clone, Debug)]
-pub struct {{struct.name}} {}
-
-/// Read-only access to [`{{struct.name}}`].
-///
-/// [`{{struct.name}}`]: struct.{{struct.name}}.html
-#[derive(Clone, Copy)]
-pub struct {{struct.name}}Ref<'a> {
-    pub(crate) data: *const u8,
-    _phantom: std::marker::PhantomData<&'a u8>,
+#[repr(transparent)]
+{% if not struct | has_range %}
+#[derive(Clone)]
+{% endif %}
+pub struct {{struct.name}} {
+    data: [u8; {{ struct.size_in_bytes }}],
 }
 
-impl<'a> flatdata::Struct<'a> for {{ struct.name }}
-{
+impl {{ struct.name }} {
+    /// Unsafe since the struct might not be self-contained
+    pub unsafe fn new_unchecked( ) -> Self {
+        Self{data : [0; {{ struct.size_in_bytes }}]}
+    }
+}
+
+impl flatdata::Struct for {{ struct.name }} {
+    unsafe fn create_unchecked( ) -> Self {
+        Self{data : [0; {{ struct.size_in_bytes }}]}
+    }
+
     const SCHEMA: &'static str = schema::structs::{{ struct.name | camel_to_snake_case | upper }};
     const SIZE_IN_BYTES: usize = {{ struct.size_in_bytes }};
     const IS_OVERLAPPING_WITH_NEXT : bool = {% if struct | has_range %}true{%else%}false{%endif%};
-
-    type Item = {{ struct.name }}Ref<'a>;
-
-    #[inline]
-    fn create(data : &'a[u8]) -> Self::Item
-    {
-        Self::Item { data : data.as_ptr(), _phantom : std::marker::PhantomData }
-    }
-
-    type ItemMut = {{ struct.name }}Mut<'a>;
-
-    #[inline]
-    fn create_mut(data: &'a mut[u8]) -> Self::ItemMut
-    {
-        Self::ItemMut { data : data.as_mut_ptr(), _phantom : std::marker::PhantomData }
-    }
 }
 
 {% if not struct | has_range %}
+impl {{ struct.name }} {
+    pub fn new( ) -> Self {
+        Self{data : [0; {{ struct.size_in_bytes }}]}
+    }
+
+    /// Create reference from byte array of matching size
+    pub fn from_bytes(data: &[u8; {{ struct.size_in_bytes }}]) -> &Self {
+        // Safety: This is safe since {{ struct.name }} is repr(transparent)
+        unsafe{ std::mem::transmute( data ) }
+    }
+
+    /// Create reference from byte array of matching size
+    pub fn from_bytes_mut(data: &mut [u8; {{ struct.size_in_bytes }}]) -> &mut Self {
+        // Safety: This is safe since {{ struct.name }} is repr(transparent)
+        unsafe{ std::mem::transmute( data ) }
+    }
+
+    /// Create reference from byte array
+    pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
+        // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
+        if data.len() < {{ struct.size_in_bytes }} {
+            assert_eq!(data.len(), {{ struct.size_in_bytes }});
+            return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
+        }
+        let ptr = data.as_ptr() as *const [u8; {{ struct.size_in_bytes }}];
+        // Safety: We checked length before
+        Ok(Self::from_bytes(unsafe { &*ptr }))
+    }
+
+    /// Create reference from byte array
+    pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
+        // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
+        if data.len() < {{ struct.size_in_bytes }} {
+            assert_eq!(data.len(), {{ struct.size_in_bytes }});
+            return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
+        }
+        let ptr = data.as_ptr() as *mut [u8; {{ struct.size_in_bytes }}];
+        // Safety: We checked length before
+        Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
+    }
+
+    pub fn as_bytes(&self) -> &[u8; {{ struct.size_in_bytes }}] {
+        &self.data
+    }
+}
+
+impl Default for {{ struct.name }} {
+    fn default( ) -> Self {
+        Self::new( )
+    }
+}
+
 impl flatdata::NoOverlap for {{struct.name}} {}
 {% endif %}
 
-impl<'a> {{ struct.name }}Ref<'a> {
+impl {{ struct.name }} {
     {% for field in struct.fields %}
     {% if field.doc and not field.range %}
     {{ field.doc | rust_doc }}
@@ -66,7 +94,7 @@ impl<'a> {{ struct.name }}Ref<'a> {
     {% endif %}
     #[inline]
     pub fn {{ field.name | escape_rust_keywords }}(&self) -> {{ field | field_type }} {
-        let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
+        let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data.as_ptr(), {{ field.offset }}, {{ field.type.width }});
         unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
     }
 
@@ -76,8 +104,8 @@ impl<'a> {{ struct.name }}Ref<'a> {
     {% endif %}
     #[inline]
     pub fn {{ field.range | escape_rust_keywords }}(&self) -> std::ops::Range<{{ field | field_type }}> {
-        let start = flatdata_read_bytes!({{ field.type.name }}, self.data, {{ field.offset }}, {{ field.type.width }});
-        let end = flatdata_read_bytes!({{ field.type.name }}, self.data, {{ field.offset }} + {{ struct.size_in_bytes }} * 8, {{ field.type.width }});
+        let start = flatdata_read_bytes!({{ field.type.name }}, self.data.as_ptr(), {{ field.offset }}, {{ field.type.width }});
+        let end = flatdata_read_bytes!({{ field.type.name }}, self.data.as_ptr(), {{ field.offset }} + {{ struct.size_in_bytes }} * 8, {{ field.type.width }});
         start..end
     }
 
@@ -85,7 +113,7 @@ impl<'a> {{ struct.name }}Ref<'a> {
     {% endfor %}
 }
 
-impl<'a> std::fmt::Debug for {{ struct.name }}Ref<'a> {
+impl std::fmt::Debug for {{ struct.name }} {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.debug_struct("{{ struct.name }}")
             {% for field in struct.fields %}
@@ -96,7 +124,7 @@ impl<'a> std::fmt::Debug for {{ struct.name }}Ref<'a> {
     }
 }
 
-impl<'a> std::cmp::PartialEq for {{ struct.name }}Ref<'a> {
+impl std::cmp::PartialEq for {{ struct.name }} {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         {% for field in struct.fields %}
@@ -106,17 +134,7 @@ impl<'a> std::cmp::PartialEq for {{ struct.name }}Ref<'a> {
     }
 }
 
-impl<'a> flatdata::Ref for {{ struct.name }}Ref<'a> {}
-
-/// Mutable access to [`{{struct.name}}`].
-///
-/// [`{{struct.name}}`]: struct.{{struct.name}}.html
-pub struct {{ struct.name }}Mut<'a> {
-    pub(crate) data: *mut u8,
-    _phantom: std::marker::PhantomData<&'a u8>,
-}
-
-impl<'a> {{ struct.name }}Mut<'a> {
+impl {{ struct.name }} {
     {% for field in struct.fields %}
     {% set name = field.name | escape_rust_keywords %}
     {% if field.doc and not field.range %}
@@ -127,38 +145,21 @@ impl<'a> {{ struct.name }}Mut<'a> {
     /// [`{{ field.range | escape_rust_keywords }}`]: struct.{{ struct.name }}Ref.html#method.{{ field.range | escape_rust_keywords }}
     {% endif %}
     #[inline]
-    pub fn {{ name }}(&self) -> {{ field | field_type }} {
-        let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data, {{ field.offset }}, {{ field.type.width }});
-        unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
-    }
-
     #[allow(missing_docs)]
-    #[inline]
     pub fn set_{{ name }}(&mut self, value: {{ field | field_type }}) {
-        let buffer = unsafe {
-            std::slice::from_raw_parts_mut(self.data, {{ struct.size_in_bytes }})
-        };
-        flatdata_write_bytes!({{ field | primitive_type }}; value, buffer, {{ field.offset }}, {{ field.type.width }})
+        flatdata_write_bytes!({{ field | primitive_type }}; value, self.data, {{ field.offset }}, {{ field.type.width }})
     }
 
     {% endfor %}
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &{{ struct.name }}Ref) {
+    pub fn fill_from(&mut self, other: &{{ struct.name }}) {
         {% for field in struct.fields %}
         {% set name = field.name | escape_rust_keywords %}
         self.set_{{ name }}(other.{{ name }}());
         {% endfor %}
     }
 }
-
-impl<'a> std::fmt::Debug for {{ struct.name }}Mut<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        {{ struct.name }}Ref { data : self.data, _phantom : std::marker::PhantomData }.fmt( f )
-    }
-}
-
-impl<'a> flatdata::RefMut for {{ struct.name }}Mut<'a> {}
 
 {%- endmacro %}
