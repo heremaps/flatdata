@@ -34,7 +34,7 @@ TEST_CASE( "Struct with enum", "[Enum]" )
 {
     Vector< StructWithEnum > v( 1 );
     StructWithEnumMutator x = v[ 0 ];
-    REQUIRE( x.size_in_bytes( ) == size_t( 6 ) );
+    REQUIRE( x.size_in_bytes( ) == size_t( 4 ) );
     x.a = 0x789ab;
     x.b = Enum1::VALUE_1;
     x.c = Enum1::VALUE_3;
@@ -55,7 +55,7 @@ TEST_CASE( "Struct with signed enum", "[Enum]" )
     // min / max, -1, etc
     Vector< StructWithSignedEnum > v( 1 );
     StructWithSignedEnumMutator x = v[ 0 ];
-    REQUIRE( x.size_in_bytes( ) == size_t( 6 ) );
+    REQUIRE( x.size_in_bytes( ) == size_t( 1 ) );
     const uint8_t* data = x.data( );
     StructWithSignedEnum reader{data};
 
