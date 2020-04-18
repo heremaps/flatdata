@@ -1,5 +1,5 @@
 namespace n {
-enum Foo : u64
+enum Foo : u64 : 1
 {
     A = 0,
     B = 1,
@@ -7,7 +7,7 @@ enum Foo : u64
 }
 
 namespace n {
-enum Bar : u64
+enum Bar : u64 : 1
 {
     A = 0,
     B = 1,

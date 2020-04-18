@@ -1,7 +1,8 @@
 namespace n {
-enum EnumI8 : i8
+enum EnumI8 : i8 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -13,9 +14,10 @@ struct StructEnumI8
 }
 
 namespace n {
-enum EnumU8 : u8
+enum EnumU8 : u8 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -27,9 +29,10 @@ struct StructEnumU8
 }
 
 namespace n {
-enum EnumI16 : i16
+enum EnumI16 : i16 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -41,9 +44,10 @@ struct StructEnumI16
 }
 
 namespace n {
-enum EnumU16 : u16
+enum EnumU16 : u16 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -55,9 +59,10 @@ struct StructEnumU16
 }
 
 namespace n {
-enum EnumI32 : i32
+enum EnumI32 : i32 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -69,9 +74,10 @@ struct StructEnumI32
 }
 
 namespace n {
-enum EnumU32 : u32
+enum EnumU32 : u32 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -83,9 +89,10 @@ struct StructEnumU32
 }
 
 namespace n {
-enum EnumI64 : i64
+enum EnumI64 : i64 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -97,9 +104,10 @@ struct StructEnumI64
 }
 
 namespace n {
-enum EnumU64 : u64
+enum EnumU64 : u64 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 

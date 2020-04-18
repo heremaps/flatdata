@@ -1,7 +1,7 @@
-/* This test tests that fields have a default with based on the underlying type
+/* This test tests that fields have a default width independent of the underlying type
  */
 namespace n{
-enum EnumI8 : i8 {
+enum EnumI8 : i8 : 1 {
 	VALUE = 0,
 }
 
@@ -9,7 +9,7 @@ struct StructEnumI8 {
 	f : EnumI8;
 }
 
-enum EnumU8 : u8 {
+enum EnumU8 : u8 : 1 {
 	VALUE = 0,
 }
 
@@ -17,7 +17,7 @@ struct StructEnumU8 {
 	f : EnumU8;
 }
 
-enum EnumI16 : i16 {
+enum EnumI16 : i16 : 1 {
 	VALUE = 0,
 }
 
@@ -25,7 +25,7 @@ struct StructEnumI16 {
 	f : EnumI16;
 }
 
-enum EnumU16 : u16 {
+enum EnumU16 : u16 : 1 {
 	VALUE = 0,
 }
 
@@ -33,7 +33,7 @@ struct StructEnumU16 {
 	f : EnumU16;
 }
 
-enum EnumI32 : i32 {
+enum EnumI32 : i32 : 1 {
 	VALUE = 0,
 }
 
@@ -41,7 +41,7 @@ struct StructEnumI32 {
 	f : EnumI32;
 }
 
-enum EnumU32 : u32 {
+enum EnumU32 : u32 : 1 {
 	VALUE = 0,
 }
 
@@ -49,7 +49,7 @@ struct StructEnumU32 {
 	f : EnumU32;
 }
 
-enum EnumI64 : i64 {
+enum EnumI64 : i64 : 1 {
 	VALUE = 0,
 }
 
@@ -57,7 +57,7 @@ struct StructEnumI64 {
 	f : EnumI64;
 }
 
-enum EnumU64 : u64 {
+enum EnumU64 : u64 : 1 {
 	VALUE = 0,
 }
 

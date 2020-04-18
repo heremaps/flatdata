@@ -87,6 +87,11 @@ class DuplicateEnumValueError(FlatdataSyntaxError):
             "Enumeration {enumeration_name} has duplicate entries for value {value}"
             .format(enumeration_name=enumeration_name, value=value))
 
+class SparseEnumError(FlatdataSyntaxError):
+    def __init__(self, enumeration_name, width):
+        super().__init__(
+            "Enumeration {enumeration_name} has too many undefined values (2^{width}), please restrict bit width, or define more"
+            .format(enumeration_name=enumeration_name, width=width))
 
 class InvalidEnumValueError(FlatdataSyntaxError):
     def __init__(self, enumeration_name, value):
@@ -98,7 +103,7 @@ class InvalidEnumValueError(FlatdataSyntaxError):
 class InvalidEnumWidthError(FlatdataSyntaxError):
     def __init__(self, enumeration_name, width, provided_width):
         super().__init__(
-            "Enumeration {enumeration_name} needs at least {width} bits, but only has {provided_width}"
+            "Enumeration {enumeration_name} has {width} bits, but field specified {provided_width} bits"
             .format(enumeration_name=enumeration_name, width=width, provided_width=provided_width))
 
 

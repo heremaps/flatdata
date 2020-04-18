@@ -10,7 +10,8 @@ namespace n {
 
 enum class EnumI8 : int8_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1
 };
 
 inline
@@ -77,7 +78,8 @@ namespace n {
 
 enum class EnumU8 : uint8_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_1 = 1
 };
 
 inline
@@ -144,7 +146,8 @@ namespace n {
 
 enum class EnumI16 : int16_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1
 };
 
 inline
@@ -211,7 +214,8 @@ namespace n {
 
 enum class EnumU16 : uint16_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_1 = 1
 };
 
 inline
@@ -278,7 +282,8 @@ namespace n {
 
 enum class EnumI32 : int32_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1
 };
 
 inline
@@ -345,7 +350,8 @@ namespace n {
 
 enum class EnumU32 : uint32_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_1 = 1
 };
 
 inline
@@ -412,7 +418,8 @@ namespace n {
 
 enum class EnumI64 : int64_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1
 };
 
 inline
@@ -479,7 +486,8 @@ namespace n {
 
 enum class EnumU64 : uint64_t
 {
-    VALUE = 0
+    VALUE = 0,
+    UNKNOWN_VALUE_1 = 1
 };
 
 inline
@@ -556,6 +564,8 @@ const char* to_string( EnumI8 value )
     {
     case EnumI8::VALUE:
         return "EnumI8::VALUE";
+    case EnumI8::UNKNOWN_VALUE_MINUS_1:
+        return "EnumI8::UNKNOWN_VALUE_MINUS_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumI8";
@@ -568,9 +578,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumI8__schema__ = R"schema(namespace n {
-enum EnumI8 : i8
+enum EnumI8 : i8 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -688,6 +699,8 @@ const char* to_string( EnumU8 value )
     {
     case EnumU8::VALUE:
         return "EnumU8::VALUE";
+    case EnumU8::UNKNOWN_VALUE_1:
+        return "EnumU8::UNKNOWN_VALUE_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumU8";
@@ -700,9 +713,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumU8__schema__ = R"schema(namespace n {
-enum EnumU8 : u8
+enum EnumU8 : u8 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -820,6 +834,8 @@ const char* to_string( EnumI16 value )
     {
     case EnumI16::VALUE:
         return "EnumI16::VALUE";
+    case EnumI16::UNKNOWN_VALUE_MINUS_1:
+        return "EnumI16::UNKNOWN_VALUE_MINUS_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumI16";
@@ -832,9 +848,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumI16__schema__ = R"schema(namespace n {
-enum EnumI16 : i16
+enum EnumI16 : i16 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -952,6 +969,8 @@ const char* to_string( EnumU16 value )
     {
     case EnumU16::VALUE:
         return "EnumU16::VALUE";
+    case EnumU16::UNKNOWN_VALUE_1:
+        return "EnumU16::UNKNOWN_VALUE_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumU16";
@@ -964,9 +983,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumU16__schema__ = R"schema(namespace n {
-enum EnumU16 : u16
+enum EnumU16 : u16 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -1084,6 +1104,8 @@ const char* to_string( EnumI32 value )
     {
     case EnumI32::VALUE:
         return "EnumI32::VALUE";
+    case EnumI32::UNKNOWN_VALUE_MINUS_1:
+        return "EnumI32::UNKNOWN_VALUE_MINUS_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumI32";
@@ -1096,9 +1118,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumI32__schema__ = R"schema(namespace n {
-enum EnumI32 : i32
+enum EnumI32 : i32 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -1216,6 +1239,8 @@ const char* to_string( EnumU32 value )
     {
     case EnumU32::VALUE:
         return "EnumU32::VALUE";
+    case EnumU32::UNKNOWN_VALUE_1:
+        return "EnumU32::UNKNOWN_VALUE_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumU32";
@@ -1228,9 +1253,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumU32__schema__ = R"schema(namespace n {
-enum EnumU32 : u32
+enum EnumU32 : u32 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -1348,6 +1374,8 @@ const char* to_string( EnumI64 value )
     {
     case EnumI64::VALUE:
         return "EnumI64::VALUE";
+    case EnumI64::UNKNOWN_VALUE_MINUS_1:
+        return "EnumI64::UNKNOWN_VALUE_MINUS_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumI64";
@@ -1360,9 +1388,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumI64__schema__ = R"schema(namespace n {
-enum EnumI64 : i64
+enum EnumI64 : i64 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -1480,6 +1509,8 @@ const char* to_string( EnumU64 value )
     {
     case EnumU64::VALUE:
         return "EnumU64::VALUE";
+    case EnumU64::UNKNOWN_VALUE_1:
+        return "EnumU64::UNKNOWN_VALUE_1";
     default:
         // default needed since C++ allows storage of unknown values
         return "Unknown value of EnumU64";
@@ -1492,9 +1523,10 @@ namespace n {
 namespace internal
 {
     const char* const StructEnumU64__schema__ = R"schema(namespace n {
-enum EnumU64 : u64
+enum EnumU64 : u64 : 1
 {
     VALUE = 0,
+    UNKNOWN_VALUE_1 = 1,
 }
 }
 

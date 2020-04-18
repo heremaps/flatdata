@@ -190,7 +190,7 @@ namespace ns{
         v1 : multivector< 14, S1 >;
     }
 
-enum Enum1 : u16 {
+enum Enum1 : u16 : 4 {
  A = 1, B=13, C
 }
 
@@ -276,6 +276,19 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
         '.ns.Enum1.C': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_0': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_10': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_11': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_12': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_15': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_2': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_3': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_4': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_5': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_6': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_7': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_8': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_9': EnumerationValue,
         '.ns.XXX': Structure,
         '.ns.XXX.e': Field,
         '.ns.XXX.e.@@ns@Enum1': EnumerationReference,
@@ -342,6 +355,19 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
         '.ns.Enum1.C': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_0': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_10': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_11': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_12': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_15': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_2': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_3': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_4': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_5': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_6': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_7': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_8': EnumerationValue,
+        '.ns.Enum1.UNKNOWN_VALUE_9': EnumerationValue,
         '.ns.XXX': Structure,
         '.ns.XXX.e': Field,
         '.ns.XXX.e.@@ns@Enum1': EnumerationReference,

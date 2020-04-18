@@ -2,7 +2,7 @@
  */
 namespace n{
 // This is a comment about Foo
-enum Foo : u64 {
+enum Foo : u64 : 1 {
 	// This is a comment about Foo.a
     A = 0,
 
@@ -13,7 +13,7 @@ enum Foo : u64 {
 /*
  * This is a comment about Bar
  */
-enum Bar : u64 {
+enum Bar : u64 : 1 {
 	/*
 	 * This is a comment about Bar.a
 	 */

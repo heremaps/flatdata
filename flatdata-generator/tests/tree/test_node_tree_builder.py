@@ -427,17 +427,26 @@ def test_signed_enum_value_in_unsigned_enum():
     with assert_raises(InvalidSignError):
         _build_node_tree("""
         namespace n {
-            enum A : u16 {
+            enum A : u16 : 1 {
                 VALUE_1 = -1
             }
         } """)
 
-def test_not_enough_bits_for_enum_value():
+def test_not_enough_implicit_bits_for_enum_value():
     with assert_raises(InvalidEnumValueError):
         _build_node_tree("""
         namespace n {
-            enum A : u8 {
+            enum A : u8 : 8 {
                 VALUE_1 = 256
+            }
+        } """)
+
+def test_not_enough_explicit_bits_for_enum_value():
+    with assert_raises(InvalidEnumValueError):
+        _build_node_tree("""
+        namespace n {
+            enum A : u8 : 4 {
+                VALUE_1 = 16
             }
         } """)
 
@@ -445,7 +454,7 @@ def test_duplicate_enum_value():
     with assert_raises(DuplicateEnumValueError):
         _build_node_tree("""
         namespace n {
-            enum A : u16 {
+            enum A : u16 : 3 {
                 VALUE_1 = 1,
                 VALUE_2 = 0,
                 VALUE_3
@@ -456,7 +465,7 @@ def test_not_enough_bits_in_enum_field():
     with assert_raises(InvalidEnumWidthError):
         tree = _build_node_tree("""
         namespace n {
-            enum A : i16 {
+            enum A : i16 : 8 {
                 VALUE_1 = 127
             }
             struct B {
@@ -469,7 +478,7 @@ def test_not_enough_bits_in_enum_field():
 def test_enumeration():
     tree = _build_node_tree("""
     namespace n {
-        enum A : u16 {
+        enum A : u16 : 5 {
             VALUE_1,
             VALUE_2 = 4,
             VALUE_3,
@@ -483,7 +492,44 @@ def test_enumeration():
     _update_field_type_references(tree)
     _compute_structure_sizes(tree)
 
-    assert_equal({".n", ".n.A", ".n.A.VALUE_1", ".n.A.VALUE_2", ".n.A.VALUE_3", ".n.A.VALUE_4",
-        ".n.B", ".n.B.f1", ".n.B.f1.@@n@A"}, tree.symbols())
+    assert_equal({
+        ".n",
+        ".n.A",
+        ".n.A.VALUE_1",
+        '.n.A.UNKNOWN_VALUE_1',
+        '.n.A.UNKNOWN_VALUE_2',
+        '.n.A.UNKNOWN_VALUE_3',
+        ".n.A.VALUE_2",
+        ".n.A.VALUE_3",
+        '.n.A.UNKNOWN_VALUE_6',
+        '.n.A.UNKNOWN_VALUE_7',
+        '.n.A.UNKNOWN_VALUE_8',
+        '.n.A.UNKNOWN_VALUE_9',
+        '.n.A.UNKNOWN_VALUE_10',
+        '.n.A.UNKNOWN_VALUE_11',
+        '.n.A.UNKNOWN_VALUE_12',
+        '.n.A.UNKNOWN_VALUE_13',
+        '.n.A.UNKNOWN_VALUE_14',
+        '.n.A.UNKNOWN_VALUE_15',
+        ".n.A.VALUE_4",
+        '.n.A.UNKNOWN_VALUE_17',
+        '.n.A.UNKNOWN_VALUE_18',
+        '.n.A.UNKNOWN_VALUE_19',
+        '.n.A.UNKNOWN_VALUE_20',
+        '.n.A.UNKNOWN_VALUE_21',
+        '.n.A.UNKNOWN_VALUE_22',
+        '.n.A.UNKNOWN_VALUE_23',
+        '.n.A.UNKNOWN_VALUE_24',
+        '.n.A.UNKNOWN_VALUE_25',
+        '.n.A.UNKNOWN_VALUE_26',
+        '.n.A.UNKNOWN_VALUE_27',
+        '.n.A.UNKNOWN_VALUE_28',
+        '.n.A.UNKNOWN_VALUE_29',
+        '.n.A.UNKNOWN_VALUE_30',
+        '.n.A.UNKNOWN_VALUE_31',
+        ".n.B",
+        ".n.B.f1",
+        ".n.B.f1.@@n@A"},
+        tree.symbols())
 
-    check_struct(tree.find(".n.B"), 16, 2)
+    check_struct(tree.find(".n.B"), 5, 1)

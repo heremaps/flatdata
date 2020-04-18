@@ -914,6 +914,7 @@ impl StructEnumU64 {
 #[repr(i8)]
 pub enum EnumI8 {
     Value = 0,
+    UnknownValueMinus1 = -1,
 }
 
 impl flatdata::helper::Int for EnumI8 {
@@ -923,6 +924,7 @@ impl flatdata::helper::Int for EnumI8 {
 #[repr(u8)]
 pub enum EnumU8 {
     Value = 0,
+    UnknownValue1 = 1,
 }
 
 impl flatdata::helper::Int for EnumU8 {
@@ -932,6 +934,7 @@ impl flatdata::helper::Int for EnumU8 {
 #[repr(i16)]
 pub enum EnumI16 {
     Value = 0,
+    UnknownValueMinus1 = -1,
 }
 
 impl flatdata::helper::Int for EnumI16 {
@@ -941,6 +944,7 @@ impl flatdata::helper::Int for EnumI16 {
 #[repr(u16)]
 pub enum EnumU16 {
     Value = 0,
+    UnknownValue1 = 1,
 }
 
 impl flatdata::helper::Int for EnumU16 {
@@ -950,6 +954,7 @@ impl flatdata::helper::Int for EnumU16 {
 #[repr(i32)]
 pub enum EnumI32 {
     Value = 0,
+    UnknownValueMinus1 = -1,
 }
 
 impl flatdata::helper::Int for EnumI32 {
@@ -959,6 +964,7 @@ impl flatdata::helper::Int for EnumI32 {
 #[repr(u32)]
 pub enum EnumU32 {
     Value = 0,
+    UnknownValue1 = 1,
 }
 
 impl flatdata::helper::Int for EnumU32 {
@@ -968,6 +974,7 @@ impl flatdata::helper::Int for EnumU32 {
 #[repr(i64)]
 pub enum EnumI64 {
     Value = 0,
+    UnknownValueMinus1 = -1,
 }
 
 impl flatdata::helper::Int for EnumI64 {
@@ -977,6 +984,7 @@ impl flatdata::helper::Int for EnumI64 {
 #[repr(u64)]
 pub enum EnumU64 {
     Value = 0,
+    UnknownValue1 = 1,
 }
 
 impl flatdata::helper::Int for EnumU64 {
