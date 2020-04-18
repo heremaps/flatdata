@@ -65,28 +65,28 @@ TEST_CASE( "Struct with signed enum", "[Enum]" )
         REQUIRE( result == SignedEnum1::VALUE_MINUS_ONE );
     }
     {
-        x.a_less_bits = SignedEnum1::VALUE_MINUS_ONE;
-        SignedEnum1 result = reader.a_less_bits;
+        x.a = SignedEnum1::VALUE_MINUS_ONE;
+        SignedEnum1 result = reader.a;
         REQUIRE( result == SignedEnum1::VALUE_MINUS_ONE );
     }
     {
-        x.a = SignedEnum1::VALUE_INT16_MAX;
+        x.a = SignedEnum1::VALUE_INT4_MAX;
         SignedEnum1 result = reader.a;
-        REQUIRE( result == SignedEnum1::VALUE_INT16_MAX );
+        REQUIRE( result == SignedEnum1::VALUE_INT4_MAX );
     }
     {
-        x.a = SignedEnum1::VALUE_INT16_MIN;
+        x.a = SignedEnum1::VALUE_INT4_MIN;
         SignedEnum1 result = reader.a;
-        REQUIRE( result == SignedEnum1::VALUE_INT16_MIN );
+        REQUIRE( result == SignedEnum1::VALUE_INT4_MIN );
     }
     {
-        x.a_less_bits = SignedEnum1::VALUE_INT8_MAX;
-        SignedEnum1 result = reader.a_less_bits;
-        REQUIRE( result == SignedEnum1::VALUE_INT8_MAX );
+        x.a = SignedEnum1::VALUE_INT3_MAX;
+        SignedEnum1 result = reader.a;
+        REQUIRE( result == SignedEnum1::VALUE_INT3_MAX );
     }
     {
-        x.a_less_bits = SignedEnum1::VALUE_INT8_MIN;
-        SignedEnum1 result = reader.a_less_bits;
-        REQUIRE( result == SignedEnum1::VALUE_INT8_MIN );
+        x.a = SignedEnum1::VALUE_INT3_MIN;
+        SignedEnum1 result = reader.a;
+        REQUIRE( result == SignedEnum1::VALUE_INT3_MIN );
     }
 }
