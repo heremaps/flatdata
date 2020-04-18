@@ -23,15 +23,18 @@ starting with 0), or manually.
 Each enumeration is defined as follows:
 
 ```cpp
-enum <Name> : <type> {
+enum <Name> : <type> [ : bits ] {
     <value name> [= value],
     ...
 }
 ```
 
+flatdata will auto-generate names for all missing values as `UNKNOWN_VALUE_X` or `UNKNOWN_VALUE_MINUS_X`.
+
 The following restrictions for values are checked:
 -   No duplicate values
 -   Values must fit into the underlying type
+-   Most possible values should be listed/named (>=50% +- 256), e.g. a u16 should have at least 2^16 values
 
 ## Structures
 
