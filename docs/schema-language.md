@@ -29,7 +29,7 @@ enum <Name> : <type> [ : bits ] {
 }
 ```
 
-flatdata will auto-generate names for all missing values as `UNKNOWN_VALUE_X` or `UNKNOWN_VALUE_MINUS_X`.
+Flatdata will auto-generate names for all missing values as `UNKNOWN_VALUE_{X}` or `UNKNOWN_VALUE_MINUS_{X}`, e.g. if no value for `5` is specified, and `5` is possible to represent in the specified number of bits the generator will generate `UNKNOWN_VALUE_5 = 5`. The main reason for this behaviour is, that reading from files is inherently untrustworthy: While the value is not mentioned in the schema, nothing prevents a malicious entity from writing it.
 
 The following restrictions for values are checked:
 -   No duplicate values
