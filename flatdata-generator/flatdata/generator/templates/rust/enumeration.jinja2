@@ -10,6 +10,9 @@ pub enum {{ enum.name }} {
     {% if value.doc %}
     {{ value.doc | rust_doc }}
     {% endif %}
+    {% if value.auto_generated %}
+    #[doc(hidden)]
+    {% endif %}
     {{ value.name | snake_to_upper_camel_case }} = {{ value.value | format_numeric_literal }},
     {% endfor %}
 }

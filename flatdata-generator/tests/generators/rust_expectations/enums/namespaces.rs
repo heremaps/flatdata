@@ -2,6 +2,7 @@
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
+    #[doc(hidden)]
     UnknownValue1 = 1,
 }
 
@@ -22,6 +23,7 @@ pub mod structs {
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
+    #[doc(hidden)]
     UnknownValue1 = 1,
 }
 

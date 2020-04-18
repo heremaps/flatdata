@@ -11,8 +11,11 @@ pub enum Enum1 {
     Value4 = 1,
     // = 2
     Value5 = 2,
+    #[doc(hidden)]
     UnknownValue5 = 5,
+    #[doc(hidden)]
     UnknownValue6 = 6,
+    #[doc(hidden)]
     UnknownValue7 = 7,
 }
 
