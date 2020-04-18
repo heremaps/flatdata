@@ -581,7 +581,6 @@ namespace internal
 enum EnumI8 : i8 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -716,7 +715,6 @@ namespace internal
 enum EnumU8 : u8 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -851,7 +849,6 @@ namespace internal
 enum EnumI16 : i16 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -986,7 +983,6 @@ namespace internal
 enum EnumU16 : u16 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -1121,7 +1117,6 @@ namespace internal
 enum EnumI32 : i32 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -1256,7 +1251,6 @@ namespace internal
 enum EnumU32 : u32 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -1391,7 +1385,6 @@ namespace internal
 enum EnumI64 : i64 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_MINUS_1 = -1,
 }
 }
 
@@ -1526,7 +1519,6 @@ namespace internal
 enum EnumU64 : u64 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_1 = 1,
 }
 }
 

@@ -40,7 +40,6 @@ pub const FOO: &str = r#"namespace a {
 enum Bar : u8 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_1 = 1,
 }
 }
 
@@ -180,7 +179,6 @@ pub const FOO: &str = r#"namespace b {
 enum Bar : u8 : 1
 {
     VALUE = 0,
-    UNKNOWN_VALUE_1 = 1,
 }
 }
 

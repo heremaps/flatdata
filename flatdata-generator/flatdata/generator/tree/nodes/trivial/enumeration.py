@@ -39,7 +39,7 @@ class Enumeration(Node):
 
         for missing_value in result.type.value_range():
             if not missing_value in unique_values:
-                value_node = EnumerationValue(name="UNKNOWN_VALUE_" + str(missing_value).replace("-", "MINUS_"), value=missing_value)
+                value_node = EnumerationValue(name="UNKNOWN_VALUE_" + str(missing_value).replace("-", "MINUS_"), value=missing_value, auto_generated=True)
                 result.insert(value_node)
 
         for value in unique_values:
