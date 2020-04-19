@@ -33,8 +33,6 @@ class Enumeration(Node):
 
         # we do not want to genarate too many (exponential) values, so restrict to multiples of input size
         if len(properties.enum_values) * 2 + 256 < 2 ** result.type.width:
-            # print("Props: " + str(properties.width) + " vs " + str(result.type.width))
-            # print(properties.dump())
             raise SparseEnumError(enumeration_name=result._name, width=result.type.width)
 
         for missing_value in result.type.value_range():
