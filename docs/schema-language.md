@@ -14,6 +14,14 @@ Flatdata supports the following primitive types:
 -  ``i64`` - signed 64-bit wide type
 -  ``u64`` - unsigned 64-bit wide type
 
+## Constants
+
+Flatdata supports defining constants of basic types:
+
+```cpp
+const <type> <name> = <value>;
+```
+
 ## Enumerations
 
 Flatdata supports adding enumeration over basic types. Each enumeration
@@ -23,7 +31,7 @@ starting with 0), or manually.
 Each enumeration is defined as follows:
 
 ```cpp
-enum <Name> : <type> [ : bits ] {
+enum <name> : <type> [ : bits ] {
     <value name> [= value],
     ...
 }
@@ -154,6 +162,23 @@ and create reference edges, while other generators mostly support only
 
 Nonetheless, decorations are first-class citizens of schema and thus are
 validated as well during archive opening.
+
+## Constant Referencing
+
+``@const( <name> )`` can be added to fields of a structure to indicate
+in which locations a constant can appear, e.g.:
+
+```cpp
+const u32 MY_CONST = 10;
+struct MyStruct {
+    @const( MY_CONST )
+    my_value : u32 : 16;
+}
+```
+
+Note: If a constant is not referenced anywhere, flatdata will assume that
+it is a global constant, and include it into the schema of every resource
+of every archive.
 
 ## Optional
 

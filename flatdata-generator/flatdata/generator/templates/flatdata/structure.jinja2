@@ -5,6 +5,9 @@ struct {{ struct.name }}
     {% if field.range %}
     @range( {{ field.range }} )
     {% endif %}
+	{% for const_ref in field.const_refs %}
+    @const( {{ const_ref.target }} )
+    {% endfor %}
     {{ field.name }} : {{field.type.name | field_type}} : {{ field.type.width }};
     {% endfor %}
 }

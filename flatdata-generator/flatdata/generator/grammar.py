@@ -51,8 +51,16 @@ range = Group(
     ")"
 )
 
+const_ref = Group(
+    Keyword("@const") +
+    "(" +
+    qualified_identifier("name") +
+    ")"
+)
+
 field_decorations = Group(
-    range("range")
+    range("range") |
+    const_ref("const_ref")
 )
 
 field = Group(
