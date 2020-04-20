@@ -51,3 +51,8 @@ class BasicType:
         if value >= 0:
             return value.bit_length()
         raise InvalidSignError(value=value)
+
+    def value_range(self):
+        if self.is_signed:
+            return range(-(2 ** (self.width - 1)), 2 ** (self.width - 1))
+        return range(2 ** self.width)

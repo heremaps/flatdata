@@ -9,5 +9,8 @@ enum class Enum1 : uint16_t
     // = 1
     VALUE_4 = 1,
     // = 2
-    VALUE_5 = 2
+    VALUE_5 = 2,
+    UNKNOWN_VALUE_5 = 5,
+    UNKNOWN_VALUE_6 = 6,
+    UNKNOWN_VALUE_7 = 7
 };

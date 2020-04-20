@@ -1,12 +1,12 @@
 namespace a {
-enum Bar : u8
+enum Bar : u8 : 1
 {
     VALUE = 0,
 }
 }
 
 namespace b {
-enum Bar : u8
+enum Bar : u8 : 1
 {
     VALUE = 0,
 }
@@ -15,14 +15,14 @@ enum Bar : u8
 namespace n {
 struct Foo
 {
-    f : .a.Bar : 8;
+    f : .a.Bar : 1;
 }
 }
 
 namespace m {
 struct Foo
 {
-    f : .b.Bar : 8;
+    f : .b.Bar : 1;
 }
 }
 

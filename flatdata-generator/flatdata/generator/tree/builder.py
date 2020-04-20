@@ -134,10 +134,10 @@ def _update_field_type_references(root):
         reference = field.type_reference
         if isinstance(reference, EnumerationReference):
             field.type = EnumType(name=reference.name, basic_type=BasicType(
-                name=reference.node.type.name, width=reference.width))
-            if reference.width and reference.width < reference.node.bits_required:
+                name=reference.node.type.name, width=reference.node.type.width))
+            if reference.width and reference.width != reference.node.type.width:
                 raise InvalidEnumWidthError(enumeration_name=reference.name,
-                                            width=reference.node.bits_required, provided_width=reference.width)
+                                            width=reference.node.type.width, provided_width=reference.width)
 
 
 def _compute_structure_sizes(root):

@@ -1,7 +1,9 @@
-}#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
+    #[doc(hidden)]
+    UnknownValue1 = 1,
 }
 
 impl flatdata::helper::Int for Bar {
@@ -21,6 +23,8 @@ pub mod structs {
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
+    #[doc(hidden)]
+    UnknownValue1 = 1,
 }
 
 impl flatdata::helper::Int for Bar {
@@ -35,7 +39,7 @@ pub mod n {
 pub mod schema {
 pub mod structs {
 pub const FOO: &str = r#"namespace a {
-enum Bar : u8
+enum Bar : u8 : 1
 {
     VALUE = 0,
 }
@@ -44,7 +48,7 @@ enum Bar : u8
 namespace n {
 struct Foo
 {
-    f : .a.Bar : 8;
+    f : .a.Bar : 1;
 }
 }
 
@@ -131,7 +135,7 @@ impl flatdata::NoOverlap for Foo {}
 impl Foo {
     #[inline]
     pub fn f(&self) -> super::a::Bar {
-        let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 0, 8);
+        let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<u8, super::a::Bar>(value) }
     }
 
@@ -155,7 +159,7 @@ impl Foo {
     #[inline]
     #[allow(missing_docs)]
     pub fn set_f(&mut self, value: super::a::Bar) {
-        flatdata_write_bytes!(u8; value, self.data, 0, 8)
+        flatdata_write_bytes!(u8; value, self.data, 0, 1)
     }
 
 
@@ -174,7 +178,7 @@ pub mod m {
 pub mod schema {
 pub mod structs {
 pub const FOO: &str = r#"namespace b {
-enum Bar : u8
+enum Bar : u8 : 1
 {
     VALUE = 0,
 }
@@ -183,7 +187,7 @@ enum Bar : u8
 namespace m {
 struct Foo
 {
-    f : .b.Bar : 8;
+    f : .b.Bar : 1;
 }
 }
 
@@ -270,7 +274,7 @@ impl flatdata::NoOverlap for Foo {}
 impl Foo {
     #[inline]
     pub fn f(&self) -> super::b::Bar {
-        let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 0, 8);
+        let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<u8, super::b::Bar>(value) }
     }
 
@@ -294,7 +298,7 @@ impl Foo {
     #[inline]
     #[allow(missing_docs)]
     pub fn set_f(&mut self, value: super::b::Bar) {
-        flatdata_write_bytes!(u8; value, self.data, 0, 8)
+        flatdata_write_bytes!(u8; value, self.data, 0, 1)
     }
 
 

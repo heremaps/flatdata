@@ -1,5 +1,5 @@
 namespace n {
-enum Enum1 : u16
+enum Enum1 : u16 : 3
 {
     VALUE_1 = 0,
     VALUE_2 = 3,

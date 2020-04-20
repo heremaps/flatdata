@@ -23,15 +23,18 @@ starting with 0), or manually.
 Each enumeration is defined as follows:
 
 ```cpp
-enum <Name> : <type> {
+enum <Name> : <type> [ : bits ] {
     <value name> [= value],
     ...
 }
 ```
 
+Flatdata will auto-generate names for all missing values as `UNKNOWN_VALUE_{X}` or `UNKNOWN_VALUE_MINUS_{X}`, e.g. if no value for `5` is specified, and `5` is possible to represent in the specified number of bits the generator will generate `UNKNOWN_VALUE_5 = 5`. The main reason for this behaviour is, that reading from files is inherently untrustworthy: While the value is not mentioned in the schema, nothing prevents a malicious entity from writing it.
+
 The following restrictions for values are checked:
 -   No duplicate values
 -   Values must fit into the underlying type
+-   Most possible values should be listed/named (>=50% +- 256), e.g. a u16 should have at least 2^16 values
 
 ## Structures
 

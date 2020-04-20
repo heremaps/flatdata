@@ -1,7 +1,7 @@
 /* This test tests that an enumeration can contain implicit values
  */
 namespace n{
-enum Enum1 : u16 {
+enum Enum1 : u16 : 3 {
     // = 0
     VALUE_1,
     // = 3

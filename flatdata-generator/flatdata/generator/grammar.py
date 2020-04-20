@@ -36,7 +36,7 @@ enumValue = Group(
 enum = Group(
     Optional(comment)("doc") +
     Keyword("enum") +
-    identifier("name") + ':' + basic_type("type") +
+    identifier("name") + ':' + basic_type("type") + Optional(':' + bit_width("width")) +
     '{' +
     delimitedList(enumValue, ",")("enum_values") +
     Optional(',') +

@@ -1,5 +1,5 @@
 namespace n {
-enum EnumI8 : i8
+enum EnumI8 : i8 : 1
 {
     VALUE = 0,
 }
@@ -8,12 +8,12 @@ enum EnumI8 : i8
 namespace n {
 struct StructEnumI8
 {
-    f : .n.EnumI8 : 8;
+    f : .n.EnumI8 : 1;
 }
 }
 
 namespace n {
-enum EnumU8 : u8
+enum EnumU8 : u8 : 1
 {
     VALUE = 0,
 }
@@ -22,12 +22,12 @@ enum EnumU8 : u8
 namespace n {
 struct StructEnumU8
 {
-    f : .n.EnumU8 : 8;
+    f : .n.EnumU8 : 1;
 }
 }
 
 namespace n {
-enum EnumI16 : i16
+enum EnumI16 : i16 : 1
 {
     VALUE = 0,
 }
@@ -36,12 +36,12 @@ enum EnumI16 : i16
 namespace n {
 struct StructEnumI16
 {
-    f : .n.EnumI16 : 16;
+    f : .n.EnumI16 : 1;
 }
 }
 
 namespace n {
-enum EnumU16 : u16
+enum EnumU16 : u16 : 1
 {
     VALUE = 0,
 }
@@ -50,12 +50,12 @@ enum EnumU16 : u16
 namespace n {
 struct StructEnumU16
 {
-    f : .n.EnumU16 : 16;
+    f : .n.EnumU16 : 1;
 }
 }
 
 namespace n {
-enum EnumI32 : i32
+enum EnumI32 : i32 : 1
 {
     VALUE = 0,
 }
@@ -64,12 +64,12 @@ enum EnumI32 : i32
 namespace n {
 struct StructEnumI32
 {
-    f : .n.EnumI32 : 32;
+    f : .n.EnumI32 : 1;
 }
 }
 
 namespace n {
-enum EnumU32 : u32
+enum EnumU32 : u32 : 1
 {
     VALUE = 0,
 }
@@ -78,12 +78,12 @@ enum EnumU32 : u32
 namespace n {
 struct StructEnumU32
 {
-    f : .n.EnumU32 : 32;
+    f : .n.EnumU32 : 1;
 }
 }
 
 namespace n {
-enum EnumI64 : i64
+enum EnumI64 : i64 : 1
 {
     VALUE = 0,
 }
@@ -92,12 +92,12 @@ enum EnumI64 : i64
 namespace n {
 struct StructEnumI64
 {
-    f : .n.EnumI64 : 64;
+    f : .n.EnumI64 : 1;
 }
 }
 
 namespace n {
-enum EnumU64 : u64
+enum EnumU64 : u64 : 1
 {
     VALUE = 0,
 }
@@ -106,7 +106,7 @@ enum EnumU64 : u64
 namespace n {
 struct StructEnumU64
 {
-    f : .n.EnumU64 : 64;
+    f : .n.EnumU64 : 1;
 }
 }
 

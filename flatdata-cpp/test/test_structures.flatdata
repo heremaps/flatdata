@@ -1,7 +1,7 @@
 namespace test_structures {
 
 // Enumeration with some overlapping values
-enum Enum1 : u16 {
+enum Enum1 : u16 : 3{
     // = 0
     VALUE_1,
     // = 3
@@ -14,25 +14,24 @@ enum Enum1 : u16 {
     VALUE_5
 }
 
-enum SignedEnum1 : i32 {
-    VALUE_INT16_MIN = -32768,
-    VALUE_INT16_MAX = 32767,
-    VALUE_INT8_MIN = -128,
-    VALUE_INT8_MAX = 127,
+enum SignedEnum1 : i32 : 3 {
+    VALUE_INT4_MIN = -4,
+    VALUE_INT4_MAX = 3,
+    VALUE_INT3_MIN = -2,
+    VALUE_INT3_MAX = 1,
     VALUE_MINUS_ONE = -1
 }
 
 struct StructWithEnum
 {
     a : u32 : 19;
-    b : Enum1 : 13;
+    b : Enum1 : 3;
     c : Enum1;
 }
 
 struct StructWithSignedEnum
 {
     a : SignedEnum1;
-    a_less_bits : SignedEnum1 : 16;
 }
 
 struct SimpleStruct {
