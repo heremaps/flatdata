@@ -8,7 +8,8 @@ import sys
 from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_true
 
 sys.path.insert(0, "..")
-from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference
+from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference, \
+    InvalidConstReference, InvalidConstValueReference
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from flatdata.generator.tree.nodes.archive import Archive
@@ -29,6 +30,28 @@ def test_validating_archive_with_no_structure_defined_raises_missing_symbol_erro
 
     for t in ["T", "vector< T >", "multivector< 33, V>"]:
         yield __test, t
+
+def test_const_ref_with_mismatched_type():
+    with assert_raises(InvalidConstReference):
+        build_ast("""namespace foo{
+            const u32 FOO = 10;
+            struct A {
+                @const(FOO)
+                foo : u64 : 64;
+            }
+            }
+            """)
+
+def test_const_ref_with_too_few_bits():
+    with assert_raises(InvalidConstValueReference):
+        build_ast("""namespace foo{
+            const u32 FOO = 16;
+            struct A {
+                @const(FOO)
+                foo : u32 : 4;
+            }
+            }
+            """)
 
 def test_range_with_duplicate_name():
     with assert_raises(InvalidRangeName):
@@ -181,6 +204,7 @@ namespace ns{
     }
 
     struct S1 {
+        @const(D)
         f0 : u64 : 64;
     }
 
@@ -197,6 +221,8 @@ enum Enum1 : u16 : 4 {
 struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
 
     const u32 C = 0xFFFFFFF;
+
+    const u64 D = 0xFFFFFFF;
 
     archive A1 {
         i : S0;
@@ -267,11 +293,13 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A1.v2': Vector,
         '.ns.A1.v2.@@ns@XXX': StructureReference,
         '.ns.C': Constant,
+        '.ns.D': Constant,
         '.ns.S0': Structure,
         '.ns.S0.f0': Field,
         '.ns.S0.f1': Field,
         '.ns.S1': Structure,
         '.ns.S1.f0': Field,
+        '.ns.S1.f0.@@ns@D': ConstantReference,
         '.ns.Enum1': Enumeration,
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
@@ -346,11 +374,13 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.A1.v2': Vector,
         '.ns.A1.v2.@@ns@XXX': StructureReference,
         '.ns.C': Constant,
+        '.ns.D': Constant,
         '.ns.S0': Structure,
         '.ns.S0.f0': Field,
         '.ns.S0.f1': Field,
         '.ns.S1': Structure,
         '.ns.S1.f0': Field,
+        '.ns.S1.f0.@@ns@D': ConstantReference,
         '.ns.Enum1': Enumeration,
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,

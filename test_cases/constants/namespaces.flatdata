@@ -2,8 +2,18 @@
  */
 namespace n{
 const i8 FOO = 0;
+const i8 FOO2 = 10;
 }
 
 namespace m{
 const i8 FOO = 1;
+
+struct Bar {
+	@const( FOO )
+	foo1 : i8;
+	@const( .n.FOO )
+	foo2 : i8;
+	@const( .m.FOO )
+	foo3 : i8;
+}
 }

@@ -113,6 +113,17 @@ class InvalidConstantValueError(FlatdataSyntaxError):
             "Constant {name} has not enough bits for value {value}"
             .format(name=name, value=value))
 
+class InvalidConstReference(FlatdataSyntaxError):
+    def __init__(self, name, type):
+        super().__init__(
+            "Referenced constant {name} has wrong type {type}"
+            .format(name=name, type=type))
+
+class InvalidConstValueReference(FlatdataSyntaxError):
+    def __init__(self, name, bits):
+        super().__init__(
+            "Referenced constant {name} value does not fit into {bits} bits"
+            .format(name=name, bits=bits))
 
 class InvalidRangeName(FlatdataSyntaxError):
     def __init__(self, name):

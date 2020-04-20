@@ -1,5 +1,5 @@
 from flatdata.generator.tree.nodes.node import Node
-from flatdata.generator.tree.nodes.references import EnumerationReference
+from flatdata.generator.tree.nodes.references import EnumerationReference, ConstantReference
 from flatdata.generator.tree.helpers.basictype import BasicType
 
 
@@ -11,6 +11,10 @@ class Field(Node):
         self._decorations = list()
         if properties and 'decorations' in properties:
             self._decorations = properties.decorations
+
+        for d in self.decorations:
+            if "const_ref" in d:
+                self.insert(ConstantReference(d.const_ref.name))
 
         if type is not None:
             if not BasicType.is_basic_type(type):
@@ -37,6 +41,10 @@ class Field(Node):
             if "range" in d:
                 return d.range.name
         return None
+
+    @property
+    def const_refs(self):
+        return self.children_like(ConstantReference)
 
     @property
     def decorations(self):

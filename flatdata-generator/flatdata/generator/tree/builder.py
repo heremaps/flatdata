@@ -8,7 +8,8 @@ from pyparsing import ParseException, ParseSyntaxException
 import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
-    InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference)
+    InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
+    InvalidConstReference, InvalidConstValueReference)
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -121,10 +122,12 @@ def _append_builtin_structures(root):
 
 def _append_constant_references(root):
     constants = [c for c in root.iterate(nodes.Constant)]
+    constant_references = set(c.target for c in root.iterate(ConstantReference))
     archives = [a for a in root.iterate(Archive)]
     for archive in archives:
         for constant in constants:
-            archive.insert(ConstantReference(constant.path))
+            if not constant.path in constant_references:
+                archive.insert(ConstantReference(constant.path))
 
 
 def _update_field_type_references(root):
@@ -172,15 +175,25 @@ def _check_ranges(root):
                 and isinstance(reference.parent, ResourceBase) and not isinstance(reference.parent, Vector)):
             raise InvalidRangeReference(reference.target)
 
+def _check_const_refs(root):
+    for field in root.iterate(nodes.Field):
+        for ref in field.const_refs:
+            # Check that type matches
+            if ref.node.type.name != field.type.name:
+                raise InvalidConstReference(ref.name, ref.node.type.name)
+            # Check that value fits into field
+            if ref.node.type.bits_required(ref.node.value) > field.type.width:
+                raise InvalidConstValueReference(ref.name, field.type.width)
 
 def build_ast(definition):
     """Build the Flatdata syntax tree from a definition"""
     root = _build_node_tree(definition=definition)
     _append_builtin_structures(root)
-    _append_constant_references(root)
     resolve_references(root)
+    _append_constant_references(root)
     _check_ranges(root)
     # now compute data based on resolved references
     _update_field_type_references(root)
     _compute_structure_sizes(root)
+    _check_const_refs(root)
     return SyntaxTree(root)
