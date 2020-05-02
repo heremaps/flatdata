@@ -22,7 +22,6 @@ impl flatdata::Struct for {{ struct.name }} {
         Self{data : [0; {{ struct.size_in_bytes }}]}
     }
 
-    const SCHEMA: &'static str = schema::structs::{{ struct.name | camel_to_snake_case | upper }};
     const SIZE_IN_BYTES: usize = {{ struct.size_in_bytes }};
     const IS_OVERLAPPING_WITH_NEXT : bool = {% if struct | has_range %}true{%else%}false{%endif%};
 }

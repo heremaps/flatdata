@@ -1,3 +1,4 @@
+pub mod a {
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
@@ -9,17 +10,15 @@ pub enum Bar {
 impl flatdata::helper::Int for Bar {
     const IS_SIGNED: bool = false;
 }
+
+#[doc(hidden)]
+pub mod schema {
+}
 }
 
 #[allow(missing_docs)]
 pub mod b {
-
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-}
-
-}#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
     Value = 0,
@@ -30,32 +29,15 @@ pub enum Bar {
 impl flatdata::helper::Int for Bar {
     const IS_SIGNED: bool = false;
 }
+
+#[doc(hidden)]
+pub mod schema {
+}
 }
 
 #[allow(missing_docs)]
 pub mod n {
-
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-pub const FOO: &str = r#"namespace a {
-enum Bar : u8 : 1
-{
-    VALUE = 0,
-}
-}
-
-namespace n {
-struct Foo
-{
-    f : .a.Bar : 1;
-}
-}
-
-"#;
-}
-
-}#[repr(transparent)]
+#[repr(transparent)]
 #[derive(Clone)]
 pub struct Foo {
     data: [u8; 1],
@@ -73,7 +55,6 @@ impl flatdata::Struct for Foo {
         Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::FOO;
     const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -169,32 +150,15 @@ impl Foo {
         self.set_f(other.f());
     }
 }
+
+#[doc(hidden)]
+pub mod schema {
+}
 }
 
 #[allow(missing_docs)]
 pub mod m {
-
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-pub const FOO: &str = r#"namespace b {
-enum Bar : u8 : 1
-{
-    VALUE = 0,
-}
-}
-
-namespace m {
-struct Foo
-{
-    f : .b.Bar : 1;
-}
-}
-
-"#;
-}
-
-}#[repr(transparent)]
+#[repr(transparent)]
 #[derive(Clone)]
 pub struct Foo {
     data: [u8; 1],
@@ -212,7 +176,6 @@ impl flatdata::Struct for Foo {
         Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::FOO;
     const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -307,5 +270,4 @@ impl Foo {
     pub fn fill_from(&mut self, other: &Foo) {
         self.set_f(other.f());
     }
-}
 }

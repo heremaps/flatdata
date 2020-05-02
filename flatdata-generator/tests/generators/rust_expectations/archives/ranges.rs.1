@@ -15,7 +15,6 @@ impl flatdata::Struct for S {
         Self{data : [0; 10]}
     }
 
-    const SCHEMA: &'static str = schema::structs::S;
     const SIZE_IN_BYTES: usize = 10;
     const IS_OVERLAPPING_WITH_NEXT : bool = true;
 }

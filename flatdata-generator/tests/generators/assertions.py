@@ -13,7 +13,7 @@ def unify_whitespace(value):
     return re.sub(r"\s+", " ", removed_trailing)
 
 def diff(a, b):
-    return "\n".join(difflib.Differ().compare(a.split("\n"), b.split("\n")))
+    return "\n".join(difflib.unified_diff(a.split("\n"), b.split("\n")))
 
 def generate_and_assert_in(definition, generator, *expectations, unexpected_items=None):
     tree = build_ast(definition=definition)
@@ -23,7 +23,7 @@ def generate_and_assert_in(definition, generator, *expectations, unexpected_item
     assert expectations or unexpected_items, "No expectations specified"
     for expectation in expectations:
         expectation_unified = unify_whitespace(expectation)
-        assert expectation_unified in contents_unified, "\n*Did not find:\n%s\n========== IN GENERATED CODE ===========\n%s\n\n========== DIFF ===========%s" % (expectation, contents, diff(expectation, contents))
+        assert expectation_unified in contents_unified, "\nDetected change:\n========== DIFF ===========\n%s" % diff(expectation, contents)
 
     if unexpected_items:
         for unexpected_item in unexpected_items:

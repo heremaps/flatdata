@@ -17,7 +17,6 @@ impl flatdata::Struct for Foo {
         Self{data : [0; 16]}
     }
 
-    const SCHEMA: &'static str = schema::structs::FOO;
     const SIZE_IN_BYTES: usize = 16;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -150,7 +149,6 @@ impl flatdata::Struct for Bar {
         Self{data : [0; 16]}
     }
 
-    const SCHEMA: &'static str = schema::structs::BAR;
     const SIZE_IN_BYTES: usize = 16;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -263,5 +261,4 @@ impl Bar {
         self.set_a(other.a());
         self.set_b(other.b());
     }
-}
 }

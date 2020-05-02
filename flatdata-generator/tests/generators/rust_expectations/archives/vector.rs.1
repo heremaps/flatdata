@@ -16,7 +16,6 @@ impl flatdata::Struct for S {
         Self{data : [0; 8]}
     }
 
-    const SCHEMA: &'static str = schema::structs::S;
     const SIZE_IN_BYTES: usize = 8;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -241,6 +240,4 @@ impl flatdata::ArchiveBuilder for ABuilder {
         flatdata::create_archive::<Self>(&storage)?;
         Ok(Self { storage })
     }
-}
-
 }

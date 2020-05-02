@@ -1,18 +1,205 @@
 pub mod n {
+#[repr(transparent)]
+#[derive(Clone)]
+pub struct S {
+    data: [u8; 8],
+}
+
+impl S {
+    /// Unsafe since the struct might not be self-contained
+    pub unsafe fn new_unchecked( ) -> Self {
+        Self{data : [0; 8]}
+    }
+}
+
+impl flatdata::Struct for S {
+    unsafe fn create_unchecked( ) -> Self {
+        Self{data : [0; 8]}
+    }
+
+    const SIZE_IN_BYTES: usize = 8;
+    const IS_OVERLAPPING_WITH_NEXT : bool = false;
+}
+
+impl S {
+    pub fn new( ) -> Self {
+        Self{data : [0; 8]}
+    }
+
+    /// Create reference from byte array of matching size
+    pub fn from_bytes(data: &[u8; 8]) -> &Self {
+        // Safety: This is safe since S is repr(transparent)
+        unsafe{ std::mem::transmute( data ) }
+    }
+
+    /// Create reference from byte array of matching size
+    pub fn from_bytes_mut(data: &mut [u8; 8]) -> &mut Self {
+        // Safety: This is safe since S is repr(transparent)
+        unsafe{ std::mem::transmute( data ) }
+    }
+
+    /// Create reference from byte array
+    pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
+        // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
+        if data.len() < 8 {
+            assert_eq!(data.len(), 8);
+            return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
+        }
+        let ptr = data.as_ptr() as *const [u8; 8];
+        // Safety: We checked length before
+        Ok(Self::from_bytes(unsafe { &*ptr }))
+    }
+
+    /// Create reference from byte array
+    pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
+        // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
+        if data.len() < 8 {
+            assert_eq!(data.len(), 8);
+            return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
+        }
+        let ptr = data.as_ptr() as *mut [u8; 8];
+        // Safety: We checked length before
+        Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
+    }
+
+    pub fn as_bytes(&self) -> &[u8; 8] {
+        &self.data
+    }
+}
+
+impl Default for S {
+    fn default( ) -> Self {
+        Self::new( )
+    }
+}
+
+unsafe impl flatdata::NoOverlap for S {}
+
+impl S {
+    #[inline]
+    pub fn x(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 64);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+}
+
+impl std::fmt::Debug for S {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("S")
+            .field("x", &self.x())
+            .finish()
+    }
+}
+
+impl std::cmp::PartialEq for S {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.x() == other.x()     }
+}
+
+impl S {
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_x(&mut self, value: u64) {
+        flatdata_write_bytes!(u64; value, self.data, 0, 64)
+    }
+
+
+    /// Copies the data from `other` into this struct.
+    #[inline]
+    pub fn fill_from(&mut self, other: &S) {
+        self.set_x(other.x());
+    }
+}
+
+
+
+#[derive(Clone)]
+pub struct X {
+    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    payload : flatdata::RawData<'static>,
+}
+
+impl X {
+    fn signature_name(archive_name: &str) -> String {
+        format!("{}.archive", archive_name)
+    }
+
+    #[inline]
+    pub fn payload(&self) -> flatdata::RawData {
+        self.payload
+    }
+
+}
+
+impl ::std::fmt::Debug for X {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        f.debug_struct("X")
+            .field("payload", &self.payload())
+            .finish()
+    }
+}
+
+impl flatdata::Archive for X {
+    const NAME: &'static str = "X";
+    const SCHEMA: &'static str = schema::x::X;
+
+    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
+    {
+        #[allow(unused_imports)]
+        use flatdata::SliceExt;
+        // extend lifetime since Rust cannot know that we reference a cache here
+        #[allow(unused_variables)]
+        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+
+        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+
+        let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
+        let payload = resource.map(|x| flatdata::RawData::new(x))?;
+
+        Ok(Self {
+            _storage: storage,
+            payload,
+        })
+    }
+}
+
+/// Builder for creating [`X`] archives.
+///
+///[`X`]: struct.X.html
+#[derive(Clone, Debug)]
+pub struct XBuilder {
+    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+}
+
+impl XBuilder {
+    /// Stores [`payload`] in the archive.
+    ///
+    /// [`payload`]: struct.X.html#method.payload
+    #[inline]
+    pub fn set_payload(&self, data: &[u8]) -> ::std::io::Result<()> {
+        self.storage.write("payload", schema::x::resources::PAYLOAD, data)
+    }
+
+}
+
+impl flatdata::ArchiveBuilder for XBuilder {
+    const NAME: &'static str = "X";
+    const SCHEMA: &'static str = schema::x::X;
+
+    fn new(
+        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    ) -> Result<Self, flatdata::ResourceStorageError> {
+        flatdata::create_archive::<Self>(&storage)?;
+        Ok(Self { storage })
+    }
+}
+
 
 #[doc(hidden)]
 pub mod schema {
-pub mod structs {
-pub const S: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-"#;
-}
-
 pub mod x {
 
 pub const X: &str = r#"namespace n {
@@ -35,7 +222,12 @@ archive X
 "#;
 }
 }
-}#[repr(transparent)]
+}
+}
+
+#[allow(missing_docs)]
+pub mod m {
+#[repr(transparent)]
 #[derive(Clone)]
 pub struct S {
     data: [u8; 8],
@@ -53,7 +245,6 @@ impl flatdata::Struct for S {
         Self{data : [0; 8]}
     }
 
-    const SCHEMA: &'static str = schema::structs::S;
     const SIZE_IN_BYTES: usize = 8;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -234,24 +425,9 @@ impl flatdata::ArchiveBuilder for XBuilder {
     }
 }
 
-}
-
-#[allow(missing_docs)]
-pub mod m {
 
 #[doc(hidden)]
 pub mod schema {
-pub mod structs {
-pub const S: &str = r#"namespace m {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-"#;
-}
-
 pub mod x {
 
 pub const X: &str = r#"namespace m {
@@ -274,314 +450,12 @@ archive X
 "#;
 }
 }
-}#[repr(transparent)]
-#[derive(Clone)]
-pub struct S {
-    data: [u8; 8],
 }
-
-impl S {
-    /// Unsafe since the struct might not be self-contained
-    pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 8]}
-    }
-}
-
-impl flatdata::Struct for S {
-    unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 8]}
-    }
-
-    const SCHEMA: &'static str = schema::structs::S;
-    const SIZE_IN_BYTES: usize = 8;
-    const IS_OVERLAPPING_WITH_NEXT : bool = false;
-}
-
-impl S {
-    pub fn new( ) -> Self {
-        Self{data : [0; 8]}
-    }
-
-    /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 8]) -> &Self {
-        // Safety: This is safe since S is repr(transparent)
-        unsafe{ std::mem::transmute( data ) }
-    }
-
-    /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 8]) -> &mut Self {
-        // Safety: This is safe since S is repr(transparent)
-        unsafe{ std::mem::transmute( data ) }
-    }
-
-    /// Create reference from byte array
-    pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
-        // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 8 {
-            assert_eq!(data.len(), 8);
-            return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
-        }
-        let ptr = data.as_ptr() as *const [u8; 8];
-        // Safety: We checked length before
-        Ok(Self::from_bytes(unsafe { &*ptr }))
-    }
-
-    /// Create reference from byte array
-    pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
-        // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 8 {
-            assert_eq!(data.len(), 8);
-            return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
-        }
-        let ptr = data.as_ptr() as *mut [u8; 8];
-        // Safety: We checked length before
-        Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
-    }
-
-    pub fn as_bytes(&self) -> &[u8; 8] {
-        &self.data
-    }
-}
-
-impl Default for S {
-    fn default( ) -> Self {
-        Self::new( )
-    }
-}
-
-unsafe impl flatdata::NoOverlap for S {}
-
-impl S {
-    #[inline]
-    pub fn x(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 64);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-}
-
-impl std::fmt::Debug for S {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("S")
-            .field("x", &self.x())
-            .finish()
-    }
-}
-
-impl std::cmp::PartialEq for S {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        self.x() == other.x()     }
-}
-
-impl S {
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_x(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 64)
-    }
-
-
-    /// Copies the data from `other` into this struct.
-    #[inline]
-    pub fn fill_from(&mut self, other: &S) {
-        self.set_x(other.x());
-    }
-}
-
-
-
-#[derive(Clone)]
-pub struct X {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    payload : flatdata::RawData<'static>,
-}
-
-impl X {
-    fn signature_name(archive_name: &str) -> String {
-        format!("{}.archive", archive_name)
-    }
-
-    #[inline]
-    pub fn payload(&self) -> flatdata::RawData {
-        self.payload
-    }
-
-}
-
-impl ::std::fmt::Debug for X {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        f.debug_struct("X")
-            .field("payload", &self.payload())
-            .finish()
-    }
-}
-
-impl flatdata::Archive for X {
-    const NAME: &'static str = "X";
-    const SCHEMA: &'static str = schema::x::X;
-
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
-        -> ::std::result::Result<Self, flatdata::ResourceStorageError>
-    {
-        #[allow(unused_imports)]
-        use flatdata::SliceExt;
-        // extend lifetime since Rust cannot know that we reference a cache here
-        #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
-
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
-
-        let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
-        let payload = resource.map(|x| flatdata::RawData::new(x))?;
-
-        Ok(Self {
-            _storage: storage,
-            payload,
-        })
-    }
-}
-
-/// Builder for creating [`X`] archives.
-///
-///[`X`]: struct.X.html
-#[derive(Clone, Debug)]
-pub struct XBuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
-}
-
-impl XBuilder {
-    /// Stores [`payload`] in the archive.
-    ///
-    /// [`payload`]: struct.X.html#method.payload
-    #[inline]
-    pub fn set_payload(&self, data: &[u8]) -> ::std::io::Result<()> {
-        self.storage.write("payload", schema::x::resources::PAYLOAD, data)
-    }
-
-}
-
-impl flatdata::ArchiveBuilder for XBuilder {
-    const NAME: &'static str = "X";
-    const SCHEMA: &'static str = schema::x::X;
-
-    fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    ) -> Result<Self, flatdata::ResourceStorageError> {
-        flatdata::create_archive::<Self>(&storage)?;
-        Ok(Self { storage })
-    }
-}
-
 }
 
 #[allow(missing_docs)]
 pub mod a {
 
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-}
-
-pub mod a {
-
-pub const A: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-namespace m {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-namespace n {
-archive X
-{
-    payload : raw_data;
-}
-}
-
-namespace a {
-archive A
-{
-    single : .n.S;
-    list : vector< .m.S >;
-    multi : multivector< 32, .n.S >;
-    inner : archive .n.X;
-}
-}
-
-"#;
-
-pub mod resources {
-pub const SINGLE: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-namespace a {
-archive A
-{
-    single : .n.S;
-}
-}
-
-"#;
-pub const LIST: &str = r#"namespace m {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-namespace a {
-archive A
-{
-    list : vector< .m.S >;
-}
-}
-
-"#;
-pub const MULTI: &str = r#"namespace n {
-struct S
-{
-    x : u64 : 64;
-}
-}
-
-namespace a {
-archive A
-{
-    multi : multivector< 32, .n.S >;
-}
-}
-
-"#;
-pub const INNER: &str = r#"namespace n {
-archive X
-{
-    payload : raw_data;
-}
-}
-
-namespace a {
-archive A
-{
-    inner : archive .n.X;
-}
-}
-
-"#;
-}
-}
-}
 
 /// Enum for read-only heterogeneous access to elements in a
 /// bucket of the [`multi`] resource.
@@ -853,6 +727,108 @@ impl flatdata::ArchiveBuilder for ABuilder {
     }
 }
 
+
+#[doc(hidden)]
+pub mod schema {
+pub mod a {
+
+pub const A: &str = r#"namespace n {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace m {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace n {
+archive X
+{
+    payload : raw_data;
+}
+}
+
+namespace a {
+archive A
+{
+    single : .n.S;
+    list : vector< .m.S >;
+    multi : multivector< 32, .n.S >;
+    inner : archive .n.X;
+}
+}
+
+"#;
+
+pub mod resources {
+pub const SINGLE: &str = r#"namespace n {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace a {
+archive A
+{
+    single : .n.S;
+}
+}
+
+"#;
+pub const LIST: &str = r#"namespace m {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace a {
+archive A
+{
+    list : vector< .m.S >;
+}
+}
+
+"#;
+pub const MULTI: &str = r#"namespace n {
+struct S
+{
+    x : u64 : 64;
+}
+}
+
+namespace a {
+archive A
+{
+    multi : multivector< 32, .n.S >;
+}
+}
+
+"#;
+pub const INNER: &str = r#"namespace n {
+archive X
+{
+    payload : raw_data;
+}
+}
+
+namespace a {
+archive A
+{
+    inner : archive .n.X;
+}
+}
+
+"#;
+}
+}
+}
 }
 
 #[doc(hidden)]
@@ -861,13 +837,6 @@ pub mod _builtin {
 #[allow(missing_docs)]
 pub mod multivector {
 
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-pub const INDEX_TYPE32: &str = r#""#;
-}
-
-}
 /// Builtin type to for MultiVector index
 #[repr(transparent)]
 pub struct IndexType32 {
@@ -886,7 +855,6 @@ impl flatdata::Struct for IndexType32 {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::INDEX_TYPE32;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = true;
 }
@@ -957,11 +925,13 @@ impl flatdata::IndexStruct for IndexType32 {
     }
 }
 
+
+#[doc(hidden)]
+pub mod schema {
+}
 }
 
 #[doc(hidden)]
 pub mod schema {
-pub mod structs {
 }
-
-}}
+}

@@ -16,7 +16,6 @@ impl flatdata::Struct for Foo {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::FOO;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -112,25 +111,15 @@ impl Foo {
         self.set_f(other.f());
     }
 }
+
+#[doc(hidden)]
+pub mod schema {
+}
 }
 
 #[allow(missing_docs)]
 pub mod m {
-
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-pub const FOO: &str = r#"namespace m {
-struct Foo
-{
-    f : u32 : 32;
-}
-}
-
-"#;
-}
-
-}#[repr(transparent)]
+#[repr(transparent)]
 #[derive(Clone)]
 pub struct Foo {
     data: [u8; 4],
@@ -148,7 +137,6 @@ impl flatdata::Struct for Foo {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::FOO;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -243,5 +231,4 @@ impl Foo {
     pub fn fill_from(&mut self, other: &Foo) {
         self.set_f(other.f());
     }
-}
 }

@@ -1,3 +1,4 @@
+pub mod n {
 #[repr(transparent)]
 #[derive(Clone)]
 pub struct S {
@@ -16,7 +17,6 @@ impl flatdata::Struct for S {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::S;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -130,7 +130,6 @@ impl flatdata::Struct for R {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::R;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -655,6 +654,122 @@ impl flatdata::ArchiveBuilder for ABuilder {
     }
 }
 
+
+#[doc(hidden)]
+pub mod schema {
+pub mod a {
+
+pub const A: &str = r#"namespace n {
+struct S
+{
+    x : u32 : 32;
+}
+}
+
+namespace n {
+struct R
+{
+    ref : u32 : 32;
+}
+}
+
+namespace n {
+@bound_implicitly( all_lists : .n.A.list1, .n.A.list2, .n.A.multilist )
+archive A
+{
+    list1 : vector< .n.S >;
+    list2 : vector< .n.S >;
+    multilist : multivector< 32, .n.S >;
+    @explicit_reference( .n.R.ref, .n.A.list1 )
+    refs : vector< .n.R >;
+    @explicit_reference( .n.R.ref, .n.A.list1 )
+    multirefs : multivector< 32, .n.R >;
+}
+}
+
+"#;
+
+pub mod resources {
+pub const LIST1: &str = r#"namespace n {
+struct S
+{
+    x : u32 : 32;
+}
+}
+
+namespace n {
+archive A
+{
+    list1 : vector< .n.S >;
+}
+}
+
+"#;
+pub const LIST2: &str = r#"namespace n {
+struct S
+{
+    x : u32 : 32;
+}
+}
+
+namespace n {
+archive A
+{
+    list2 : vector< .n.S >;
+}
+}
+
+"#;
+pub const MULTILIST: &str = r#"namespace n {
+struct S
+{
+    x : u32 : 32;
+}
+}
+
+namespace n {
+archive A
+{
+    multilist : multivector< 32, .n.S >;
+}
+}
+
+"#;
+pub const REFS: &str = r#"namespace n {
+struct R
+{
+    ref : u32 : 32;
+}
+}
+
+namespace n {
+archive A
+{
+    @explicit_reference( .n.R.ref, .n.A.list1 )
+    refs : vector< .n.R >;
+}
+}
+
+"#;
+pub const MULTIREFS: &str = r#"namespace n {
+struct R
+{
+    ref : u32 : 32;
+}
+}
+
+namespace n {
+archive A
+{
+    @explicit_reference( .n.R.ref, .n.A.list1 )
+    multirefs : multivector< 32, .n.R >;
+}
+}
+
+"#;
+}
+}
+}
 }
 
 #[doc(hidden)]
@@ -663,13 +778,6 @@ pub mod _builtin {
 #[allow(missing_docs)]
 pub mod multivector {
 
-#[doc(hidden)]
-pub mod schema {
-pub mod structs {
-pub const INDEX_TYPE32: &str = r#""#;
-}
-
-}
 /// Builtin type to for MultiVector index
 #[repr(transparent)]
 pub struct IndexType32 {
@@ -688,7 +796,6 @@ impl flatdata::Struct for IndexType32 {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::INDEX_TYPE32;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = true;
 }
