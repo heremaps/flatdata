@@ -54,7 +54,9 @@ pub trait Struct: Debug {
 }
 
 /// Marks structs that can be used stand-alone, e.g. no range
-pub trait NoOverlap {}
+pub unsafe trait NoOverlap {}
+/// Marks structs that cannot be used stand-alone, e.g. no range
+pub trait Overlap {}
 
 /// A specialized Struct factory producing Index items.
 /// Used primarily by the MultiVector/MultiArrayView.

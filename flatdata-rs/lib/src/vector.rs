@@ -1,8 +1,12 @@
-use crate::{error::ResourceStorageError, structs::Struct, SliceExt};
+use crate::{
+    error::ResourceStorageError,
+    structs::{NoOverlap, Overlap, Struct},
+    SliceExt,
+};
 
 use crate::storage::ResourceHandle;
 
-use std::{borrow::BorrowMut, fmt, io};
+use std::{borrow::BorrowMut, fmt, io, slice::SliceIndex};
 
 /// A container holding a contiguous sequence of flatdata structs of the same
 /// type `T` in memory, and providing read and write access to it.
@@ -133,13 +137,38 @@ where
     }
 }
 
+/// Safety: We must not implement DerefMut if T is not NoOverlap,
+/// since it would allow getting a mutable refernce to one element,
+/// and refernece to the next: Both use the same memory address for data of ranges
 impl<T> std::ops::DerefMut for Vector<T>
 where
-    T: Struct,
+    T: Struct + NoOverlap,
 {
     fn deref_mut(&mut self) -> &mut [T] {
         let len = self.data.len() - 1;
         &mut self.data[0..len]
+    }
+}
+
+impl<T, Idx> std::ops::Index<Idx> for Vector<T>
+where
+    T: Struct + Overlap,
+    Idx: SliceIndex<[T]>,
+{
+    type Output = Idx::Output;
+    fn index(&self, index: Idx) -> &Idx::Output {
+        &self.data[index]
+    }
+}
+
+/// Manually implement IndexMut, since DerefMut is not always implemented
+/// Safety: We must not implement IndexMut for ranges if T is not NoOverlap
+impl<T> std::ops::IndexMut<usize> for Vector<T>
+where
+    T: Struct + Overlap,
+{
+    fn index_mut(&mut self, index: usize) -> &mut T {
+        &mut self.data[index]
     }
 }
 
@@ -395,5 +424,17 @@ mod tests {
         }
         v.grow();
         assert_eq!(v.len(), 3);
+    }
+
+    #[test]
+    fn test_ability_to_get_mut_and_const_for_non_overlap() {
+        let mut v: Vector<A> = Vector::with_len(10);
+        let mut_v_ref = &mut v[..];
+        let (left, right) = mut_v_ref.split_at_mut(5);
+        let x = &mut left[4];
+        let y = &mut right[0];
+        y.set_x(10);
+        assert_eq!(y.x(), 10);
+        assert_eq!(x.x(), 0);
     }
 }

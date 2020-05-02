@@ -80,7 +80,9 @@ impl Default for {{ struct.name }} {
     }
 }
 
-impl flatdata::NoOverlap for {{struct.name}} {}
+unsafe impl flatdata::NoOverlap for {{struct.name}} {}
+{% else %}
+impl flatdata::Overlap for {{struct.name}} {}
 {% endif %}
 
 impl {{ struct.name }} {
