@@ -110,7 +110,7 @@ impl Default for S {
     }
 }
 
-impl flatdata::NoOverlap for S {}
+unsafe impl flatdata::NoOverlap for S {}
 
 impl S {
     #[inline]
@@ -349,7 +349,7 @@ impl Default for S {
     }
 }
 
-impl flatdata::NoOverlap for S {}
+unsafe impl flatdata::NoOverlap for S {}
 
 impl S {
     #[inline]
@@ -891,6 +891,7 @@ impl flatdata::Struct for IndexType32 {
     const IS_OVERLAPPING_WITH_NEXT : bool = true;
 }
 
+impl flatdata::Overlap for IndexType32 {}
 
 impl IndexType32 {
     /// First element of the range [`range`].

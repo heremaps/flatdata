@@ -73,7 +73,7 @@ impl Default for S {
     }
 }
 
-impl flatdata::NoOverlap for S {}
+unsafe impl flatdata::NoOverlap for S {}
 
 impl S {
     #[inline]
