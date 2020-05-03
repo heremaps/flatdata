@@ -1,0 +1,16 @@
+/* This test tests fields with invalid values are handles properly
+ */
+namespace n{
+const i8 INVALID_ZERO = 0;
+const i8 INVALID_MIN_INT = -128;
+const i8 INVALID_MAX_INT = 127;
+
+struct Bar {
+	@invalid_value( INVALID_ZERO )
+	invalid_zero : i8;
+	@invalid_value( INVALID_MIN_INT )
+	invalid_min_int : i8;
+	@invalid_value( INVALID_MAX_INT )
+	invalid_max_int : i8;
+}
+}

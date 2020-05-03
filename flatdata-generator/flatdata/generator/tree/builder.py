@@ -9,13 +9,14 @@ import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
     InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
-    InvalidConstReference, InvalidConstValueReference)
+    InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference)
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.syntax_tree import SyntaxTree
 from flatdata.generator.tree.nodes.resources import Multivector, Vector, ResourceBase
 from flatdata.generator.tree.nodes.references import (
-    BuiltinStructureReference, ConstantReference, EnumerationReference, StructureReference)
+    BuiltinStructureReference, ConstantReference, ConstantValueReference,
+    EnumerationReference, StructureReference, InvalidValueReference)
 from flatdata.generator.tree.nodes.root import Root
 from flatdata.generator.tree.errors import ParsingError
 from flatdata.generator.tree.traversal import DfsTraversal
@@ -127,7 +128,7 @@ def _append_constant_references(root):
     for archive in archives:
         for constant in constants:
             if not constant.path in constant_references:
-                archive.insert(ConstantReference(constant.path))
+                archive.insert(ConstantValueReference(constant.path))
 
 
 def _update_field_type_references(root):
@@ -177,13 +178,16 @@ def _check_ranges(root):
 
 def _check_const_refs(root):
     for field in root.iterate(nodes.Field):
-        for ref in field.const_refs:
+        for ref in field.children_like(ConstantReference):
             # Check that type matches
             if ref.node.type.name != field.type.name:
-                raise InvalidConstReference(ref.name, ref.node.type.name)
+                raise InvalidConstReference(ref.target, ref.node.type.name)
             # Check that value fits into field
             if ref.node.type.bits_required(ref.node.value) > field.type.width:
-                raise InvalidConstValueReference(ref.name, field.type.width)
+                raise InvalidConstValueReference(ref.target, field.type.width)
+        invalid_values = field.children_like(InvalidValueReference)
+        if len(invalid_values) > 1:
+            raise DuplicateInvalidValueReference(field.name, [x.target for x in invalid_values])
 
 def build_ast(definition):
     """Build the Flatdata syntax tree from a definition"""

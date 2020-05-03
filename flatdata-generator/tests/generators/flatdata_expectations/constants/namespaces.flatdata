@@ -19,6 +19,12 @@ struct Bar
     foo2 : i8 : 8;
     @const( .m.FOO )
     foo3 : i8 : 8;
+    @invalid_value( .m.FOO )
+    bar1 : i8 : 8;
+    @invalid_value( .n.FOO )
+    bar2 : i8 : 8;
+    @invalid_value( .m.FOO )
+    bar3 : i8 : 8;
 }
 }
 
