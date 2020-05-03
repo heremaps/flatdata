@@ -12,10 +12,15 @@ union {{ template_name }}
 
         {{ field.doc|cpp_doc }}
     {% endif %}
-    using {{ field|typedef_name }} = Member< {{ field.type|cpp_base_type}}, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
+    {% if field.invalid_value %}
+    {% set base_type = "flatdata::Tagged< " + field.type|cpp_base_type + ", " + field.invalid_value.node.path_with("::") + " >" %}
+    {% else %}
+    {% set base_type = field.type|cpp_base_type %}
+    {% endif %}
+    using {{ field|typedef_name }} = Member< {{ base_type }}, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
     {{ field|typedef_name }} {{ field.name }};
     {% if field.range %}
-    using {{ field.range|snake_to_upper_camel_case }}Type = Member< std::pair< {{ field.type|cpp_base_type}}, {{ field.type|cpp_base_type}} >, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
+    using {{ field.range|snake_to_upper_camel_case }}Type = Member< std::pair< {{ base_type }}, {{ field.type|cpp_base_type}} >, {{ field.offset }}, {{ field.type.width }}, {{struct.size_in_bytes}} >;
     {{ field.range|snake_to_upper_camel_case }}Type {{ field.range }};
     {% endif %}
     {% endfor %}
@@ -155,7 +160,11 @@ std::string {{ template_spec }}::to_string( ) const
     std::ostringstream ss;
     ss << "{ " << std::endl <<
     {% for member in struct.fields %}
+    {% if member.invalid_value %}
+    "{{ member.name }} : " << static_cast< uint64_t >( *{{ member.name }} ) << ", " << std::endl
+    {% else %}
     "{{ member.name }} : " << static_cast< uint64_t >( {{ member.name }} ) << ", " << std::endl
+    {% endif %}
     {% if not loop.last %}
     <<
     {% else %}

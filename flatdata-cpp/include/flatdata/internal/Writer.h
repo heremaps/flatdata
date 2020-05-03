@@ -94,11 +94,54 @@ struct Writer
 template < typename T, int offset, int num_bits, int struct_size_bytes >
 struct Writer< std::pair< T, T >, offset, num_bits, struct_size_bytes >
 {
-    using StreamType = const unsigned char*;
+    using StreamType = unsigned char*;
 
     StreamType data;
 
     // We do not support writing to a range, just reading it after the fact
+};
+
+template < typename T, T INVALID_VALUE, int offset, int num_bits, int struct_size_bytes >
+struct Writer< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
+{
+    using StreamType = unsigned char*;
+
+    StreamType data;
+
+    explicit operator bool( ) const
+    {
+        return static_cast< bool >( Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{data} );
+    }
+
+    T operator*( ) const
+    {
+        return *Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{data};
+    }
+
+    operator boost::optional< T >( ) const
+    {
+        return Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{data};
+    }
+
+    Writer&
+    operator=( T t )
+    {
+        Writer< T, offset, num_bits >{data} = t;
+        return *this;
+    }
+
+    Writer&
+    operator=( boost::optional< T > t )
+    {
+        if ( t )
+        {
+            Writer< T, offset, num_bits >{data} = t;
+        }
+        else
+        {
+            Writer< T, offset, num_bits >{data} = INVALID_VALUE;
+        }
+    }
 };
 
 }  // namespace flatdata
