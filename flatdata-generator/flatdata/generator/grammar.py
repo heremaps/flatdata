@@ -59,7 +59,7 @@ const_ref = Group(
 )
 
 invalid_value = Group(
-    Keyword("@invalid_value") -
+    Keyword("@optional") -
     "(" +
     qualified_identifier("name") +
     ")"

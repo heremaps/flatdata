@@ -19,11 +19,11 @@ struct Bar
     foo2 : i8 : 8;
     @const( .m.FOO )
     foo3 : i8 : 8;
-    @invalid_value( .m.FOO )
+    @optional( .m.FOO )
     bar1 : i8 : 8;
-    @invalid_value( .n.FOO )
+    @optional( .n.FOO )
     bar2 : i8 : 8;
-    @invalid_value( .m.FOO )
+    @optional( .m.FOO )
     bar3 : i8 : 8;
 }
 }

@@ -128,7 +128,7 @@ class InvalidConstValueReference(FlatdataSyntaxError):
 class DuplicateInvalidValueReference(FlatdataSyntaxError):
     def __init__(self, name, constants):
         super().__init__(
-            "Multiple invalid value references {constants} for field {name}"
+            "Multiple optional annotations {constants} for field {name}"
         .format(name=name, constants=constants))
 
 class InvalidRangeName(FlatdataSyntaxError):

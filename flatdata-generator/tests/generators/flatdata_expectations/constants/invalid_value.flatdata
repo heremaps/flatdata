@@ -13,11 +13,11 @@ const i8 INVALID_MAX_INT = 127;
 namespace n {
 struct Bar
 {
-    @invalid_value( .n.INVALID_ZERO )
+    @optional( .n.INVALID_ZERO )
     invalid_zero : i8 : 8;
-    @invalid_value( .n.INVALID_MIN_INT )
+    @optional( .n.INVALID_MIN_INT )
     invalid_min_int : i8 : 8;
-    @invalid_value( .n.INVALID_MAX_INT )
+    @optional( .n.INVALID_MAX_INT )
     invalid_max_int : i8 : 8;
 }
 }

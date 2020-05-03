@@ -9,7 +9,7 @@ struct {{ struct.name }}
     @const( {{ const_ref.target }} )
     {% endfor %}
     {% if field.invalid_value %}
-    @invalid_value( {{ field.invalid_value.target }} )
+    @optional( {{ field.invalid_value.target }} )
     {% endif %}
     {{ field.name }} : {{field.type.name | field_type}} : {{ field.type.width }};
     {% endfor %}

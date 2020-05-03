@@ -18,7 +18,7 @@ import flatdata.generator.tree.nodes.resources as res
 from flatdata.generator.tree.nodes.resources import Vector, Multivector, RawData, Instance, BoundResource
 from flatdata.generator.tree.nodes.references import ResourceReference, StructureReference, \
     FieldReference, ArchiveReference, BuiltinStructureReference, ConstantValueReference, \
-    EnumerationReference
+    EnumerationReference, InvalidValueReference
 
 
 
@@ -53,14 +53,14 @@ def test_const_ref_with_too_few_bits():
             }
             """)
 
-def test_duplicate_invalid_value():
+def test_duplicate_optional():
     with assert_raises(DuplicateInvalidValueReference):
         build_ast("""namespace foo{
             const u32 FOO = 16;
             const u32 BAR = 16;
             struct A {
-                @invalid_value(FOO)
-                @invalid_value(BAR)
+                @optional(FOO)
+                @optional(BAR)
                 foo : u32;
             }
             }
@@ -219,6 +219,9 @@ namespace ns{
     struct S1 {
         @const(D)
         f0 : u64 : 64;
+        // bla bla
+        @optional(D)
+        f1 : u64 : 64;
     }
 
     @bound_implicitly( b: A0.v0, A0.v1 )
@@ -313,6 +316,8 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.S1': Structure,
         '.ns.S1.f0': Field,
         '.ns.S1.f0.@@ns@D': ConstantValueReference,
+        '.ns.S1.f1': Field,
+        '.ns.S1.f1.@@ns@D': InvalidValueReference,
         '.ns.Enum1': Enumeration,
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
@@ -394,6 +399,8 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.S1': Structure,
         '.ns.S1.f0': Field,
         '.ns.S1.f0.@@ns@D': ConstantValueReference,
+        '.ns.S1.f1': Field,
+        '.ns.S1.f1.@@ns@D': InvalidValueReference,
         '.ns.Enum1': Enumeration,
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
