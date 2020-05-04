@@ -94,9 +94,14 @@ impl {{ struct.name }} {
     /// [`{{ field.range | escape_rust_keywords }}`]: #method.{{ field.range | escape_rust_keywords }}
     {% endif %}
     #[inline]
-    pub fn {{ field.name | escape_rust_keywords }}(&self) -> {{ field | field_type }} {
+    pub fn {{ field.name | escape_rust_keywords }}(&self) -> {% if field.invalid_value %}Option<{{ field | field_type }}>{% else %}{{ field | field_type }}{% endif %} {
         let value = flatdata_read_bytes!({{ field | primitive_type }}, self.data.as_ptr(), {{ field.offset }}, {{ field.type.width }});
+        {% if field.invalid_value %}
+        let x = unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) };
+        Some(x).filter(|&x| x != {{ fully_qualified_name(struct, field.invalid_value.node) }})
+        {% else %}
         unsafe { std::mem::transmute::<{{ field | primitive_type }}, {{ field | field_type }}>(value) }
+        {% endif %}
     }
 
     {% if field.range %}
@@ -104,10 +109,15 @@ impl {{ struct.name }} {
     {{ field.doc | rust_doc }}
     {% endif %}
     #[inline]
-    pub fn {{ field.range | escape_rust_keywords }}(&self) -> std::ops::Range<{{ field | field_type }}> {
+    pub fn {{ field.range | escape_rust_keywords }}(&self) -> std::ops::Range<{% if field.invalid_value %}Option<{{ field | field_type }}>{% else %}{{ field | field_type }}{% endif %}> {
         let start = flatdata_read_bytes!({{ field.type.name }}, self.data.as_ptr(), {{ field.offset }}, {{ field.type.width }});
         let end = flatdata_read_bytes!({{ field.type.name }}, self.data.as_ptr(), {{ field.offset }} + {{ struct.size_in_bytes }} * 8, {{ field.type.width }});
+        {% if field.invalid_value %}
+        let check = |x| {% if field.invalid_value %}Some(x).filter(|&x| x != {{ fully_qualified_name(struct, field.invalid_value.node) }}{% else %}x{% endif %};
+        check(start)..check(end)
+        {% else %}
         start..end
+        {% endif %}
     }
 
     {% endif %}
@@ -147,7 +157,8 @@ impl {{ struct.name }} {
     {% endif %}
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_{{ name }}(&mut self, value: {{ field | field_type }}) {
+    pub fn set_{{ name }}(&mut self, value: {% if field.invalid_value %}Option<{{ field | field_type }}>{% else %}{{ field | field_type }}{% endif %}) {
+        {% if field.invalid_value %}let value = value.unwrap_or({{ fully_qualified_name(struct, field.invalid_value.node) }});{% endif %}
         flatdata_write_bytes!({{ field | primitive_type }}; value, self.data, {{ field.offset }}, {{ field.type.width }})
     }
 
