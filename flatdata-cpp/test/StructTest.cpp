@@ -96,10 +96,10 @@ TEST_CASE( "Invalid values are handled", "[Struct]" )
 TEST_CASE( "Invalid values can be converted to string", "[Struct]" )
 {
     Struct< TestInvalidValue > data;
-    constexpr auto EXPECTED = R"({ 
-invalid_zero : 0, 
-invalid_min_int : 0, 
-invalid_max_int : 0, 
+    constexpr auto EXPECTED = R"(TestInvalidValue {
+    invalid_zero : 0,
+    invalid_min_int : 0,
+    invalid_max_int : 0,
 })";
     REQUIRE( ( *data ).to_string( ) == EXPECTED );
 }

@@ -158,12 +158,12 @@ inline
 std::string {{ template_spec }}::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
+    ss << "{{ struct.name }} {" << std::endl <<
     {% for member in struct.fields %}
     {% if member.invalid_value %}
-    "{{ member.name }} : " << static_cast< uint64_t >( *{{ member.name }} ) << ", " << std::endl
+    "    {{ member.name }} : " << +*{{ member.name }} << "," << std::endl
     {% else %}
-    "{{ member.name }} : " << static_cast< uint64_t >( {{ member.name }} ) << ", " << std::endl
+    "    {{ member.name }} : " << +{{ member.name }} << "," << std::endl
     {% endif %}
     {% if not loop.last %}
     <<

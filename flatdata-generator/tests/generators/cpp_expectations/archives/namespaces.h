@@ -486,8 +486,8 @@ inline
 std::string STemplate< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "x : " << static_cast< uint64_t >( x ) << ", " << std::endl
+    ss << "S {" << std::endl <<
+    "    x : " << +x << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -725,8 +725,8 @@ inline
 std::string STemplate< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "x : " << static_cast< uint64_t >( x ) << ", " << std::endl
+    ss << "S {" << std::endl <<
+    "    x : " << +x << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -958,8 +958,8 @@ inline
 std::string IndexType32Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "value : " << static_cast< uint64_t >( value ) << ", " << std::endl
+    ss << "IndexType32 {" << std::endl <<
+    "    value : " << +value << "," << std::endl
     << "}"
 ;
     return ss.str( );
