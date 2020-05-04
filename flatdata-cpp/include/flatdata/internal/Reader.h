@@ -121,7 +121,7 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         }
         else
         {
-            return {Reader< T, offset, num_bits >{data}};
+            return boost::optional< U >(Reader< T, offset, num_bits >{data});
         }
     }
 };
