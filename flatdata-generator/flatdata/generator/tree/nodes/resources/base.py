@@ -10,6 +10,7 @@ class ResourceBase(Node, ABC):
     def __init__(self, name, properties=None,):
         super().__init__(name=name, properties=properties)
         self._decorations = []
+        self._max_size = None
         if properties is not None and 'decorations' in properties:
             self._decorations = properties.decorations
             for decoration in self._decorations:
@@ -39,3 +40,11 @@ class ResourceBase(Node, ABC):
     @property
     def referenced_structures(self):
         return self.children_like(BuiltinStructureReference) + self.children_like(StructureReference)
+
+    @property
+    def max_size(self):
+        return self._max_size
+
+    @max_size.setter
+    def max_size(self, value):
+        self._max_size = value

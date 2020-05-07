@@ -33,7 +33,12 @@ _n_A_refs_n_R [label=<
     </tr>
     <tr>
         <td bgcolor="#EBF8FF" port="port__n_A_refs_n_R_ref">
-            <b><font color="#516D7B">ref</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+            <b><font color="#516D7B">ref</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">8</font>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_refs_n_R_ref2">
+            <b><font color="#516D7B">ref2</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">4</font>
         </td>
     </tr>
 </table>>];
@@ -72,7 +77,12 @@ _n_A_multirefs_n_R [label=<
     </tr>
     <tr>
         <td bgcolor="#EBF8FF" port="port__n_A_multirefs_n_R_ref">
-            <b><font color="#516D7B">ref</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">32</font>
+            <b><font color="#516D7B">ref</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">8</font>
+        </td>
+    </tr>
+    <tr>
+        <td bgcolor="#EBF8FF" port="port__n_A_multirefs_n_R_ref2">
+            <b><font color="#516D7B">ref2</font></b>:<font color="#568C3B">u32</font>:<font color="#D22D72">4</font>
         </td>
     </tr>
 </table>>];
@@ -173,4 +183,11 @@ subgraph cluster___builtin_multivector
 
                         
 
+    _n_A_refs_n_R:port__n_A_refs_n_R_ref2 -> _n_A_all_lists_n_S [lhead=cluster__n_A_all_lists];
+
+                        
+
     _n_A_multirefs_n_R:port__n_A_multirefs_n_R_ref -> _n_A_all_lists_n_S [lhead=cluster__n_A_all_lists];
+
+
+}
