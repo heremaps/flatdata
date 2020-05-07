@@ -168,7 +168,7 @@ def _compute_max_resource_size(root):
             continue
         ref_limit = 2 ** reference.field.node.type.width
         max_size = reference.destination.node.max_size
-        reference.destination.node.max_size = ref_limit if max_size == None or max_size > ref_limit else max_size
+        reference.destination.node.max_size = ref_limit if max_size is None or max_size > ref_limit else max_size
 
 def _check_ranges(root):
     # First check that names are unique
