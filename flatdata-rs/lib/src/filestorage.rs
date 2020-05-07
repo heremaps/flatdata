@@ -40,7 +40,7 @@ impl MemoryMappedFileStorage {
 /// # Examples
 ///
 /// ```rust,no_run
-/// use flatdata::{FileResourceStorage, Archive, ArchiveBuilder, Vector};
+/// use flatdata::{FileResourceStorage,  Vector};
 /// use flatdata::test::{X, XBuilder};
 ///
 /// let storage = FileResourceStorage::new("/root/to/my/archive");

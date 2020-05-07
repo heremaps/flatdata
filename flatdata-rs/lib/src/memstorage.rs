@@ -47,7 +47,7 @@ impl fmt::Debug for MemoryStorage {
 /// # Examples
 ///
 /// ```rust
-/// use flatdata::{MemoryResourceStorage, Archive, ArchiveBuilder, Vector};
+/// use flatdata::{MemoryResourceStorage,  Vector};
 /// use flatdata::test::{X, XBuilder};
 ///
 /// let storage = MemoryResourceStorage::new("/root/to/my/archive/in/memory");
