@@ -35,6 +35,15 @@ pub enum ResourceStorageError {
     /// written which, in particular, contains the final size of the whole
     /// resource.
     UnexpectedDataSize,
+    /// A resource is too big, e.g. when references by a small number of bits
+    TooBig {
+        /// Resource name for which the error occurred.
+        resource_name: &'static str,
+        /// Size of the resource
+        size: usize,
+    },
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 impl ResourceStorageError {
@@ -61,6 +70,8 @@ impl error::Error for ResourceStorageError {
             ResourceStorageError::UnexpectedDataSize => "resource has unexpected size",
             ResourceStorageError::Utf8Error(_) => "utf8 error in schema",
             ResourceStorageError::WrongSignature { .. } => "schema is not matching expected schema",
+            ResourceStorageError::TooBig { .. } => "resource is too big",
+            ResourceStorageError::__Nonexhaustive => "n/a",
         }
     }
 }

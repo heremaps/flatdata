@@ -244,42 +244,42 @@ impl R {
 
 
 /// Enum for read-only heterogeneous access to elements in a
-/// bucket of the [`multilist`] resource.
+/// bucket of the [`multilist1`] resource.
 ///
-/// [`multilist`]: struct.Archive{.n.A}.html#method.multilist
+/// [`multilist1`]: struct.Archive{.n.A}.html#method.multilist1
 #[derive(Clone, PartialEq)]
-pub enum MultilistRef<'a> {
+pub enum Multilist1Ref<'a> {
     #[allow(missing_docs)]
     S(&'a super::n::S),}
 
-impl<'a> ::std::fmt::Debug for MultilistRef<'a> {
+impl<'a> ::std::fmt::Debug for Multilist1Ref<'a> {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         match *self {
-            MultilistRef::S(ref inner) => write!(f, "{:?}", inner),
+            Multilist1Ref::S(ref inner) => write!(f, "{:?}", inner),
         }
     }
 }
 
-impl<'a> flatdata::VariadicRef for MultilistRef<'a> {
+impl<'a> flatdata::VariadicRef for Multilist1Ref<'a> {
     #[inline]
     fn size_in_bytes(&self) -> usize {
         match *self {
-            MultilistRef::S(_) => <super::n::S as flatdata::Struct>::SIZE_IN_BYTES,
+            Multilist1Ref::S(_) => <super::n::S as flatdata::Struct>::SIZE_IN_BYTES,
         }
     }
 }
 
-/// Builder of buckets in the [`multilist`] resource.
+/// Builder of buckets in the [`multilist1`] resource.
 ///
-/// Refers to a single bucket in the [`multilist`] multivector and
+/// Refers to a single bucket in the [`multilist1`] multivector and
 /// provides methods for adding heterogeneous data to the bucket.
 ///
-/// [`multilist`]: struct.Archive{.n.A}.html#method.multilist
-pub struct MultilistBuilder<'a> {
+/// [`multilist1`]: struct.Archive{.n.A}.html#method.multilist1
+pub struct Multilist1Builder<'a> {
     data: &'a mut Vec<u8>
 }
 
-impl<'a> MultilistBuilder<'a> {
+impl<'a> Multilist1Builder<'a> {
     /// Adds data of the type [`S`] to the bucket.
     ///
     /// [`S`]: struct.S.html
@@ -294,7 +294,7 @@ impl<'a> MultilistBuilder<'a> {
     }
 }
 
-/// Variadic struct attached to the [`multilist`] archive resource.
+/// Variadic struct attached to the [`multilist1`] archive resource.
 ///
 /// It unifies the following data types:
 //
@@ -302,36 +302,132 @@ impl<'a> MultilistBuilder<'a> {
 ///
 /// ## Access pattern
 ///
-/// This structure is used as a template parameter in [`multilist`] multivector/
+/// This structure is used as a template parameter in [`multilist1`] multivector/
 /// multiarray view. It does not contain any data, instead it references
 ///
-/// * [`MultilistRef`] for the read-only heterogeneous access, and
-/// * [`MultilistBuilder`] for the mutable builder pattern access.
+/// * [`Multilist1Ref`] for the read-only heterogeneous access, and
+/// * [`Multilist1Builder`] for the mutable builder pattern access.
 ///
-/// [`multilist`]: struct.Archive{.n.A}.html#method.multilist
-/// [`MultilistRef`]: enum.MultilistRef.html
-/// [`MultilistBuilder`]: struct.MultilistBuilder.html
+/// [`multilist1`]: struct.Archive{.n.A}.html#method.multilist1
+/// [`Multilist1Ref`]: enum.Multilist1Ref.html
+/// [`Multilist1Builder`]: struct.Multilist1Builder.html
 /// [`S`]: struct.S.html
 #[derive(Clone)]
-pub struct Multilist {}
+pub struct Multilist1 {}
 
-impl flatdata::VariadicIndex for Multilist {
+impl flatdata::VariadicIndex for Multilist1 {
     type Index = super::_builtin::multivector::IndexType32;
 }
 
-impl<'a> flatdata::VariadicStruct<'a> for Multilist {
-    type Item = MultilistRef<'a>;
+impl<'a> flatdata::VariadicStruct<'a> for Multilist1 {
+    type Item = Multilist1Ref<'a>;
 
     #[inline]
     fn create(index: flatdata::TypeIndex, data: &'a [u8]) -> Self::Item
     {
         match index {
-                0 => MultilistRef::S(super::n::S::from_bytes_slice(&data).expect("Corrupted data")),
-            _ => panic!("invalid type index {} for variadic type MultilistRef", index),
+                0 => Multilist1Ref::S(super::n::S::from_bytes_slice(&data).expect("Corrupted data")),
+            _ => panic!("invalid type index {} for variadic type Multilist1Ref", index),
         }
     }
 
-    type ItemMut = MultilistBuilder<'a>;
+    type ItemMut = Multilist1Builder<'a>;
+
+    #[inline]
+    fn create_mut(data: &'a mut Vec<u8>) -> Self::ItemMut
+    {
+        Self::ItemMut { data }
+    }
+}
+/// Enum for read-only heterogeneous access to elements in a
+/// bucket of the [`multilist2`] resource.
+///
+/// [`multilist2`]: struct.Archive{.n.A}.html#method.multilist2
+#[derive(Clone, PartialEq)]
+pub enum Multilist2Ref<'a> {
+    #[allow(missing_docs)]
+    S(&'a super::n::S),}
+
+impl<'a> ::std::fmt::Debug for Multilist2Ref<'a> {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        match *self {
+            Multilist2Ref::S(ref inner) => write!(f, "{:?}", inner),
+        }
+    }
+}
+
+impl<'a> flatdata::VariadicRef for Multilist2Ref<'a> {
+    #[inline]
+    fn size_in_bytes(&self) -> usize {
+        match *self {
+            Multilist2Ref::S(_) => <super::n::S as flatdata::Struct>::SIZE_IN_BYTES,
+        }
+    }
+}
+
+/// Builder of buckets in the [`multilist2`] resource.
+///
+/// Refers to a single bucket in the [`multilist2`] multivector and
+/// provides methods for adding heterogeneous data to the bucket.
+///
+/// [`multilist2`]: struct.Archive{.n.A}.html#method.multilist2
+pub struct Multilist2Builder<'a> {
+    data: &'a mut Vec<u8>
+}
+
+impl<'a> Multilist2Builder<'a> {
+    /// Adds data of the type [`S`] to the bucket.
+    ///
+    /// [`S`]: struct.S.html
+    #[inline]
+    pub fn add_s<'b>(&'b mut self) -> &'b mut super::n::S {
+        let old_len = self.data.len();
+        let increment = 1 + <super::n::S as flatdata::Struct>::SIZE_IN_BYTES;
+        self.data.resize(old_len + increment, 0);
+        self.data[old_len] = 0;
+        let slice = &mut self.data[1 + old_len..];
+        super::n::S::from_bytes_slice_mut(slice).expect("Logic error: Cannot create super::n::S from slice")
+    }
+}
+
+/// Variadic struct attached to the [`multilist2`] archive resource.
+///
+/// It unifies the following data types:
+//
+/// * [`S`]
+///
+/// ## Access pattern
+///
+/// This structure is used as a template parameter in [`multilist2`] multivector/
+/// multiarray view. It does not contain any data, instead it references
+///
+/// * [`Multilist2Ref`] for the read-only heterogeneous access, and
+/// * [`Multilist2Builder`] for the mutable builder pattern access.
+///
+/// [`multilist2`]: struct.Archive{.n.A}.html#method.multilist2
+/// [`Multilist2Ref`]: enum.Multilist2Ref.html
+/// [`Multilist2Builder`]: struct.Multilist2Builder.html
+/// [`S`]: struct.S.html
+#[derive(Clone)]
+pub struct Multilist2 {}
+
+impl flatdata::VariadicIndex for Multilist2 {
+    type Index = super::_builtin::multivector::IndexType32;
+}
+
+impl<'a> flatdata::VariadicStruct<'a> for Multilist2 {
+    type Item = Multilist2Ref<'a>;
+
+    #[inline]
+    fn create(index: flatdata::TypeIndex, data: &'a [u8]) -> Self::Item
+    {
+        match index {
+                0 => Multilist2Ref::S(super::n::S::from_bytes_slice(&data).expect("Corrupted data")),
+            _ => panic!("invalid type index {} for variadic type Multilist2Ref", index),
+        }
+    }
+
+    type ItemMut = Multilist2Builder<'a>;
 
     #[inline]
     fn create_mut(data: &'a mut Vec<u8>) -> Self::ItemMut
@@ -441,7 +537,10 @@ pub struct A {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
     list1 : Option<&'static [super::n::S]>,
     list2 : &'static [super::n::S],
-    multilist : flatdata::MultiArrayView<'static, Multilist>,
+    multilist1 : Option<flatdata::MultiArrayView<'static, Multilist1>>,
+    multilist2 : flatdata::MultiArrayView<'static, Multilist2>,
+    raw1 : Option<flatdata::RawData<'static>>,
+    raw2 : flatdata::RawData<'static>,
     refs : &'static [super::n::R],
     multirefs : flatdata::MultiArrayView<'static, Multirefs>,
 }
@@ -462,8 +561,23 @@ impl A {
     }
 
     #[inline]
-    pub fn multilist(&self) -> &flatdata::MultiArrayView<Multilist> {
-        &self.multilist
+    pub fn multilist1(&self) -> Option<&flatdata::MultiArrayView<Multilist1>> {
+        self.multilist1.as_ref()
+    }
+
+    #[inline]
+    pub fn multilist2(&self) -> &flatdata::MultiArrayView<Multilist2> {
+        &self.multilist2
+    }
+
+    #[inline]
+    pub fn raw1(&self) -> Option<flatdata::RawData> {
+        self.raw1
+    }
+
+    #[inline]
+    pub fn raw2(&self) -> flatdata::RawData {
+        self.raw2
     }
 
     #[inline]
@@ -483,7 +597,10 @@ impl ::std::fmt::Debug for A {
         f.debug_struct("A")
             .field("list1", &self.list1())
             .field("list2", &self.list2())
-            .field("multilist", &self.multilist())
+            .field("multilist1", &self.multilist1())
+            .field("multilist2", &self.multilist2())
+            .field("raw1", &self.raw1())
+            .field("raw2", &self.raw2())
             .field("refs", &self.refs())
             .field("multirefs", &self.multirefs())
             .finish()
@@ -507,12 +624,34 @@ impl flatdata::Archive for A {
 
         let resource = extend(storage.read("list1", schema::a::resources::LIST1));
         let list1 = resource.map(|x| <&[super::n::S]>::from_bytes(x)).ok().transpose()?;
+        let size = list1.as_ref().map(|r| r.len()).unwrap_or(0);
+        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "list1", size}); }
         let resource = extend(storage.read("list2", schema::a::resources::LIST2));
         let list2 = resource.map(|x| <&[super::n::S]>::from_bytes(x))??;
-        let multilist = {
-            let index_schema = &format!("index({})", schema::a::resources::MULTILIST);
-            let index = extend(storage.read("multilist_index", &index_schema));
-            let data = extend(storage.read("multilist", schema::a::resources::MULTILIST));
+        let size = list2.len();
+        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "list2", size}); }
+        let multilist1 = {
+            let index_schema = &format!("index({})", schema::a::resources::MULTILIST1);
+            let index = extend(storage.read("multilist1_index", &index_schema));
+            let data = extend(storage.read("multilist1", schema::a::resources::MULTILIST1));
+            let result = match (index, data) {
+                (Ok(index), Ok(data)) => {
+                    Ok(flatdata::MultiArrayView::new(
+                        <&[super::_builtin::multivector::IndexType32]>::from_bytes(index)?,
+                        data
+                    ))
+                }
+                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
+                (Err(x), Err(_)) => Err(x),
+            };
+            result.ok()
+        };
+        let size = multilist1.as_ref().map(|r| r.len()).unwrap_or(0);
+        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "multilist1", size}); }
+        let multilist2 = {
+            let index_schema = &format!("index({})", schema::a::resources::MULTILIST2);
+            let index = extend(storage.read("multilist2_index", &index_schema));
+            let data = extend(storage.read("multilist2", schema::a::resources::MULTILIST2));
             let result = match (index, data) {
                 (Ok(index), Ok(data)) => {
                     Ok(flatdata::MultiArrayView::new(
@@ -525,6 +664,16 @@ impl flatdata::Archive for A {
             };
             result?
         };
+        let size = multilist2.len();
+        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "multilist2", size}); }
+        let resource = extend(storage.read("raw1", schema::a::resources::RAW1));
+        let raw1 = resource.map(|x| flatdata::RawData::new(x)).ok();
+        let size = raw1.as_ref().map(|r| r.len()).unwrap_or(0);
+        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "raw1", size}); }
+        let resource = extend(storage.read("raw2", schema::a::resources::RAW2));
+        let raw2 = resource.map(|x| flatdata::RawData::new(x))?;
+        let size = raw2.len();
+        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "raw2", size}); }
         let resource = extend(storage.read("refs", schema::a::resources::REFS));
         let refs = resource.map(|x| <&[super::n::R]>::from_bytes(x))??;
         let multirefs = {
@@ -548,7 +697,10 @@ impl flatdata::Archive for A {
             _storage: storage,
             list1,
             list2,
-            multilist,
+            multilist1,
+            multilist2,
+            raw1,
+            raw2,
             refs,
             multirefs,
         })
@@ -608,17 +760,46 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "list2", schema::a::resources::LIST2)
     }
 
-    /// Opens [`multilist`] in the archive for buffered writing.
+    /// Opens [`multilist1`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
     /// is called. To flush the data fully into the archive, this method must be called
     /// in the end.
     ///
-    /// [`multilist`]: struct.A.html#method.multilist
+    /// [`multilist1`]: struct.A.html#method.multilist1
     /// [`MultiVector::close`]: flatdata/struct.MultiVector.html#method.close
     #[inline]
-    pub fn start_multilist(&self) -> ::std::io::Result<flatdata::MultiVector<Multilist>> {
-        flatdata::create_multi_vector(&*self.storage, "multilist", schema::a::resources::MULTILIST)
+    pub fn start_multilist1(&self) -> ::std::io::Result<flatdata::MultiVector<Multilist1>> {
+        flatdata::create_multi_vector(&*self.storage, "multilist1", schema::a::resources::MULTILIST1)
+    }
+
+    /// Opens [`multilist2`] in the archive for buffered writing.
+    ///
+    /// Elements can be added to the multivector until the [`MultiVector::close`] method
+    /// is called. To flush the data fully into the archive, this method must be called
+    /// in the end.
+    ///
+    /// [`multilist2`]: struct.A.html#method.multilist2
+    /// [`MultiVector::close`]: flatdata/struct.MultiVector.html#method.close
+    #[inline]
+    pub fn start_multilist2(&self) -> ::std::io::Result<flatdata::MultiVector<Multilist2>> {
+        flatdata::create_multi_vector(&*self.storage, "multilist2", schema::a::resources::MULTILIST2)
+    }
+
+    /// Stores [`raw1`] in the archive.
+    ///
+    /// [`raw1`]: struct.A.html#method.raw1
+    #[inline]
+    pub fn set_raw1(&self, data: &[u8]) -> ::std::io::Result<()> {
+        self.storage.write("raw1", schema::a::resources::RAW1, data)
+    }
+
+    /// Stores [`raw2`] in the archive.
+    ///
+    /// [`raw2`]: struct.A.html#method.raw2
+    #[inline]
+    pub fn set_raw2(&self, data: &[u8]) -> ::std::io::Result<()> {
+        self.storage.write("raw2", schema::a::resources::RAW2, data)
     }
 
     #[inline]
@@ -691,15 +872,25 @@ struct R
 }
 
 namespace n {
-@bound_implicitly( all_lists : .n.A.list1, .n.A.list2, .n.A.multilist )
+@bound_implicitly( all_lists : .n.A.list1, .n.A.list2, .n.A.multilist1 )
 archive A
 {
     @optional
     list1 : vector< .n.S >;
     list2 : vector< .n.S >;
-    multilist : multivector< 32, .n.S >;
+    @optional
+    multilist1 : multivector< 32, .n.S >;
+    multilist2 : multivector< 32, .n.S >;
+    @optional
+    raw1 : raw_data;
+    raw2 : raw_data;
     @explicit_reference( .n.R.ref, .n.A.list1 )
     @explicit_reference( .n.R.ref2, .n.A.list1 )
+    @explicit_reference( .n.R.ref2, .n.A.list2 )
+    @explicit_reference( .n.R.ref2, .n.A.multilist1 )
+    @explicit_reference( .n.R.ref2, .n.A.multilist2 )
+    @explicit_reference( .n.R.ref2, .n.A.raw1 )
+    @explicit_reference( .n.R.ref2, .n.A.raw2 )
     refs : vector< .n.R >;
     @explicit_reference( .n.R.ref, .n.A.list1 )
     multirefs : multivector< 32, .n.R >;
@@ -740,7 +931,7 @@ archive A
 }
 
 "#;
-pub const MULTILIST: &str = r#"namespace n {
+pub const MULTILIST1: &str = r#"namespace n {
 struct S
 {
     x : u32 : 32;
@@ -750,7 +941,40 @@ struct S
 namespace n {
 archive A
 {
-    multilist : multivector< 32, .n.S >;
+    @optional
+    multilist1 : multivector< 32, .n.S >;
+}
+}
+
+"#;
+pub const MULTILIST2: &str = r#"namespace n {
+struct S
+{
+    x : u32 : 32;
+}
+}
+
+namespace n {
+archive A
+{
+    multilist2 : multivector< 32, .n.S >;
+}
+}
+
+"#;
+pub const RAW1: &str = r#"namespace n {
+archive A
+{
+    @optional
+    raw1 : raw_data;
+}
+}
+
+"#;
+pub const RAW2: &str = r#"namespace n {
+archive A
+{
+    raw2 : raw_data;
 }
 }
 
@@ -768,6 +992,11 @@ archive A
 {
     @explicit_reference( .n.R.ref, .n.A.list1 )
     @explicit_reference( .n.R.ref2, .n.A.list1 )
+    @explicit_reference( .n.R.ref2, .n.A.list2 )
+    @explicit_reference( .n.R.ref2, .n.A.multilist1 )
+    @explicit_reference( .n.R.ref2, .n.A.multilist2 )
+    @explicit_reference( .n.R.ref2, .n.A.raw1 )
+    @explicit_reference( .n.R.ref2, .n.A.raw2 )
     refs : vector< .n.R >;
 }
 }

@@ -14,15 +14,25 @@ struct R
 }
 
 namespace n {
-@bound_implicitly( all_lists : .n.A.list1, .n.A.list2, .n.A.multilist )
+@bound_implicitly( all_lists : .n.A.list1, .n.A.list2, .n.A.multilist1 )
 archive A
 {
     @optional
     list1 : vector< .n.S >;
     list2 : vector< .n.S >;
-    multilist : multivector< 32, .n.S >;
+    @optional
+    multilist1 : multivector< 32, .n.S >;
+    multilist2 : multivector< 32, .n.S >;
+    @optional
+    raw1 : raw_data;
+    raw2 : raw_data;
     @explicit_reference( .n.R.ref, .n.A.list1 )
     @explicit_reference( .n.R.ref2, .n.A.list1 )
+    @explicit_reference( .n.R.ref2, .n.A.list2 )
+    @explicit_reference( .n.R.ref2, .n.A.multilist1 )
+    @explicit_reference( .n.R.ref2, .n.A.multilist2 )
+    @explicit_reference( .n.R.ref2, .n.A.raw1 )
+    @explicit_reference( .n.R.ref2, .n.A.raw2 )
     refs : vector< .n.R >;
     @explicit_reference( .n.R.ref, .n.A.list1 )
     multirefs : multivector< 32, .n.R >;
