@@ -73,7 +73,7 @@ impl Default for StructEnumI8 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumI8 {}
+unsafe impl flatdata::NoOverlap for StructEnumI8 {}
 
 impl StructEnumI8 {
     #[inline]
@@ -187,7 +187,7 @@ impl Default for StructEnumU8 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumU8 {}
+unsafe impl flatdata::NoOverlap for StructEnumU8 {}
 
 impl StructEnumU8 {
     #[inline]
@@ -301,7 +301,7 @@ impl Default for StructEnumI16 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumI16 {}
+unsafe impl flatdata::NoOverlap for StructEnumI16 {}
 
 impl StructEnumI16 {
     #[inline]
@@ -415,7 +415,7 @@ impl Default for StructEnumU16 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumU16 {}
+unsafe impl flatdata::NoOverlap for StructEnumU16 {}
 
 impl StructEnumU16 {
     #[inline]
@@ -529,7 +529,7 @@ impl Default for StructEnumI32 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumI32 {}
+unsafe impl flatdata::NoOverlap for StructEnumI32 {}
 
 impl StructEnumI32 {
     #[inline]
@@ -643,7 +643,7 @@ impl Default for StructEnumU32 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumU32 {}
+unsafe impl flatdata::NoOverlap for StructEnumU32 {}
 
 impl StructEnumU32 {
     #[inline]
@@ -757,7 +757,7 @@ impl Default for StructEnumI64 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumI64 {}
+unsafe impl flatdata::NoOverlap for StructEnumI64 {}
 
 impl StructEnumI64 {
     #[inline]
@@ -871,7 +871,7 @@ impl Default for StructEnumU64 {
     }
 }
 
-impl flatdata::NoOverlap for StructEnumU64 {}
+unsafe impl flatdata::NoOverlap for StructEnumU64 {}
 
 impl StructEnumU64 {
     #[inline]

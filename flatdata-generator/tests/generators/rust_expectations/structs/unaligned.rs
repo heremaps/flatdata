@@ -73,7 +73,7 @@ impl Default for U8 {
     }
 }
 
-impl flatdata::NoOverlap for U8 {}
+unsafe impl flatdata::NoOverlap for U8 {}
 
 impl U8 {
     #[inline]
@@ -201,7 +201,7 @@ impl Default for I8 {
     }
 }
 
-impl flatdata::NoOverlap for I8 {}
+unsafe impl flatdata::NoOverlap for I8 {}
 
 impl I8 {
     #[inline]
@@ -329,7 +329,7 @@ impl Default for U16 {
     }
 }
 
-impl flatdata::NoOverlap for U16 {}
+unsafe impl flatdata::NoOverlap for U16 {}
 
 impl U16 {
     #[inline]
@@ -457,7 +457,7 @@ impl Default for I16 {
     }
 }
 
-impl flatdata::NoOverlap for I16 {}
+unsafe impl flatdata::NoOverlap for I16 {}
 
 impl I16 {
     #[inline]
@@ -585,7 +585,7 @@ impl Default for U32 {
     }
 }
 
-impl flatdata::NoOverlap for U32 {}
+unsafe impl flatdata::NoOverlap for U32 {}
 
 impl U32 {
     #[inline]
@@ -713,7 +713,7 @@ impl Default for I32 {
     }
 }
 
-impl flatdata::NoOverlap for I32 {}
+unsafe impl flatdata::NoOverlap for I32 {}
 
 impl I32 {
     #[inline]
@@ -841,7 +841,7 @@ impl Default for U64 {
     }
 }
 
-impl flatdata::NoOverlap for U64 {}
+unsafe impl flatdata::NoOverlap for U64 {}
 
 impl U64 {
     #[inline]
@@ -969,7 +969,7 @@ impl Default for I64 {
     }
 }
 
-impl flatdata::NoOverlap for I64 {}
+unsafe impl flatdata::NoOverlap for I64 {}
 
 impl I64 {
     #[inline]

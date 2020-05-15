@@ -73,7 +73,7 @@ impl Default for Foo {
     }
 }
 
-impl flatdata::NoOverlap for Foo {}
+unsafe impl flatdata::NoOverlap for Foo {}
 
 impl Foo {
     #[inline]
@@ -205,7 +205,7 @@ impl Default for Foo {
     }
 }
 
-impl flatdata::NoOverlap for Foo {}
+unsafe impl flatdata::NoOverlap for Foo {}
 
 impl Foo {
     #[inline]

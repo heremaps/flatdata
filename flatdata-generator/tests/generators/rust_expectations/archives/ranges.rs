@@ -20,6 +20,7 @@ impl flatdata::Struct for S {
     const IS_OVERLAPPING_WITH_NEXT : bool = true;
 }
 
+impl flatdata::Overlap for S {}
 
 impl S {
     #[inline]

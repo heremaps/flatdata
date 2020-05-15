@@ -1,13 +1,13 @@
 namespace test {
 
-enum E : u32 {
+enum E : u32 : 1 {
     Value,
 }
 
 struct A {
     x : u32 : 16;
     y : u32 : 16;
-    e : E : 16;
+    e : E : 1;
 }
 
 struct B {
