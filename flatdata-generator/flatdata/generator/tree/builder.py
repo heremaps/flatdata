@@ -10,6 +10,7 @@ from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
     InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
     InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference)
+from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -159,6 +160,15 @@ def _compute_structure_sizes(root):
             offset += int(field.type.width)
         struct.size_in_bits = offset
 
+def _compute_max_resource_size(root):
+    # visit all explicit references and check how many bits they have available
+    # the provides an upper bound on resource size
+    for reference in root.iterate(ExplicitReference):
+        if reference.field.node.type.width == 64:
+            continue
+        ref_limit = 2 ** reference.field.node.type.width
+        max_size = reference.destination.node.max_size
+        reference.destination.node.max_size = ref_limit if max_size is None or max_size > ref_limit else max_size
 
 def _check_ranges(root):
     # First check that names are unique
@@ -199,5 +209,6 @@ def build_ast(definition):
     # now compute data based on resolved references
     _update_field_type_references(root)
     _compute_structure_sizes(root)
+    _compute_max_resource_size(root)
     _check_const_refs(root)
     return SyntaxTree(root)

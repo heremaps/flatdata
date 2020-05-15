@@ -128,6 +128,10 @@ impl flatdata::Archive for {{archive.name}} {
         {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
         let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
         let {{r.name}} = resource.map(|x| <&[{{t}}]>::from_bytes(x)){% if r.optional %}.ok().transpose()?{% else %}??{% endif %};
+        {% if r.max_size %}
+        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
+        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
+        {% endif %}
         {% elif [r] | instance_resources %}
         {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
         let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
@@ -135,6 +139,10 @@ impl flatdata::Archive for {{archive.name}} {
         {% elif [r] | rawdata_resources %}
         let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
         let {{r.name}} = resource.map(|x| flatdata::RawData::new(x)){% if r.optional %}.ok(){% else %}?{% endif %};
+        {% if r.max_size %}
+        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
+        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
+        {% endif %}
         {% elif [r] | multivector_resources %}
         {% set i = fully_qualified_name(archive, r.index_reference.node) %}
         let {{r.name}} = {
@@ -157,6 +165,10 @@ impl flatdata::Archive for {{archive.name}} {
             result?
             {% endif %}
         };
+        {% if r.max_size %}
+        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
+        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
+        {% endif %}
         {% elif [r] | subarchive_resources %}
         {% set t = fully_qualified_name(archive, r.target.node) %}
         let {{r.name}} = {{t}}::open(storage.subdir("{{r.name}}")){% if r.optional %}.ok(){% else %}?{% endif %};

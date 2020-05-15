@@ -62,12 +62,14 @@ protected:
     template < typename ResourceType >
     static void describe_resource( std::ostream& stream,
                                    const char* name,
-                                   const ResourceType& resource );
+                                   const ResourceType& resource,
+                                   bool too_large = false );
 
     template < typename ResourceType >
     static void describe_resource( std::ostream& stream,
                                    const char* name,
-                                   const boost::optional< ResourceType >& resource );
+                                   const boost::optional< ResourceType >& resource,
+                                   bool too_large = false );
 
 protected:
     /**
@@ -100,8 +102,12 @@ protected:
     const flatdata::ResourceStorage& storage( ) const;
 
 private:
-    static void describe_impl(
-        std::ostream& stream, const char* name, bool optional, bool loaded, const char* details );
+    static void describe_impl( std::ostream& stream,
+                               const char* name,
+                               bool optional,
+                               bool loaded,
+                               const char* details,
+                               bool too_large );
 
 private:
     /**
@@ -126,22 +132,26 @@ private:
 
 template < typename ResourceType >
 void
-Archive::describe_resource( std::ostream& stream, const char* name, const ResourceType& resource )
+Archive::describe_resource( std::ostream& stream,
+                            const char* name,
+                            const ResourceType& resource,
+                            bool too_large )
 {
     auto initialized = static_cast< bool >( resource );
     describe_impl( stream, name, false, static_cast< bool >( resource ),
-                   initialized ? resource.describe( ).c_str( ) : "N/A" );
+                   initialized ? resource.describe( ).c_str( ) : "N/A", too_large );
 }
 
 template < typename ResourceType >
 void
 Archive::describe_resource( std::ostream& stream,
                             const char* name,
-                            const boost::optional< ResourceType >& resource )
+                            const boost::optional< ResourceType >& resource,
+                            bool too_large )
 {
     auto initialized = static_cast< bool >( resource );
     describe_impl( stream, name, true, initialized ? static_cast< bool >( *resource ) : false,
-                   initialized ? resource->describe( ).c_str( ) : "N/A" );
+                   initialized ? resource->describe( ).c_str( ) : "N/A", too_large );
 }
 
 template < typename ResourceType >

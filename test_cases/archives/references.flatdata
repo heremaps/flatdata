@@ -1,4 +1,5 @@
 /* This test tests that a resources can be annotated with references
+ * R.ref should limit the size of resources to 2^8, and R.ref2 even further to 2^4
  */
 namespace n{
 struct S {
@@ -6,16 +7,29 @@ struct S {
 }
 
 struct R {
-	ref : u32;
+	ref : u32 : 8;
+	ref2 : u32 : 4;
 }
 
-@bound_implicitly( all_lists : list1, list2, multilist)
+@bound_implicitly( all_lists : list1, list2, multilist1)
 archive A {
+	@optional
 	list1 : vector< S >;
 	list2 : vector< S >;
-	multilist : multivector< 32, S >;
+	@optional
+	multilist1 : multivector< 32, S >;
+	multilist2 : multivector< 32, S >;
+	@optional
+	raw1 : raw_data;
+	raw2 : raw_data;
 
 	@explicit_reference( R.ref, list1 )
+	@explicit_reference( R.ref2, list1 )
+	@explicit_reference( R.ref2, list2 )
+	@explicit_reference( R.ref2, multilist1 )
+	@explicit_reference( R.ref2, multilist2 )
+	@explicit_reference( R.ref2, raw1 )
+	@explicit_reference( R.ref2, raw2 )
 	refs : vector< R >;
 
 	@explicit_reference( R.ref, list1 )
