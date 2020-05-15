@@ -34,7 +34,7 @@ use std::{borrow::BorrowMut, fmt, io, slice::SliceIndex};
 /// ```
 ///
 /// ```
-/// use flatdata::{ MemoryResourceStorage, Archive, ArchiveBuilder, Vector };
+/// use flatdata::{ MemoryResourceStorage,  Vector };
 /// use flatdata::test::{A, X, XBuilder};
 ///
 /// let storage = MemoryResourceStorage::new("/root/extvec");
@@ -215,7 +215,7 @@ where
 /// ```
 ///
 /// ```
-/// use flatdata::{MemoryResourceStorage, Archive, ArchiveBuilder};
+/// use flatdata::MemoryResourceStorage;
 /// use flatdata::test::{A, X, XBuilder};
 ///
 /// let storage = MemoryResourceStorage::new("/root/extvec");

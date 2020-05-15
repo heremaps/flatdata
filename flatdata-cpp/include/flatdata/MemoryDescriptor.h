@@ -56,6 +56,12 @@ public:
         return m_size;
     }
 
+    size_t
+    size( ) const
+    {
+        return m_size;
+    }
+
 private:
     const uint8_t* m_ptr = nullptr;
     size_t m_size = 0;

@@ -18,10 +18,10 @@ using test_structures::OnlyOptional;
 using test_structures::OnlyOptionalBuilder;
 using test_structures::OuterArchive;
 using test_structures::OuterArchiveBuilder;
-using test_structures::OutermostArchive;
-using test_structures::OutermostArchiveBuilder;
 using test_structures::OuterWithOptional;
 using test_structures::OuterWithOptionalBuilder;
+using test_structures::OutermostArchive;
+using test_structures::OutermostArchiveBuilder;
 using test_structures::SimpleResources;
 using test_structures::SimpleResourcesBuilder;
 
@@ -236,13 +236,13 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
 Flatdata Archive: SimpleResources
 ================================================================================
 
-Resource                             Optional  Loaded    Details
+Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
-object_resource                      NO        YES       Structure of size 1
-vector_resource                      NO        YES       Array of size: 11 in 11 bytes
-multivector_resource                 NO        YES       MultiArray of size 1, with index: Array of size: 1 in 10 bytes
-raw_data_resource                    NO        YES       Raw data of size 8
-optional_resource                    YES       YES       Raw data of size 3
+object_resource                      NO        NO         YES       Structure of size 1
+vector_resource                      NO        NO         YES       Array of size: 11 in 11 bytes
+multivector_resource                 NO        NO         YES       MultiArray of size 1, with index: Array of size: 1 in 10 bytes
+raw_data_resource                    NO        NO         YES       Raw data of size 8
+optional_resource                    YES       NO         YES       Raw data of size 3
 ================================================================================
 )data";
     REQUIRE( archive.describe( ) == expected );
@@ -270,13 +270,13 @@ Flatdata Archive: SimpleResources
 ================================================================================
   FATAL: Archive initialization failed. Failed loading mandatory resources.
 
-Resource                             Optional  Loaded    Details
+Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
-object_resource                      NO        YES       Structure of size 1
-vector_resource                      NO        NO        N/A
-multivector_resource                 NO        NO        N/A
-raw_data_resource                    NO        NO        N/A
-optional_resource                    YES       YES       Raw data of size 3
+object_resource                      NO        NO         YES       Structure of size 1
+vector_resource                      NO        NO         NO        N/A
+multivector_resource                 NO        NO         NO        N/A
+raw_data_resource                    NO        NO         NO        N/A
+optional_resource                    YES       NO         YES       Raw data of size 3
 ================================================================================
 )data";
     REQUIRE( archive.describe( ) == expected );
@@ -525,12 +525,95 @@ Flatdata Archive: OutermostArchive
 ...
   FATAL: Archive initialization failed. Failed loading mandatory resources.
 
-Resource                             Optional  Loaded    Details
+Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
-outermost                            NO        NO        N/A
+outermost                            NO        NO         NO        N/A
 ================================================================================
 )";
     REQUIRE( description == expectation );
+}
+
+void
+make_mall_ref_archive( size_t size, std::shared_ptr< ResourceStorage > storage )
+{
+    using namespace test_structures;
+    auto builder = SmallRefArchiveBuilder::open( storage );
+    CHECK( builder.is_open( ) );
+    builder.set_list1( Vector< SmallRef >( size ) );
+    builder.set_list2( Vector< SmallRef >( size ) );
+    std::string raw( size, 'd' );
+    builder.set_raw1( MemoryDescriptor{raw.c_str( ), raw.size( )} );
+    builder.set_raw2( MemoryDescriptor{raw.c_str( ), raw.size( )} );
+    auto ml1 = builder.start_multi_list1( );
+    for ( size_t i = 0; i < size; i++ )
+    {
+        ml1.grow( );
+    }
+    ml1.close( );
+    auto ml2 = builder.start_multi_list2( );
+    for ( size_t i = 0; i < size; i++ )
+    {
+        ml2.grow( );
+    }
+    ml2.close( );
+    builder.set_refs( Vector< SmallRef >( 1 ) );
+};
+
+TEMPLATE_TEST_CASE_METHOD(
+    Fixture, "Describe size problems", "[GeneratedArchive]", std::true_type, std::false_type )
+{
+    using namespace test_structures;
+
+    make_mall_ref_archive( 17, Fixture< TestType >::storage );
+
+    auto archive = SmallRefArchive::open( Fixture< TestType >::storage );
+    CHECK_FALSE( archive.is_open( ) );
+    const char* const expected =
+        R"data(================================================================================
+Flatdata Archive: SmallRefArchive
+================================================================================
+  FATAL: Archive initialization failed. Failed loading mandatory resources.
+
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+list1                                YES       YES        YES       Array of size: 17 in 17 bytes
+list2                                NO        YES        YES       Array of size: 17 in 17 bytes
+multi_list1                          YES       YES        YES       MultiArray of size 17, with index: Array of size: 17 in 72 bytes
+multi_list2                          NO        YES        YES       MultiArray of size 17, with index: Array of size: 17 in 72 bytes
+raw1                                 YES       YES        YES       Raw data of size 17
+raw2                                 NO        YES        YES       Raw data of size 17
+refs                                 NO        NO         YES       Array of size: 1 in 1 bytes
+================================================================================
+)data";
+    REQUIRE( archive.describe( ) == expected );
+}
+
+TEMPLATE_TEST_CASE_METHOD(
+    Fixture, "Size check is exact", "[GeneratedArchive]", std::true_type, std::false_type )
+{
+    using namespace test_structures;
+
+    make_mall_ref_archive( 16, Fixture< TestType >::storage );
+
+    auto archive = SmallRefArchive::open( Fixture< TestType >::storage );
+    CHECK( archive.is_open( ) );
+    const char* const expected =
+        R"data(================================================================================
+Flatdata Archive: SmallRefArchive
+================================================================================
+
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+list1                                YES       NO         YES       Array of size: 16 in 16 bytes
+list2                                NO        NO         YES       Array of size: 16 in 16 bytes
+multi_list1                          YES       NO         YES       MultiArray of size 16, with index: Array of size: 16 in 68 bytes
+multi_list2                          NO        NO         YES       MultiArray of size 16, with index: Array of size: 16 in 68 bytes
+raw1                                 YES       NO         YES       Raw data of size 16
+raw2                                 NO        NO         YES       Raw data of size 16
+refs                                 NO        NO         YES       Array of size: 1 in 1 bytes
+================================================================================
+)data";
+    REQUIRE( archive.describe( ) == expected );
 }
 
 }  // namespace test

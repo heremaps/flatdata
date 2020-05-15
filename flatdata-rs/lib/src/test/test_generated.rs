@@ -382,11 +382,8 @@ impl ::std::fmt::Debug for S {
     }
 }
 
-impl crate::Archive for S {
-    const NAME: &'static str = "S";
-    const SCHEMA: &'static str = schema::s::S;
-
-    fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+impl S {
+    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -395,7 +392,7 @@ impl crate::Archive for S {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("S"), schema::s::S)?;
 
         let resource = extend(storage.read("data", schema::s::resources::DATA));
         let data = resource.map(|x| super::test::A::from_bytes_slice(x))??;
@@ -428,14 +425,11 @@ impl SBuilder {
 
 }
 
-impl crate::ArchiveBuilder for SBuilder {
-    const NAME: &'static str = "S";
-    const SCHEMA: &'static str = schema::s::S;
-
-    fn new(
+impl SBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
     ) -> Result<Self, crate::ResourceStorageError> {
-        crate::create_archive::<Self>(&storage)?;
+        crate::create_archive("S", schema::s::S, &storage)?;
         Ok(Self { storage })
     }
 }
@@ -469,11 +463,8 @@ impl ::std::fmt::Debug for X {
     }
 }
 
-impl crate::Archive for X {
-    const NAME: &'static str = "X";
-    const SCHEMA: &'static str = schema::x::X;
-
-    fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+impl X {
+    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -482,7 +473,7 @@ impl crate::Archive for X {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("X"), schema::x::X)?;
 
         let resource = extend(storage.read("data", schema::x::resources::DATA));
         let data = resource.map(|x| <&[super::test::A]>::from_bytes(x))??;
@@ -527,14 +518,11 @@ impl XBuilder {
 
 }
 
-impl crate::ArchiveBuilder for XBuilder {
-    const NAME: &'static str = "X";
-    const SCHEMA: &'static str = schema::x::X;
-
-    fn new(
+impl XBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
     ) -> Result<Self, crate::ResourceStorageError> {
-        crate::create_archive::<Self>(&storage)?;
+        crate::create_archive("X", schema::x::X, &storage)?;
         Ok(Self { storage })
     }
 }
@@ -568,11 +556,8 @@ impl ::std::fmt::Debug for Y {
     }
 }
 
-impl crate::Archive for Y {
-    const NAME: &'static str = "Y";
-    const SCHEMA: &'static str = schema::y::Y;
-
-    fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+impl Y {
+    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -581,7 +566,7 @@ impl crate::Archive for Y {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("Y"), schema::y::Y)?;
 
         let resource = extend(storage.read("data", schema::y::resources::DATA));
         let data = resource.map(|x| <&[super::test::R]>::from_bytes(x))??;
@@ -626,14 +611,11 @@ impl YBuilder {
 
 }
 
-impl crate::ArchiveBuilder for YBuilder {
-    const NAME: &'static str = "Y";
-    const SCHEMA: &'static str = schema::y::Y;
-
-    fn new(
+impl YBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
     ) -> Result<Self, crate::ResourceStorageError> {
-        crate::create_archive::<Self>(&storage)?;
+        crate::create_archive("Y", schema::y::Y, &storage)?;
         Ok(Self { storage })
     }
 }
@@ -781,11 +763,8 @@ impl ::std::fmt::Debug for Z {
     }
 }
 
-impl crate::Archive for Z {
-    const NAME: &'static str = "Z";
-    const SCHEMA: &'static str = schema::z::Z;
-
-    fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+impl Z {
+    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -794,7 +773,7 @@ impl crate::Archive for Z {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("Z"), schema::z::Z)?;
 
         let ab = {
             let index_schema = &format!("index({})", schema::z::resources::AB);
@@ -844,14 +823,11 @@ impl ZBuilder {
 
 }
 
-impl crate::ArchiveBuilder for ZBuilder {
-    const NAME: &'static str = "Z";
-    const SCHEMA: &'static str = schema::z::Z;
-
-    fn new(
+impl ZBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
     ) -> Result<Self, crate::ResourceStorageError> {
-        crate::create_archive::<Self>(&storage)?;
+        crate::create_archive("Z", schema::z::Z, &storage)?;
         Ok(Self { storage })
     }
 }
@@ -885,11 +861,8 @@ impl ::std::fmt::Debug for W {
     }
 }
 
-impl crate::Archive for W {
-    const NAME: &'static str = "W";
-    const SCHEMA: &'static str = schema::w::W;
-
-    fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+impl W {
+    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -898,7 +871,7 @@ impl crate::Archive for W {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("W"), schema::w::W)?;
 
         let resource = extend(storage.read("blob", schema::w::resources::BLOB));
         let blob = resource.map(|x| crate::RawData::new(x))?;
@@ -929,14 +902,11 @@ impl WBuilder {
 
 }
 
-impl crate::ArchiveBuilder for WBuilder {
-    const NAME: &'static str = "W";
-    const SCHEMA: &'static str = schema::w::W;
-
-    fn new(
+impl WBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
     ) -> Result<Self, crate::ResourceStorageError> {
-        crate::create_archive::<Self>(&storage)?;
+        crate::create_archive("W", schema::w::W, &storage)?;
         Ok(Self { storage })
     }
 }

@@ -55,7 +55,7 @@ use std::{borrow::BorrowMut, fmt, io, marker};
 /// ```
 ///
 /// ```rust
-/// use flatdata::{ArchiveBuilder, Archive, MemoryResourceStorage};
+/// use flatdata::MemoryResourceStorage;
 /// use flatdata::test::{A, B, AbRef, Z, ZBuilder};
 ///
 /// // create multivector and serialize some data

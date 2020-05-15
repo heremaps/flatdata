@@ -108,11 +108,8 @@ impl ::std::fmt::Debug for {{archive.name}} {
     }
 }
 
-impl flatdata::Archive for {{archive.name}} {
-    const NAME: &'static str = "{{archive.name}}";
-    const SCHEMA: &'static str = schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
-
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+impl {{archive.name}} {
+    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -121,13 +118,17 @@ impl flatdata::Archive for {{archive.name}} {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("{{archive.name}}"), schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }})?;
 
         {% for r in archive.resources | supported_resources %}
         {% if [r] | vector_resources %}
         {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
         let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
         let {{r.name}} = resource.map(|x| <&[{{t}}]>::from_bytes(x)){% if r.optional %}.ok().transpose()?{% else %}??{% endif %};
+        {% if r.max_size %}
+        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
+        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
+        {% endif %}
         {% elif [r] | instance_resources %}
         {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
         let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
@@ -135,6 +136,10 @@ impl flatdata::Archive for {{archive.name}} {
         {% elif [r] | rawdata_resources %}
         let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
         let {{r.name}} = resource.map(|x| flatdata::RawData::new(x)){% if r.optional %}.ok(){% else %}?{% endif %};
+        {% if r.max_size %}
+        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
+        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
+        {% endif %}
         {% elif [r] | multivector_resources %}
         {% set i = fully_qualified_name(archive, r.index_reference.node) %}
         let {{r.name}} = {
@@ -157,6 +162,10 @@ impl flatdata::Archive for {{archive.name}} {
             result?
             {% endif %}
         };
+        {% if r.max_size %}
+        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
+        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
+        {% endif %}
         {% elif [r] | subarchive_resources %}
         {% set t = fully_qualified_name(archive, r.target.node) %}
         let {{r.name}} = {{t}}::open(storage.subdir("{{r.name}}")){% if r.optional %}.ok(){% else %}?{% endif %};
@@ -250,7 +259,6 @@ impl {{archive.name}}Builder {
     /// [`{{r.name}}`]: struct.{{archive.name}}.html#method.{{r.name}}
     #[inline]
     pub fn {{r.name}}(&self) -> Result<{{t}}Builder, flatdata::ResourceStorageError> {
-        use flatdata::ArchiveBuilder;
         let storage = self.storage.subdir("{{r.name}}");
         {{t}}Builder::new(storage)
     }
@@ -260,14 +268,11 @@ impl {{archive.name}}Builder {
 }
 {% endif %}
 
-impl flatdata::ArchiveBuilder for {{archive.name}}Builder {
-    const NAME: &'static str = "{{archive.name}}";
-    const SCHEMA: &'static str = schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }};
-
-    fn new(
+impl {{archive.name}}Builder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
     ) -> Result<Self, flatdata::ResourceStorageError> {
-        flatdata::create_archive::<Self>(&storage)?;
+        flatdata::create_archive("{{archive.name}}", schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }}, &storage)?;
         Ok(Self { storage })
     }
 }

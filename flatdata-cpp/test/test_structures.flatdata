@@ -1,5 +1,29 @@
 namespace test_structures {
 
+struct SmallRef {
+    ref : u32 : 4;
+}
+
+archive SmallRefArchive {
+    @optional
+    list1 : vector< SmallRef >;
+    list2 : vector< SmallRef >;
+    @optional
+    multi_list1 : multivector< 32, SmallRef >;
+    multi_list2 : multivector< 32, SmallRef >;
+    @optional
+    raw1 : raw_data;
+    raw2 : raw_data;
+
+    @explicit_reference( SmallRef.ref, list1 )
+    @explicit_reference( SmallRef.ref, list2 )
+    @explicit_reference( SmallRef.ref, multi_list1 )
+    @explicit_reference( SmallRef.ref, multi_list2 )
+    @explicit_reference( SmallRef.ref, raw1 )
+    @explicit_reference( SmallRef.ref, raw2 )
+    refs : vector< SmallRef >;
+}
+
 const i8 INVALID_ZERO = 0;
 const i8 INVALID_MIN_INT = -128;
 const i8 INVALID_MAX_INT = 127;

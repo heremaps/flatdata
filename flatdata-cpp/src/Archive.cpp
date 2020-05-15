@@ -142,8 +142,7 @@ compute_diff( const char* expected, const char* found )
 
     distances.resize( expected_length * found_length );
 
-    auto entry = [&]( size_t expected_pos, size_t found_pos ) -> size_t&
-    {
+    auto entry = [&]( size_t expected_pos, size_t found_pos ) -> size_t& {
         assert( expected_pos < expected_length );
         assert( found_pos < found_length );
         return distances[ expected_pos + found_pos * expected_length ];
@@ -182,8 +181,7 @@ compute_diff( const char* expected, const char* found )
     {
         size_t next_found_pos = found_pos;
         size_t next_expected_pos = expected_pos;
-        auto check = [&]( size_t new_expected_pos, size_t new_found_pos, size_t transition_cost )
-        {
+        auto check = [&]( size_t new_expected_pos, size_t new_found_pos, size_t transition_cost ) {
             size_t cost = entry( new_expected_pos, new_found_pos );
             if ( cost + transition_cost == entry( expected_pos, found_pos ) )
             {
@@ -260,7 +258,8 @@ Archive::describe( ) const
     }
 
     result << std::endl
-           << "Resource                             Optional  Loaded    Details" << std::endl
+           << "Resource                             Optional  Too Large  Loaded    Details"
+           << std::endl
            << hline << std::endl;
     describe_resources( result );
     result << hline << std::endl;
@@ -268,14 +267,19 @@ Archive::describe( ) const
 }
 
 void
-Archive::describe_impl(
-    std::ostream& stream, const char* name, bool optional, bool loaded, const char* details )
+Archive::describe_impl( std::ostream& stream,
+                        const char* name,
+                        bool optional,
+                        bool loaded,
+                        const char* details,
+                        bool too_large )
 {
     auto oldw = stream.width( );
     auto oldfill = stream.fill( );
     stream << std::left << std::setw( 37 ) << std::setfill( ' ' )
            << std::string( name ).substr( 0, 30 ) << std::left << std::setw( 10 )
-           << std::setfill( ' ' ) << ( optional ? "YES" : "NO" ) << std::left << std::setw( 10 )
+           << std::setfill( ' ' ) << ( optional ? "YES" : "NO" ) << std::left << std::setw( 11 )
+           << std::setfill( ' ' ) << ( too_large ? "YES" : "NO" ) << std::left << std::setw( 10 )
            << std::setfill( ' ' ) << ( static_cast< bool >( loaded ) ? "YES" : "NO" ) << details
            << std::endl;
     stream << std::setw( oldw ) << std::setfill( oldfill );

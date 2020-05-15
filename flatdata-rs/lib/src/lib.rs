@@ -65,7 +65,7 @@
 //! ```rust,ignore
 //! include!("prime_generated.rs");
 //!
-//! use flatdata::{Archive, ArchiveBuilder, MemoryResourceStorage};
+//! use flatdata::{ MemoryResourceStorage};
 //!
 //! pub fn calculate_prime_factors(
 //!     builder: &mut prime::ArchiveBuilder,
@@ -148,7 +148,6 @@ mod bytereader;
 #[macro_use]
 mod bytewriter;
 
-mod archive;
 mod arrayview;
 mod error;
 mod filestorage;
@@ -169,7 +168,6 @@ pub mod helper;
 pub mod test;
 
 pub use crate::{
-    archive::*,
     arrayview::SliceExt,
     error::*,
     filestorage::FileResourceStorage,

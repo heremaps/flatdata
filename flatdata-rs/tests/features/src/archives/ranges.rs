@@ -4,9 +4,6 @@ include!(concat!(env!("OUT_DIR"), "/archives/ranges.rs"));
 
 #[test]
 fn test() {
-    use flatdata::Archive;
-    use flatdata::ArchiveBuilder;
-
     let storage = flatdata::MemoryResourceStorage::new("/my_test");
 
     let mut data = flatdata::Vector::<n::S>::new();

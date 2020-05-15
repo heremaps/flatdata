@@ -4,8 +4,6 @@ include!(concat!(env!("OUT_DIR"), "/archives/empty.rs"));
 
 #[test]
 fn test() {
-    use flatdata::{Archive, ArchiveBuilder};
-
     let storage = flatdata::MemoryResourceStorage::new("/my_test");
 
     let _builder = n::ABuilder::new(storage.clone()).expect("Failed to create builder");
