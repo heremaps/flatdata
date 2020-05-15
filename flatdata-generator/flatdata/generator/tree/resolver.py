@@ -4,7 +4,7 @@ import flatdata.generator.tree.nodes.resources as resources
 from flatdata.generator.tree.nodes.archive import Archive
 from . import errors
 
-_RESOLVED_BASE_TYPES = (refs.TypeReference, refs.RuntimeReference)
+_RESOLVED_BASE_TYPES = (refs.TypeReference, refs.RuntimeReference, refs.ConstantReference)
 
 
 def _filter_references(iterable):
@@ -52,7 +52,8 @@ def _validate_target_type(root, ref):
         refs.FieldReference: nodes.Field,
         refs.BuiltinStructureReference: nodes.Structure,
         refs.VectorReference: resources.Vector,
-        refs.ConstantReference: nodes.Constant,
+        refs.ConstantValueReference: nodes.Constant,
+        refs.InvalidValueReference: nodes.Constant,
         refs.EnumerationReference: nodes.Enumeration
     }[type(ref)]
     target = root.find(ref.target)

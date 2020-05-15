@@ -672,8 +672,8 @@ inline
 std::string StructEnumI8Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumI8 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -806,8 +806,8 @@ inline
 std::string StructEnumU8Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumU8 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -940,8 +940,8 @@ inline
 std::string StructEnumI16Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumI16 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1074,8 +1074,8 @@ inline
 std::string StructEnumU16Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumU16 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1208,8 +1208,8 @@ inline
 std::string StructEnumI32Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumI32 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1342,8 +1342,8 @@ inline
 std::string StructEnumU32Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumU32 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1476,8 +1476,8 @@ inline
 std::string StructEnumI64Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumI64 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1610,8 +1610,8 @@ inline
 std::string StructEnumU64Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
-    ss << "{ " << std::endl <<
-    "f : " << static_cast< uint64_t >( f ) << ", " << std::endl
+    ss << "StructEnumU64 {" << std::endl <<
+    "    f : " << +f << "," << std::endl
     << "}"
 ;
     return ss.str( );

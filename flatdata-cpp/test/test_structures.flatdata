@@ -1,5 +1,18 @@
 namespace test_structures {
 
+const i8 INVALID_ZERO = 0;
+const i8 INVALID_MIN_INT = -128;
+const i8 INVALID_MAX_INT = 127;
+
+struct TestInvalidValue {
+    @optional( INVALID_ZERO )
+    invalid_zero : i8;
+    @optional( INVALID_MIN_INT )
+    invalid_min_int : i8;
+    @optional( INVALID_MAX_INT )
+    invalid_max_int : i8;
+}
+
 // Enumeration with some overlapping values
 enum Enum1 : u16 : 3{
     // = 0

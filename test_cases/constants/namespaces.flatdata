@@ -15,5 +15,11 @@ struct Bar {
 	foo2 : i8;
 	@const( .m.FOO )
 	foo3 : i8;
+	@optional( FOO )
+	bar1 : i8;
+	@optional( .n.FOO )
+	bar2 : i8;
+	@optional( .m.FOO )
+	bar3 : i8;
 }
 }

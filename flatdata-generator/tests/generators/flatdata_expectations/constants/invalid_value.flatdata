@@ -1,0 +1,24 @@
+namespace n {
+const i8 INVALID_ZERO = 0;
+}
+
+namespace n {
+const i8 INVALID_MIN_INT = -128;
+}
+
+namespace n {
+const i8 INVALID_MAX_INT = 127;
+}
+
+namespace n {
+struct Bar
+{
+    @optional( .n.INVALID_ZERO )
+    invalid_zero : i8 : 8;
+    @optional( .n.INVALID_MIN_INT )
+    invalid_min_int : i8 : 8;
+    @optional( .n.INVALID_MAX_INT )
+    invalid_max_int : i8 : 8;
+}
+}
+

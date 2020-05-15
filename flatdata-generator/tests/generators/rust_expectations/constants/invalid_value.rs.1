@@ -1,0 +1,68 @@
+impl Bar {
+    #[inline]
+    pub fn invalid_zero(&self) -> Option<i8> {
+        let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 0, 8);
+        let x = unsafe { std::mem::transmute::<i8, i8>(value) };
+        Some(x).filter(|&x| x != super::n::INVALID_ZERO)
+    }
+
+    #[inline]
+    pub fn invalid_min_int(&self) -> Option<i8> {
+        let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 8, 8);
+        let x = unsafe { std::mem::transmute::<i8, i8>(value) };
+        Some(x).filter(|&x| x != super::n::INVALID_MIN_INT)
+    }
+
+    #[inline]
+    pub fn invalid_max_int(&self) -> Option<i8> {
+        let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 16, 8);
+        let x = unsafe { std::mem::transmute::<i8, i8>(value) };
+        Some(x).filter(|&x| x != super::n::INVALID_MAX_INT)
+    }
+
+}
+
+impl std::fmt::Debug for Bar {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("Bar")
+            .field("invalid_zero", &self.invalid_zero())
+            .field("invalid_min_int", &self.invalid_min_int())
+            .field("invalid_max_int", &self.invalid_max_int())
+            .finish()
+    }
+}
+
+impl std::cmp::PartialEq for Bar {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.invalid_zero() == other.invalid_zero() &&        self.invalid_min_int() == other.invalid_min_int() &&        self.invalid_max_int() == other.invalid_max_int()     }
+}
+
+impl Bar {
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_invalid_zero(&mut self, value: Option<i8>) {
+let value = value.unwrap_or(super::n::INVALID_ZERO);        flatdata_write_bytes!(i8; value, self.data, 0, 8)
+    }
+
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_invalid_min_int(&mut self, value: Option<i8>) {
+let value = value.unwrap_or(super::n::INVALID_MIN_INT);        flatdata_write_bytes!(i8; value, self.data, 8, 8)
+    }
+
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_invalid_max_int(&mut self, value: Option<i8>) {
+let value = value.unwrap_or(super::n::INVALID_MAX_INT);        flatdata_write_bytes!(i8; value, self.data, 16, 8)
+    }
+
+
+    /// Copies the data from `other` into this struct.
+    #[inline]
+    pub fn fill_from(&mut self, other: &Bar) {
+        self.set_invalid_zero(other.invalid_zero());
+        self.set_invalid_min_int(other.invalid_min_int());
+        self.set_invalid_max_int(other.invalid_max_int());
+    }
+}

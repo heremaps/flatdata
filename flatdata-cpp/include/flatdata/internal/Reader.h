@@ -6,8 +6,11 @@
 #pragma once
 
 #include "BitHelpers.h"
+#include "functional/Tagged.h"
 
 #include <boost/endian/conversion.hpp>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <cstring>
 
@@ -89,6 +92,37 @@ struct Reader< std::pair< T, T >, offset, num_bits, struct_size_bytes >
         Reader< T, offset, num_bits > start{data};
         Reader< T, offset, num_bits > end{data + struct_size_bytes};
         return std::pair< T, T >( start, end );
+    }
+};
+
+template < typename T, T INVALID_VALUE, int offset, int num_bits, int struct_size_bytes >
+struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
+{
+    using StreamType = const unsigned char*;
+
+    StreamType data;
+
+    explicit operator bool( ) const
+    {
+        return Reader< T, offset, num_bits >{data} != INVALID_VALUE;
+    }
+
+    T operator*( ) const
+    {
+        return Reader< T, offset, num_bits >{data};
+    }
+
+    template < typename U >
+    operator boost::optional< U >( ) const
+    {
+        if ( Reader< T, offset, num_bits >{data} == INVALID_VALUE )
+        {
+            return {};
+        }
+        else
+        {
+            return boost::optional< U >(Reader< T, offset, num_bits >{data});
+        }
     }
 };
 

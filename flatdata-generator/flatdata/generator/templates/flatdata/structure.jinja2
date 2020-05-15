@@ -5,9 +5,12 @@ struct {{ struct.name }}
     {% if field.range %}
     @range( {{ field.range }} )
     {% endif %}
-	{% for const_ref in field.const_refs %}
+    {% for const_ref in field.const_value_refs %}
     @const( {{ const_ref.target }} )
     {% endfor %}
+    {% if field.invalid_value %}
+    @optional( {{ field.invalid_value.target }} )
+    {% endif %}
     {{ field.name }} : {{field.type.name | field_type}} : {{ field.type.width }};
     {% endfor %}
 }

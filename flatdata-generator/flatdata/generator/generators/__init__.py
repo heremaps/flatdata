@@ -11,6 +11,7 @@ from jinja2.exceptions import TemplateRuntimeError
 
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Namespace
+from flatdata.generator.tree.nodes.references import InvalidValueReference
 from flatdata.generator.tree.nodes.resources import ResourceBase, BoundResource, Archive as \
     ArchiveResource, Vector, Multivector, Instance, RawData
 from flatdata.generator.tree.syntax_tree import SyntaxTree

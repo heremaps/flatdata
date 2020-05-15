@@ -45,14 +45,21 @@ enum = Group(
 
 range = Group(
     Optional(comment)("doc") +
-    Keyword("@range") +
+    Keyword("@range") -
     "(" +
     identifier("name") +
     ")"
 )
 
 const_ref = Group(
-    Keyword("@const") +
+    Keyword("@const") -
+    "(" +
+    qualified_identifier("name") +
+    ")"
+)
+
+invalid_value = Group(
+    Keyword("@optional") -
     "(" +
     qualified_identifier("name") +
     ")"
@@ -60,7 +67,8 @@ const_ref = Group(
 
 field_decorations = Group(
     range("range") |
-    const_ref("const_ref")
+    const_ref("const_ref") |
+    invalid_value("invalid_value")
 )
 
 field = Group(

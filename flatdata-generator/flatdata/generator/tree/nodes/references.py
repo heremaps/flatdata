@@ -80,6 +80,12 @@ class ArchiveReference(TypeReference):
 class ConstantReference(TypeReference):
     pass
 
+class ConstantValueReference(ConstantReference):
+    pass
+
+class InvalidValueReference(ConstantReference):
+    pass
+
 class EnumerationReference(TypeReference):
     """
     EnumerationReference depict:

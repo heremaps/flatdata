@@ -125,6 +125,12 @@ class InvalidConstValueReference(FlatdataSyntaxError):
             "Referenced constant {name} value does not fit into {bits} bits"
             .format(name=name, bits=bits))
 
+class DuplicateInvalidValueReference(FlatdataSyntaxError):
+    def __init__(self, name, constants):
+        super().__init__(
+            "Multiple optional annotations {constants} for field {name}"
+        .format(name=name, constants=constants))
+
 class InvalidRangeName(FlatdataSyntaxError):
     def __init__(self, name):
         super().__init__(

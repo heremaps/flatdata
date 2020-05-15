@@ -182,6 +182,8 @@ of every archive.
 
 ## Optional
 
+### Resources
+
 ``@optional`` can be applied to resources. If resource is optional and
 missing, archive can still be opened successfully. Resource of any type
 can be optional. Example:
@@ -192,6 +194,15 @@ archive Archive {
     resource: vector< SomeStructure >;
 }
 ```
+
+### Fields
+
+``@optional( <name> )`` can be added to a field to mark a special constant
+value of the field as a sentinel value, making the whole field **optional**.
+
+This special value is considered the **none** value of the field. Many
+language backends will use native optional data structures for such fields
+instead of the underlying integer type.
 
 ## Explicit Reference
 

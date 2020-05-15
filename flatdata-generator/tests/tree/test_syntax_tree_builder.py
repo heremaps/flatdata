@@ -9,7 +9,7 @@ from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_t
 
 sys.path.insert(0, "..")
 from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference, \
-    InvalidConstReference, InvalidConstValueReference
+    InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from flatdata.generator.tree.nodes.archive import Archive
@@ -17,8 +17,8 @@ from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 import flatdata.generator.tree.nodes.resources as res
 from flatdata.generator.tree.nodes.resources import Vector, Multivector, RawData, Instance, BoundResource
 from flatdata.generator.tree.nodes.references import ResourceReference, StructureReference, \
-    FieldReference, ArchiveReference, BuiltinStructureReference, ConstantReference, \
-    EnumerationReference
+    FieldReference, ArchiveReference, BuiltinStructureReference, ConstantValueReference, \
+    EnumerationReference, InvalidValueReference
 
 
 
@@ -49,6 +49,19 @@ def test_const_ref_with_too_few_bits():
             struct A {
                 @const(FOO)
                 foo : u32 : 4;
+            }
+            }
+            """)
+
+def test_duplicate_optional():
+    with assert_raises(DuplicateInvalidValueReference):
+        build_ast("""namespace foo{
+            const u32 FOO = 16;
+            const u32 BAR = 16;
+            struct A {
+                @optional(FOO)
+                @optional(BAR)
+                foo : u32;
             }
             }
             """)
@@ -206,6 +219,9 @@ namespace ns{
     struct S1 {
         @const(D)
         f0 : u64 : 64;
+        // bla bla
+        @optional(D)
+        f1 : u64 : 64;
     }
 
     @bound_implicitly( b: A0.v0, A0.v1 )
@@ -255,7 +271,7 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '._builtin.multivector.IndexType14.value': Field,
         '.ns': Namespace,
         '.ns.A0': Archive,
-        '.ns.A0.@@ns@C': ConstantReference,
+        '.ns.A0.@@ns@C': ConstantValueReference,
         '.ns.A0.b': BoundResource,
         '.ns.A0.b.@@ns@A0@v0': ResourceReference,
         '.ns.A0.b.@@ns@A0@v1': ResourceReference,
@@ -265,7 +281,7 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A0.v1.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A0.v1.@@ns@S1': StructureReference,
         '.ns.A1': Archive,
-        '.ns.A1.@@ns@C': ConstantReference,
+        '.ns.A1.@@ns@C': ConstantValueReference,
         '.ns.A1.a': res.Archive,
         '.ns.A1.a.@@ns@A0': ArchiveReference,
         '.ns.A1.i': Instance,
@@ -299,7 +315,9 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.S0.f1': Field,
         '.ns.S1': Structure,
         '.ns.S1.f0': Field,
-        '.ns.S1.f0.@@ns@D': ConstantReference,
+        '.ns.S1.f0.@@ns@D': ConstantValueReference,
+        '.ns.S1.f1': Field,
+        '.ns.S1.f1.@@ns@D': InvalidValueReference,
         '.ns.Enum1': Enumeration,
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
@@ -336,7 +354,7 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '._builtin.multivector.IndexType14.value': Field,
         '.ns': Namespace,
         '.ns.A0': Archive,
-        '.ns.A0.@@ns@C': ConstantReference,
+        '.ns.A0.@@ns@C': ConstantValueReference,
         '.ns.A0.b': BoundResource,
         '.ns.A0.b.@@ns@A0@v0': ResourceReference,
         '.ns.A0.b.@@ns@A0@v1': ResourceReference,
@@ -346,7 +364,7 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.A0.v1.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A0.v1.@@ns@S1': StructureReference,
         '.ns.A1': Archive,
-        '.ns.A1.@@ns@C': ConstantReference,
+        '.ns.A1.@@ns@C': ConstantValueReference,
         '.ns.A1.a': res.Archive,
         '.ns.A1.a.@@ns@A0': ArchiveReference,
         '.ns.A1.i': Instance,
@@ -380,7 +398,9 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.S0.f1': Field,
         '.ns.S1': Structure,
         '.ns.S1.f0': Field,
-        '.ns.S1.f0.@@ns@D': ConstantReference,
+        '.ns.S1.f0.@@ns@D': ConstantValueReference,
+        '.ns.S1.f1': Field,
+        '.ns.S1.f1.@@ns@D': InvalidValueReference,
         '.ns.Enum1': Enumeration,
         '.ns.Enum1.A': EnumerationValue,
         '.ns.Enum1.B': EnumerationValue,
