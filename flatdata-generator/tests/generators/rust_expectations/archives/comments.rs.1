@@ -26,11 +26,8 @@ impl ::std::fmt::Debug for Foo {
     }
 }
 
-impl flatdata::Archive for Foo {
-    const NAME: &'static str = "Foo";
-    const SCHEMA: &'static str = schema::foo::FOO;
-
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+impl Foo {
+    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -39,7 +36,7 @@ impl flatdata::Archive for Foo {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("Foo"), schema::foo::FOO)?;
 
         let resource = extend(storage.read("bar", schema::foo::resources::BAR));
         let bar = resource.map(|x| flatdata::RawData::new(x))?;
@@ -70,14 +67,11 @@ impl FooBuilder {
 
 }
 
-impl flatdata::ArchiveBuilder for FooBuilder {
-    const NAME: &'static str = "Foo";
-    const SCHEMA: &'static str = schema::foo::FOO;
-
-    fn new(
+impl FooBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
     ) -> Result<Self, flatdata::ResourceStorageError> {
-        flatdata::create_archive::<Self>(&storage)?;
+        flatdata::create_archive("Foo", schema::foo::FOO, &storage)?;
         Ok(Self { storage })
     }
 }
@@ -113,11 +107,8 @@ impl ::std::fmt::Debug for Bar {
     }
 }
 
-impl flatdata::Archive for Bar {
-    const NAME: &'static str = "Bar";
-    const SCHEMA: &'static str = schema::bar::BAR;
-
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+impl Bar {
+    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -126,7 +117,7 @@ impl flatdata::Archive for Bar {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("Bar"), schema::bar::BAR)?;
 
         let resource = extend(storage.read("foo", schema::bar::resources::FOO));
         let foo = resource.map(|x| flatdata::RawData::new(x))?;
@@ -157,14 +148,11 @@ impl BarBuilder {
 
 }
 
-impl flatdata::ArchiveBuilder for BarBuilder {
-    const NAME: &'static str = "Bar";
-    const SCHEMA: &'static str = schema::bar::BAR;
-
-    fn new(
+impl BarBuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
     ) -> Result<Self, flatdata::ResourceStorageError> {
-        flatdata::create_archive::<Self>(&storage)?;
+        flatdata::create_archive("Bar", schema::bar::BAR, &storage)?;
         Ok(Self { storage })
     }
 }

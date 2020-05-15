@@ -4,7 +4,7 @@ include!(concat!(env!("OUT_DIR"), "/archives/references.rs"));
 
 #[test]
 fn test() {
-    use flatdata::{Archive, ArchiveBuilder, Vector};
+    use flatdata::Vector;
 
     let create_archive = |sizes: &[usize]| {
         let storage = flatdata::MemoryResourceStorage::new("/my_test");

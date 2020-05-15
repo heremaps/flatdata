@@ -4,8 +4,6 @@ include!(concat!(env!("OUT_DIR"), "/archives/multivector.rs"));
 
 #[test]
 fn test() {
-    use flatdata::{Archive, ArchiveBuilder};
-
     for &set_optional in &[false, true] {
         let storage = flatdata::MemoryResourceStorage::new("/my_test");
 

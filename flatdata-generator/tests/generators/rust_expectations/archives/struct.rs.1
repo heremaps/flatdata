@@ -147,11 +147,8 @@ impl ::std::fmt::Debug for A {
     }
 }
 
-impl flatdata::Archive for A {
-    const NAME: &'static str = "A";
-    const SCHEMA: &'static str = schema::a::A;
-
-    fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+impl A {
+    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -160,7 +157,7 @@ impl flatdata::Archive for A {
         #[allow(unused_variables)]
         let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
-        storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
+        storage.read(&Self::signature_name("A"), schema::a::A)?;
 
         let resource = extend(storage.read("data", schema::a::resources::DATA));
         let data = resource.map(|x| super::n::S::from_bytes_slice(x))??;
@@ -206,14 +203,11 @@ impl ABuilder {
 
 }
 
-impl flatdata::ArchiveBuilder for ABuilder {
-    const NAME: &'static str = "A";
-    const SCHEMA: &'static str = schema::a::A;
-
-    fn new(
+impl ABuilder {
+    pub fn new(
         storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
     ) -> Result<Self, flatdata::ResourceStorageError> {
-        flatdata::create_archive::<Self>(&storage)?;
+        flatdata::create_archive("A", schema::a::A, &storage)?;
         Ok(Self { storage })
     }
 }

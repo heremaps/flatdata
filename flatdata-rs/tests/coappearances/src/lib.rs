@@ -5,8 +5,6 @@ extern crate flatdata;
 
 use std::{env, fs, io::Read, path, str};
 
-use flatdata::{Archive, ArchiveBuilder};
-
 pub mod coappearances;
 
 #[test]

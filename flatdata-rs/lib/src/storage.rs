@@ -1,5 +1,4 @@
 use crate::{
-    archive::ArchiveBuilder,
     error::ResourceStorageError,
     memory::{SizeType, PADDING_SIZE},
     multivector::MultiVector,
@@ -202,10 +201,12 @@ where
 ///
 /// [`AlreadyExists`]: https://doc.rust-lang.org/std/io/enum.ErrorKind.html#AlreadyExists.v
 #[doc(hidden)]
-pub fn create_archive<T: ArchiveBuilder>(
+pub fn create_archive(
+    name: &str,
+    schema: &str,
     storage: &Rc<dyn ResourceStorage>,
 ) -> Result<(), ResourceStorageError> {
-    let signature_name = format!("{}.archive", T::NAME);
+    let signature_name = format!("{}.archive", name);
     {
         // existing archive yields an error
         if storage.exists(&signature_name) {
@@ -218,7 +219,7 @@ pub fn create_archive<T: ArchiveBuilder>(
     {
         // write empty signature and schema
         storage
-            .write(&signature_name, T::SCHEMA, &[])
+            .write(&signature_name, schema, &[])
             .map_err(|e| ResourceStorageError::from_io_error(e, signature_name))?;
     }
     Ok(())
