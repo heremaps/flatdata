@@ -15,14 +15,22 @@
 {% endif %}
 pub mod {{ ns.name }} {
 {{ loop(ns.children) }}
+{%- for node in ns.children %}
+    {% if node | is_structure and not node | is_multivector_index %}
+        {{- structure.declaration(node) }}
+    {% elif node | is_structure and node | is_multivector_index %}
+        {{- index.declaration(node) }}
+    {% elif node | is_enumeration %}
+        {{- enumeration.declaration(node) }}
+    {% elif node | is_archive %}
+        {{- archive.declaration(node) }}
+    {% elif node | is_constant %}
+        {{- constant.declaration(node) }}
+    {% endif %}
+{% endfor %}
+
 #[doc(hidden)]
 pub mod schema {
-pub mod structs {
-{% for node in ns.children if node | is_structure %}
-pub const {{ node.name | camel_to_snake_case | upper }}: &str = r#"{{ tree.schema(node) }}"#;
-{% endfor %}
-}
-
 {% for node in ns.children if node | is_archive %}
 {% set archive_ns = node.name | camel_to_snake_case %}
 pub mod {{ archive_ns }} {
@@ -37,20 +45,6 @@ pub const {{ r.name | upper }}: &str = r#"{{ tree.schema(r) }}"#;
 }
 {% endfor %}
 }
-
-{%- for node in ns.children %}
-    {% if node | is_structure and not node | is_multivector_index %}
-        {{- structure.declaration(node) }}
-    {% elif node | is_structure and node | is_multivector_index %}
-        {{- index.declaration(node) }}
-    {% elif node | is_enumeration %}
-        {{- enumeration.declaration(node) }}
-    {% elif node | is_archive %}
-        {{- archive.declaration(node) }}
-    {% elif node | is_constant %}
-        {{- constant.declaration(node) }}
-    {% endif %}
-{% endfor %}
 }
 {% endif %}
 {%- endfor %}

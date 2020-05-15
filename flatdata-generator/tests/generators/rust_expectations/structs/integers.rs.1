@@ -16,7 +16,6 @@ impl flatdata::Struct for U8 {
         Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U8;
     const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -130,7 +129,6 @@ impl flatdata::Struct for I8 {
         Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I8;
     const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -244,7 +242,6 @@ impl flatdata::Struct for U16 {
         Self{data : [0; 2]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U16;
     const SIZE_IN_BYTES: usize = 2;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -358,7 +355,6 @@ impl flatdata::Struct for I16 {
         Self{data : [0; 2]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I16;
     const SIZE_IN_BYTES: usize = 2;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -472,7 +468,6 @@ impl flatdata::Struct for U32 {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U32;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -586,7 +581,6 @@ impl flatdata::Struct for I32 {
         Self{data : [0; 4]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I32;
     const SIZE_IN_BYTES: usize = 4;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -700,7 +694,6 @@ impl flatdata::Struct for U64 {
         Self{data : [0; 8]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U64;
     const SIZE_IN_BYTES: usize = 8;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -814,7 +807,6 @@ impl flatdata::Struct for I64 {
         Self{data : [0; 8]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I64;
     const SIZE_IN_BYTES: usize = 8;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -909,5 +901,4 @@ impl I64 {
     pub fn fill_from(&mut self, other: &I64) {
         self.set_f(other.f());
     }
-}
 }

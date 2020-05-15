@@ -45,8 +45,6 @@ pub trait Struct: Debug {
     /// then the resulting instance's data must not be accessed
     unsafe fn create_unchecked() -> Self;
 
-    /// Schema of the type. Used only for debug and inspection purposes.
-    const SCHEMA: &'static str;
     /// Size of an object of this type in bytes.
     const SIZE_IN_BYTES: usize;
     /// Whether this structs requires data of the next instance

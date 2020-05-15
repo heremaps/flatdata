@@ -1,40 +1,39 @@
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct U8 {
+pub struct StructEnumI8 {
     data: [u8; 1],
 }
 
-impl U8 {
+impl StructEnumI8 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for U8 {
+impl flatdata::Struct for StructEnumI8 {
     unsafe fn create_unchecked( ) -> Self {
         Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U8;
     const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl U8 {
+impl StructEnumI8 {
     pub fn new( ) -> Self {
         Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
     pub fn from_bytes(data: &[u8; 1]) -> &Self {
-        // Safety: This is safe since U8 is repr(transparent)
+        // Safety: This is safe since StructEnumI8 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
     pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
-        // Safety: This is safe since U8 is repr(transparent)
+        // Safety: This is safe since StructEnumI8 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
@@ -67,102 +66,87 @@ impl U8 {
     }
 }
 
-impl Default for U8 {
+impl Default for StructEnumI8 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for U8 {}
+unsafe impl flatdata::NoOverlap for StructEnumI8 {}
 
-impl U8 {
+impl StructEnumI8 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> u8 {
-        let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 3, 5);
-        unsafe { std::mem::transmute::<u8, u8>(value) }
+    pub fn f(&self) -> super::n::EnumI8 {
+        let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<i8, super::n::EnumI8>(value) }
     }
 
 }
 
-impl std::fmt::Debug for U8 {
+impl std::fmt::Debug for StructEnumI8 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("U8")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumI8")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for U8 {
+impl std::cmp::PartialEq for StructEnumI8 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl U8 {
+impl StructEnumI8 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: u8) {
-        flatdata_write_bytes!(u8; value, self.data, 3, 5)
+    pub fn set_f(&mut self, value: super::n::EnumI8) {
+        flatdata_write_bytes!(i8; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &U8) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumI8) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct I8 {
+pub struct StructEnumU8 {
     data: [u8; 1],
 }
 
-impl I8 {
+impl StructEnumU8 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for I8 {
+impl flatdata::Struct for StructEnumU8 {
     unsafe fn create_unchecked( ) -> Self {
         Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I8;
     const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl I8 {
+impl StructEnumU8 {
     pub fn new( ) -> Self {
         Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
     pub fn from_bytes(data: &[u8; 1]) -> &Self {
-        // Safety: This is safe since I8 is repr(transparent)
+        // Safety: This is safe since StructEnumU8 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
     pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
-        // Safety: This is safe since I8 is repr(transparent)
+        // Safety: This is safe since StructEnumU8 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
@@ -195,113 +179,98 @@ impl I8 {
     }
 }
 
-impl Default for I8 {
+impl Default for StructEnumU8 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for I8 {}
+unsafe impl flatdata::NoOverlap for StructEnumU8 {}
 
-impl I8 {
+impl StructEnumU8 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> i8 {
-        let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 3, 5);
-        unsafe { std::mem::transmute::<i8, i8>(value) }
+    pub fn f(&self) -> super::n::EnumU8 {
+        let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<u8, super::n::EnumU8>(value) }
     }
 
 }
 
-impl std::fmt::Debug for I8 {
+impl std::fmt::Debug for StructEnumU8 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("I8")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumU8")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for I8 {
+impl std::cmp::PartialEq for StructEnumU8 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl I8 {
+impl StructEnumU8 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: i8) {
-        flatdata_write_bytes!(i8; value, self.data, 3, 5)
+    pub fn set_f(&mut self, value: super::n::EnumU8) {
+        flatdata_write_bytes!(u8; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &I8) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumU8) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct U16 {
-    data: [u8; 2],
+pub struct StructEnumI16 {
+    data: [u8; 1],
 }
 
-impl U16 {
+impl StructEnumI16 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 2]}
+        Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for U16 {
+impl flatdata::Struct for StructEnumI16 {
     unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 2]}
+        Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U16;
-    const SIZE_IN_BYTES: usize = 2;
+    const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl U16 {
+impl StructEnumI16 {
     pub fn new( ) -> Self {
-        Self{data : [0; 2]}
+        Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 2]) -> &Self {
-        // Safety: This is safe since U16 is repr(transparent)
+    pub fn from_bytes(data: &[u8; 1]) -> &Self {
+        // Safety: This is safe since StructEnumI16 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 2]) -> &mut Self {
-        // Safety: This is safe since U16 is repr(transparent)
+    pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
+        // Safety: This is safe since StructEnumI16 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 2 {
-            assert_eq!(data.len(), 2);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *const [u8; 2];
+        let ptr = data.as_ptr() as *const [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes(unsafe { &*ptr }))
     }
@@ -309,127 +278,112 @@ impl U16 {
     /// Create reference from byte array
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 2 {
-            assert_eq!(data.len(), 2);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *mut [u8; 2];
+        let ptr = data.as_ptr() as *mut [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
     }
 
-    pub fn as_bytes(&self) -> &[u8; 2] {
+    pub fn as_bytes(&self) -> &[u8; 1] {
         &self.data
     }
 }
 
-impl Default for U16 {
+impl Default for StructEnumI16 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for U16 {}
+unsafe impl flatdata::NoOverlap for StructEnumI16 {}
 
-impl U16 {
+impl StructEnumI16 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> u16 {
-        let value = flatdata_read_bytes!(u16, self.data.as_ptr(), 3, 13);
-        unsafe { std::mem::transmute::<u16, u16>(value) }
+    pub fn f(&self) -> super::n::EnumI16 {
+        let value = flatdata_read_bytes!(i16, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<i16, super::n::EnumI16>(value) }
     }
 
 }
 
-impl std::fmt::Debug for U16 {
+impl std::fmt::Debug for StructEnumI16 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("U16")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumI16")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for U16 {
+impl std::cmp::PartialEq for StructEnumI16 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl U16 {
+impl StructEnumI16 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: u16) {
-        flatdata_write_bytes!(u16; value, self.data, 3, 13)
+    pub fn set_f(&mut self, value: super::n::EnumI16) {
+        flatdata_write_bytes!(i16; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &U16) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumI16) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct I16 {
-    data: [u8; 2],
+pub struct StructEnumU16 {
+    data: [u8; 1],
 }
 
-impl I16 {
+impl StructEnumU16 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 2]}
+        Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for I16 {
+impl flatdata::Struct for StructEnumU16 {
     unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 2]}
+        Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I16;
-    const SIZE_IN_BYTES: usize = 2;
+    const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl I16 {
+impl StructEnumU16 {
     pub fn new( ) -> Self {
-        Self{data : [0; 2]}
+        Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 2]) -> &Self {
-        // Safety: This is safe since I16 is repr(transparent)
+    pub fn from_bytes(data: &[u8; 1]) -> &Self {
+        // Safety: This is safe since StructEnumU16 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 2]) -> &mut Self {
-        // Safety: This is safe since I16 is repr(transparent)
+    pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
+        // Safety: This is safe since StructEnumU16 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 2 {
-            assert_eq!(data.len(), 2);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *const [u8; 2];
+        let ptr = data.as_ptr() as *const [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes(unsafe { &*ptr }))
     }
@@ -437,127 +391,112 @@ impl I16 {
     /// Create reference from byte array
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 2 {
-            assert_eq!(data.len(), 2);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *mut [u8; 2];
+        let ptr = data.as_ptr() as *mut [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
     }
 
-    pub fn as_bytes(&self) -> &[u8; 2] {
+    pub fn as_bytes(&self) -> &[u8; 1] {
         &self.data
     }
 }
 
-impl Default for I16 {
+impl Default for StructEnumU16 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for I16 {}
+unsafe impl flatdata::NoOverlap for StructEnumU16 {}
 
-impl I16 {
+impl StructEnumU16 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> i16 {
-        let value = flatdata_read_bytes!(i16, self.data.as_ptr(), 3, 13);
-        unsafe { std::mem::transmute::<i16, i16>(value) }
+    pub fn f(&self) -> super::n::EnumU16 {
+        let value = flatdata_read_bytes!(u16, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<u16, super::n::EnumU16>(value) }
     }
 
 }
 
-impl std::fmt::Debug for I16 {
+impl std::fmt::Debug for StructEnumU16 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("I16")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumU16")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for I16 {
+impl std::cmp::PartialEq for StructEnumU16 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl I16 {
+impl StructEnumU16 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: i16) {
-        flatdata_write_bytes!(i16; value, self.data, 3, 13)
+    pub fn set_f(&mut self, value: super::n::EnumU16) {
+        flatdata_write_bytes!(u16; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &I16) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumU16) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct U32 {
-    data: [u8; 4],
+pub struct StructEnumI32 {
+    data: [u8; 1],
 }
 
-impl U32 {
+impl StructEnumI32 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 4]}
+        Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for U32 {
+impl flatdata::Struct for StructEnumI32 {
     unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 4]}
+        Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U32;
-    const SIZE_IN_BYTES: usize = 4;
+    const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl U32 {
+impl StructEnumI32 {
     pub fn new( ) -> Self {
-        Self{data : [0; 4]}
+        Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 4]) -> &Self {
-        // Safety: This is safe since U32 is repr(transparent)
+    pub fn from_bytes(data: &[u8; 1]) -> &Self {
+        // Safety: This is safe since StructEnumI32 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 4]) -> &mut Self {
-        // Safety: This is safe since U32 is repr(transparent)
+    pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
+        // Safety: This is safe since StructEnumI32 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 4 {
-            assert_eq!(data.len(), 4);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *const [u8; 4];
+        let ptr = data.as_ptr() as *const [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes(unsafe { &*ptr }))
     }
@@ -565,127 +504,112 @@ impl U32 {
     /// Create reference from byte array
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 4 {
-            assert_eq!(data.len(), 4);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *mut [u8; 4];
+        let ptr = data.as_ptr() as *mut [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
     }
 
-    pub fn as_bytes(&self) -> &[u8; 4] {
+    pub fn as_bytes(&self) -> &[u8; 1] {
         &self.data
     }
 }
 
-impl Default for U32 {
+impl Default for StructEnumI32 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for U32 {}
+unsafe impl flatdata::NoOverlap for StructEnumI32 {}
 
-impl U32 {
+impl StructEnumI32 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> u32 {
-        let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 3, 29);
-        unsafe { std::mem::transmute::<u32, u32>(value) }
+    pub fn f(&self) -> super::n::EnumI32 {
+        let value = flatdata_read_bytes!(i32, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<i32, super::n::EnumI32>(value) }
     }
 
 }
 
-impl std::fmt::Debug for U32 {
+impl std::fmt::Debug for StructEnumI32 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("U32")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumI32")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for U32 {
+impl std::cmp::PartialEq for StructEnumI32 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl U32 {
+impl StructEnumI32 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: u32) {
-        flatdata_write_bytes!(u32; value, self.data, 3, 29)
+    pub fn set_f(&mut self, value: super::n::EnumI32) {
+        flatdata_write_bytes!(i32; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &U32) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumI32) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct I32 {
-    data: [u8; 4],
+pub struct StructEnumU32 {
+    data: [u8; 1],
 }
 
-impl I32 {
+impl StructEnumU32 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 4]}
+        Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for I32 {
+impl flatdata::Struct for StructEnumU32 {
     unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 4]}
+        Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I32;
-    const SIZE_IN_BYTES: usize = 4;
+    const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl I32 {
+impl StructEnumU32 {
     pub fn new( ) -> Self {
-        Self{data : [0; 4]}
+        Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 4]) -> &Self {
-        // Safety: This is safe since I32 is repr(transparent)
+    pub fn from_bytes(data: &[u8; 1]) -> &Self {
+        // Safety: This is safe since StructEnumU32 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 4]) -> &mut Self {
-        // Safety: This is safe since I32 is repr(transparent)
+    pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
+        // Safety: This is safe since StructEnumU32 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 4 {
-            assert_eq!(data.len(), 4);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *const [u8; 4];
+        let ptr = data.as_ptr() as *const [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes(unsafe { &*ptr }))
     }
@@ -693,127 +617,112 @@ impl I32 {
     /// Create reference from byte array
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 4 {
-            assert_eq!(data.len(), 4);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *mut [u8; 4];
+        let ptr = data.as_ptr() as *mut [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
     }
 
-    pub fn as_bytes(&self) -> &[u8; 4] {
+    pub fn as_bytes(&self) -> &[u8; 1] {
         &self.data
     }
 }
 
-impl Default for I32 {
+impl Default for StructEnumU32 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for I32 {}
+unsafe impl flatdata::NoOverlap for StructEnumU32 {}
 
-impl I32 {
+impl StructEnumU32 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> i32 {
-        let value = flatdata_read_bytes!(i32, self.data.as_ptr(), 3, 29);
-        unsafe { std::mem::transmute::<i32, i32>(value) }
+    pub fn f(&self) -> super::n::EnumU32 {
+        let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<u32, super::n::EnumU32>(value) }
     }
 
 }
 
-impl std::fmt::Debug for I32 {
+impl std::fmt::Debug for StructEnumU32 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("I32")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumU32")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for I32 {
+impl std::cmp::PartialEq for StructEnumU32 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl I32 {
+impl StructEnumU32 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: i32) {
-        flatdata_write_bytes!(i32; value, self.data, 3, 29)
+    pub fn set_f(&mut self, value: super::n::EnumU32) {
+        flatdata_write_bytes!(u32; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &I32) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumU32) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct U64 {
-    data: [u8; 8],
+pub struct StructEnumI64 {
+    data: [u8; 1],
 }
 
-impl U64 {
+impl StructEnumI64 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 8]}
+        Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for U64 {
+impl flatdata::Struct for StructEnumI64 {
     unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 8]}
+        Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::U64;
-    const SIZE_IN_BYTES: usize = 8;
+    const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl U64 {
+impl StructEnumI64 {
     pub fn new( ) -> Self {
-        Self{data : [0; 8]}
+        Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 8]) -> &Self {
-        // Safety: This is safe since U64 is repr(transparent)
+    pub fn from_bytes(data: &[u8; 1]) -> &Self {
+        // Safety: This is safe since StructEnumI64 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 8]) -> &mut Self {
-        // Safety: This is safe since U64 is repr(transparent)
+    pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
+        // Safety: This is safe since StructEnumI64 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 8 {
-            assert_eq!(data.len(), 8);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *const [u8; 8];
+        let ptr = data.as_ptr() as *const [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes(unsafe { &*ptr }))
     }
@@ -821,127 +730,112 @@ impl U64 {
     /// Create reference from byte array
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 8 {
-            assert_eq!(data.len(), 8);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *mut [u8; 8];
+        let ptr = data.as_ptr() as *mut [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
     }
 
-    pub fn as_bytes(&self) -> &[u8; 8] {
+    pub fn as_bytes(&self) -> &[u8; 1] {
         &self.data
     }
 }
 
-impl Default for U64 {
+impl Default for StructEnumI64 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for U64 {}
+unsafe impl flatdata::NoOverlap for StructEnumI64 {}
 
-impl U64 {
+impl StructEnumI64 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 3, 61);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
+    pub fn f(&self) -> super::n::EnumI64 {
+        let value = flatdata_read_bytes!(i64, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<i64, super::n::EnumI64>(value) }
     }
 
 }
 
-impl std::fmt::Debug for U64 {
+impl std::fmt::Debug for StructEnumI64 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("U64")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumI64")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for U64 {
+impl std::cmp::PartialEq for StructEnumI64 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl U64 {
+impl StructEnumI64 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 3, 61)
+    pub fn set_f(&mut self, value: super::n::EnumI64) {
+        flatdata_write_bytes!(i64; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &U64) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumI64) {
         self.set_f(other.f());
     }
 }
 #[repr(transparent)]
 #[derive(Clone)]
-pub struct I64 {
-    data: [u8; 8],
+pub struct StructEnumU64 {
+    data: [u8; 1],
 }
 
-impl I64 {
+impl StructEnumU64 {
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
-        Self{data : [0; 8]}
+        Self{data : [0; 1]}
     }
 }
 
-impl flatdata::Struct for I64 {
+impl flatdata::Struct for StructEnumU64 {
     unsafe fn create_unchecked( ) -> Self {
-        Self{data : [0; 8]}
+        Self{data : [0; 1]}
     }
 
-    const SCHEMA: &'static str = schema::structs::I64;
-    const SIZE_IN_BYTES: usize = 8;
+    const SIZE_IN_BYTES: usize = 1;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
 
-impl I64 {
+impl StructEnumU64 {
     pub fn new( ) -> Self {
-        Self{data : [0; 8]}
+        Self{data : [0; 1]}
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes(data: &[u8; 8]) -> &Self {
-        // Safety: This is safe since I64 is repr(transparent)
+    pub fn from_bytes(data: &[u8; 1]) -> &Self {
+        // Safety: This is safe since StructEnumU64 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array of matching size
-    pub fn from_bytes_mut(data: &mut [u8; 8]) -> &mut Self {
-        // Safety: This is safe since I64 is repr(transparent)
+    pub fn from_bytes_mut(data: &mut [u8; 1]) -> &mut Self {
+        // Safety: This is safe since StructEnumU64 is repr(transparent)
         unsafe{ std::mem::transmute( data ) }
     }
 
     /// Create reference from byte array
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 8 {
-            assert_eq!(data.len(), 8);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *const [u8; 8];
+        let ptr = data.as_ptr() as *const [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes(unsafe { &*ptr }))
     }
@@ -949,77 +843,150 @@ impl I64 {
     /// Create reference from byte array
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
-        if data.len() < 8 {
-            assert_eq!(data.len(), 8);
+        if data.len() < 1 {
+            assert_eq!(data.len(), 1);
             return Err(flatdata::ResourceStorageError::UnexpectedDataSize);
         }
-        let ptr = data.as_ptr() as *mut [u8; 8];
+        let ptr = data.as_ptr() as *mut [u8; 1];
         // Safety: We checked length before
         Ok(Self::from_bytes_mut(unsafe { &mut *ptr }))
     }
 
-    pub fn as_bytes(&self) -> &[u8; 8] {
+    pub fn as_bytes(&self) -> &[u8; 1] {
         &self.data
     }
 }
 
-impl Default for I64 {
+impl Default for StructEnumU64 {
     fn default( ) -> Self {
         Self::new( )
     }
 }
 
-unsafe impl flatdata::NoOverlap for I64 {}
+unsafe impl flatdata::NoOverlap for StructEnumU64 {}
 
-impl I64 {
+impl StructEnumU64 {
     #[inline]
-    pub fn padding(&self) -> u64 {
-        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 3);
-        unsafe { std::mem::transmute::<u64, u64>(value) }
-    }
-
-    #[inline]
-    pub fn f(&self) -> i64 {
-        let value = flatdata_read_bytes!(i64, self.data.as_ptr(), 3, 61);
-        unsafe { std::mem::transmute::<i64, i64>(value) }
+    pub fn f(&self) -> super::n::EnumU64 {
+        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 1);
+        unsafe { std::mem::transmute::<u64, super::n::EnumU64>(value) }
     }
 
 }
 
-impl std::fmt::Debug for I64 {
+impl std::fmt::Debug for StructEnumU64 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_struct("I64")
-            .field("padding", &self.padding())
+        f.debug_struct("StructEnumU64")
             .field("f", &self.f())
             .finish()
     }
 }
 
-impl std::cmp::PartialEq for I64 {
+impl std::cmp::PartialEq for StructEnumU64 {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
-        self.padding() == other.padding() &&        self.f() == other.f()     }
+        self.f() == other.f()     }
 }
 
-impl I64 {
+impl StructEnumU64 {
     #[inline]
     #[allow(missing_docs)]
-    pub fn set_padding(&mut self, value: u64) {
-        flatdata_write_bytes!(u64; value, self.data, 0, 3)
-    }
-
-    #[inline]
-    #[allow(missing_docs)]
-    pub fn set_f(&mut self, value: i64) {
-        flatdata_write_bytes!(i64; value, self.data, 3, 61)
+    pub fn set_f(&mut self, value: super::n::EnumU64) {
+        flatdata_write_bytes!(u64; value, self.data, 0, 1)
     }
 
 
     /// Copies the data from `other` into this struct.
     #[inline]
-    pub fn fill_from(&mut self, other: &I64) {
-        self.set_padding(other.padding());
+    pub fn fill_from(&mut self, other: &StructEnumU64) {
         self.set_f(other.f());
     }
 }
+#[derive(Debug, PartialEq, Eq)]
+#[repr(i8)]
+pub enum EnumI8 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValueMinus1 = -1,
+}
+
+impl flatdata::helper::Int for EnumI8 {
+    const IS_SIGNED: bool = true;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u8)]
+pub enum EnumU8 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValue1 = 1,
+}
+
+impl flatdata::helper::Int for EnumU8 {
+    const IS_SIGNED: bool = false;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(i16)]
+pub enum EnumI16 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValueMinus1 = -1,
+}
+
+impl flatdata::helper::Int for EnumI16 {
+    const IS_SIGNED: bool = true;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u16)]
+pub enum EnumU16 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValue1 = 1,
+}
+
+impl flatdata::helper::Int for EnumU16 {
+    const IS_SIGNED: bool = false;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(i32)]
+pub enum EnumI32 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValueMinus1 = -1,
+}
+
+impl flatdata::helper::Int for EnumI32 {
+    const IS_SIGNED: bool = true;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u32)]
+pub enum EnumU32 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValue1 = 1,
+}
+
+impl flatdata::helper::Int for EnumU32 {
+    const IS_SIGNED: bool = false;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(i64)]
+pub enum EnumI64 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValueMinus1 = -1,
+}
+
+impl flatdata::helper::Int for EnumI64 {
+    const IS_SIGNED: bool = true;
+}
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u64)]
+pub enum EnumU64 {
+    Value = 0,
+    #[doc(hidden)]
+    UnknownValue1 = 1,
+}
+
+impl flatdata::helper::Int for EnumU64 {
+    const IS_SIGNED: bool = false;
 }

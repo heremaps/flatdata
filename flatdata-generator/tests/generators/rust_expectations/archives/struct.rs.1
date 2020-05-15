@@ -16,7 +16,6 @@ impl flatdata::Struct for S {
         Self{data : [0; 8]}
     }
 
-    const SCHEMA: &'static str = schema::structs::S;
     const SIZE_IN_BYTES: usize = 8;
     const IS_OVERLAPPING_WITH_NEXT : bool = false;
 }
@@ -118,8 +117,8 @@ impl S {
 #[derive(Clone)]
 pub struct A {
     _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
-    data : &'static [super::n::S],
-    optional_data : Option<&'static [super::n::S]>,
+    data : &'static super::n::S,
+    optional_data : Option<&'static super::n::S>,
 }
 
 impl A {
@@ -128,12 +127,12 @@ impl A {
     }
 
     #[inline]
-    pub fn data(&self) -> &[super::n::S] {
+    pub fn data(&self) -> &super::n::S {
         self.data
     }
 
     #[inline]
-    pub fn optional_data(&self) -> Option<&[super::n::S]> {
+    pub fn optional_data(&self) -> Option<&super::n::S> {
         self.optional_data
     }
 
@@ -164,9 +163,9 @@ impl flatdata::Archive for A {
         storage.read(&Self::signature_name(Self::NAME), Self::SCHEMA)?;
 
         let resource = extend(storage.read("data", schema::a::resources::DATA));
-        let data = resource.map(|x| <&[super::n::S]>::from_bytes(x))??;
+        let data = resource.map(|x| super::n::S::from_bytes_slice(x))??;
         let resource = extend(storage.read("optional_data", schema::a::resources::OPTIONAL_DATA));
-        let optional_data = resource.map(|x| <&[super::n::S]>::from_bytes(x)).ok().transpose()?;
+        let optional_data = resource.map(|x| super::n::S::from_bytes_slice(x)).ok().transpose()?;
 
         Ok(Self {
             _storage: storage,
@@ -189,44 +188,20 @@ impl ABuilder {
     /// Stores [`data`] in the archive.
     ///
     /// [`data`]: struct.A.html#method.data
-    pub fn set_data(&self, vector: &[super::n::S]) -> ::std::io::Result<()> {
-        use flatdata::SliceExt;
-        self.storage.write("data", schema::a::resources::DATA, vector.as_bytes())
-    }
-
-    /// Opens [`data`] in the archive for buffered writing.
-    ///
-    /// Elements can be added to the vector until the [`ExternalVector::close`] method
-    /// is called. To flush the data fully into the archive, this method must be called
-    /// in the end.
-    ///
-    /// [`data`]: struct.A.html#method.data
-    /// [`ExternalVector::close`]: flatdata/struct.ExternalVector.html#method.close
-    #[inline]
-    pub fn start_data(&self) -> ::std::io::Result<flatdata::ExternalVector<super::n::S>> {
-        flatdata::create_external_vector(&*self.storage, "data", schema::a::resources::DATA)
+    /// Stores [`data`] in the archive.
+    pub fn set_data(&self, resource: &super::n::S) -> ::std::io::Result<()> {
+        let data = resource.as_bytes();
+        self.storage.write("data", schema::a::resources::DATA, data)
     }
 
     #[inline]
     /// Stores [`optional_data`] in the archive.
     ///
     /// [`optional_data`]: struct.A.html#method.optional_data
-    pub fn set_optional_data(&self, vector: &[super::n::S]) -> ::std::io::Result<()> {
-        use flatdata::SliceExt;
-        self.storage.write("optional_data", schema::a::resources::OPTIONAL_DATA, vector.as_bytes())
-    }
-
-    /// Opens [`optional_data`] in the archive for buffered writing.
-    ///
-    /// Elements can be added to the vector until the [`ExternalVector::close`] method
-    /// is called. To flush the data fully into the archive, this method must be called
-    /// in the end.
-    ///
-    /// [`optional_data`]: struct.A.html#method.optional_data
-    /// [`ExternalVector::close`]: flatdata/struct.ExternalVector.html#method.close
-    #[inline]
-    pub fn start_optional_data(&self) -> ::std::io::Result<flatdata::ExternalVector<super::n::S>> {
-        flatdata::create_external_vector(&*self.storage, "optional_data", schema::a::resources::OPTIONAL_DATA)
+    /// Stores [`optional_data`] in the archive.
+    pub fn set_optional_data(&self, resource: &super::n::S) -> ::std::io::Result<()> {
+        let data = resource.as_bytes();
+        self.storage.write("optional_data", schema::a::resources::OPTIONAL_DATA, data)
     }
 
 }
@@ -241,6 +216,4 @@ impl flatdata::ArchiveBuilder for ABuilder {
         flatdata::create_archive::<Self>(&storage)?;
         Ok(Self { storage })
     }
-}
-
 }
