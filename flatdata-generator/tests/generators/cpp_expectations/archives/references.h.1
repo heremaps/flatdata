@@ -4,17 +4,17 @@ A::load_contents( )
     bool is_open = true;
 
     read_resource( is_open, m_list1, "list1", internal::A__list1__schema__ );
-    is_open = is_open && ( !m_list1 | m_list1->size( ) <= 16 );
+    is_open = is_open && ( !m_list1 || m_list1->size( ) <= 16 );
     read_resource( is_open, m_list2, "list2", internal::A__list2__schema__ );
-    is_open = is_open && ( !m_list2 | m_list2.size( ) <= 16 );
+    is_open = is_open && ( !m_list2 || m_list2.size( ) <= 16 );
     read_resource( is_open, m_multilist1, "multilist1", internal::A__multilist1__schema__ );
-    is_open = is_open && ( !m_multilist1 | m_multilist1->size( ) <= 16 );
+    is_open = is_open && ( !m_multilist1 || m_multilist1->size( ) <= 16 );
     read_resource( is_open, m_multilist2, "multilist2", internal::A__multilist2__schema__ );
-    is_open = is_open && ( !m_multilist2 | m_multilist2.size( ) <= 16 );
+    is_open = is_open && ( !m_multilist2 || m_multilist2.size( ) <= 16 );
     read_resource( is_open, m_raw1, "raw1", internal::A__raw1__schema__ );
-    is_open = is_open && ( !m_raw1 | m_raw1->size( ) <= 16 );
+    is_open = is_open && ( !m_raw1 || m_raw1->size( ) <= 16 );
     read_resource( is_open, m_raw2, "raw2", internal::A__raw2__schema__ );
-    is_open = is_open && ( !m_raw2 | m_raw2.size( ) <= 16 );
+    is_open = is_open && ( !m_raw2 || m_raw2.size( ) <= 16 );
     read_resource( is_open, m_refs, "refs", internal::A__refs__schema__ );
     read_resource( is_open, m_multirefs, "multirefs", internal::A__multirefs__schema__ );
     return is_open;
