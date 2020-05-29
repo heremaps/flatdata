@@ -151,7 +151,8 @@ Archive::describe_resource( std::ostream& stream,
 {
     auto initialized = static_cast< bool >( resource );
     describe_impl( stream, name, true, initialized ? static_cast< bool >( *resource ) : false,
-                   initialized ? resource->describe( ).c_str( ) : "N/A", too_large );
+                   initialized ? ( std::string( "\n" ) + resource->describe( ) ).c_str( ) : "N/A",
+                   too_large );
 }
 
 template < typename ResourceType >
