@@ -528,6 +528,7 @@ Flatdata Archive: OutermostArchive
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outermost                            NO        NO         NO        N/A
+outer                                NO        NO         NO        N/A
 ================================================================================
 )";
     REQUIRE( description == expectation );
