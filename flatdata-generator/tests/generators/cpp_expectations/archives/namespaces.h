@@ -1135,6 +1135,7 @@ A::describe_resources( std::ostream& stream ) const
     describe_resource( stream, "single", m_single );
     describe_resource( stream, "list", m_list );
     describe_resource( stream, "multi", m_multi );
+    describe_resource( stream, "inner", m_inner );
 }
 
 inline auto A::single( ) const -> const SingleType&
