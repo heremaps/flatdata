@@ -331,6 +331,72 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
 }
 
 TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Uninitialized sub-archive is descried",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
+{
+    auto outer_builder = OuterArchiveBuilder::open( Fixture< TestType >::storage );
+    CHECK( outer_builder );
+
+    flatdata::Struct< AStruct > o;
+    ( *o ).value = 17u;
+    outer_builder.set_outer1( *o );
+    outer_builder.set_outer2( *o );
+
+    auto outer = OuterArchive::open( Fixture< TestType >::storage );
+    REQUIRE_FALSE( outer.is_open( ) );
+
+    const char* const expected
+        = R"data(================================================================================
+Flatdata Archive: OuterArchive
+================================================================================
+  FATAL: Archive initialization failed. Failed loading mandatory resources.
+
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+outer1                               NO        NO         YES       Structure of size 1
+outer2                               NO        NO         YES       Structure of size 1
+inner                                NO        NO         NO        N/A
+================================================================================
+)data";
+
+    REQUIRE( outer.describe( ) == expected );
+}
+
+TEMPLATE_TEST_CASE_METHOD( Fixture,
+                           "Optional sub-archive in describe even when uninitialized ",
+                           "[GeneratedArchive]",
+                           std::true_type,
+                           std::false_type )
+{
+    auto outer_builder = OuterWithOptionalBuilder::open( Fixture< TestType >::storage );
+    CHECK( outer_builder );
+
+    flatdata::Struct< AStruct > o;
+    ( *o ).value = 17u;
+    outer_builder.set_outer( *o );
+
+    auto outer = OuterWithOptional::open( Fixture< TestType >::storage );
+    REQUIRE( outer.is_open( ) );
+    REQUIRE( outer.outer( ).value == 17u );
+
+    const char* const expected
+        = R"data(================================================================================
+Flatdata Archive: OuterWithOptional
+================================================================================
+
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+outer                                NO        NO         YES       Structure of size 1
+archive_resource                     YES       NO         NO        N/A
+================================================================================
+)data";
+
+    REQUIRE( outer.describe( ) == expected );
+}
+
+TEMPLATE_TEST_CASE_METHOD( Fixture,
                            "Only archive resources can be incrementally added if nonexisting",
                            "[GeneratedArchive]",
                            std::true_type,
@@ -529,6 +595,61 @@ Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outermost                            NO        NO         NO        N/A
 outer                                NO        NO         NO        N/A
+================================================================================
+)";
+    REQUIRE( description == expectation );
+}
+
+TEST_CASE( "Describe mismatch in optional sub-archive", "[GeneratedArchive]" )
+{
+    std::shared_ptr< MemoryResourceStorage > storage = MemoryResourceStorage::create( );
+    storage->assign_value( "OuterWithOptional.archive.schema",
+                           R"(namespace test_structures {
+struct AStruct
+{
+    value : u64 : 8;
+}
+}
+
+namespace test_structures {
+archive InnerArchive
+{
+    inner : .test_structures.AStruct; // THIS LINE WAS MODIFIED
+}
+}
+
+namespace test_structures {
+archive OuterWithOptional
+{
+    outer : .test_structures.AStruct;
+    @optional
+    archive_resource : archive .test_structures.InnerArchive;
+}
+}
+
+)" );
+
+    std::string description = OuterWithOptional::open( storage ).describe( );
+    std::string expectation =
+        R"(================================================================================
+Flatdata Archive: OuterWithOptional
+================================================================================
+  FATAL: Archive signature does not match software expectations.
+================================================================================
+ "namespace test_structures {"
+ "archive InnerArchive"
+ "{"
++"    inner : .test_structures.AStruct; // THIS LINE WAS MODIFIED"
+-"    inner : .test_structures.AStruct;"
+ "}"
+ "}"
+...
+  FATAL: Archive initialization failed. Failed loading mandatory resources.
+
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+outer                                NO        NO         NO        N/A
+archive_resource                     YES       NO         NO        N/A
 ================================================================================
 )";
     REQUIRE( description == expectation );
