@@ -17,7 +17,7 @@
 {% endif %}
 #[derive(Clone)]
 pub struct {{archive.name}} {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: flatdata::StorageHandle,
     {% for r in archive.resources | supported_resources %}
     {{r.name}} : {% if r.optional %}Option<{% endif %}
     {%- if [r] | vector_resources -%}
@@ -109,7 +109,7 @@ impl ::std::fmt::Debug for {{archive.name}} {
 }
 
 impl {{archive.name}} {
-    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -186,7 +186,7 @@ impl {{archive.name}} {
 ///[`{{archive.name}}`]: struct.{{archive.name}}.html
 #[derive(Clone, Debug)]
 pub struct {{archive.name}}Builder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: flatdata::StorageHandle
 }
 
 {% if archive.resources | supported_resources | length -%}
@@ -270,7 +270,7 @@ impl {{archive.name}}Builder {
 
 impl {{archive.name}}Builder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: flatdata::StorageHandle,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive("{{archive.name}}", schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }}, &storage)?;
         Ok(Self { storage })

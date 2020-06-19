@@ -358,7 +358,7 @@ impl crate::helper::Int for E {
 
 #[derive(Clone)]
 pub struct S {
-    _storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+    _storage: crate::StorageHandle,
     data : &'static super::test::A,
 }
 
@@ -383,7 +383,7 @@ impl ::std::fmt::Debug for S {
 }
 
 impl S {
-    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+    pub fn open(storage: crate::StorageHandle)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -409,7 +409,7 @@ impl S {
 ///[`S`]: struct.S.html
 #[derive(Clone, Debug)]
 pub struct SBuilder {
-    storage: ::std::rc::Rc<dyn crate::ResourceStorage>
+    storage: crate::StorageHandle
 }
 
 impl SBuilder {
@@ -427,7 +427,7 @@ impl SBuilder {
 
 impl SBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+        storage: crate::StorageHandle,
     ) -> Result<Self, crate::ResourceStorageError> {
         crate::create_archive("S", schema::s::S, &storage)?;
         Ok(Self { storage })
@@ -439,7 +439,7 @@ impl SBuilder {
 
 #[derive(Clone)]
 pub struct X {
-    _storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+    _storage: crate::StorageHandle,
     data : &'static [super::test::A],
 }
 
@@ -464,7 +464,7 @@ impl ::std::fmt::Debug for X {
 }
 
 impl X {
-    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+    pub fn open(storage: crate::StorageHandle)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -490,7 +490,7 @@ impl X {
 ///[`X`]: struct.X.html
 #[derive(Clone, Debug)]
 pub struct XBuilder {
-    storage: ::std::rc::Rc<dyn crate::ResourceStorage>
+    storage: crate::StorageHandle
 }
 
 impl XBuilder {
@@ -520,7 +520,7 @@ impl XBuilder {
 
 impl XBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+        storage: crate::StorageHandle,
     ) -> Result<Self, crate::ResourceStorageError> {
         crate::create_archive("X", schema::x::X, &storage)?;
         Ok(Self { storage })
@@ -532,7 +532,7 @@ impl XBuilder {
 
 #[derive(Clone)]
 pub struct Y {
-    _storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+    _storage: crate::StorageHandle,
     data : &'static [super::test::R],
 }
 
@@ -557,7 +557,7 @@ impl ::std::fmt::Debug for Y {
 }
 
 impl Y {
-    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+    pub fn open(storage: crate::StorageHandle)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -583,7 +583,7 @@ impl Y {
 ///[`Y`]: struct.Y.html
 #[derive(Clone, Debug)]
 pub struct YBuilder {
-    storage: ::std::rc::Rc<dyn crate::ResourceStorage>
+    storage: crate::StorageHandle
 }
 
 impl YBuilder {
@@ -613,7 +613,7 @@ impl YBuilder {
 
 impl YBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+        storage: crate::StorageHandle,
     ) -> Result<Self, crate::ResourceStorageError> {
         crate::create_archive("Y", schema::y::Y, &storage)?;
         Ok(Self { storage })
@@ -739,7 +739,7 @@ impl<'a> crate::VariadicStruct<'a> for Ab {
 
 #[derive(Clone)]
 pub struct Z {
-    _storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+    _storage: crate::StorageHandle,
     ab : crate::MultiArrayView<'static, Ab>,
 }
 
@@ -764,7 +764,7 @@ impl ::std::fmt::Debug for Z {
 }
 
 impl Z {
-    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+    pub fn open(storage: crate::StorageHandle)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -804,7 +804,7 @@ impl Z {
 ///[`Z`]: struct.Z.html
 #[derive(Clone, Debug)]
 pub struct ZBuilder {
-    storage: ::std::rc::Rc<dyn crate::ResourceStorage>
+    storage: crate::StorageHandle
 }
 
 impl ZBuilder {
@@ -825,7 +825,7 @@ impl ZBuilder {
 
 impl ZBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+        storage: crate::StorageHandle,
     ) -> Result<Self, crate::ResourceStorageError> {
         crate::create_archive("Z", schema::z::Z, &storage)?;
         Ok(Self { storage })
@@ -837,7 +837,7 @@ impl ZBuilder {
 
 #[derive(Clone)]
 pub struct W {
-    _storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+    _storage: crate::StorageHandle,
     blob : crate::RawData<'static>,
 }
 
@@ -862,7 +862,7 @@ impl ::std::fmt::Debug for W {
 }
 
 impl W {
-    pub fn open(storage: ::std::rc::Rc<dyn crate::ResourceStorage>)
+    pub fn open(storage: crate::StorageHandle)
         -> ::std::result::Result<Self, crate::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -888,7 +888,7 @@ impl W {
 ///[`W`]: struct.W.html
 #[derive(Clone, Debug)]
 pub struct WBuilder {
-    storage: ::std::rc::Rc<dyn crate::ResourceStorage>
+    storage: crate::StorageHandle
 }
 
 impl WBuilder {
@@ -904,7 +904,7 @@ impl WBuilder {
 
 impl WBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn crate::ResourceStorage>,
+        storage: crate::StorageHandle,
     ) -> Result<Self, crate::ResourceStorageError> {
         crate::create_archive("W", schema::w::W, &storage)?;
         Ok(Self { storage })

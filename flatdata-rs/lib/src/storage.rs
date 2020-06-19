@@ -7,16 +7,16 @@ use crate::{
 };
 
 use std::{
-    cell::RefCell,
     fmt,
     io::{self, Seek, Write},
-    mem,
-    ops::DerefMut,
-    rc::Rc,
-    str,
+    mem, str,
+    sync::Arc,
 };
 
 use diff;
+
+/// A handle to a resource storage used by archives
+pub type StorageHandle = Arc<dyn ResourceStorage + std::marker::Sync + std::marker::Send>;
 
 pub trait Stream: Write + Seek {}
 impl<T: Write + Seek> Stream for T {}
@@ -44,14 +44,12 @@ pub trait ResourceStorage: std::fmt::Debug {
     /// `{resource_name}.schema`.
     fn write(&self, resource_name: &str, schema: &str, data: &[u8]) -> io::Result<()> {
         // write data
-        let stream = self.create_output_stream(resource_name)?;
-        let mut mut_stream = stream.borrow_mut();
-        write_to_stream(data, mut_stream.deref_mut())?;
+        let mut stream = self.create_output_stream(resource_name)?;
+        write_to_stream(data, &mut stream)?;
         // write schema
         let schema_name = format!("{}.schema", resource_name);
-        let stream = self.create_output_stream(&schema_name)?;
-        let mut mut_stream = stream.borrow_mut();
-        write_schema(schema, mut_stream.deref_mut())
+        let mut stream = self.create_output_stream(&schema_name)?;
+        write_schema(schema, &mut stream)
     }
 
     //
@@ -59,7 +57,7 @@ pub trait ResourceStorage: std::fmt::Debug {
     //
 
     /// Creates a resource storage at a given subdirectory.
-    fn subdir(&self, dir: &str) -> Rc<dyn ResourceStorage>;
+    fn subdir(&self, dir: &str) -> StorageHandle;
 
     /// Returns `true` if resource exists in the storage.
     fn exists(&self, resource_name: &str) -> bool;
@@ -75,7 +73,7 @@ pub trait ResourceStorage: std::fmt::Debug {
 
     /// Creates a resource with given name and returns an output stream for
     /// writing to it.
-    fn create_output_stream(&self, resource_name: &str) -> io::Result<Rc<RefCell<dyn Stream>>>;
+    fn create_output_stream(&self, resource_name: &str) -> io::Result<Box<dyn Stream>>;
 
     //
     // Implementation helper
@@ -148,8 +146,8 @@ where
 {
     // write schema
     let schema_name = format!("{}.schema", resource_name);
-    let stream = storage.create_output_stream(&schema_name)?;
-    stream.borrow_mut().write_all(schema.as_bytes())?;
+    let mut stream = storage.create_output_stream(&schema_name)?;
+    stream.write_all(schema.as_bytes())?;
 
     // create external vector
     let data_writer = storage.create_output_stream(resource_name)?;
@@ -179,8 +177,8 @@ where
 
     // write schema
     let schema_name = format!("{}.schema", resource_name);
-    let stream = storage.create_output_stream(&schema_name)?;
-    stream.borrow_mut().write_all(schema.as_bytes())?;
+    let mut stream = storage.create_output_stream(&schema_name)?;
+    stream.write_all(schema.as_bytes())?;
 
     // create multi vector
     let data_writer = storage.create_output_stream(resource_name)?;
@@ -204,7 +202,7 @@ where
 pub fn create_archive(
     name: &str,
     schema: &str,
-    storage: &Rc<dyn ResourceStorage>,
+    storage: &StorageHandle,
 ) -> Result<(), ResourceStorageError> {
     let signature_name = format!("{}.archive", name);
     {
@@ -230,9 +228,8 @@ pub fn create_archive(
 /// Wraps a `Stream` returned by [`create_output_stream`].
 ///
 /// [`create_output_stream`]: trait.ResourceStorage.html#tycreate_output_stream
-#[derive(Clone)]
 pub struct ResourceHandle<'a> {
-    stream: Rc<RefCell<dyn Stream>>,
+    stream: Box<dyn Stream>,
     size_in_bytes: usize,
     storage: &'a dyn ResourceStorage,
     name: String,
@@ -251,13 +248,12 @@ impl<'a> ResourceHandle<'a> {
         storage: &'a dyn ResourceStorage,
         name: String,
         schema: String,
-        stream: Rc<RefCell<dyn Stream>>,
+        mut stream: Box<dyn Stream>,
     ) -> io::Result<Self> {
         // Reserve space for size in the beginning of the stream, which will be updated
         // later.
         {
-            let mut mut_stream = stream.borrow_mut();
-            write_size(0u64, mut_stream.deref_mut())?;
+            write_size(0u64, &mut stream)?;
         }
         Ok(Self {
             stream,
@@ -271,7 +267,7 @@ impl<'a> ResourceHandle<'a> {
 
     /// Writes data to the underlying stream.
     pub(crate) fn write(&mut self, data: &[u8]) -> io::Result<()> {
-        let res = self.stream.borrow_mut().write_all(data);
+        let res = self.stream.write_all(data);
         if res.is_ok() {
             self.size_in_bytes += data.len();
         }
@@ -298,15 +294,13 @@ impl<'a> ResourceHandle<'a> {
         let resource_name = self.name.clone();
         let into_storage_error = |e| ResourceStorageError::from_io_error(e, resource_name.clone());
 
-        let mut mut_stream = self.stream.borrow_mut();
-        write_padding(mut_stream.deref_mut()).map_err(into_storage_error)?;
+        write_padding(&mut self.stream).map_err(into_storage_error)?;
 
         // Update size in the beginning of the file
-        mut_stream
+        self.stream
             .seek(io::SeekFrom::Start(0u64))
             .map_err(into_storage_error)?;
-        write_size(self.size_in_bytes as u64, mut_stream.deref_mut())
-            .map_err(into_storage_error)?;
+        write_size(self.size_in_bytes as u64, &mut self.stream).map_err(into_storage_error)?;
 
         Ok(())
     }
@@ -369,13 +363,10 @@ mod test {
     fn test_not_panic_on_close() -> Result<(), ResourceStorageError> {
         let storage = MemoryResourceStorage::new("/root/extvec");
 
-        let stream = storage
+        let mut stream = storage
             .create_output_stream("/root/extvec/blubb.schema")
             .unwrap();
-        stream
-            .borrow_mut()
-            .write_all("myschema".as_bytes())
-            .unwrap();
+        stream.write_all("myschema".as_bytes()).unwrap();
 
         let stream = storage.create_output_stream("/root/extvec/blubb").unwrap();
         let h = ResourceHandle::try_new(
