@@ -1,6 +1,6 @@
 #[derive(Clone)]
 pub struct X {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: flatdata::StorageHandle,
     payload : flatdata::RawData<'static>,
 }
 
@@ -25,7 +25,7 @@ impl ::std::fmt::Debug for X {
 }
 
 impl X {
-    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -51,7 +51,7 @@ impl X {
 ///[`X`]: struct.X.html
 #[derive(Clone, Debug)]
 pub struct XBuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: flatdata::StorageHandle
 }
 
 impl XBuilder {
@@ -67,7 +67,7 @@ impl XBuilder {
 
 impl XBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: flatdata::StorageHandle,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive("X", schema::x::X, &storage)?;
         Ok(Self { storage })
@@ -79,7 +79,7 @@ impl XBuilder {
 
 #[derive(Clone)]
 pub struct A {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: flatdata::StorageHandle,
     data : super::n::X
 ,
     optional_data : Option<super::n::X
@@ -113,7 +113,7 @@ impl ::std::fmt::Debug for A {
 }
 
 impl A {
-    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -140,7 +140,7 @@ impl A {
 ///[`A`]: struct.A.html
 #[derive(Clone, Debug)]
 pub struct ABuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: flatdata::StorageHandle
 }
 
 impl ABuilder {
@@ -166,7 +166,7 @@ impl ABuilder {
 
 impl ABuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: flatdata::StorageHandle,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive("A", schema::a::A, &storage)?;
         Ok(Self { storage })

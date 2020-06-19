@@ -1,31 +1,30 @@
-use crate::storage::{ResourceStorage, Stream};
+use crate::storage::{ResourceStorage, StorageHandle, Stream};
 
 use memmap::Mmap;
 
 use std::{
-    cell::RefCell,
     collections::BTreeMap,
     fs::{self, File},
     io,
     path::PathBuf,
-    rc::Rc,
     slice,
+    sync::{Arc, Mutex},
 };
 
 /// Internal storage of data as files.
 #[derive(Debug, Default)]
 struct MemoryMappedFileStorage {
-    maps: RefCell<BTreeMap<String, Mmap>>,
+    maps: Mutex<BTreeMap<String, Mmap>>,
 }
 
 impl MemoryMappedFileStorage {
     pub fn read(&self, path: &str) -> Result<&[u8], io::Error> {
-        if !self.maps.borrow().contains_key(path) {
+        if !self.maps.lock().unwrap().contains_key(path) {
             let file = File::open(path)?;
             let file_mmap = unsafe { Mmap::map(&file)? };
-            self.maps.borrow_mut().insert(path.into(), file_mmap);
+            self.maps.lock().unwrap().insert(path.into(), file_mmap);
         }
-        let data = &self.maps.borrow()[path];
+        let data = &self.maps.lock().unwrap()[path];
         // We cannot prove to Rust that the buffer will live as long as the storage
         // (we never delete mappings), so we need to manually extend lifetime
         let extended_lifetime_data = unsafe { slice::from_raw_parts(data.as_ptr(), data.len()) };
@@ -61,8 +60,8 @@ pub struct FileResourceStorage {
 
 impl FileResourceStorage {
     /// Create an empty memory mapped file storage at a given path.
-    pub fn new<P: Into<PathBuf>>(path: P) -> Rc<Self> {
-        Rc::new(Self {
+    pub fn new<P: Into<PathBuf>>(path: P) -> Arc<Self> {
+        Arc::new(Self {
             storage: MemoryMappedFileStorage::default(),
             path: path.into(),
         })
@@ -70,7 +69,7 @@ impl FileResourceStorage {
 }
 
 impl ResourceStorage for FileResourceStorage {
-    fn subdir(&self, dir: &str) -> Rc<dyn ResourceStorage> {
+    fn subdir(&self, dir: &str) -> StorageHandle {
         Self::new(self.path.join(dir))
     }
 
@@ -96,15 +95,12 @@ impl ResourceStorage for FileResourceStorage {
         }
     }
 
-    fn create_output_stream(
-        &self,
-        resource_name: &str,
-    ) -> Result<Rc<RefCell<dyn Stream>>, io::Error> {
+    fn create_output_stream(&self, resource_name: &str) -> Result<Box<dyn Stream>, io::Error> {
         if !self.path.exists() {
             fs::create_dir_all(self.path.clone())?;
         }
         let resource_path = self.path.join(resource_name);
         let file = File::create(resource_path)?;
-        Ok(Rc::new(RefCell::new(file)))
+        Ok(Box::new(file))
     }
 }

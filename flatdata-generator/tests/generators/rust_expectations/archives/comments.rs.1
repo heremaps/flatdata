@@ -1,7 +1,7 @@
 // This is a comment about foo
 #[derive(Clone)]
 pub struct Foo {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: flatdata::StorageHandle,
     bar : flatdata::RawData<'static>,
 }
 
@@ -27,7 +27,7 @@ impl ::std::fmt::Debug for Foo {
 }
 
 impl Foo {
-    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -53,7 +53,7 @@ impl Foo {
 ///[`Foo`]: struct.Foo.html
 #[derive(Clone, Debug)]
 pub struct FooBuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: flatdata::StorageHandle
 }
 
 impl FooBuilder {
@@ -69,7 +69,7 @@ impl FooBuilder {
 
 impl FooBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: flatdata::StorageHandle,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive("Foo", schema::foo::FOO, &storage)?;
         Ok(Self { storage })
@@ -82,7 +82,7 @@ impl FooBuilder {
 /// This is a comment about Bar
 #[derive(Clone)]
 pub struct Bar {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: flatdata::StorageHandle,
     foo : flatdata::RawData<'static>,
 }
 
@@ -108,7 +108,7 @@ impl ::std::fmt::Debug for Bar {
 }
 
 impl Bar {
-    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -134,7 +134,7 @@ impl Bar {
 ///[`Bar`]: struct.Bar.html
 #[derive(Clone, Debug)]
 pub struct BarBuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: flatdata::StorageHandle
 }
 
 impl BarBuilder {
@@ -150,7 +150,7 @@ impl BarBuilder {
 
 impl BarBuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: flatdata::StorageHandle,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive("Bar", schema::bar::BAR, &storage)?;
         Ok(Self { storage })
