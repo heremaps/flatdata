@@ -6,7 +6,7 @@ SOURCE_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name="flatdata-generator",
-    version="0.4.0-1",
+    version="0.4.1",
     author="Flatdata Developers",
     description="Generate source code for C++, Rust, Go or Python from a Flatdata schema file",
     long_description=open(os.path.join(SOURCE_FILEPATH, "README.md")).read(),
