@@ -235,7 +235,6 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
         R"data(================================================================================
 Flatdata Archive: SimpleResources
 ================================================================================
-
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 object_resource                      NO        NO         YES       Structure of size 1
@@ -266,16 +265,16 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
     CHECK_FALSE( archive.is_open( ) );
     const char* const expected =
         R"data(================================================================================
+FATAL: Archive initialization failed. Failed loading mandatory resources.
+================================================================================
 Flatdata Archive: SimpleResources
 ================================================================================
-  FATAL: Archive initialization failed. Failed loading mandatory resources.
-
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 object_resource                      NO        NO         YES       Structure of size 1
-vector_resource                      NO        NO         NO        N/A
-multivector_resource                 NO        NO         NO        N/A
-raw_data_resource                    NO        NO         NO        N/A
+vector_resource                      NO        NO         NO        Uninitialized Array
+multivector_resource                 NO        NO         NO        Uninitialized MultiArray
+raw_data_resource                    NO        NO         NO        Uninitialized Raw data
 optional_resource                    YES       NO         YES       Raw data of size 3
 ================================================================================
 )data";
@@ -349,15 +348,18 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
 
     const char* const expected
         = R"data(================================================================================
+FATAL: Archive initialization failed. Failed loading mandatory resources.
+================================================================================
 Flatdata Archive: OuterArchive
 ================================================================================
-  FATAL: Archive initialization failed. Failed loading mandatory resources.
-
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outer1                               NO        NO         YES       Structure of size 1
 outer2                               NO        NO         YES       Structure of size 1
-inner                                NO        NO         NO        N/A
+inner                                NO        NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+|
+|-> Flatdata Archive: InnerArchive
+    inner                            NO        NO         NO        Uninitialized Structure AStruct
 ================================================================================
 )data";
 
@@ -385,11 +387,13 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
         = R"data(================================================================================
 Flatdata Archive: OuterWithOptional
 ================================================================================
-
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outer                                NO        NO         YES       Structure of size 1
-archive_resource                     YES       NO         NO        N/A
+archive_resource                     YES       NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+|
+|-> Flatdata Archive: InnerArchive
+    inner                            NO        NO         NO        Uninitialized Structure AStruct
 ================================================================================
 )data";
 
@@ -521,11 +525,20 @@ TEST_CASE( "Describe ouputs fatal errors", "[GeneratedArchive]" )
     CHECK_FALSE( archive.is_open( ) );
     const char* const expected =
         R"data(================================================================================
+FATAL: Resource storage not initialized. Please check archive path.
+================================================================================
 Flatdata Archive: SimpleResources
 ================================================================================
-  FATAL: Resource storage not initialized. Please check archive path.
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+object_resource                      NO        NO         NO        Uninitialized Structure AStruct
+vector_resource                      NO        NO         NO        Uninitialized Array
+multivector_resource                 NO        NO         NO        Uninitialized MultiArray
+raw_data_resource                    NO        NO         NO        Uninitialized Raw data
+optional_resource                    YES       NO         NO        Uninitialized Raw data
 ================================================================================
 )data";
+
     REQUIRE( archive.describe( ) == expected );
 }
 
@@ -568,9 +581,7 @@ archive OutermostArchive
     std::string description = OutermostArchive::open( storage ).describe( );
     std::string expectation =
         R"(================================================================================
-Flatdata Archive: OutermostArchive
-================================================================================
-  FATAL: Archive signature does not match software expectations.
+FATAL: Archive signature does not match software expectations.
 ================================================================================
  "namespace test_structures {"
  "archive InnerArchive"
@@ -589,12 +600,23 @@ Flatdata Archive: OutermostArchive
  "}"
  "}"
 ...
-  FATAL: Archive initialization failed. Failed loading mandatory resources.
-
+================================================================================
+FATAL: Archive initialization failed. Failed loading mandatory resources.
+================================================================================
+Flatdata Archive: OutermostArchive
+================================================================================
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
-outermost                            NO        NO         NO        N/A
-outer                                NO        NO         NO        N/A
+outermost                            NO        NO         NO        Uninitialized Structure AStruct
+outer                                NO        NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+|
+|-> Flatdata Archive: OuterArchive
+    outer1                           NO        NO         NO        Uninitialized Structure AStruct
+    outer2                           NO        NO         NO        Uninitialized Structure AStruct
+    inner                            NO        NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+    |
+    |-> Flatdata Archive: InnerArchive
+        inner                        NO        NO         NO        Uninitialized Structure AStruct
 ================================================================================
 )";
     REQUIRE( description == expectation );
@@ -632,9 +654,7 @@ archive OuterWithOptional
     std::string description = OuterWithOptional::open( storage ).describe( );
     std::string expectation =
         R"(================================================================================
-Flatdata Archive: OuterWithOptional
-================================================================================
-  FATAL: Archive signature does not match software expectations.
+FATAL: Archive signature does not match software expectations.
 ================================================================================
  "namespace test_structures {"
  "archive InnerArchive"
@@ -644,19 +664,25 @@ Flatdata Archive: OuterWithOptional
  "}"
  "}"
 ...
-  FATAL: Archive initialization failed. Failed loading mandatory resources.
-
+================================================================================
+FATAL: Archive initialization failed. Failed loading mandatory resources.
+================================================================================
+Flatdata Archive: OuterWithOptional
+================================================================================
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
-outer                                NO        NO         NO        N/A
-archive_resource                     YES       NO         NO        N/A
+outer                                NO        NO         NO        Uninitialized Structure AStruct
+archive_resource                     YES       NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+|
+|-> Flatdata Archive: InnerArchive
+    inner                            NO        NO         NO        Uninitialized Structure AStruct
 ================================================================================
 )";
     REQUIRE( description == expectation );
 }
 
 void
-make_mall_ref_archive( size_t size, std::shared_ptr< ResourceStorage > storage )
+make_small_ref_archive( size_t size, std::shared_ptr< ResourceStorage > storage )
 {
     using namespace test_structures;
     auto builder = SmallRefArchiveBuilder::open( storage );
@@ -686,16 +712,16 @@ TEMPLATE_TEST_CASE_METHOD(
 {
     using namespace test_structures;
 
-    make_mall_ref_archive( 17, Fixture< TestType >::storage );
+    make_small_ref_archive( 17, Fixture< TestType >::storage );
 
     auto archive = SmallRefArchive::open( Fixture< TestType >::storage );
     CHECK_FALSE( archive.is_open( ) );
     const char* const expected =
         R"data(================================================================================
+FATAL: Archive initialization failed. Failed loading mandatory resources.
+================================================================================
 Flatdata Archive: SmallRefArchive
 ================================================================================
-  FATAL: Archive initialization failed. Failed loading mandatory resources.
-
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 list1                                YES       YES        YES       Array of size: 17 in 17 bytes
@@ -715,7 +741,7 @@ TEMPLATE_TEST_CASE_METHOD(
 {
     using namespace test_structures;
 
-    make_mall_ref_archive( 16, Fixture< TestType >::storage );
+    make_small_ref_archive( 16, Fixture< TestType >::storage );
 
     auto archive = SmallRefArchive::open( Fixture< TestType >::storage );
     CHECK( archive.is_open( ) );
@@ -723,7 +749,6 @@ TEMPLATE_TEST_CASE_METHOD(
         R"data(================================================================================
 Flatdata Archive: SmallRefArchive
 ================================================================================
-
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 list1                                YES       NO         YES       Array of size: 16 in 16 bytes

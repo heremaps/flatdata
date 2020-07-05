@@ -130,7 +130,7 @@ public:
     }
 
     size_t size( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
     explicit operator bool( ) const;
 
     template < typename ElementType >
@@ -195,11 +195,17 @@ MultiArrayView< IndexType, Args... >::size( ) const
 }
 
 template < typename IndexType, typename... Args >
-std::string
-MultiArrayView< IndexType, Args... >::describe( ) const
+std::string MultiArrayView< IndexType, Args... >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "MultiArray of size " << size( ) << ", with index: " << m_index.describe( );
+    if ( this->operator bool( ) )
+    {
+        ss << "MultiArray of size " << size( ) << ", with index: " << m_index.describe( );
+    }
+    else
+    {
+        ss << "Uninitialized MultiArray";
+    }
     return ss.str( );
 }
 
