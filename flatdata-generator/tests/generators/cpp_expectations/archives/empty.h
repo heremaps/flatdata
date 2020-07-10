@@ -25,7 +25,7 @@ private:
     explicit A( std::shared_ptr< flatdata::ResourceStorage > storage );
 
     bool load_contents( ) override;
-    void describe_resources( std::ostream& stream ) const override;
+    void describe_resources( std::ostream& stream, size_t nest_level ) const override;
 
 private:
 };

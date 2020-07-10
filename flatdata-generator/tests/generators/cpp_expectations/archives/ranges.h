@@ -34,7 +34,7 @@ union STemplate
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = true;
 

@@ -165,7 +165,7 @@ inline void
     describe_resource( nest_level, stream, "{{ r.name }}", m_{{ r.name }}{% if r.max_size %}, m_{{ r.name }} && m_{{ r.name }}{%if r.optional %}->{% else %}.{% endif %}size( ) > {{ r.max_size }}{% endif %} );
 {% endfor %}
 {% for r in archive.resources|archive_resources %}
-    describe_resource( nest_level , stream, "{{ r.name }}", m_{{ r.name }} );
+    describe_resource( nest_level, stream, "{{ r.name }}", m_{{ r.name }} );
 {% endfor %}
 }
 
