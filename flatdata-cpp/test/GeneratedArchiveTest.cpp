@@ -330,7 +330,7 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
 }
 
 TEMPLATE_TEST_CASE_METHOD( Fixture,
-                           "Uninitialized sub-archive is descried",
+                           "Uninitialized sub-archive is described",
                            "[GeneratedArchive]",
                            std::true_type,
                            std::false_type )
