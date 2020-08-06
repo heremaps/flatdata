@@ -136,26 +136,14 @@ private:
 
 template < typename ResourceType >
 std::string
-get_description( const ResourceType& resource,
-                 bool is_archive,
-                 bool initialized,
-                 size_t nest_level )
+get_description( const ResourceType& resource, bool is_archive, size_t nest_level )
 {
     std::string description;
     if ( is_archive )
     {
         ++nest_level;
     }
-
-    if ( initialized )
-    {
-        description = resource.describe( nest_level );
-    }
-    else
-    {
-        auto dummy = new ResourceType( );
-        description = dummy->describe( nest_level );
-    }
+    description = resource.describe( nest_level );
     return description;
 }
 
@@ -171,8 +159,8 @@ Archive::describe_resource( size_t nest_level,
     const bool is_archive = std::is_base_of< Archive, ResourceType >::value;
 
     describe_impl( stream, name, false, initialized,
-                   get_description( resource, is_archive, initialized, nest_level ).c_str( ),
-                   is_archive, too_large, nest_level );
+                   get_description( resource, is_archive, nest_level ).c_str( ), is_archive,
+                   too_large, nest_level );
 }
 
 template < typename ResourceType >
@@ -186,12 +174,12 @@ Archive::describe_resource( size_t nest_level,
     const auto initialized = static_cast< bool >( resource );
     const bool is_archive = std::is_base_of< Archive, ResourceType >::value;
 
-    const ResourceType ref = initialized ? *resource                  // valid ref
-                                         : *( new ResourceType( ) );  // ref to dummy, not used
+    const ResourceType ref = initialized ? *resource         // valid ref
+                                         : ResourceType( );  // ref to dummy, not used
 
     describe_impl( stream, name, true, initialized ? static_cast< bool >( *resource ) : false,
-                   get_description( ref, is_archive, initialized, nest_level ).c_str( ), is_archive,
-                   too_large, nest_level );
+                   get_description( ref, is_archive, nest_level ).c_str( ), is_archive, too_large,
+                   nest_level );
 }
 
 template < typename ResourceType >

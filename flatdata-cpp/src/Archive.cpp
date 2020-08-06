@@ -239,9 +239,15 @@ Archive::describe( size_t nest_level ) const
 
     if ( !m_storage )
     {
-        result << ( is_root_node ? hline : empty )
-               << "FATAL: Resource storage not initialized. Please check archive path."
-               << ( is_root_node ? newl : empty );
+        if ( is_root_node )
+        {
+            result << hline << "FATAL: Resource storage not initialized. Please check archive path."
+                   << newl;
+        }
+        else
+        {
+            result << "Uninitialized Archive " << name( );
+        }
     }
 
     if ( m_storage && !m_signature )
@@ -294,7 +300,7 @@ Archive::describe_impl( std::ostream& stream,
                         bool optional,
                         bool loaded,
                         const char* details,
-                        bool are_details_nested,
+                        bool has_nested_details,
                         bool too_large,
                         size_t nest_level )
 {
@@ -305,7 +311,7 @@ Archive::describe_impl( std::ostream& stream,
            << std::setfill( ' ' ) << ( optional ? "YES" : "NO" ) << std::left << std::setw( 11 )
            << std::setfill( ' ' ) << ( too_large ? "YES" : "NO" ) << std::left << std::setw( 10 )
            << std::setfill( ' ' ) << ( static_cast< bool >( loaded ) ? "YES" : "NO" ) << details
-           << ( are_details_nested ? "" : "\n" );
+           << ( has_nested_details ? "" : "\n" );
 }
 
 }  // namespace flatdata

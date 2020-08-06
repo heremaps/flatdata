@@ -356,7 +356,7 @@ Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outer1                               NO        NO         YES       Structure of size 1
 outer2                               NO        NO         YES       Structure of size 1
-inner                                NO        NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+inner                                NO        NO         NO        Uninitialized Archive InnerArchive
 |
 |-> Flatdata Archive: InnerArchive
     inner                            NO        NO         NO        Uninitialized Structure AStruct
@@ -390,7 +390,7 @@ Flatdata Archive: OuterWithOptional
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outer                                NO        NO         YES       Structure of size 1
-archive_resource                     YES       NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+archive_resource                     YES       NO         NO        Uninitialized Archive InnerArchive
 |
 |-> Flatdata Archive: InnerArchive
     inner                            NO        NO         NO        Uninitialized Structure AStruct
@@ -608,12 +608,12 @@ Flatdata Archive: OutermostArchive
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outermost                            NO        NO         NO        Uninitialized Structure AStruct
-outer                                NO        NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+outer                                NO        NO         NO        Uninitialized Archive OuterArchive
 |
 |-> Flatdata Archive: OuterArchive
     outer1                           NO        NO         NO        Uninitialized Structure AStruct
     outer2                           NO        NO         NO        Uninitialized Structure AStruct
-    inner                            NO        NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+    inner                            NO        NO         NO        Uninitialized Archive InnerArchive
     |
     |-> Flatdata Archive: InnerArchive
         inner                        NO        NO         NO        Uninitialized Structure AStruct
@@ -672,7 +672,7 @@ Flatdata Archive: OuterWithOptional
 Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outer                                NO        NO         NO        Uninitialized Structure AStruct
-archive_resource                     YES       NO         NO        FATAL: Resource storage not initialized. Please check archive path.
+archive_resource                     YES       NO         NO        Uninitialized Archive InnerArchive
 |
 |-> Flatdata Archive: InnerArchive
     inner                            NO        NO         NO        Uninitialized Structure AStruct

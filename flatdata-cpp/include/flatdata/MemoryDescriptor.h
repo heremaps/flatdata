@@ -31,7 +31,7 @@ public:
     }
 
     std::string
-    describe( size_t unused = 0 ) const
+    describe( size_t nest_level = 0 ) const
     {
         std::ostringstream ss;
         if ( this->operator bool( ) )
