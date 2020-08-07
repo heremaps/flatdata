@@ -136,11 +136,17 @@ ArrayView< T >::end( ) const
 }
 
 template < typename T >
-std::string
-ArrayView< T >::describe( ) const
+std::string ArrayView< T >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Array of size: " << size( ) << " in " << size_in_bytes( ) << " bytes";
+    if ( !empty( ) )
+    {
+        ss << "Array of size: " << size( ) << " in " << size_in_bytes( ) << " bytes";
+    }
+    else
+    {
+        ss << "Uninitialized Array";
+    }
     return ss.str( );
 }
 

@@ -55,7 +55,7 @@ union StructEnumI8Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -123,7 +123,7 @@ union StructEnumU8Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -191,7 +191,7 @@ union StructEnumI16Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -259,7 +259,7 @@ union StructEnumU16Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -327,7 +327,7 @@ union StructEnumI32Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -395,7 +395,7 @@ union StructEnumU32Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -463,7 +463,7 @@ union StructEnumI64Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -531,7 +531,7 @@ union StructEnumU64Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -681,10 +681,17 @@ std::string StructEnumI8Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumI8Template< Member >::describe( ) const
+std::string StructEnumI8Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -815,10 +822,17 @@ std::string StructEnumU8Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumU8Template< Member >::describe( ) const
+std::string StructEnumU8Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -949,10 +963,17 @@ std::string StructEnumI16Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumI16Template< Member >::describe( ) const
+std::string StructEnumI16Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -1083,10 +1104,17 @@ std::string StructEnumU16Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumU16Template< Member >::describe( ) const
+std::string StructEnumU16Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -1217,10 +1245,17 @@ std::string StructEnumI32Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumI32Template< Member >::describe( ) const
+std::string StructEnumI32Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -1351,10 +1386,17 @@ std::string StructEnumU32Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumU32Template< Member >::describe( ) const
+std::string StructEnumU32Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -1485,10 +1527,17 @@ std::string StructEnumI64Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumI64Template< Member >::describe( ) const
+std::string StructEnumI64Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -1619,10 +1668,17 @@ std::string StructEnumU64Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string StructEnumU64Template< Member >::describe( ) const
+std::string StructEnumU64Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n

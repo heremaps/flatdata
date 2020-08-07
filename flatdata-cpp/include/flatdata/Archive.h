@@ -46,7 +46,7 @@ public:
     /**
      * @brief Returns text description of the archive and its resources' state.
      */
-    std::string describe( ) const;
+    std::string describe( size_t nest_level = 0u ) const;
 
     /**
      * @brief Returns archive name. Is implemented by the concrete archive instances.
@@ -60,13 +60,15 @@ public:
 
 protected:
     template < typename ResourceType >
-    static void describe_resource( std::ostream& stream,
+    static void describe_resource( size_t nest_level,
+                                   std::ostream& stream,
                                    const char* name,
                                    const ResourceType& resource,
                                    bool too_large = false );
 
     template < typename ResourceType >
-    static void describe_resource( std::ostream& stream,
+    static void describe_resource( size_t nest_level,
+                                   std::ostream& stream,
                                    const char* name,
                                    const boost::optional< ResourceType >& resource,
                                    bool too_large = false );
@@ -107,7 +109,9 @@ private:
                                bool optional,
                                bool loaded,
                                const char* details,
-                               bool too_large );
+                               bool are_details_nested,
+                               bool too_large,
+                               size_t nest_level );
 
 private:
     /**
@@ -120,7 +124,7 @@ private:
      * @brief Describes all resources provided by the archive.
      * Is implemented by the concrete archive instances.
      */
-    virtual void describe_resources( std::ostream& stream ) const = 0;
+    virtual void describe_resources( std::ostream& stream, size_t nest_level ) const = 0;
 
 private:
     std::shared_ptr< flatdata::ResourceStorage > m_storage;
@@ -131,27 +135,51 @@ private:
 // -------------------------------------------------------------------------------------------------
 
 template < typename ResourceType >
-void
-Archive::describe_resource( std::ostream& stream,
-                            const char* name,
-                            const ResourceType& resource,
-                            bool too_large )
+std::string
+get_description( const ResourceType& resource, bool is_archive, size_t nest_level )
 {
-    auto initialized = static_cast< bool >( resource );
-    describe_impl( stream, name, false, static_cast< bool >( resource ),
-                   initialized ? resource.describe( ).c_str( ) : "N/A", too_large );
+    std::string description;
+    if ( is_archive )
+    {
+        ++nest_level;
+    }
+    description = resource.describe( nest_level );
+    return description;
 }
 
 template < typename ResourceType >
 void
-Archive::describe_resource( std::ostream& stream,
+Archive::describe_resource( size_t nest_level,
+                            std::ostream& stream,
+                            const char* name,
+                            const ResourceType& resource,
+                            bool too_large )
+{
+    const auto initialized = static_cast< bool >( resource );
+    const bool is_archive = std::is_base_of< Archive, ResourceType >::value;
+
+    describe_impl( stream, name, false, initialized,
+                   get_description( resource, is_archive, nest_level ).c_str( ), is_archive,
+                   too_large, nest_level );
+}
+
+template < typename ResourceType >
+void
+Archive::describe_resource( size_t nest_level,
+                            std::ostream& stream,
                             const char* name,
                             const boost::optional< ResourceType >& resource,
                             bool too_large )
 {
-    auto initialized = static_cast< bool >( resource );
+    const auto initialized = static_cast< bool >( resource );
+    const bool is_archive = std::is_base_of< Archive, ResourceType >::value;
+
+    const ResourceType ref = initialized ? *resource         // valid ref
+                                         : ResourceType( );  // ref to dummy, not used
+
     describe_impl( stream, name, true, initialized ? static_cast< bool >( *resource ) : false,
-                   initialized ? resource->describe( ).c_str( ) : "N/A", too_large );
+                   get_description( ref, is_archive, nest_level ).c_str( ), is_archive, too_large,
+                   nest_level );
 }
 
 template < typename ResourceType >

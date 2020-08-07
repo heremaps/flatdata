@@ -38,7 +38,7 @@ private:
     explicit {{ archive.name }}( std::shared_ptr< flatdata::ResourceStorage > storage );
 
     bool load_contents( ) override;
-    void describe_resources( std::ostream& stream ) const override;
+    void describe_resources( std::ostream& stream, size_t nest_level ) const override;
 
 private:
     {% for r in archive.resources|supported_resources %}
@@ -159,10 +159,13 @@ inline bool
 }
 
 inline void
-{{ archive.name }}::describe_resources( std::ostream& stream ) const
+{{ archive.name }}::describe_resources( std::ostream& stream, size_t nest_level ) const
 {
 {% for r in archive.resources|simple_resources %}
-    describe_resource( stream, "{{ r.name }}", m_{{ r.name }}{% if r.max_size %}, m_{{ r.name }} && m_{{ r.name }}{%if r.optional %}->{% else %}.{% endif %}size( ) > {{ r.max_size }}{% endif %} );
+    describe_resource( nest_level, stream, "{{ r.name }}", m_{{ r.name }}{% if r.max_size %}, m_{{ r.name }} && m_{{ r.name }}{%if r.optional %}->{% else %}.{% endif %}size( ) > {{ r.max_size }}{% endif %} );
+{% endfor %}
+{% for r in archive.resources|archive_resources %}
+    describe_resource( nest_level, stream, "{{ r.name }}", m_{{ r.name }} );
 {% endfor %}
 }
 

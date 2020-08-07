@@ -31,10 +31,17 @@ public:
     }
 
     std::string
-    describe( ) const
+    describe( size_t nest_level = 0 ) const
     {
         std::ostringstream ss;
-        ss << "Raw data of size " << m_size;
+        if ( this->operator bool( ) )
+        {
+            ss << "Raw data of size " << m_size;
+        }
+        else
+        {
+            ss << "Uninitialized Raw data";
+        }
         return ss.str( );
     }
 

@@ -44,7 +44,7 @@ public:
 
     size_t size_in_bytes( ) const;
     size_t size( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t nest_level = 0u ) const;
 
     bool empty( ) const;
 

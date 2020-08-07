@@ -21,14 +21,14 @@ A::load_contents( )
 }
 
 inline void
-A::describe_resources( std::ostream& stream ) const
+A::describe_resources( std::ostream& stream, size_t nest_level ) const
 {
-    describe_resource( stream, "list1", m_list1, m_list1 && m_list1->size( ) > 16 );
-    describe_resource( stream, "list2", m_list2, m_list2 && m_list2.size( ) > 16 );
-    describe_resource( stream, "multilist1", m_multilist1, m_multilist1 && m_multilist1->size( ) > 16 );
-    describe_resource( stream, "multilist2", m_multilist2, m_multilist2 && m_multilist2.size( ) > 16 );
-    describe_resource( stream, "raw1", m_raw1, m_raw1 && m_raw1->size( ) > 16 );
-    describe_resource( stream, "raw2", m_raw2, m_raw2 && m_raw2.size( ) > 16 );
-    describe_resource( stream, "refs", m_refs );
-    describe_resource( stream, "multirefs", m_multirefs );
+    describe_resource( nest_level, stream, "list1", m_list1, m_list1 && m_list1->size( ) > 16 );
+    describe_resource( nest_level, stream, "list2", m_list2, m_list2 && m_list2.size( ) > 16 );
+    describe_resource( nest_level, stream, "multilist1", m_multilist1, m_multilist1 && m_multilist1->size( ) > 16 );
+    describe_resource( nest_level, stream, "multilist2", m_multilist2, m_multilist2 && m_multilist2.size( ) > 16 );
+    describe_resource( nest_level, stream, "raw1", m_raw1, m_raw1 && m_raw1->size( ) > 16 );
+    describe_resource( nest_level, stream, "raw2", m_raw2, m_raw2 && m_raw2.size( ) > 16 );
+    describe_resource( nest_level, stream, "refs", m_refs );
+    describe_resource( nest_level, stream, "multirefs", m_multirefs );
 }

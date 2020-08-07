@@ -98,10 +98,17 @@ std::string U8Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string U8Template< Member >::describe( ) const
+std::string U8Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n

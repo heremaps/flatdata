@@ -41,7 +41,7 @@ union STemplate
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -92,7 +92,7 @@ private:
     explicit X( std::shared_ptr< flatdata::ResourceStorage > storage );
 
     bool load_contents( ) override;
-    void describe_resources( std::ostream& stream ) const override;
+    void describe_resources( std::ostream& stream, size_t nest_level ) const override;
 
 private:
     PayloadType m_payload;
@@ -160,7 +160,7 @@ union STemplate
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = false;
 
@@ -211,7 +211,7 @@ private:
     explicit X( std::shared_ptr< flatdata::ResourceStorage > storage );
 
     bool load_contents( ) override;
-    void describe_resources( std::ostream& stream ) const override;
+    void describe_resources( std::ostream& stream, size_t nest_level ) const override;
 
 private:
     PayloadType m_payload;
@@ -282,7 +282,7 @@ union IndexType32Template
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = true;
 
@@ -342,7 +342,7 @@ private:
     explicit A( std::shared_ptr< flatdata::ResourceStorage > storage );
 
     bool load_contents( ) override;
-    void describe_resources( std::ostream& stream ) const override;
+    void describe_resources( std::ostream& stream, size_t nest_level ) const override;
 
 private:
     SingleType m_single;
@@ -495,10 +495,17 @@ std::string STemplate< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string STemplate< Member >::describe( ) const
+std::string STemplate< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace n
@@ -576,9 +583,9 @@ X::load_contents( )
 }
 
 inline void
-X::describe_resources( std::ostream& stream ) const
+X::describe_resources( std::ostream& stream, size_t nest_level ) const
 {
-    describe_resource( stream, "payload", m_payload );
+    describe_resource( nest_level, stream, "payload", m_payload );
 }
 
 inline auto X::payload( ) const -> const PayloadType&
@@ -734,10 +741,17 @@ std::string STemplate< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string STemplate< Member >::describe( ) const
+std::string STemplate< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 } // namespace m
@@ -815,9 +829,9 @@ X::load_contents( )
 }
 
 inline void
-X::describe_resources( std::ostream& stream ) const
+X::describe_resources( std::ostream& stream, size_t nest_level ) const
 {
-    describe_resource( stream, "payload", m_payload );
+    describe_resource( nest_level, stream, "payload", m_payload );
 }
 
 inline auto X::payload( ) const -> const PayloadType&
@@ -967,10 +981,17 @@ std::string IndexType32Template< Member >::to_string( ) const
 
 template< template < typename, int, int, int > class Member >
 inline
-std::string IndexType32Template< Member >::describe( ) const
+std::string IndexType32Template< Member >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 }} // namespace _builtin.multivector
@@ -1130,11 +1151,12 @@ A::load_contents( )
 }
 
 inline void
-A::describe_resources( std::ostream& stream ) const
+A::describe_resources( std::ostream& stream, size_t nest_level ) const
 {
-    describe_resource( stream, "single", m_single );
-    describe_resource( stream, "list", m_list );
-    describe_resource( stream, "multi", m_multi );
+    describe_resource( nest_level, stream, "single", m_single );
+    describe_resource( nest_level, stream, "list", m_list );
+    describe_resource( nest_level, stream, "multi", m_multi );
+    describe_resource( nest_level, stream, "inner", m_inner );
 }
 
 inline auto A::single( ) const -> const SingleType&

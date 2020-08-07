@@ -51,7 +51,7 @@ union {{ template_name }}
     explicit operator bool( ) const;
 
     std::string to_string( ) const;
-    std::string describe( ) const;
+    std::string describe( size_t unused = 0 ) const;
 
     static constexpr bool IS_OVERLAPPING_WITH_NEXT = {{ struct.has_range|lower}};
 
@@ -176,10 +176,17 @@ std::string {{ template_spec }}::to_string( ) const
 
 {{ template_header }}
 inline
-std::string {{ template_spec }}::describe( ) const
+std::string {{ template_spec }}::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
-    ss << "Structure of size " << size_in_bytes( );
+    if( this->operator bool( ) )
+    {
+        ss << "Structure of size " << size_in_bytes( );
+    }
+    else
+    {
+        ss << "Uninitialized Structure " << name();
+    }
     return ss.str( );
 }
 {% endmacro %}
