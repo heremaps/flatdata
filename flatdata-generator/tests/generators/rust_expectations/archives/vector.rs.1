@@ -116,7 +116,7 @@ impl S {
 
 #[derive(Clone)]
 pub struct A {
-    _storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+    _storage: flatdata::StorageHandle,
     data : &'static [super::n::S],
     optional_data : Option<&'static [super::n::S]>,
 }
@@ -148,7 +148,7 @@ impl ::std::fmt::Debug for A {
 }
 
 impl A {
-    pub fn open(storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>)
+    pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
         #[allow(unused_imports)]
@@ -177,7 +177,7 @@ impl A {
 ///[`A`]: struct.A.html
 #[derive(Clone, Debug)]
 pub struct ABuilder {
-    storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>
+    storage: flatdata::StorageHandle
 }
 
 impl ABuilder {
@@ -229,7 +229,7 @@ impl ABuilder {
 
 impl ABuilder {
     pub fn new(
-        storage: ::std::rc::Rc<dyn flatdata::ResourceStorage>,
+        storage: flatdata::StorageHandle,
     ) -> Result<Self, flatdata::ResourceStorageError> {
         flatdata::create_archive("A", schema::a::A, &storage)?;
         Ok(Self { storage })
