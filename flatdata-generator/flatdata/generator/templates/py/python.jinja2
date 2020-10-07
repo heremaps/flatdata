@@ -18,7 +18,7 @@ class {{ tree.namespace_path(struct, "_") }}_{{ struct.name }}(flatdata.structur
         {% if field.doc %}
             {{ field.doc|to_python_doc|indent(8) }}
         {% endif %}
-        "{{ field.name }}": flatdata.structure.FieldSignature(offset={{ field.offset }}, width={{ field.type.width }}, is_signed={{ field.type.is_signed }}, dtype="{{ field.type|to_dtype }}"),
+        "{{ field.name }}": flatdata.structure.FieldSignature(offset={{ field.offset }}, width={{ field.type.width }}, is_signed={{ field.type.is_signed }}, dtype="{{ field|to_dtype }}"),
     {% endfor %}
     }
     _FIELD_KEYS = {
