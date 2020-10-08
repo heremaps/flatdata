@@ -59,8 +59,8 @@ class PythonGenerator(BaseGenerator):
                 return "None"
             raise ValueError("Unknown resource type: %s" % (resource.__class__))
 
-        def to_dtype(flatdata_type):
-            return {
+        def to_dtype(field):
+            type_map = {
                 "bool": "?",
                 "i8": "b",
                 "u8": "B",
@@ -70,7 +70,10 @@ class PythonGenerator(BaseGenerator):
                 "i32": "i4",
                 "u64": "u8",
                 "i64": "i8"
-            }[flatdata_type.name]
+            }
+            if field.type.name in type_map:
+                return type_map[field.type.name]
+            return type_map[field.type_reference.node.type.name]
 
         def _safe_py_string_line(value):
             return value.replace('\\', '\\\\').replace('"', r'\"')
