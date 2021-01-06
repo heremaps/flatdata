@@ -3,8 +3,8 @@
  * See the LICENSE file in the root of this project for license details.
  */
 
-#include "test_structures.hpp"
 #include "ranges.hpp"
+#include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
 #include "catch.hpp"
@@ -25,6 +25,12 @@ TEST_CASE( "Reading from ArrayView", "[ArrayView]" )
     {
         REQUIRE( view[ i ].value == i );
     }
+}
+
+TEST_CASE( "Initializing overlapping ArrayView", "[ArrayView]" )
+{
+    ArrayView< TestIndexType48 > view;
+    REQUIRE( view.size( ) == 0 );
 }
 
 TEST_CASE( "Slicing ArrayView", "[ArrayView]" )
