@@ -4,6 +4,7 @@
  */
 
 #include "ranges.hpp"
+#include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
 #include "catch.hpp"
