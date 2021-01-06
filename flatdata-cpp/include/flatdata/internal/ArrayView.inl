@@ -12,7 +12,7 @@ ArrayView< T >::ArrayView( ConstStreamType data_begin, ConstStreamType data_end 
     : m_data( data_begin )
     , m_size( ( data_end - data_begin ) / T::size_in_bytes( ) )
 {
-    if ( T::IS_OVERLAPPING_WITH_NEXT )
+    if ( T::IS_OVERLAPPING_WITH_NEXT && m_size != 0 )
     {
         m_size--;
     }
