@@ -12,5 +12,5 @@ edition = "2018"
 
 [dependencies]
 diff = "0.1.11"
-memmap = "0.7.0"
+memmap2 = "0.2.0"
 walkdir = "2.2.9"
