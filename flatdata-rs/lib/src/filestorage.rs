@@ -1,6 +1,6 @@
 use crate::storage::{ResourceStorage, StorageHandle, Stream};
 
-use memmap::Mmap;
+use memmap2::Mmap;
 
 use std::{
     collections::BTreeMap,
