@@ -56,10 +56,39 @@ class {{ tree.namespace_path(archive, "_") }}_{{ archive.name }}(flatdata.archiv
         flatdata.archive.Archive.__init__(self, resource_storage)
 {% endmacro %}
 
+{% macro archive_builder_definition(tree, archive) %}
+class {{ tree.namespace_path(archive, "_") }}_{{ archive.name }}Builder(flatdata.archive_builder.ArchiveBuilder):
+    _SCHEMA = """{{ tree.schema(archive)|safe_py_string_line }}"""
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+    _{{ resource.name|upper }}_SCHEMA = """{{ tree.schema(resource)|safe_py_string_line }}"""
+    _{{ resource.name|upper }}_DOC = """{{ resource.doc|safe_py_string_line }}"""
+    {% endfor %}
+    _NAME = "{{ archive.name }}"
+    _RESOURCES = {
+        "{{ archive.name }}.archive" : flatdata.archive_builder.ResourceSignature(
+            container=flatdata.resources.RawData,
+            initializer=None,
+            schema=_SCHEMA,
+            is_optional=False,
+            doc="Archive signature"),
+    {% for resource in archive.resources if not resource|is_bound_resource %}
+        "{{ resource.name }}": flatdata.archive_builder.ResourceSignature(container={{ resource|to_container}},
+            initializer={{ resource|to_initializer(tree) }},
+            schema=_{{  resource.name|upper }}_SCHEMA,
+            is_optional={{ resource.optional }},
+            doc=_{{ resource.name|upper }}_DOC),
+    {% endfor %}
+    }
+
+    def __init__(self, resource_storage):
+        flatdata.archive_builder.ArchiveBuilder.__init__(self, resource_storage)
+{% endmacro %}
+
 {% for node in nodes %}
     {%- if node|is_structure %}
         {{- structure_definition(tree, node) }}
     {%- elif node|is_archive %}
         {{- archive_definition(tree, node) }}
+        {{- archive_builder_definition(tree, node) }}
     {% endif %}
 {% endfor %}
