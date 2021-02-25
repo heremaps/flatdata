@@ -34,7 +34,7 @@ class ArchiveBuilder:
 
     def set(self, name, value):
         """
-        Write a resource for this archive.
+        Write a resource for this archive at once.
         Can only be done once. `set` and `start` can't be used for the same resource.
         :raises $already_set_error
         :raises $already_start_error
@@ -45,4 +45,12 @@ class ArchiveBuilder:
         NotImplemented
 
     def start(self, name):
+        """
+        Start writing a resource for this archive incrementally.
+        Can only be started once. `set` and `start` can't be used for the same resource.
+        :raises $already_set_error
+        :raises $already_start_error
+        :raises $unknown_resource_error
+        :param name: name of the resource
+        """
         NotImplemented
