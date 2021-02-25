@@ -23,15 +23,19 @@ class Structure:
     def _get_value(self, field):
         return read_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed)
 
-    #def __setattr__(self, name, value):
-    #    try:
-    #        field = self._FIELDS[name]
-    #    except KeyError:
-    #        raise AttributeError("Field %s not found in structure" % name)
-    #    return self._set_value(field, value)
+    def __setattr__(self, name, value):
+        field = None
 
-    #def _set_value(self, field, value):
-    #    write_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed, value)
+        if name in self._FIELDS:
+            field = self._FIELDS[name]
+        else:
+            self.__dict__[name] = value
+
+        if field is not None:
+            self._set_value(field, value)
+
+    def _set_value(self, field, value):
+        write_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed, value)
 
     def __dir__(self):
         return self._FIELD_KEYS
