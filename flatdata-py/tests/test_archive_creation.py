@@ -29,7 +29,7 @@ def test_create_empty_archive():
     # should we require it to be the specific class?
     builder.set("resource", {"a": -0x1, "b": 0x01234567, "c": -0x28, "d": 0})
 
-    assert memwrite.data == RESOURCE_PAYLOAD, f'is "{memwrite.data}", but should be "{RESOURCE_PAYLOAD}"'
+    assert memwrite.data == RESOURCE_PAYLOAD, f'\nis            "{memwrite.data.hex()}",\nbut should be "{RESOURCE_PAYLOAD.hex()}"'
     # do we need something like a finish/close method?
     # if we do, should we try to make it work with python's
     # `with ... as archive_builder:` syntax?

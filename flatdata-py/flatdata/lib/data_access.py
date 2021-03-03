@@ -34,11 +34,13 @@ def write_value(data, offset_bits, num_bits, is_signed, value):
     total_bytes = (num_bits + 7) // 8
 
     if num_bits == 1:
-        data[offset_bytes] = data[offset_bytes] & (value << offset_extra_bits)
-
-    if offset_extra_bits == 0:
-        byte_value = value.to_bytes(total_bytes, byteorder="little", signed=is_signed)
-        for idx in range(total_bytes):
-            data[offset_bytes + idx] = byte_value[idx]
-
-    # TODO: handle writing anything else
+        data[offset_bytes] |= value << offset_extra_bits
+        return
+    
+    byte_value = value.to_bytes(total_bytes+1, byteorder="little", signed=is_signed)
+    for idx in range(total_bytes):
+        data[offset_bytes + idx] |= (
+                (byte_value[idx] << offset_extra_bits) & 0xff
+            ) | (
+                (byte_value[idx+1] >> (8-offset_extra_bits) ) & 0xff
+            )
