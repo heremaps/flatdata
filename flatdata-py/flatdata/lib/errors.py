@@ -38,3 +38,23 @@ class MissingResourceError(KeyError, CorruptArchiveError):
     """
     def __init__(self, key):
         super().__init__("Resource {key} not found".format(key=key))
+
+
+class ResourceReadOnlyError(RuntimeError):
+    """
+    Resource is read only and cannot be written to.
+    """
+
+
+class FieldMissingError(RuntimeError):
+    def __init__(self, key, name):
+        super().__init__(f'Missing "{key}" is required for "{name}"')
+
+
+class UnknownFieldError(RuntimeError):
+    def __init__(self, key, name):
+        super().__init__(f'Field "{key}" is not specified for "{name}"')
+
+class ResourceExistsError(RuntimeError):
+    def __init__(self, key):
+        super().__init__(f'File "{key}" exists already')
