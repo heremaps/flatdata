@@ -55,6 +55,10 @@ class UnknownFieldError(RuntimeError):
     def __init__(self, key, name):
         super().__init__(f'Field "{key}" is not specified for "{name}"')
 
-class ResourceExistsError(RuntimeError):
+class FileExistsError(RuntimeError):
     def __init__(self, key):
         super().__init__(f'File "{key}" exists already')
+
+class DirExistsError(RuntimeError):
+    def __init__(self, path):
+        super().__init__(f'Directory "{path}" exists already')

@@ -28,7 +28,7 @@ def read_value(data, offset_bits, num_bits, is_signed):
 
     return (result & (_SIGN_BITS[num_bits] - 1)) - (result & _SIGN_BITS[num_bits])
 
-# stub for write
+
 def write_value(data, offset_bits, num_bits, is_signed, value):
     offset_bytes, offset_extra_bits = divmod(offset_bits, 8)
     total_bytes = (num_bits + 7) // 8

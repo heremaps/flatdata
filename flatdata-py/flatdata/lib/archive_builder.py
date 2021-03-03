@@ -19,10 +19,15 @@ class FileResourceWriter:
     def __init__(self, path):
         self.path = path
 
+        if os.path.exists(path):
+            raise DirExistsError(path)
+
+        os.mkdir(path)
+
     def get(self, key, is_subarchive):
         filename = os.path.join(self.path, key)
         if os.path.exists(filename):
-            raise ResourceExistsError(key)
+            raise FileExistsError(key)
         
         if is_subarchive:
             return FileResourceWriter(filename)
@@ -41,8 +46,9 @@ class ArchiveBuilder:
         Opens archive from a given resource writer.
         :param resource_writer: Resource writer to use.
         """
-
         self._resource_writer = resource_writer
+        self._write_archive_signature()
+        self._write_archive_schema()
 
     @classmethod
     def name(cls):
@@ -51,6 +57,22 @@ class ArchiveBuilder:
     @classmethod
     def schema(cls):
         return cls._SCHEMA
+
+    def _write_schema(self, name):
+        fout = self._resource_writer.get(f"{name}.schema", False)
+        fout.write(self._RESOURCES[name].schema)
+        fout.close()
+    
+    def _write_archive_signature(self):
+        fout = self._resource_writer.get(f"{self._NAME}.archive", False)
+        # TODO: archive signature is probably not always 16 zero-ed bytes?
+        fout.write(bytearray(16))
+        fout.close()
+
+    def _write_archive_schema(self):
+        fout = self._resource_writer.get(f"{self._NAME}.archive.schema", False)
+        fout.write(self._SCHEMA)
+        fout.close()
 
     def set(self, name, value):
         """
@@ -63,6 +85,8 @@ class ArchiveBuilder:
         :param value: value to write
         """
         # TODO: fail if trying to set subarchive?
+        self._write_schema(name)
+
         fout = self._resource_writer.get(name, False)
         if self._RESOURCES[name].container is Instance:
             initializer = self._RESOURCES[name].initializer
@@ -105,3 +129,7 @@ class ArchiveBuilder:
         :param name: name of the resource
         """
         NotImplementedError
+
+    def finish(self):
+        NotImplemented
+        # TODO: verify that all required resources are written to disk
