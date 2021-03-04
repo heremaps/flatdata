@@ -49,6 +49,7 @@ class ArchiveBuilder:
         self._resource_writer = resource_writer
         self._write_archive_signature()
         self._write_archive_schema()
+        self._resources_written = [f"{self._NAME}.archive"]
 
     @classmethod
     def name(cls):
@@ -65,14 +66,22 @@ class ArchiveBuilder:
     
     def _write_archive_signature(self):
         fout = self._resource_writer.get(f"{self._NAME}.archive", False)
-        # TODO: archive signature is probably not always 16 zero-ed bytes?
+        # archive signature is 16 zero-ed bytes
         fout.write(bytearray(16))
         fout.close()
-
+        
     def _write_archive_schema(self):
         fout = self._resource_writer.get(f"{self._NAME}.archive.schema", False)
         fout.write(self._SCHEMA)
         fout.close()
+
+    def subarchive(self, name):
+        """
+        Returns an archive builder for the sub-archive `name`.
+        :raises $name_not_subarchive_error
+        :param name: name of the sub-archive
+        """
+        NotImplemented
 
     def set(self, name, value):
         """
@@ -84,7 +93,6 @@ class ArchiveBuilder:
         :param name: name of the resource
         :param value: value to write
         """
-        # TODO: fail if trying to set subarchive?
         self._write_schema(name)
 
         fout = self._resource_writer.get(name, False)
@@ -118,6 +126,7 @@ class ArchiveBuilder:
 
         fout.write(b"\x00\x00\x00\x00\x00\x00\x00\x00")
         fout.close()
+        self._resources_written.append(name)
 
     def start(self, name):
         """
@@ -131,5 +140,10 @@ class ArchiveBuilder:
         NotImplementedError
 
     def finish(self):
-        NotImplemented
-        # TODO: verify that all required resources are written to disk
+        """
+        Checks that all required resources are created.
+        :raises RuntimeError
+        """
+        for (name, resource) in self._RESOURCES.items():
+            if not resource.is_optional and name not in self._resources_written:
+                raise RuntimeError(f'Required resource "{name}" not created. Finished archive is invalid.')
