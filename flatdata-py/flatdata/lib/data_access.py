@@ -39,8 +39,10 @@ def write_value(data, offset_bits, num_bits, is_signed, value):
         return
     
     byte_value = bytearray(value.to_bytes(total_bytes+1, byteorder="little", signed=is_signed))
-    byte_value[total_bytes] = 0 # extra byte to avoid extra logic in the loop
-    byte_value[total_bytes-1] &= (0xff >> (num_bits % 8)) & 0xff
+    # extra byte to avoid extra logic in the loop
+    byte_value[total_bytes] = 0
+    # mask out bits we don't need
+    byte_value[total_bytes-1] &= 0xff >> (num_bits % 8)
     for idx in range(total_bytes):
         data[offset_bytes + idx] |= (
                 (byte_value[idx] << offset_extra_bits) & 0xff

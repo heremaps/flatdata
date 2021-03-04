@@ -124,8 +124,10 @@ class ArchiveBuilder:
         else:
             NotImplementedError
 
+        # write trailing 8 zero bytes
         fout.write(b"\x00\x00\x00\x00\x00\x00\x00\x00")
         fout.close()
+        
         self._resources_written.append(name)
 
     def start(self, name):
