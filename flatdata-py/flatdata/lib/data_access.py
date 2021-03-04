@@ -34,12 +34,13 @@ def write_value(data, offset_bits, num_bits, is_signed, value):
     total_bytes = (num_bits + 7) // 8
 
     if num_bits == 1:
+        # TODO: check that value is either 0 or 1?
         data[offset_bytes] |= value << offset_extra_bits
         return
     
     byte_value = bytearray(value.to_bytes(total_bytes+1, byteorder="little", signed=is_signed))
     byte_value[total_bytes] = 0 # extra byte to avoid extra logic in the loop
-    byte_value[total_bytes-1] &= (0xff << (num_bits % 8)) & 0xff
+    byte_value[total_bytes-1] &= (0xff >> (num_bits % 8)) & 0xff
     for idx in range(total_bytes):
         data[offset_bytes + idx] |= (
                 (byte_value[idx] << offset_extra_bits) & 0xff
