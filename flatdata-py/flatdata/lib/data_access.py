@@ -47,5 +47,5 @@ def write_value(data, offset_bits, num_bits, is_signed, value):
         data[offset_bytes + idx] |= (
                 (byte_value[idx] << offset_extra_bits) & 0xff
             ) | (
-                (byte_value[idx+1] >> (8-offset_extra_bits) ) & 0xff
+                (byte_value[idx+1] >> (8-offset_extra_bits)) & 0xff
             )

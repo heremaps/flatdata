@@ -113,8 +113,24 @@ class ArchiveBuilder:
             fout.write(bout)
 
         elif self._RESOURCES[name].container is Vector:
-            # TODO: write vector; re-use writing instance code
-            NotImplementedError
+            # TODO: refactor to use less copy-pasta
+            initializer = self._RESOURCES[name].initializer
+            for v in value:
+                for key in initializer._FIELD_KEYS:
+                    if key not in v:
+                        raise FieldMissingError(key, name)
+                for key in v.keys():
+                    if key not in initializer._FIELD_KEYS:
+                        raise UnknownFieldError(key, name)
+
+            fout.write(int(initializer._SIZE_IN_BYTES * len(value)).to_bytes(8, byteorder="little"))
+            for v in value:
+                bout = bytearray(initializer._SIZE_IN_BYTES) 
+                for (key, field) in initializer._FIELDS.items():
+                    write_value(bout, field.offset, field.width, field.is_signed, v[key])
+
+                fout.write(bout)
+
         elif self._RESOURCES[name].container is Multivector:
             # TODO: write multi-vector
             NotImplementedError   
@@ -127,7 +143,7 @@ class ArchiveBuilder:
         # write trailing 8 zero bytes
         fout.write(b"\x00\x00\x00\x00\x00\x00\x00\x00")
         fout.close()
-        
+
         self._resources_written.append(name)
 
     def start(self, name):
