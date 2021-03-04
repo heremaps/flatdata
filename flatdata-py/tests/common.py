@@ -34,9 +34,8 @@ class DictResourceStorage:
     """
     Resource storage based on dict.
     """
-    def __init__(self, data=None, read_only=True):
+    def __init__(self, data=None):
         self.data = data if data is not None else dict()
-        self.read_only = read_only
 
     def get(self, key, is_optional=False):
         if key not in self.data:

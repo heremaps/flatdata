@@ -2,7 +2,7 @@ from collections import namedtuple
 import json
 import numpy as np
 
-from .data_access import read_value, write_value
+from .data_access import read_value
 
 FieldSignature = namedtuple(
     "FieldSignature", ["offset", "width", "is_signed", "dtype"])
@@ -22,20 +22,6 @@ class Structure:
 
     def _get_value(self, field):
         return read_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed)
-
-    def __setattr__(self, name, value):
-        field = None
-
-        if name in self._FIELDS:
-            field = self._FIELDS[name]
-        else:
-            self.__dict__[name] = value
-
-        if field is not None:
-            self._set_value(field, value)
-
-    def _set_value(self, field, value):
-        write_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed, value)
 
     def __dir__(self):
         return self._FIELD_KEYS
