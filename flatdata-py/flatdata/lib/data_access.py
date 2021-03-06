@@ -30,22 +30,35 @@ def read_value(data, offset_bits, num_bits, is_signed):
 
 
 def write_value(data, offset_bits, num_bits, is_signed, value):
+    assert num_bits <= 64, f'Number of bits to write is greater than 64'
+
     offset_bytes, offset_extra_bits = divmod(offset_bits, 8)
     total_bytes = (num_bits + 7) // 8
 
     if num_bits == 1:
-        # TODO: check that value is either 0 or 1?
-        data[offset_bytes] |= value << offset_extra_bits
+        if value == 1:
+            data[offset_bytes] |= 1 << offset_extra_bits
+        else:
+            data[offset_bytes] &= ~(1 << offset_extra_bits)
         return
-    
-    byte_value = bytearray(value.to_bytes(total_bytes+1, byteorder="little", signed=is_signed))
-    # extra byte to avoid extra logic in the loop
-    byte_value[total_bytes] = 0
-    # mask out bits we don't need
-    byte_value[total_bytes-1] &= 0xff >> (num_bits % 8)
-    for idx in range(total_bytes):
-        data[offset_bytes + idx] |= (
-                (byte_value[idx] << offset_extra_bits) & 0xff
-            ) | (
-                (byte_value[idx+1] >> (8-offset_extra_bits)) & 0xff
-            )
+
+    mask = (1 << num_bits) - 1
+    value <<= offset_extra_bits
+    value &= mask << offset_extra_bits
+    value_in_little_endian = value.to_bytes(total_bytes + 1, byteorder="little", signed=is_signed)
+    surrounding_bits = data[offset_bytes] & ((1 << offset_bits) - 1)
+
+    byte_idx = 0
+    data[offset_bytes] = value_in_little_endian[byte_idx]
+    data[offset_bytes] |= surrounding_bits
+
+    byte_idx += 1
+    while byte_idx < total_bytes:
+        data[offset_bytes + byte_idx] = value_in_little_endian[byte_idx]
+        byte_idx += 1
+
+    bits_written = total_bytes * 8 - offset_extra_bits
+    if bits_written < num_bits:
+        surrounding_bits = data[offset_bytes + byte_idx] & ~((1 << offset_bits) - 1)
+        data[offset_bytes + byte_idx] = value_in_little_endian[byte_idx] & ((1 << (8 - (bits_written % 8))) - 1)
+        data[offset_bytes + byte_idx] |= surrounding_bits
