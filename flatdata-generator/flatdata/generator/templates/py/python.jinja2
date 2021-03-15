@@ -11,6 +11,7 @@ import flatdata.lib as flatdata
 class {{ tree.namespace_path(struct, "_") }}_{{ struct.name }}(flatdata.structure.Structure):
     """{{ struct.doc|safe_py_string_line }}"""
     _SCHEMA = """{{ tree.schema(struct) }}"""
+    _NAME = "{{ tree.namespace_path(struct, "_") }}_{{ struct.name }}"
     _SIZE_IN_BITS = {{ struct.size_in_bits }}
     _SIZE_IN_BYTES = {{ struct.size_in_bytes }}
     _FIELDS = {

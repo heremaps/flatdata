@@ -62,3 +62,7 @@ class FileExistsError(RuntimeError):
 class DirExistsError(RuntimeError):
     def __init__(self, path):
         super().__init__(f'Directory "{path}" exists already')
+
+class UnknownStructureError(RuntimeError):
+    def __init__(self, name):
+        super().__init__(f'"{name}" structure is not part of the multivector')
