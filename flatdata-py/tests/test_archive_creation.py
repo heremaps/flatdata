@@ -44,8 +44,7 @@ def test_create_example_archive():
     module = Engine(INSTANCE_TEST_SCHEMA).render_python_module()
     memwrite = DummyResourceWriter()
 
-    #builder = module.backward_compatibility_ArchiveBuilder(memwrite)
-    builder = module.ArchiveBuilder(memwrite)
+    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
     builder.set("resource", {"a": -0x1, "b": 0x01234567, "c": -0x28, "d": 0})
     builder.finish()
 
@@ -84,8 +83,7 @@ namespace backward_compatibility {
     module = Engine(vector_test_schema).render_python_module()
     memwrite = DummyResourceWriter()
 
-    #builder = module.backward_compatibility_ArchiveBuilder(memwrite)
-    builder = module.ArchiveBuilder(memwrite)
+    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
     builder.set("resource", [{"a": -0x1, "b": 0x01234567, "c": -0x28, "d": 0}] * 2)
     builder.finish()
 
@@ -191,8 +189,7 @@ namespace backward_compatibility {
     module = Engine(multivector_test_schema).render_python_module()
     memwrite = DummyResourceWriter()
 
-    #builder = module.backward_compatibility_ArchiveBuilder(memwrite)
-    builder = module.ArchiveBuilder(memwrite)
+    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
     builder.set("resource", multivector_data)
     builder.finish()
 
@@ -225,7 +222,7 @@ namespace backward_compatibility {
     module = Engine(raw_data_test_schema).render_python_module()
     memwrite = DummyResourceWriter()
 
-    builder = module.ArchiveBuilder(memwrite)
+    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
     builder.set("resource", b"\xff\xef\xbe\xad\xde")
     builder.finish()
 

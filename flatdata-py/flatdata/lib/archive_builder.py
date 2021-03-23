@@ -66,9 +66,7 @@ class ArchiveBuilder:
         :param path: file path where archive is created
         """
         self._path = os.path.join(path, self._NAME)
-        # ResourceStorage(resource_writer, self._path)
         self._resource_storage = resource_storage
-        #self._resource_writer = resource_writer
         self._write_archive_signature()
         self._write_archive_schema()
         self._resources_written = [f"{self._NAME}.archive"]
@@ -129,8 +127,7 @@ class ArchiveBuilder:
         '''
         Validates whether passed object has all required fields
 
-        # MissingFieldError would look more consistent with UnknownFieldError
-        :raises FieldMissingError
+        :raises MissingFieldError
         :raises UnknownFieldError
         :param name(str): name of object(struct)
         :param struct(object): object to validate
@@ -138,7 +135,7 @@ class ArchiveBuilder:
         '''
         for key in initializer._FIELD_KEYS:
             if key not in struct:
-                raise FieldMissingError(key, name)
+                raise MissingFieldError(key, name)
         for key in struct.keys():
             if key not in initializer._FIELD_KEYS:
                 raise UnknownFieldError(key, name)
@@ -254,8 +251,13 @@ class ArchiveBuilder:
         :param name: name of the resource
         :param value: value to write
         """
-        # TODO: we need to check against `_resources_written` here + check if _RESOURCES contains name
-        self._write_schema(name)
+        if name not in self._RESOURCES:
+            raise UnknownResourceError(name)
+
+        if not self._resources_written.count(name):
+            self._write_schema(name)
+        else:
+            raise ResourceAlreadySetError()
 
         storage = self._resource_storage.get(name, False)
 

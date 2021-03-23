@@ -46,7 +46,7 @@ class ResourceReadOnlyError(RuntimeError):
     """
 
 
-class FieldMissingError(RuntimeError):
+class MissingFieldError(RuntimeError):
     def __init__(self, key, name):
         super().__init__(f'Missing "{key}" is required for "{name}"')
 
@@ -82,3 +82,11 @@ class MissingResourceName(RuntimeError):
 class FileNameNotProvided(RuntimeError):
     def __init__(self):
         super().__init__("File name is not provided")
+
+class ResourceAlreadySetError(RuntimeError):
+    def __init__(self):
+        super().__init__("Resource is already set")
+
+class UnknownResourceError(RuntimeError):
+    def __init__(self, name):
+        super().__init__(f"Resource {name} is not part of provided schema")
