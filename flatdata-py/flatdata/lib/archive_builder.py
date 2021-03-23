@@ -38,7 +38,7 @@ class IndexWriter:
 
     def add(self, index):
         """
-        Covert index(number) to bytearray and add to in memory store
+        Convert index(number) to bytearray and add to in memory store
         """
         index_bytes = int(index).to_bytes(self._index_size,
                                           byteorder="little", signed=False)
@@ -55,8 +55,8 @@ class IndexWriter:
 
 class ArchiveBuilder:
     """
-    Archive class. Entry point to Flatdata.
-    Provides access to flatdata resources and verifies archive/resource schemas on opening.
+    ArchiveBuilder class. Entry point to writing Flatdata.
+    Provides methods to create flatdata archives.
     """
 
     def __init__(self, resource_storage, path=""):
@@ -129,6 +129,7 @@ class ArchiveBuilder:
         '''
         Validates whether passed object has all required fields
 
+        # MissingFieldError would look more consistent with UnknownFieldError
         :raises FieldMissingError
         :raises UnknownFieldError
         :param name(str): name of object(struct)
@@ -249,11 +250,11 @@ class ArchiveBuilder:
         Write a resource for this archive at once.
         Can only be done once. `set` and `start` can't be used for the same resource.
         :raises $already_set_error
-        :raises $already_start_error
         :raises $unknown_resource_error
         :param name: name of the resource
         :param value: value to write
         """
+        # TODO: we need to check against `_resources_written` here + check if _RESOURCES contains name
         self._write_schema(name)
 
         storage = self._resource_storage.get(name, False)
@@ -275,17 +276,6 @@ class ArchiveBuilder:
 
         self._resources_written.append(name)
 
-    def start(self, name):
-        """
-        Start writing a resource for this archive incrementally.
-        Can only be started once. `set` and `start` can't be used for the same resource.
-        :raises $already_set_error
-        :raises $already_start_error
-        :raises $unknown_resource_error
-        :param name: name of the resource
-        """
-        NotImplementedError
-
     def finish(self):
         """
         Checks that all required resources are created.
@@ -294,5 +284,5 @@ class ArchiveBuilder:
         for (name, resource) in self._RESOURCES.items():
             if not resource.is_optional and name not in self._resources_written:
                 raise RuntimeError(
-                    f'Required resource "{name}" not created. Finished archive is invalid.')
+                    f'Required resource "{name}" not created. Archive is invalid.')
         self._resource_storage.close()
