@@ -66,3 +66,19 @@ class DirExistsError(RuntimeError):
 class UnknownStructureError(RuntimeError):
     def __init__(self, name):
         super().__init__(f'"{name}" structure is not part of the multivector')
+
+class IndexWriterError(RuntimeError):
+    def __init__(self, error_str="Error initializing IndexWritter Class"):
+        super().__init__(f'{error_str}')
+
+class ArchivePathNotProvidedError(RuntimeError):
+    def __init__(self):
+        super().__init__("File path is not provided")
+
+class MissingResourceName(RuntimeError):
+    def __init__(self):
+        super().__init__("Resource name is not provided")
+
+class FileNameNotProvided(RuntimeError):
+    def __init__(self):
+        super().__init__("File name is not provided")

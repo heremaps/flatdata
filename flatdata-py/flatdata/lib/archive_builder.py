@@ -15,46 +15,41 @@ _SCHEMA_EXT = ".schema"
 ResourceSignature = namedtuple("ResourceSignature",
                                ["container", "initializer", "schema", "is_optional", "doc"])
 
-class FileResourceWriter:
-    def __init__(self, path):
-        self.path = path
-
-        if os.path.exists(path):
-            raise DirExistsError(path)
-
-        os.mkdir(path)
-
-    def get(self, key, is_subarchive):
-        filename = os.path.join(self.path, key)
-        if os.path.exists(filename):
-            raise FileExistsError(key)
-        
-        if is_subarchive:
-            return FileResourceWriter(filename)
-        
-        return open(filename, 'wb')
 
 class IndexWriter:
-    def __init__(self, name, resource_writer, size):
-        self._resource_writer = resource_writer
+    """
+    IndexWriter class. Only applicable when multivector is present in archive schema.
+    """
+
+    def __init__(self, name, size, resource_storage):
+        """
+        Create IndexWriter class.
+
+        All arguments are required.
+        """
+        if not (name and resource_storage and size):
+            raise IndexWriterError(
+                f"Either ResourceStorage: {resource_storage} or name: {name} or size:"
+                 "{size} not provided.")
+
         self._name = name
         self._index_size = size
-        self._size = 0
-
-        self._fout = self._resource_writer.get(f'{self._name}_index', False)
-        self._fout.write(b"\x00" * 8)
+        self._fout = resource_storage.get(f'{self._name}_index', False)
 
     def add(self, index):
-        index_bytes = int(index).to_bytes(self._index_size, byteorder="little", signed=False)
+        """
+        Covert index(number) to bytearray and add to in memory store
+        """
+        index_bytes = int(index).to_bytes(self._index_size,
+                                          byteorder="little", signed=False)
         self._fout.write(index_bytes)
-        self._size += (1 * self._index_size)
 
     def finish(self):
-        # hack to write size
-        #self._fout.close()
-        #self._fout = self._resource_writer.get(f"{self._name}.index", False)
-
-        self._fout.write(b"\x00" * 8)
+        """
+        Complete index resource by adding size and padding followed by writing to file
+        """
+        self._fout.add_size()
+        self._fout.add_padding()
         self._fout.close()
 
 
@@ -64,39 +59,62 @@ class ArchiveBuilder:
     Provides access to flatdata resources and verifies archive/resource schemas on opening.
     """
 
-    def __init__(self, resource_writer):
+    def __init__(self, resource_storage, path=""):
         """
         Opens archive from a given resource writer.
-        :param resource_writer: Resource writer to use.
+        :param resource_storage: storage manager to store and write to disc
+        :param path: file path where archive is created
         """
-        self._resource_writer = resource_writer
+        self._path = os.path.join(path, self._NAME)
+        # ResourceStorage(resource_writer, self._path)
+        self._resource_storage = resource_storage
+        #self._resource_writer = resource_writer
         self._write_archive_signature()
         self._write_archive_schema()
         self._resources_written = [f"{self._NAME}.archive"]
 
     @classmethod
     def name(cls):
+        '''Returns archive name'''
         return cls._NAME
 
     @classmethod
     def schema(cls):
+        '''Returns archive schema'''
         return cls._SCHEMA
 
+    def _write_raw_data(self, name, data):
+        '''
+        Helper function to write data
+
+        :param name(str): resource name
+        :param data(bytearray): data to be written to disc
+        '''
+        storage = self._resource_storage.get(name)
+        storage.write(data)
+        storage.close()
+
     def _write_schema(self, name):
-        fout = self._resource_writer.get(f"{name}.schema", False)
-        fout.write(self._RESOURCES[name].schema)
-        fout.close()
-    
+        '''
+        Writes resource schema
+
+        :param name: name of resource
+        '''
+        self._write_raw_data(f"{name}.schema", bytes(
+            self._RESOURCES[name].schema, 'utf-8'))
+
     def _write_archive_signature(self):
-        fout = self._resource_writer.get(f"{self._NAME}.archive", False)
-        # archive signature is 16 zero-ed bytes
-        fout.write(bytearray(16))
-        fout.close()
-        
+        '''Writes archive's signature'''
+        self._write_raw_data(f"{self._NAME}.archive", b'\x00' * 16)
+
     def _write_archive_schema(self):
-        fout = self._resource_writer.get(f"{self._NAME}.archive.schema", False)
-        fout.write(self._SCHEMA)
-        fout.close()
+        '''Writes archive schema'''
+        self._write_raw_data(
+            f"{self._NAME}.archive.schema", bytes(self._SCHEMA, 'utf-8'))
+
+    def _write_index_schema(self, resource_name, schema):
+        self._write_raw_data(
+            f"{resource_name}_index.schema", bytes(schema, 'utf-8'))
 
     def subarchive(self, name):
         """
@@ -105,14 +123,126 @@ class ArchiveBuilder:
         :param name: name of the sub-archive
         """
         NotImplemented
+
     @classmethod
     def validate_structure_fields(cls, name, struct, initializer):
+        '''
+        Validates whether passed object has all required fields
+
+        :raises FieldMissingError
+        :raises UnknownFieldError
+        :param name(str): name of object(struct)
+        :param struct(object): object to validate
+        :param initializer(object): provided field keys to validate from
+        '''
         for key in initializer._FIELD_KEYS:
             if key not in struct:
                 raise FieldMissingError(key, name)
         for key in struct.keys():
             if key not in initializer._FIELD_KEYS:
                 raise UnknownFieldError(key, name)
+
+    def set_instance(self, storage, name, value):
+        '''
+        Creates and writes instance type resource
+
+        :param storage(object): handles storage and writing to disc
+        :param name(str): instance name
+        :param value(dict): instance object replicates struct
+        '''
+        initializer = self._RESOURCES[name].initializer
+        ArchiveBuilder.validate_structure_fields(name, value, initializer)
+
+        bout = bytearray(initializer._SIZE_IN_BYTES)
+        for (key, field) in initializer._FIELDS.items():
+            write_value(bout, field.offset, field.width,
+                        field.is_signed, value[key])
+
+        storage.write(bout)
+
+    def set_vector(self, storage, name, vector):
+        '''
+        Creates and writes vector resource
+
+        :param storage(object): handles storage and writing to disc
+        :param name(str): resource name
+        :param vector(list): vector, provided as list of dict ie [{},{}]
+        '''
+        initializer = self._RESOURCES[name].initializer
+        for value in vector:
+            ArchiveBuilder.validate_structure_fields(name, value, initializer)
+        for value in vector:
+            bout = bytearray(initializer._SIZE_IN_BYTES)
+            for (key, field) in initializer._FIELDS.items():
+                write_value(bout, field.offset, field.width,
+                            field.is_signed, value[key])
+            storage.write(bout)
+
+    def set_multivector(self, storage, name, value):
+        '''
+        Creates and writes multivector resource
+
+        :param storage(object): handles storage and writing to disc
+        :param name(str): resource name
+        :param value(list): mulitvector, provided as list of list of dict ie [[{},{}],[]]
+        '''
+        initializer_list = self._RESOURCES[name].initializer
+
+        def valid_structure_name(_obj):
+            return _obj['name'] in [_initializer._NAME for _initializer in initializer_list[1:]]
+
+        def validate_fields(_obj):
+            matched_obj_list = [
+                _initializer for _initializer in initializer_list[1:] if _initializer._NAME == _obj['name']]
+            if len(matched_obj_list) == 1:
+                ArchiveBuilder.validate_structure_fields(
+                    name, _obj['attributes'], matched_obj_list[0])
+
+        for sub_list in value:
+            for obj in sub_list:
+                if not valid_structure_name(obj):
+                    raise UnknownStructureError(obj['name'])
+                validate_fields(obj)
+
+        index_data_points = []
+        data_point = 0
+        data_size = 0
+
+        for sub_list in value:
+            # index_writer.add(data_point)
+            index_data_points.append(data_point)
+            if len(sub_list) > 0:
+                for obj in sub_list:
+                    # find out correct initializer
+                    type_index, matched_initializer = [(index, element) for index, element in enumerate(
+                        initializer_list[1:]) if element._NAME == obj['name']][0]
+
+                    size = matched_initializer._SIZE_IN_BYTES + 1
+                    data_size += size
+                    data_point += size
+                    bout = bytearray(size)
+                    bout[0] = int(type_index).to_bytes(
+                        1, byteorder="little", signed=False)[0]
+
+                    for (key, field) in matched_initializer._FIELDS.items():
+                        write_value(bout, field.offset + 1 * 8, field.width,
+                                    field.is_signed, obj['attributes'][key])
+
+                    storage.write(bout)
+
+        index_data_points.append(data_point)
+
+        index_writer = IndexWriter(
+            name, initializer_list[0]._SIZE_IN_BYTES, self._resource_storage)
+
+        for index in index_data_points:
+            index_writer.add(index)
+        index_writer.finish()
+        # Write index schema
+        self._write_index_schema(
+            name, f'index({self._RESOURCES[name].schema})')
+        self._resources_written.append(name)
+        self._resources_written.append(f'{name}_index')
 
     def set(self, name, value):
         """
@@ -126,95 +256,22 @@ class ArchiveBuilder:
         """
         self._write_schema(name)
 
-        fout = self._resource_writer.get(name, False)
+        storage = self._resource_storage.get(name, False)
+
         if self._RESOURCES[name].container is Instance:
-            initializer = self._RESOURCES[name].initializer
-            ArchiveBuilder.validate_structure_fields(name, value, initializer)
-            
-            fout.write(int(initializer._SIZE_IN_BYTES).to_bytes(8, byteorder="little"))
-            bout = bytearray(initializer._SIZE_IN_BYTES) 
-            for (key, field) in initializer._FIELDS.items():
-                write_value(bout, field.offset, field.width, field.is_signed, value[key])
-
-            fout.write(bout)
-
+            self.set_instance(storage, name, value)
         elif self._RESOURCES[name].container is Vector:
-            # TODO: refactor to use less copy-pasta
-            initializer = self._RESOURCES[name].initializer
-            for v in value:
-                ArchiveBuilder.validate_structure_fields(name, v, initializer)
-
-            fout.write(int(initializer._SIZE_IN_BYTES * len(value)).to_bytes(8, byteorder="little"))
-            for v in value:
-                bout = bytearray(initializer._SIZE_IN_BYTES) 
-                for (key, field) in initializer._FIELDS.items():
-                    write_value(bout, field.offset, field.width, field.is_signed, v[key])
-
-                fout.write(bout)
-
+            self.set_vector(storage, name, value)
         elif self._RESOURCES[name].container is Multivector:
-            # TODO: write multi-vector
-            initializer_list = self._RESOURCES[name].initializer
-            size_in_bits = initializer_list[0]._SIZE_IN_BITS
-
-            def valid_structure_name(_obj):
-                return _obj['name'] in [_initializer._NAME for _initializer in initializer_list[1:]]
-
-            def validate_fields(_obj):
-                matched_obj_list = [_initializer for _initializer in initializer_list[1:] if _initializer._NAME == _obj['name']]
-                if len(matched_obj_list) == 1:
-                    ArchiveBuilder.validate_structure_fields(name, _obj['attributes'], matched_obj_list[0])
-
-            for sub_list in value:
-                for obj in sub_list:
-                    if not valid_structure_name(obj):
-                        """
-                        Validate if passed structure is part of Mulitvector definition
-                        """
-                        raise UnknownStructureError(obj['name'])
-                    validate_fields(obj)
-
-            #Write placeholder for size
-            #TODO - Write correct length writing
-            fout.write(int(0).to_bytes(8, byteorder="little"))
-            #TODO: Find out how to write data points
-            index_writer = IndexWriter(name, self._resource_writer, initializer_list[0]._SIZE_IN_BYTES)
-            # Write 
-            data_point = 0
-            data_size = 0
-
-            for sub_list in value:
-                index_writer.add(data_point)
-
-                if len(sub_list) > 0:
-                    for obj in sub_list:
-                        # find out correct initializer
-                        type_index, matched_initializer = [(index, element) for index, element in enumerate(initializer_list[1:]) if element._NAME == obj['name']][0]
-
-                        data_size += matched_initializer._SIZE_IN_BYTES +1
-                        data_point += matched_initializer._SIZE_IN_BYTES +1
-
-                        bout = bytearray(matched_initializer._SIZE_IN_BYTES + 1)
-                        bout[0] = int(type_index).to_bytes(1, byteorder="little", signed=False)[0]
-                        for (key, field) in matched_initializer._FIELDS.items():
-                            write_value(bout, field.offset + 1 * 8, field.width, field.is_signed, obj['attributes'][key])
-
-                        fout.write(bout)
-
-            # Add sentinel data point
-            index_writer.add(data_point)
-            index_writer.finish()
-            self._resources_written.append(f'{name}.index')
-
+            self.set_multivector(storage, name, value)
         elif self._RESOURCES[name].container is RawData:
-            # TODO: should we do some checks here? what checks?
-            fout.write(value)
+            storage.write(value)
         else:
             NotImplementedError
 
-        # write trailing 8 zero bytes
-        fout.write(b"\x00\x00\x00\x00\x00\x00\x00\x00")
-        fout.close()
+        storage.add_size()
+        storage.add_padding()
+        storage.close()
 
         self._resources_written.append(name)
 
@@ -236,4 +293,6 @@ class ArchiveBuilder:
         """
         for (name, resource) in self._RESOURCES.items():
             if not resource.is_optional and name not in self._resources_written:
-                raise RuntimeError(f'Required resource "{name}" not created. Finished archive is invalid.')
+                raise RuntimeError(
+                    f'Required resource "{name}" not created. Finished archive is invalid.')
+        self._resource_storage.close()

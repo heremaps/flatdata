@@ -1,6 +1,8 @@
 from flatdata.generator.engine import Engine
-from flatdata.lib.archive_builder import FileResourceWriter
+#from flatdata.lib.archive_builder import FileResourceWriter
 from common import DictResourceStorage, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD, ARCHIVE_SIGNATURE_PAYLOAD
+
+from flatdata.lib.resource_storage import _Resource
 
 
 class DummyResourceWriter:
@@ -9,40 +11,41 @@ class DummyResourceWriter:
     """
     def __init__(self):
         self.data = dict()
-    
-    def get(self, key, is_subarchive):   
+
+    def get(self, key, is_subarchive=False):   
         if is_subarchive:
             return DummyResourceWriter()
         
         if key not in self.data:
             self.data[key] = bytearray()
-        return DummyFileWriter(self.data[key])
 
-class DummyFileWriter:
-    """
-    Mimick binary file writing and store result in `data` of
-    the `BytesResourceWriter` that created it.
-    """
+        self.data[key] = DummyFileWriter(key, self.data[key])
+        return self.data[key]
+    
+    def open(self, name, file_path):
+        pass
 
-    def __init__(self, data):
-        self.data = data
-
-    def write(self, thing):
-        if isinstance(thing, str):
-            self.data += thing.encode("utf-8")
-        else:
-            self.data += thing
-        return len(thing)
+    def write(self, data):
+        print("#1 write called")
+        pass
 
     def close(self):
         pass
 
+class DummyFileWriter(_Resource):
+    """
+    Mimick binary file writing and store result in `data` of
+    the `BytesResourceWriter` that created it.
+    """
+    def __init__(self, key, data):
+        super().__init__(key, path="dummypath")
 
 def test_create_example_archive():
     module = Engine(INSTANCE_TEST_SCHEMA).render_python_module()
     memwrite = DummyResourceWriter()
 
-    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
+    #builder = module.backward_compatibility_ArchiveBuilder(memwrite)
+    builder = module.ArchiveBuilder(memwrite)
     builder.set("resource", {"a": -0x1, "b": 0x01234567, "c": -0x28, "d": 0})
     builder.finish()
 
@@ -54,7 +57,7 @@ def test_create_example_archive():
     }
 
     for (vkey, vdata) in valid_data.items():
-        assert memwrite.data[vkey] == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
+        assert memwrite.data[vkey].get_data() == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
 
 def test_create_vector_archive():
     vector_test_schema = """
@@ -81,7 +84,8 @@ namespace backward_compatibility {
     module = Engine(vector_test_schema).render_python_module()
     memwrite = DummyResourceWriter()
 
-    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
+    #builder = module.backward_compatibility_ArchiveBuilder(memwrite)
+    builder = module.ArchiveBuilder(memwrite)
     builder.set("resource", [{"a": -0x1, "b": 0x01234567, "c": -0x28, "d": 0}] * 2)
     builder.finish()
 
@@ -93,7 +97,7 @@ namespace backward_compatibility {
     }
 
     for (vkey, vdata) in valid_data.items():
-        assert memwrite.data[vkey] == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
+        assert memwrite.data[vkey].get_data() == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
 
 
 def test_create_multivector_archive():
@@ -187,7 +191,8 @@ namespace backward_compatibility {
     module = Engine(multivector_test_schema).render_python_module()
     memwrite = DummyResourceWriter()
 
-    builder = module.backward_compatibility_ArchiveBuilder(memwrite)
+    #builder = module.backward_compatibility_ArchiveBuilder(memwrite)
+    builder = module.ArchiveBuilder(memwrite)
     builder.set("resource", multivector_data)
     builder.finish()
 
@@ -197,8 +202,39 @@ namespace backward_compatibility {
         "resource": multivector_resource_data,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode(),
         "resource_index": multivector_resource_index,
-        "resource_index.schema": module.backward_compatibility_Archive.resource_schema('resource').encode()
+        "resource_index.schema": bytearray(f'index({module.backward_compatibility_Archive.resource_schema("resource")})'.encode())
     }
 
     for (vkey, vdata) in valid_data.items():
-        assert memwrite.data[vkey] == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
+        assert memwrite.data[vkey].get_data() == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
+
+def test_create_raw_data():
+    raw_data_test_schema = """
+namespace backward_compatibility {
+    archive Archive {
+        resource: raw_data;
+    }
+}
+"""
+    raw_data_resource_data = (
+        b"\x05\x00\x00\x00\x00\x00\x00\x00"  # Payload size in bytes
+        b"\xff\xef\xbe\xad\xde"  # Payload
+        b"\x00\x00\x00\x00\x00\x00\x00\x00"  # Padding
+    )
+
+    module = Engine(raw_data_test_schema).render_python_module()
+    memwrite = DummyResourceWriter()
+
+    builder = module.ArchiveBuilder(memwrite)
+    builder.set("resource", b"\xff\xef\xbe\xad\xde")
+    builder.finish()
+
+    valid_data = {
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
+        "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
+        "resource": raw_data_resource_data,
+        "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode(),
+    }
+
+    for (vkey, vdata) in valid_data.items():
+        assert memwrite.data[vkey].get_data() == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'

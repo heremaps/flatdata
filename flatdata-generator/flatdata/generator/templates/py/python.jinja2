@@ -58,7 +58,8 @@ class {{ tree.namespace_path(archive, "_") }}_{{ archive.name }}(flatdata.archiv
 {% endmacro %}
 
 {% macro archive_builder_definition(tree, archive) %}
-class {{ tree.namespace_path(archive, "_") }}_{{ archive.name }}Builder(flatdata.archive_builder.ArchiveBuilder):
+class ArchiveBuilder(flatdata.archive_builder.ArchiveBuilder):
+#class {{ tree.namespace_path(archive, "_") }}_{{ archive.name }}Builder(flatdata.archive_builder.ArchiveBuilder):
     _SCHEMA = """{{ tree.schema(archive)|safe_py_string_line }}"""
     {% for resource in archive.resources if not resource|is_bound_resource %}
     _{{ resource.name|upper }}_SCHEMA = """{{ tree.schema(resource)|safe_py_string_line }}"""
