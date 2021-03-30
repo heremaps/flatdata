@@ -32,3 +32,21 @@ pip3 install flatdata-py[inspector]  # the inspector feature requires IPython
 flatdata-inspector -p /path/to/my/flatdata.archive
 ```
 
+## Using the writer
+
+`flatdata-writer` is new addition to `flatdata-py`. It helps in creating flatdata files from flatdata schema:
+
+* from the `flatdata-py` source directory
+
+```sh
+./writer.py --schema archive.flatdata --output-dir testdir --json-file data.json --resource-name resourcename
+#or
+python3 -m flatdata.lib.writer --schema archive.flatdata --output-dir testdir --json-file data.json --resource-name resourcename
+```
+
+* if you want to install flatdata-py:
+
+```sh
+pip3 install flatdata-py[writer]
+flatdata-writer --schema archive.flatdata --output-dir testdir --json-file data.json --resource-name resourcename
+```

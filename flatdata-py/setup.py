@@ -6,7 +6,7 @@ SOURCE_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name="flatdata-py",
-    version="0.4.3",
+    version="0.4.4",
     author="Flatdata Developers",
     description="Python 3 implementation of Flatdata",
     long_description=open(os.path.join(SOURCE_FILEPATH, "README.md")).read(),
@@ -19,7 +19,8 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "flatdata-inspector = flatdata.lib.inspector:main [inspector]"
+            "flatdata-inspector = flatdata.lib.inspector:main [inspector]",
+            "flatdata-writer = flatdata.lib.writer:main [writer]"
         ],
     },
     setup_requires=["wheel"],
