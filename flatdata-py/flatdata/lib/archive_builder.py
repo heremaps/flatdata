@@ -6,8 +6,10 @@
 from collections import namedtuple
 import os
 
-from .errors import *
-from .resources import *
+from .errors import IndexWriterError, MissingFieldError, UnknownFieldError, \
+    UnknownStructureError, UnknownResourceError, ResourceAlreadySetError
+
+from .resources import Instance, Vector, Multivector, RawData
 from .data_access import write_value
 
 _SCHEMA_EXT = ".schema"
@@ -30,7 +32,7 @@ class IndexWriter:
         if not (name and resource_storage and size):
             raise IndexWriterError(
                 f"Either ResourceStorage: {resource_storage} or name: {name} or size:"
-                 "{size} not provided.")
+                "{size} not provided.")
 
         self._name = name
         self._index_size = size
@@ -123,7 +125,7 @@ class ArchiveBuilder:
         NotImplemented
 
     @classmethod
-    def validate_structure_fields(cls, name, struct, initializer):
+    def __validate_structure_fields(cls, name, struct, initializer):
         '''
         Validates whether passed object has all required fields
 
@@ -140,7 +142,7 @@ class ArchiveBuilder:
             if key not in initializer._FIELD_KEYS:
                 raise UnknownFieldError(key, name)
 
-    def set_instance(self, storage, name, value):
+    def __set_instance(self, storage, name, value):
         '''
         Creates and writes instance type resource
 
@@ -149,7 +151,7 @@ class ArchiveBuilder:
         :param value(dict): instance object replicates struct
         '''
         initializer = self._RESOURCES[name].initializer
-        ArchiveBuilder.validate_structure_fields(name, value, initializer)
+        ArchiveBuilder.__validate_structure_fields(name, value, initializer)
 
         bout = bytearray(initializer._SIZE_IN_BYTES)
         for (key, field) in initializer._FIELDS.items():
@@ -158,7 +160,7 @@ class ArchiveBuilder:
 
         storage.write(bout)
 
-    def set_vector(self, storage, name, vector):
+    def __set_vector(self, storage, name, vector):
         '''
         Creates and writes vector resource
 
@@ -168,7 +170,8 @@ class ArchiveBuilder:
         '''
         initializer = self._RESOURCES[name].initializer
         for value in vector:
-            ArchiveBuilder.validate_structure_fields(name, value, initializer)
+            ArchiveBuilder.__validate_structure_fields(
+                name, value, initializer)
         for value in vector:
             bout = bytearray(initializer._SIZE_IN_BYTES)
             for (key, field) in initializer._FIELDS.items():
@@ -176,7 +179,7 @@ class ArchiveBuilder:
                             field.is_signed, value[key])
             storage.write(bout)
 
-    def set_multivector(self, storage, name, value):
+    def __set_multivector(self, storage, name, value):
         '''
         Creates and writes multivector resource
 
@@ -186,14 +189,19 @@ class ArchiveBuilder:
         '''
         initializer_list = self._RESOURCES[name].initializer
 
+        initializers = {}
+        for index, obj_type in enumerate(initializer_list[1:]):
+            initializers[obj_type._NAME] = (index, obj_type)
+
         def valid_structure_name(_obj):
             return _obj['name'] in [_initializer._NAME for _initializer in initializer_list[1:]]
 
         def validate_fields(_obj):
             matched_obj_list = [
-                _initializer for _initializer in initializer_list[1:] if _initializer._NAME == _obj['name']]
+                _initializer for _initializer in initializer_list[1:] \
+                    if _initializer._NAME == _obj['name']]
             if len(matched_obj_list) == 1:
-                ArchiveBuilder.validate_structure_fields(
+                ArchiveBuilder.__validate_structure_fields(
                     name, _obj['attributes'], matched_obj_list[0])
 
         for sub_list in value:
@@ -207,13 +215,11 @@ class ArchiveBuilder:
         data_size = 0
 
         for sub_list in value:
-            # index_writer.add(data_point)
             index_data_points.append(data_point)
-            if len(sub_list) > 0:
+            if sub_list:
                 for obj in sub_list:
                     # find out correct initializer
-                    type_index, matched_initializer = [(index, element) for index, element in enumerate(
-                        initializer_list[1:]) if element._NAME == obj['name']][0]
+                    type_index, matched_initializer = initializers[obj['name']]
 
                     size = matched_initializer._SIZE_IN_BYTES + 1
                     data_size += size
@@ -262,11 +268,11 @@ class ArchiveBuilder:
         storage = self._resource_storage.get(name, False)
 
         if self._RESOURCES[name].container is Instance:
-            self.set_instance(storage, name, value)
+            self.__set_instance(storage, name, value)
         elif self._RESOURCES[name].container is Vector:
-            self.set_vector(storage, name, value)
+            self.__set_vector(storage, name, value)
         elif self._RESOURCES[name].container is Multivector:
-            self.set_multivector(storage, name, value)
+            self.__set_multivector(storage, name, value)
         elif self._RESOURCES[name].container is RawData:
             storage.write(value)
         else:

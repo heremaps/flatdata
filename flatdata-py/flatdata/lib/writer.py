@@ -14,9 +14,9 @@ def main():
     parser.add_argument("-p", "--output-path", type=str, dest="path", required=True,
                         help="Path to archive")
     parser.add_argument("-s", "--schema", type=str, dest="schema", required=True,
-                        help="Archive schema file")
-    parser.add_argument("-r", "--resource-name", type=str, dest="resource_name", required=True,
                         help="Archive's schema file")
+    parser.add_argument("-r", "--resource-name", type=str, dest="resource_name", required=True,
+                        help="Name of the resource")
     parser.add_argument("-d", "--json-file", type=str, dest="json_file", required=True,
                         help="File containing data in json format")
     args = parser.parse_args()

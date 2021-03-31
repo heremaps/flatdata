@@ -34,7 +34,13 @@ flatdata-inspector -p /path/to/my/flatdata.archive
 
 ## Using the writer
 
-`flatdata-writer` is new addition to `flatdata-py`. It helps in creating flatdata files from flatdata schema:
+`flatdata-writer` is an addition to `flatdata-py`. It helps in creating flatdata files from flatdata schema but with
+following limitations:
+* It is only for bulk-writing (no streaming)
+* It is not yet optimized for performance
+* It does not allow adding additional sub-archives to existing archive
+
+### Usage
 
 * from the `flatdata-py` source directory
 
