@@ -1,7 +1,5 @@
+from common import *
 from flatdata.generator.engine import Engine
-#from flatdata.lib.archive_builder import FileResourceWriter
-from common import DictResourceStorage, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD, ARCHIVE_SIGNATURE_PAYLOAD
-
 from flatdata.lib.resource_storage import _Resource
 
 
@@ -59,28 +57,7 @@ def test_create_example_archive():
         assert memwrite.data[vkey].get_data() == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
 
 def test_create_vector_archive():
-    vector_test_schema = """
-namespace backward_compatibility {
-    struct SignedStruct {
-        a : i16 : 5;
-        b : u32 : 32;
-        c : i32 : 7;
-        d : u32 : 32;
-    }
-    archive Archive {
-        resource: vector< SignedStruct >;
-    }
-}
-"""
-    RESOURCE_PAYLOAD = (
-        b"\x14\x00\x00\x00\x00\x00\x00\x00"  # Payload size in bytes
-        b"\xff\xac\x68\x24\x00\x0b\x00\x00"  # Payload
-        b"\x00\x00\xff\xac\x68\x24\x00\x0b"  # Payload
-        b"\x00\x00\x00\x00"  # Payload
-        b"\x00\x00\x00\x00\x00\x00\x00\x00"  # Padding
-    )
-
-    module = Engine(vector_test_schema).render_python_module()
+    module = Engine(VECTOR_TEST_SCHEMA).render_python_module()
     memwrite = DummyResourceWriter()
 
     builder = module.backward_compatibility_ArchiveBuilder(memwrite)
@@ -90,7 +67,7 @@ namespace backward_compatibility {
     valid_data = {
         "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
-        "resource": RESOURCE_PAYLOAD,
+        "resource": RESOURCE_VECTOR_PAYLOAD,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode()
     }
 
@@ -99,44 +76,6 @@ namespace backward_compatibility {
 
 
 def test_create_multivector_archive():
-    multivector_test_schema = """
-namespace backward_compatibility {
-    struct SimpleStruct {
-        a : u32 : 32;
-        b : u32 : 32;
-    }
-    struct SignedStruct {
-        a : i16 : 5;
-        b : u32 : 32;
-        c : i32 : 7;
-        d : u32 : 32;
-    }
-    archive Archive {
-        resource: multivector< 33, SimpleStruct, SignedStruct >;
-    }
-}
-"""
-
-    multivector_resource_data = (
-        b"\x31\x00\x00\x00\x00\x00\x00\x00"  # Payload size in bytes
-        b"\x01\xff\xac\x68\x24\x00\x0b\x00\x00\x00\x00"  # Payload
-        b"\x00\xff\xff\xff\xff\xef\xbe\xad\xde"  # Payload
-        b"\x00\xff\xff\xff\xff\xef\xbe\xad\xde"  # Payload
-        b"\x01\xff\xac\x68\x24\x00\x0b\x00\x00\x00\x00"  # Payload
-        b"\x00\xff\xff\xff\xff\xef\xbe\xad\xde"  # Payload
-        b"\x00\x00\x00\x00\x00\x00\x00\x00"  # Padding
-    )
-
-    multivector_resource_index = (
-        b"\x19\x00\x00\x00\x00\x00\x00\x00"  # Index size in bytes
-        b"\x00\x00\x00\x00\x00"  # Data pointer 1
-        b"\x14\x00\x00\x00\x00"  # Data pointer 2
-        b"\x14\x00\x00\x00\x00"  # Data pointer 3
-        b"\x28\x00\x00\x00\x00"  # Data pointer 4
-        b"\x31\x00\x00\x00\x00"  # Sentinel (end of data 4)
-        b"\x00\x00\x00\x00\x00\x00\x00\x00"  # Padding
-    )
-
     multivector_data = [
     [
         {
@@ -186,7 +125,7 @@ namespace backward_compatibility {
     ]
     ]
 
-    module = Engine(multivector_test_schema).render_python_module()
+    module = Engine(MULTIVECTOR_TEST_SCHEMA).render_python_module()
     memwrite = DummyResourceWriter()
 
     builder = module.backward_compatibility_ArchiveBuilder(memwrite)
@@ -196,9 +135,9 @@ namespace backward_compatibility {
     valid_data = {
         "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
-        "resource": multivector_resource_data,
+        "resource": MULTIVECTOR_RESOURCE_DATA,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode(),
-        "resource_index": multivector_resource_index,
+        "resource_index": MULTIVECTOR_RESOURCE_INDEX,
         "resource_index.schema": bytearray(f'index({module.backward_compatibility_Archive.resource_schema("resource")})'.encode())
     }
 
@@ -206,20 +145,7 @@ namespace backward_compatibility {
         assert memwrite.data[vkey].get_data() == vdata, f'"{vkey}" is "{memwrite.data[vkey]}", should be "{vdata}"'
 
 def test_create_raw_data():
-    raw_data_test_schema = """
-namespace backward_compatibility {
-    archive Archive {
-        resource: raw_data;
-    }
-}
-"""
-    raw_data_resource_data = (
-        b"\x05\x00\x00\x00\x00\x00\x00\x00"  # Payload size in bytes
-        b"\xff\xef\xbe\xad\xde"  # Payload
-        b"\x00\x00\x00\x00\x00\x00\x00\x00"  # Padding
-    )
-
-    module = Engine(raw_data_test_schema).render_python_module()
+    module = Engine(RAW_DATA_TEST_SCHEMA).render_python_module()
     memwrite = DummyResourceWriter()
 
     builder = module.backward_compatibility_ArchiveBuilder(memwrite)
@@ -229,7 +155,7 @@ namespace backward_compatibility {
     valid_data = {
         "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
-        "resource": raw_data_resource_data,
+        "resource": RAW_DATA_RESOURCE_DATA,
         "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode(),
     }
 
