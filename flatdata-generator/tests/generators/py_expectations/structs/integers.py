@@ -9,6 +9,7 @@ import flatdata.lib as flatdata
 
 
 
+
 class n_U8(flatdata.structure.Structure):
     """"""
     _SCHEMA = """namespace n {
@@ -19,6 +20,7 @@ struct U8
 }
 
 """
+    _NAME = "n_U8"
     _SIZE_IN_BITS = 8
     _SIZE_IN_BYTES = 1
     _FIELDS = {
@@ -38,6 +40,7 @@ struct I8
 }
 
 """
+    _NAME = "n_I8"
     _SIZE_IN_BITS = 8
     _SIZE_IN_BYTES = 1
     _FIELDS = {
@@ -57,6 +60,7 @@ struct U16
 }
 
 """
+    _NAME = "n_U16"
     _SIZE_IN_BITS = 16
     _SIZE_IN_BYTES = 2
     _FIELDS = {
@@ -76,6 +80,7 @@ struct I16
 }
 
 """
+    _NAME = "n_I16"
     _SIZE_IN_BITS = 16
     _SIZE_IN_BYTES = 2
     _FIELDS = {
@@ -95,6 +100,7 @@ struct U32
 }
 
 """
+    _NAME = "n_U32"
     _SIZE_IN_BITS = 32
     _SIZE_IN_BYTES = 4
     _FIELDS = {
@@ -114,6 +120,7 @@ struct I32
 }
 
 """
+    _NAME = "n_I32"
     _SIZE_IN_BITS = 32
     _SIZE_IN_BYTES = 4
     _FIELDS = {
@@ -133,6 +140,7 @@ struct U64
 }
 
 """
+    _NAME = "n_U64"
     _SIZE_IN_BITS = 64
     _SIZE_IN_BYTES = 8
     _FIELDS = {
@@ -152,6 +160,7 @@ struct I64
 }
 
 """
+    _NAME = "n_I64"
     _SIZE_IN_BITS = 64
     _SIZE_IN_BYTES = 8
     _FIELDS = {
