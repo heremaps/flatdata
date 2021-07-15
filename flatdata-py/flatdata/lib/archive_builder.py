@@ -286,11 +286,6 @@ class ArchiveBuilder:
 
     def finish(self):
         """
-        Checks that all required resources are created.
-        :raises RuntimeError
+        Closes the storage manager
         """
-        for (name, resource) in self._RESOURCES.items():
-            if not resource.is_optional and name not in self._resources_written:
-                raise RuntimeError(
-                    f'Required resource "{name}" not created. Archive is invalid.')
         self._resource_storage.close()
