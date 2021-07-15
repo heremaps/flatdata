@@ -19,7 +19,7 @@ class Writer:
     flatdata.
     '''
 
-    def __init__(self, archive_schema, path):
+    def __init__(self, archive_schema, path, archive_name=""):
         '''
         Creates instance or Writer class. Archive module is rendered by engine
         using provided schema.
@@ -28,9 +28,11 @@ class Writer:
         :param path(str): file path where flatdata files are created
         '''
         try:
-            _, archive_type = \
-                Engine(archive_schema).render_python_module(
-                    archive_name=Writer._get_archive_name(archive_schema)+"Builder")
+            if not archive_name:
+                archive_name = Writer._get_archive_name(
+                    archive_schema)
+            _, archive_type = Engine(archive_schema).render_python_module(
+                archive_name=archive_name + "Builder")
         except FlatdataSyntaxError as err:
             raise RuntimeError(
                 "Error in generating modules from provided schema: %s " % err)
@@ -62,5 +64,9 @@ class Writer:
         if not archive_schema:
             raise RuntimeError("Archive schema is required")
 
-        index = archive_schema.find("archive") + 7
+        archive_keyword = "archive"
+        index = archive_schema.find(archive_keyword) + len(archive_keyword)
+        if archive_schema[index:].find(archive_keyword) >= 0:
+            raise RuntimeError(
+                "Schema contains multiple archives, please specify archive name explicitly")
         return archive_schema[index:index+archive_schema[index:].find("{")].strip()

@@ -19,6 +19,8 @@ def main():
                         help="Name of the resource")
     parser.add_argument("-d", "--json-file", type=str, dest="json_file", required=True,
                         help="File containing data in json format")
+    parser.add_argument("-a", "--archive-name", type=str, dest="archive_name", required=False,
+                        help="Name of the archive (if schema contains multiple archives)")
     args = parser.parse_args()
 
     if not os.path.exists(args.schema):
@@ -35,7 +37,7 @@ def main():
     with open(args.json_file, 'r') as json_file:
         data = json.load(json_file)
 
-    archive_writer = Writer(schema, args.path)
+    archive_writer = Writer(schema, args.path, args.archive_name)
     archive_writer.set(args.resource_name, data)
     archive_writer.finish()
 
