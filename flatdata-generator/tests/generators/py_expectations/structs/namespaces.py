@@ -8,6 +8,7 @@ struct Foo
 }
 
 """
+    _NAME = "n_Foo"
     _SIZE_IN_BITS = 32
     _SIZE_IN_BYTES = 4
     _FIELDS = {
@@ -27,6 +28,7 @@ struct Foo
 }
 
 """
+    _NAME = "m_Foo"
     _SIZE_IN_BITS = 32
     _SIZE_IN_BYTES = 4
     _FIELDS = {
