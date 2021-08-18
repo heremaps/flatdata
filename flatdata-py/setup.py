@@ -6,7 +6,7 @@ SOURCE_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name="flatdata-py",
-    version="0.4.5",
+    version="0.4.4",
     author="Flatdata Developers",
     description="Python 3 implementation of Flatdata",
     long_description=open(os.path.join(SOURCE_FILEPATH, "README.md")).read(),
@@ -25,7 +25,7 @@ setup(
     },
     setup_requires=["wheel"],
     install_requires=[
-        "flatdata-generator==0.4.5",
+        "flatdata-generator==0.4.4",
         "numpy",
         "pandas"
     ],
