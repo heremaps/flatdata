@@ -25,7 +25,7 @@ setup(
     },
     setup_requires=["wheel"],
     install_requires=[
-        "flatdata-generator>=0.4.3",
+        "flatdata-generator==0.4.4",
         "numpy",
         "pandas"
     ],
