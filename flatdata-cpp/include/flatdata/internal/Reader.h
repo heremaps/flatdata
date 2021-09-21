@@ -13,6 +13,7 @@
 #include <boost/optional/optional_io.hpp>
 
 #include <cstring>
+#include <utility>
 
 namespace flatdata
 {
