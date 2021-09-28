@@ -23,4 +23,5 @@
 #include "MultiVector.h"
 #include "ResourceStorage.h"
 #include "Struct.h"
+#include "TarFileResourceStorage.h"
 #include "Vector.h"
