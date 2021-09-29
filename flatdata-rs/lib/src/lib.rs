@@ -159,6 +159,7 @@ mod multivector;
 mod rawdata;
 mod storage;
 mod structs;
+#[cfg(feature = "tar")]
 mod tarstorage;
 mod vector;
 
@@ -182,6 +183,8 @@ pub use crate::{
         create_archive, create_external_vector, create_multi_vector, ResourceStorage, StorageHandle,
     },
     structs::*,
-    tarstorage::TarArchiveResourceStorage,
     vector::*,
 };
+
+#[cfg(feature = "tar")]
+pub use crate::tarstorage::TarArchiveResourceStorage;

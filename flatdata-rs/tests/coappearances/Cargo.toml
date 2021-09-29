@@ -10,3 +10,6 @@ flatdata = { path = "../../lib" }
 
 [build-dependencies]
 flatdata = { path = "../../lib" }
+
+[features]
+tar = ["flatdata/tar"]

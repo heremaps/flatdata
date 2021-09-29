@@ -21,7 +21,8 @@ struct MemoryMappedTarArchiveStorage {
 impl MemoryMappedTarArchiveStorage {
     pub fn new(tar_path: &Path) -> Result<Self, io::Error> {
         let file = File::open(tar_path)?;
-        let mut archive = tar::Archive::new(file);
+        let archive_map = unsafe { Mmap::map(&file)? };
+        let mut archive = tar::Archive::new(&archive_map[..]);
 
         let file_ranges = archive
             .entries()?
@@ -35,13 +36,17 @@ impl MemoryMappedTarArchiveStorage {
                 };
                 let offset = entry.raw_file_position() as usize;
                 let size = entry.size() as usize;
+                if entry.header().entry_size()? != entry.size() {
+                    // We can only memory-map contiguous files
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "Sparse files are not supported",
+                    ));
+                }
 
                 Ok((path, offset..offset + size))
             })
             .collect::<Result<HashMap<PathBuf, Range<usize>>, io::Error>>()?;
-
-        let file = File::open(tar_path)?;
-        let archive_map = unsafe { Mmap::map(&file)? };
 
         Ok(Self {
             archive_map,
@@ -112,17 +117,17 @@ impl ResourceStorage for TarArchiveResourceStorage {
         if let Some(data) = self.storage.read(&resource_path) {
             Ok(data)
         } else {
-            return Err(io::Error::new(
+            Err(io::Error::new(
                 io::ErrorKind::NotFound,
                 String::from(resource_path.to_str().unwrap_or(resource_name)),
-            ));
+            ))
         }
     }
 
     fn create_output_stream(&self, _resource_name: &str) -> Result<Box<dyn Stream>, io::Error> {
-        return Err(io::Error::new(
+        Err(io::Error::new(
             io::ErrorKind::Other,
             "Writing to tar archives is not supported",
-        ));
+        ))
     }
 }

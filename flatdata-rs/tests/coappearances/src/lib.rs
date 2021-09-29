@@ -134,6 +134,7 @@ fn read_and_validate_coappearances_from_file_storage() -> Result<(), std::str::U
 }
 
 #[test]
+#[cfg(feature = "tar")]
 fn read_and_validate_coappearances_from_tar_archive_storage() -> Result<(), std::str::Utf8Error> {
     let storage =
         flatdata::TarArchiveResourceStorage::new(path::PathBuf::from("assets/karenina.tar"))
