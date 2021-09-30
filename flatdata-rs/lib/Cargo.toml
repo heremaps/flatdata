@@ -15,3 +15,6 @@ diff = "0.1.11"
 memmap2 = "0.2.0"
 tar = { version = "0.4", optional = true }
 walkdir = "2.2.9"
+
+[package.metadata.docs.rs]
+all-features = true
