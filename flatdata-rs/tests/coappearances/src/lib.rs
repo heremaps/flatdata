@@ -7,10 +7,9 @@ use std::{env, fs, io::Read, path, str};
 
 pub mod coappearances;
 
-#[test]
-fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
-    let storage =
-        flatdata::FileResourceStorage::new(path::PathBuf::from("assets/karenina.archive"));
+fn read_and_validate_coappearances(
+    storage: flatdata::StorageHandle,
+) -> Result<(), std::str::Utf8Error> {
     let g = coappearances::Graph::open(storage).expect("invalid archive");
     println!("{:?}", g);
 
@@ -125,6 +124,22 @@ fn read_and_validate_coappearances() -> Result<(), std::str::Utf8Error> {
         _ => assert!(false),
     };
     Ok(())
+}
+
+#[test]
+fn read_and_validate_coappearances_from_file_storage() -> Result<(), std::str::Utf8Error> {
+    let storage =
+        flatdata::FileResourceStorage::new(path::PathBuf::from("assets/karenina.archive"));
+    read_and_validate_coappearances(storage)
+}
+
+#[test]
+#[cfg(feature = "tar")]
+fn read_and_validate_coappearances_from_tar_archive_storage() -> Result<(), std::str::Utf8Error> {
+    let storage =
+        flatdata::TarArchiveResourceStorage::new(path::PathBuf::from("assets/karenina.tar"))
+            .expect("failed to read tar archive");
+    read_and_validate_coappearances(storage)
 }
 
 fn check_files(name_a: &path::Path, name_b: &path::Path) {
