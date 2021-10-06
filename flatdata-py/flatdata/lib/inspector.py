@@ -11,6 +11,7 @@ import sys
 import pandas as pd
 
 from .file_resource_storage import FileResourceStorage
+from .tar_archive_resource_storage import TarArchiveResourceStorage
 from flatdata.generator.engine import Engine
 from flatdata.generator.tree.errors import FlatdataSyntaxError
 
@@ -42,9 +43,14 @@ def open_archive(path, archive=None, module_name=None):
     if not os.path.exists(path):
         raise RuntimeError("Specified non-existent path %s" % path)
 
-    archive_path = path if os.path.isdir(path) else os.path.dirname(path)
-    signatures = [p for p in os.listdir(
-        archive_path) if fnmatch.fnmatch(p, "*.archive")]
+    is_tar = path.endswith(".tar") and not os.path.isdir(path)
+    archive_path = path if is_tar or os.path.isdir(path) else os.path.dirname(path)
+    if is_tar:
+        storage = TarArchiveResourceStorage.create(archive_path)
+    else:
+        storage = FileResourceStorage(archive_path)
+
+    signatures = [p for p in storage.ls() if fnmatch.fnmatch(p, "*.archive")]
 
     if not signatures:
         raise RuntimeError("No archives located at path %s" % path)
@@ -62,17 +68,16 @@ def open_archive(path, archive=None, module_name=None):
             raise RuntimeError("Specified archive not found at path.")
 
     archive_name, _ = signatures[matching].rsplit('.', 1)
-    schema_filename = os.path.join(
-        archive_path, signatures[matching] + ".schema")
+    schema = storage.get(signatures[matching] + ".schema")
 
-    with open(schema_filename) as input_file:
-        try:
-            module, archive_type = \
-                Engine(input_file.read()).render_python_module(module_name=module_name,
-                                                               archive_name=archive_name)
-        except FlatdataSyntaxError as err:
-            raise RuntimeError("Error reading schema: %s " % err)
-    archive = archive_type(FileResourceStorage(archive_path))
+    try:
+        module, archive_type = \
+            Engine(schema.read().decode()).render_python_module(module_name=module_name,
+                                                                archive_name=archive_name)
+    except FlatdataSyntaxError as err:
+        raise RuntimeError("Error reading schema: %s " % err)
+
+    archive = archive_type(storage)
     return archive, module
 
 
