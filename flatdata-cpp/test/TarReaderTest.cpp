@@ -167,7 +167,7 @@ TEST_CASE( "Read file from TAR file resource storage", "[TarReader]" )
 {
     auto tmpfile = create_test_tar_archive( );
 
-    std::unique_ptr< ResourceStorage > storage = TarFileResourceStorage::create( tmpfile.c_str( ) );
+    auto storage = TarArchiveResourceStorage::create( tmpfile.c_str( ) );
     REQUIRE( storage != nullptr );
 
     const std::string schema = std::string( storage->read_schema( "empty" ).char_ptr( ) );
