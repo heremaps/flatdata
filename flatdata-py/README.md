@@ -4,6 +4,12 @@
 
 Python 3 implementation of [flatdata](https://github.com/heremaps/flatdata).
 
+## Running the tests
+
+```sh
+python3 -m nose
+```
+
 ## Basic usage
 
 Once you have [created a flatdata schema file](../README.md#creating-a-schema), you can generate a Python module to read your existing `flatdata` archive:

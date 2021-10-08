@@ -39,3 +39,6 @@ class FileResourceStorage:
             return self.memory_map(filename)
 
         return FileResourceStorage(filename)
+
+    def ls(self):
+        return os.listdir(self.path)
