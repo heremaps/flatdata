@@ -15,19 +15,19 @@
 namespace flatdata
 {
 /**
- * @brief Read-only resource storage for reading flatdata archives inside a TAR file.
+ * @brief Read-only resource storage for reading flatdata archives inside a TAR archive file.
  */
-class TarFileResourceStorage : public ResourceStorage
+class TarArchiveResourceStorage : public ResourceStorage
 {
 public:
     /**
-     * @brief Create resource storage for a TAR file
-     * @param tar_path The path to the TAR file
-     * @param tar_path The path inside the TAR file
-     * @return TarFileResourceStorage or nullptr on error
+     * @brief Create resource storage for a TAR archive file
+     * @param tar_path The path to the TAR archive file
+     * @param sub_path The working path inside the TAR archive
+     * @return TarArchiveResourceStorage or nullptr on error
      */
-    static std::unique_ptr< TarFileResourceStorage > create( const char* tar_path,
-                                                             const char* sub_path = "" );
+    static std::unique_ptr< TarArchiveResourceStorage > create( const char* tar_path,
+                                                                const char* sub_path = "" );
 
     std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
@@ -38,9 +38,9 @@ protected:
     MemoryDescriptor read_resource( const char* key ) override;
 
 private:
-    TarFileResourceStorage( std::shared_ptr< const MemoryMappedTarFileStorage > storage,
-                            const std::string& tar_path,
-                            const std::string& sub_path );
+    TarArchiveResourceStorage( std::shared_ptr< const MemoryMappedTarFileStorage > storage,
+                               const std::string& tar_path,
+                               const std::string& sub_path );
     std::string get_path( const char* key ) const;
 
 private:
@@ -51,8 +51,8 @@ private:
 
 // -------------------------------------------------------------------------------------------------
 
-inline std::unique_ptr< TarFileResourceStorage >
-TarFileResourceStorage::create( const char* tar_path, const char* sub_path )
+inline std::unique_ptr< TarArchiveResourceStorage >
+TarArchiveResourceStorage::create( const char* tar_path, const char* sub_path )
 {
     std::shared_ptr< const MemoryMappedTarFileStorage > storage;
     try
@@ -65,18 +65,18 @@ TarFileResourceStorage::create( const char* tar_path, const char* sub_path )
         return nullptr;
     }
 
-    return std::unique_ptr< TarFileResourceStorage >(
-        new TarFileResourceStorage( storage, tar_path, sub_path ) );
+    return std::unique_ptr< TarArchiveResourceStorage >(
+        new TarArchiveResourceStorage( storage, tar_path, sub_path ) );
 }
 
 inline std::shared_ptr< std::ostream >
-TarFileResourceStorage::create_output_stream( const char* )
+TarArchiveResourceStorage::create_output_stream( const char* )
 {
     // Writing to TAR files is not supported
     return nullptr;
 }
 
-inline TarFileResourceStorage::TarFileResourceStorage(
+inline TarArchiveResourceStorage::TarArchiveResourceStorage(
     std::shared_ptr< const MemoryMappedTarFileStorage > storage,
     const std::string& tar_path,
     const std::string& sub_path )
@@ -87,7 +87,7 @@ inline TarFileResourceStorage::TarFileResourceStorage(
 }
 
 inline std::string
-TarFileResourceStorage::get_path( const char* key ) const
+TarArchiveResourceStorage::get_path( const char* key ) const
 {
     const char TAR_PATH_SEPARATOR = '/';
 
@@ -95,7 +95,7 @@ TarFileResourceStorage::get_path( const char* key ) const
 }
 
 inline MemoryDescriptor
-TarFileResourceStorage::read_resource( const char* key )
+TarArchiveResourceStorage::read_resource( const char* key )
 {
     if ( !exists( key ) )
     {
@@ -105,20 +105,20 @@ TarFileResourceStorage::read_resource( const char* key )
 }
 
 inline std::unique_ptr< ResourceStorage >
-TarFileResourceStorage::create_directory( const char* key )
+TarArchiveResourceStorage::create_directory( const char* key )
 {
     return directory( key );
 }
 
 inline std::unique_ptr< ResourceStorage >
-TarFileResourceStorage::directory( const char* key )
+TarArchiveResourceStorage::directory( const char* key )
 {
-    return std::unique_ptr< TarFileResourceStorage >(
-        new TarFileResourceStorage( m_storage, m_tar_path, get_path( key ) ) );
+    return std::unique_ptr< TarArchiveResourceStorage >(
+        new TarArchiveResourceStorage( m_storage, m_tar_path, get_path( key ) ) );
 }
 
 inline bool
-TarFileResourceStorage::exists( const char* key )
+TarArchiveResourceStorage::exists( const char* key )
 {
     return m_storage->read( get_path( key ).c_str( ) ).data( ) != nullptr;
 }
