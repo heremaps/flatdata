@@ -100,6 +100,13 @@ class InvalidEnumValueError(FlatdataSyntaxError):
             .format(enumeration_name=enumeration_name, value=value))
 
 
+class InvalidStructInExplicitReference(FlatdataSyntaxError):
+    def __init__(self, struct, resource):
+        super().__init__(
+            "Struct '{struct}' referenced, but not appearing in resource '{resource}'"
+            .format(struct=struct, resource=resource))
+
+
 class InvalidEnumWidthError(FlatdataSyntaxError):
     def __init__(self, enumeration_name, width, provided_width):
         super().__init__(

@@ -9,7 +9,8 @@ import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
     InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
-    InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference)
+    InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference,
+    InvalidStructInExplicitReference)
 from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
@@ -199,6 +200,12 @@ def _check_const_refs(root):
         if len(invalid_values) > 1:
             raise DuplicateInvalidValueReference(field.name, [x.target for x in invalid_values])
 
+def _check_explicit_references(root):
+    for reference in root.iterate(ExplicitReference):
+        for ref in reference.children_like(StructureReference):
+            if not ref.target in [x.target for x in reference.parent.children_like(StructureReference)]:
+                raise InvalidStructInExplicitReference(ref.node.name, reference.parent.name)
+
 def build_ast(definition):
     """Build the Flatdata syntax tree from a definition"""
     root = _build_node_tree(definition=definition)
@@ -211,4 +218,5 @@ def build_ast(definition):
     _compute_structure_sizes(root)
     _compute_max_resource_size(root)
     _check_const_refs(root)
+    _check_explicit_references(root)
     return SyntaxTree(root)

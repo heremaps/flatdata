@@ -413,7 +413,6 @@ def test_namespace_merging_works_for_same_namespaces_with_different_symbols():
                   '.n1.n2.B', '.n1.n2.B.refN2'},
                  tree.symbols())
 
-
 def test_exceeding_field_width_results_in_an_error():
     with assert_raises(InvalidWidthError):
         _build_node_tree("""
