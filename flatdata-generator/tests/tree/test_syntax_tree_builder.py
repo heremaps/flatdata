@@ -9,7 +9,8 @@ from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_t
 
 sys.path.insert(0, "..")
 from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference, \
-    InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference
+    InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference, \
+    InvalidStructInExplicitReference
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from flatdata.generator.tree.nodes.archive import Archive
@@ -477,3 +478,22 @@ namespace n{
     tree.find(".n.A.@@n@C")
     tree.find(".n.A.@@m@C")
     tree.find(".n.A.@@n@m@C")
+
+def test_explicit_reference_has_to_reference_struct_used_in_resource():
+    with assert_raises(InvalidStructInExplicitReference):
+        build_ast("""
+            namespace prime {
+            struct Factor {
+                value : u32 : 32;
+            }
+            struct Number {
+                @range(factors)
+                first_factor_ref : u32;
+            }
+            
+            archive Archive {
+                @explicit_reference( Factor.value, factors )
+                numbers : vector<Number>;
+                factors : vector<Factor>;
+            }
+            } """)
