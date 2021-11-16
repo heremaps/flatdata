@@ -46,6 +46,12 @@ TEST_CASE( "Struct with enum", "[Enum]" )
     REQUIRE( b == Enum1::VALUE_1 );
     Enum1 c = reader.c;
     REQUIRE( c == Enum1::VALUE_3 );
+
+    REQUIRE( reader.to_string( ) == R"(StructWithEnum {
+    a : 493995,
+    b : Enum1::VALUE_1,
+    c : Enum1::VALUE_3,
+})" );
 }
 
 TEST_CASE( "Struct with signed enum", "[Enum]" )
