@@ -673,7 +673,7 @@ std::string StructEnumI8Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumI8 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -814,7 +814,7 @@ std::string StructEnumU8Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumU8 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -955,7 +955,7 @@ std::string StructEnumI16Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumI16 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1096,7 +1096,7 @@ std::string StructEnumU16Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumU16 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1237,7 +1237,7 @@ std::string StructEnumI32Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumI32 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1378,7 +1378,7 @@ std::string StructEnumU32Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumU32 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1519,7 +1519,7 @@ std::string StructEnumI64Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumI64 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );
@@ -1660,7 +1660,7 @@ std::string StructEnumU64Template< Member >::to_string( ) const
 {
     std::ostringstream ss;
     ss << "StructEnumU64 {" << std::endl <<
-    "    f : " << +f << "," << std::endl
+    "    f : " << n::to_string( f ) << "," << std::endl
     << "}"
 ;
     return ss.str( );

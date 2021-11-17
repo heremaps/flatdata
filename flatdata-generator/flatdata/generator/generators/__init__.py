@@ -11,7 +11,7 @@ from jinja2.exceptions import TemplateRuntimeError
 
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Namespace
-from flatdata.generator.tree.nodes.references import InvalidValueReference
+from flatdata.generator.tree.nodes.references import InvalidValueReference, EnumerationReference
 from flatdata.generator.tree.nodes.resources import ResourceBase, BoundResource, Archive as \
     ArchiveResource, Vector, Multivector, Instance, RawData
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -45,6 +45,7 @@ class BaseGenerator(metaclass=ABCMeta):
         env.filters['is_archive_resource'] = lambda n: isinstance(
             n, ArchiveResource)
         env.filters['is_structure'] = lambda n: isinstance(n, Structure)
+        env.filters['is_enumeration_reference'] = lambda n: isinstance(n, EnumerationReference)
         env.filters['is_enumeration'] = lambda n: isinstance(n, Enumeration)
         env.filters['is_constant'] = lambda n: isinstance(n, Constant)
         env.filters['is_namespace'] = lambda n: isinstance(n, Namespace)
