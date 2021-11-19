@@ -1,8 +1,5 @@
 #![cfg(test)]
 
-#[macro_use]
-extern crate flatdata;
-
 use std::{env, fs, io::Read, path, str};
 
 pub mod coappearances;
