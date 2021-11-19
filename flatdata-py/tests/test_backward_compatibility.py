@@ -26,6 +26,7 @@ def test_instance_reading():
     }
     archive = module.backward_compatibility_Archive(DictResourceStorage(valid_data))
     check_signed_struct(archive.resource)
+    check_signed_struct(archive.resource[0])
 
 
 def test_vector_reading():

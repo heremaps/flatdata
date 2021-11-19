@@ -99,10 +99,10 @@ class Vector(ResourceBase):
         if isinstance(index, slice):
             return _VectorSlice(index, self)
 
-        if index >= self._size:
-            raise IndexError("Vector access out of bounds")
         if index < 0:
             index += len(self)
+        if index >= self._size or index < 0:
+            raise IndexError("Vector access out of bounds")
         return self._get_item(index)
 
     def __iter__(self):
@@ -173,6 +173,21 @@ class RawData(ResourceBase):
 
 
 class Instance(ResourceBase):
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            raise IndexError("Instance has only one item")
+
+        if index < 0:
+            index += 1
+        if index >= 1 or index < 0:
+            raise IndexError("Instance access out of bounds")
+
+        return self._get_item(index)
+
+    def __iter__(self):
+        for i in range(1):
+            yield self._get_item(i)
+
     def __getattr__(self, name):
         offset = self._item_offset(0)
         return getattr(self._element_type(self._mem, offset), name)
