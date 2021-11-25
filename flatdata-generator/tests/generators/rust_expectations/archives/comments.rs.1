@@ -32,14 +32,21 @@ impl Foo {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("Foo"), schema::foo::FOO)?;
 
-        let resource = extend(storage.read("bar", schema::foo::resources::BAR));
-        let bar = resource.map(|x| flatdata::RawData::new(x))?;
+        let bar = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("bar", schema::foo::resources::BAR));
+            check("bar", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
+
 
         Ok(Self {
             _storage: storage,
@@ -113,14 +120,21 @@ impl Bar {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("Bar"), schema::bar::BAR)?;
 
-        let resource = extend(storage.read("foo", schema::bar::resources::FOO));
-        let foo = resource.map(|x| flatdata::RawData::new(x))?;
+        let foo = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("foo", schema::bar::resources::FOO));
+            check("foo", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
+
 
         Ok(Self {
             _storage: storage,

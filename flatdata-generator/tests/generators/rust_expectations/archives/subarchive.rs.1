@@ -30,14 +30,20 @@ impl X {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("X"), schema::x::X)?;
 
-        let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
-        let payload = resource.map(|x| flatdata::RawData::new(x))?;
+        let payload = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
+            check("payload", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
@@ -118,14 +124,24 @@ impl A {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;
 
-        let data = super::n::X::open(storage.subdir("data"))?;
-        let optional_data = super::n::X::open(storage.subdir("optional_data")).ok();
+        let data = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            check("data", |_| 0, max_size, super::n::X::open(storage.subdir("data")))?
+        };
+        let optional_data = {
+            use flatdata::check_optional_resource as check;
+            let max_size = None;
+            check("optional_data", |_| 0, max_size, super::n::X::open(storage.subdir("optional_data")))?
+        };
 
         Ok(Self {
             _storage: storage,

@@ -94,9 +94,15 @@ pub trait ResourceStorage: std::fmt::Debug {
         resource_name: &str,
         expected_schema: &str,
     ) -> Result<&[u8], ResourceStorageError> {
-        let data = self
-            .read_resource(resource_name)
-            .map_err(|e| ResourceStorageError::from_io_error(e, resource_name.into()))?;
+        let data = self.read_resource(resource_name).map_err(|e| {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                // resource is missing completely, this might not be an error,
+                // e.g. in case of optional resources / archives
+                ResourceStorageError::Missing
+            } else {
+                ResourceStorageError::from_io_error(e, resource_name.into())
+            }
+        })?;
 
         let schema_name = format!("{}.schema", resource_name);
         let schema = self
@@ -129,6 +135,58 @@ pub trait ResourceStorage: std::fmt::Debug {
 //
 // Resource factory helpers
 //
+
+/// Helper that checks if an error was serious, or just a missing optional resource
+#[doc(hidden)]
+pub fn check_optional_resource<T>(
+    resource_name: &'static str,
+    size_fn: impl FnOnce(&T) -> usize,
+    max_size: Option<usize>,
+    x: Result<T, ResourceStorageError>,
+) -> Result<Option<T>, ResourceStorageError> {
+    match (x, max_size) {
+        (Err(ResourceStorageError::Missing), _) => Ok(None),
+        (Err(e), _) => Err(e),
+        (Ok(x), None) => Ok(Some(x)),
+        (Ok(x), Some(max_size)) => {
+            let size = size_fn(&x);
+            if size > max_size {
+                Err(ResourceStorageError::TooBig {
+                    size,
+                    resource_name,
+                })
+            } else {
+                Ok(Some(x))
+            }
+        }
+    }
+}
+
+/// Helper that checks if a resource was successfully opened
+#[doc(hidden)]
+pub fn check_resource<T>(
+    resource_name: &'static str,
+    size_fn: impl FnOnce(&T) -> usize,
+    max_size: Option<usize>,
+    x: Result<T, ResourceStorageError>,
+) -> Result<T, ResourceStorageError> {
+    match (x, max_size) {
+        (Err(ResourceStorageError::Missing), _) => Err(ResourceStorageError::MissingData),
+        (Err(e), _) => Err(e),
+        (Ok(x), None) => Ok(x),
+        (Ok(x), Some(max_size)) => {
+            let size = size_fn(&x);
+            if size > max_size {
+                Err(ResourceStorageError::TooBig {
+                    size,
+                    resource_name,
+                })
+            } else {
+                Ok(x)
+            }
+        }
+    }
+}
 
 /// Helper for creating an external vector in the given resource storage.
 ///
