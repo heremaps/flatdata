@@ -80,6 +80,30 @@ struct IsSigned
     };
 };
 
+template < typename T, bool is_enum >
+struct UnderlyingTypeImpl
+{
+};
+
+template < typename T >
+struct UnderlyingTypeImpl< T, false >
+{
+    using type = T;
+};
+
+template < typename T >
+struct UnderlyingTypeImpl< T, true >
+{
+    using type = typename std::underlying_type< T >::type;
+};
+
+// Since std::underlying_type only works for enums we need to add support ourselves
+template < typename T >
+struct UnderlyingType
+{
+    using type = typename UnderlyingTypeImpl< T, std::is_enum< T >::value >::type;
+};
+
 template < typename ResultType, int num_bits, typename T >
 typename std::enable_if< IsSigned< ResultType >::value, ResultType >::type
 extend_sign( T value )

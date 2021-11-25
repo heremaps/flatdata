@@ -196,6 +196,40 @@ TEST_CASE( "Range", "[Read/Write]" )
     REQUIRE( result.second == 32 );
 }
 
+TEST_CASE( "Min/Max", "[Reader]" )
+{
+    REQUIRE( Reader< uint32_t, 0, 0, 666 >::min == 0 );
+    REQUIRE( Reader< uint32_t, 0, 0, 666 >::max == 0 );
+    REQUIRE( Reader< int32_t, 0, 0, 666 >::min == 0 );
+    REQUIRE( Reader< int32_t, 0, 0, 666 >::max == 0 );
+
+    REQUIRE( Reader< uint32_t, 1, 1, 666 >::min == 0 );
+    REQUIRE( Reader< uint32_t, 1, 1, 666 >::max == 1 );
+    REQUIRE( Reader< int32_t, 1, 1, 666 >::min == -1 );
+    REQUIRE( Reader< int32_t, 1, 1, 666 >::max == 0 );
+
+    REQUIRE( Reader< uint32_t, 7, 7, 666 >::min == 0 );
+    REQUIRE( Reader< uint32_t, 7, 7, 666 >::max == 127 );
+    REQUIRE( Reader< int32_t, 7, 7, 666 >::min == -64 );
+    REQUIRE( Reader< int32_t, 7, 7, 666 >::max == 63 );
+
+    REQUIRE( Reader< uint32_t, 16, 16, 666 >::min == 0 );
+    REQUIRE( Reader< uint32_t, 16, 16, 666 >::max == 65535 );
+    REQUIRE( Reader< int32_t, 16, 16, 666 >::min == -32768 );
+    REQUIRE( Reader< int32_t, 16, 16, 666 >::max == 32767 );
+
+    REQUIRE( Reader< uint32_t, 32, 32, 666 >::min == 0 );
+    REQUIRE( Reader< uint32_t, 32, 32, 666 >::max == std::numeric_limits< uint32_t >::max( ) );
+    REQUIRE( Reader< int32_t, 32, 32, 666 >::min == std::numeric_limits< int32_t >::min( ) );
+    REQUIRE( Reader< int32_t, 32, 32, 666 >::max == std::numeric_limits< int32_t >::max( ) );
+
+    REQUIRE( Reader< bool, 16, 1, 666 >::min == false );
+    REQUIRE( Reader< bool, 16, 1, 666 >::max == true );
+
+    REQUIRE( Reader< TestEnum, 7, 7, 666 >::min == 0 );
+    REQUIRE( Reader< TestEnum, 7, 7, 666 >::max == 127 );
+}
+
 #if ( GENERATE_PYTHON_READER_TESTS )
 TEST_CASE( "Fail if python test output is enabled", "[Reader]" )
 {
