@@ -1,4 +1,7 @@
 pub mod a {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
@@ -18,6 +21,9 @@ pub mod schema {
 
 #[allow(missing_docs)]
 pub mod b {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Bar {
@@ -37,6 +43,9 @@ pub mod schema {
 
 #[allow(missing_docs)]
 pub mod n {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 #[repr(transparent)]
 #[derive(Clone)]
 pub struct Foo {
@@ -158,6 +167,9 @@ pub mod schema {
 
 #[allow(missing_docs)]
 pub mod m {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 #[repr(transparent)]
 #[derive(Clone)]
 pub struct Foo {
