@@ -1,4 +1,8 @@
+#[allow(missing_docs)]
 pub mod n {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 #[repr(transparent)]
 #[derive(Clone)]
 pub struct S {
@@ -221,6 +225,9 @@ archive X
 
 #[allow(missing_docs)]
 pub mod m {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 #[repr(transparent)]
 #[derive(Clone)]
 pub struct S {
@@ -443,6 +450,9 @@ archive X
 
 #[allow(missing_docs)]
 pub mod a {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 
 
 /// Enum for read-only heterogeneous access to elements in a
@@ -814,9 +824,15 @@ archive A
 
 #[doc(hidden)]
 pub mod _builtin {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 
 #[allow(missing_docs)]
 pub mod multivector {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
 
 /// Builtin type to for MultiVector index
 #[repr(transparent)]
