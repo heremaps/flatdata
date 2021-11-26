@@ -30,17 +30,31 @@ template < typename T, int offset = 0, int num_bits = sizeof( T ) * 8, int struc
 struct Reader
 {
     using StreamType = const unsigned char*;
-    using UnsignedType = typename BitsToUnsigned<
-        int_choice< num_bits, num_bits + offset % 8, num_bits + offset % 8 <= 64 >::value >::type;
+
     enum
     {
         bit_width = num_bits
+    };
+    enum : typename UnderlyingType< T >::type
+    {
+        max = bit_width == 0 ? 0
+                             : ( bit_width - std::is_signed< T >::value
+                                         == sizeof( typename BitsToUnsigned< num_bits >::type ) * 8
+                                     ? typename BitsToUnsigned< num_bits >::type( -1 )
+                                     : ( typename BitsToUnsigned< num_bits >::type( 1 )
+                                         << ( bit_width - std::is_signed< T >::value ) )
+                                           - 1 ),
+        min = bit_width == 0 || !std::is_signed< T >::value ? 0 : -max - 1
     };
 
     StreamType data;
 
     operator T( ) const
     {
+        using UnsignedType =
+            typename BitsToUnsigned< int_choice< num_bits, num_bits + offset % 8,
+                                                 num_bits + offset % 8 <= 64 >::value >::type;
+
         /* Does the following:
          * - takes the smallest data type available that can read the necessary amount of bytes
          *   (including offset in the beginning and empty space in the end)
@@ -122,7 +136,7 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         }
         else
         {
-            return boost::optional< U >(Reader< T, offset, num_bits >{data});
+            return boost::optional< U >( Reader< T, offset, num_bits >{data} );
         }
     }
 };
