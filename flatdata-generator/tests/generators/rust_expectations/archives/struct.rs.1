@@ -153,16 +153,26 @@ impl A {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;
 
-        let resource = extend(storage.read("data", schema::a::resources::DATA));
-        let data = resource.map(|x| super::n::S::from_bytes_slice(x))??;
-        let resource = extend(storage.read("optional_data", schema::a::resources::OPTIONAL_DATA));
-        let optional_data = resource.map(|x| super::n::S::from_bytes_slice(x)).ok().transpose()?;
+        let data = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("data", schema::a::resources::DATA));
+            check("data", |_| 0, max_size, resource.and_then(|x| super::n::S::from_bytes_slice(x)))?
+        };
+        let optional_data = {
+            use flatdata::check_optional_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("optional_data", schema::a::resources::OPTIONAL_DATA));
+            check("optional_data", |_| 0, max_size, resource.and_then(|x| super::n::S::from_bytes_slice(x)))?
+        };
 
         Ok(Self {
             _storage: storage,

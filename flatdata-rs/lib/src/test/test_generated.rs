@@ -388,14 +388,20 @@ impl S {
     {
         #[allow(unused_imports)]
         use crate::SliceExt;
+        #[allow(unused_variables)]
+        use crate::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("S"), schema::s::S)?;
 
-        let resource = extend(storage.read("data", schema::s::resources::DATA));
-        let data = resource.map(|x| super::test::A::from_bytes_slice(x))??;
+        let data = {
+            use crate::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("data", schema::s::resources::DATA));
+            check("data", |_| 0, max_size, resource.and_then(|x| super::test::A::from_bytes_slice(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
@@ -469,14 +475,20 @@ impl X {
     {
         #[allow(unused_imports)]
         use crate::SliceExt;
+        #[allow(unused_variables)]
+        use crate::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("X"), schema::x::X)?;
 
-        let resource = extend(storage.read("data", schema::x::resources::DATA));
-        let data = resource.map(|x| <&[super::test::A]>::from_bytes(x))??;
+        let data = {
+            use crate::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("data", schema::x::resources::DATA));
+            check("data", |r| r.len(), max_size, resource.and_then(|x| <&[super::test::A]>::from_bytes(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
@@ -562,14 +574,20 @@ impl Y {
     {
         #[allow(unused_imports)]
         use crate::SliceExt;
+        #[allow(unused_variables)]
+        use crate::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("Y"), schema::y::Y)?;
 
-        let resource = extend(storage.read("data", schema::y::resources::DATA));
-        let data = resource.map(|x| <&[super::test::R]>::from_bytes(x))??;
+        let data = {
+            use crate::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("data", schema::y::resources::DATA));
+            check("data", |r| r.len(), max_size, resource.and_then(|x| <&[super::test::R]>::from_bytes(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
@@ -769,13 +787,17 @@ impl Z {
     {
         #[allow(unused_imports)]
         use crate::SliceExt;
+        #[allow(unused_variables)]
+        use crate::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("Z"), schema::z::Z)?;
 
         let ab = {
+            use crate::check_resource as check;
+            let max_size = None;
             let index_schema = &format!("index({})", schema::z::resources::AB);
             let index = extend(storage.read("ab_index", &index_schema));
             let data = extend(storage.read("ab", schema::z::resources::AB));
@@ -786,10 +808,14 @@ impl Z {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result?
+            check("ab", |r| r.len(), max_size, result)?
         };
 
         Ok(Self {
@@ -867,14 +893,20 @@ impl W {
     {
         #[allow(unused_imports)]
         use crate::SliceExt;
+        #[allow(unused_variables)]
+        use crate::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], crate::ResourceStorageError>| -> Result<&'static [u8], crate::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("W"), schema::w::W)?;
 
-        let resource = extend(storage.read("blob", schema::w::resources::BLOB));
-        let blob = resource.map(|x| crate::RawData::new(x))?;
+        let blob = {
+            use crate::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("blob", schema::w::resources::BLOB));
+            check("blob", |r| r.len(), max_size, resource.map(|x| crate::RawData::new(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
