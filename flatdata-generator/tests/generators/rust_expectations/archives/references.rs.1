@@ -616,21 +616,29 @@ impl A {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;
 
-        let resource = extend(storage.read("list1", schema::a::resources::LIST1));
-        let list1 = resource.map(|x| <&[super::n::S]>::from_bytes(x)).ok().transpose()?;
-        let size = list1.as_ref().map(|r| r.len()).unwrap_or(0);
-        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "list1", size}); }
-        let resource = extend(storage.read("list2", schema::a::resources::LIST2));
-        let list2 = resource.map(|x| <&[super::n::S]>::from_bytes(x))??;
-        let size = list2.len();
-        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "list2", size}); }
+        let list1 = {
+            use flatdata::check_optional_resource as check;
+            let max_size = Some(16);
+            let resource = extend(storage.read("list1", schema::a::resources::LIST1));
+            check("list1", |r| r.len(), max_size, resource.and_then(|x| <&[super::n::S]>::from_bytes(x)))?
+        };
+        let list2 = {
+            use flatdata::check_resource as check;
+            let max_size = Some(16);
+            let resource = extend(storage.read("list2", schema::a::resources::LIST2));
+            check("list2", |r| r.len(), max_size, resource.and_then(|x| <&[super::n::S]>::from_bytes(x)))?
+        };
         let multilist1 = {
+            use flatdata::check_optional_resource as check;
+            let max_size = Some(16);
             let index_schema = &format!("index({})", schema::a::resources::MULTILIST1);
             let index = extend(storage.read("multilist1_index", &index_schema));
             let data = extend(storage.read("multilist1", schema::a::resources::MULTILIST1));
@@ -641,14 +649,18 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result.ok()
+            check("multilist1", |r| r.len(), max_size, result)?
         };
-        let size = multilist1.as_ref().map(|r| r.len()).unwrap_or(0);
-        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "multilist1", size}); }
         let multilist2 = {
+            use flatdata::check_resource as check;
+            let max_size = Some(16);
             let index_schema = &format!("index({})", schema::a::resources::MULTILIST2);
             let index = extend(storage.read("multilist2_index", &index_schema));
             let data = extend(storage.read("multilist2", schema::a::resources::MULTILIST2));
@@ -659,24 +671,36 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result?
+            check("multilist2", |r| r.len(), max_size, result)?
         };
-        let size = multilist2.len();
-        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "multilist2", size}); }
-        let resource = extend(storage.read("raw1", schema::a::resources::RAW1));
-        let raw1 = resource.map(|x| flatdata::RawData::new(x)).ok();
-        let size = raw1.as_ref().map(|r| r.len()).unwrap_or(0);
-        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "raw1", size}); }
-        let resource = extend(storage.read("raw2", schema::a::resources::RAW2));
-        let raw2 = resource.map(|x| flatdata::RawData::new(x))?;
-        let size = raw2.len();
-        if size > 16 { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "raw2", size}); }
-        let resource = extend(storage.read("refs", schema::a::resources::REFS));
-        let refs = resource.map(|x| <&[super::n::R]>::from_bytes(x))??;
+        let raw1 = {
+            use flatdata::check_optional_resource as check;
+            let max_size = Some(16);
+            let resource = extend(storage.read("raw1", schema::a::resources::RAW1));
+            check("raw1", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
+        let raw2 = {
+            use flatdata::check_resource as check;
+            let max_size = Some(16);
+            let resource = extend(storage.read("raw2", schema::a::resources::RAW2));
+            check("raw2", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
+        let refs = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("refs", schema::a::resources::REFS));
+            check("refs", |r| r.len(), max_size, resource.and_then(|x| <&[super::n::R]>::from_bytes(x)))?
+        };
         let multirefs = {
+            use flatdata::check_resource as check;
+            let max_size = None;
             let index_schema = &format!("index({})", schema::a::resources::MULTIREFS);
             let index = extend(storage.read("multirefs_index", &index_schema));
             let data = extend(storage.read("multirefs", schema::a::resources::MULTIREFS));
@@ -687,10 +711,14 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result?
+            check("multirefs", |r| r.len(), max_size, result)?
         };
 
         Ok(Self {

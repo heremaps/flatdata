@@ -190,7 +190,8 @@ pub use crate::{
     multivector::MultiVector,
     rawdata::RawData,
     storage::{
-        create_archive, create_external_vector, create_multi_vector, ResourceStorage, StorageHandle,
+        check_optional_resource, check_resource, create_archive, create_external_vector,
+        create_multi_vector, ResourceStorage, StorageHandle,
     },
     structs::*,
     vector::*,

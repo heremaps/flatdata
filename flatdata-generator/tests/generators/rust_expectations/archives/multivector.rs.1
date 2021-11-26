@@ -615,13 +615,17 @@ impl A {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;
 
         let data = {
+            use flatdata::check_resource as check;
+            let max_size = None;
             let index_schema = &format!("index({})", schema::a::resources::DATA);
             let index = extend(storage.read("data_index", &index_schema));
             let data = extend(storage.read("data", schema::a::resources::DATA));
@@ -632,12 +636,18 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result?
+            check("data", |r| r.len(), max_size, result)?
         };
         let optional_data = {
+            use flatdata::check_optional_resource as check;
+            let max_size = None;
             let index_schema = &format!("index({})", schema::a::resources::OPTIONAL_DATA);
             let index = extend(storage.read("optional_data_index", &index_schema));
             let data = extend(storage.read("optional_data", schema::a::resources::OPTIONAL_DATA));
@@ -648,12 +658,18 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result.ok()
+            check("optional_data", |r| r.len(), max_size, result)?
         };
         let data_u64_index = {
+            use flatdata::check_resource as check;
+            let max_size = None;
             let index_schema = &format!("index({})", schema::a::resources::DATA_U64_INDEX);
             let index = extend(storage.read("data_u64_index_index", &index_schema));
             let data = extend(storage.read("data_u64_index", schema::a::resources::DATA_U64_INDEX));
@@ -664,10 +680,14 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result?
+            check("data_u64_index", |r| r.len(), max_size, result)?
         };
 
         Ok(Self {

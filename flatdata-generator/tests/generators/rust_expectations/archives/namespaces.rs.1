@@ -151,14 +151,20 @@ impl X {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("X"), schema::x::X)?;
 
-        let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
-        let payload = resource.map(|x| flatdata::RawData::new(x))?;
+        let payload = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
+            check("payload", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
@@ -376,14 +382,20 @@ impl X {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("X"), schema::x::X)?;
 
-        let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
-        let payload = resource.map(|x| flatdata::RawData::new(x))?;
+        let payload = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("payload", schema::x::resources::PAYLOAD));
+            check("payload", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        };
 
         Ok(Self {
             _storage: storage,
@@ -606,17 +618,29 @@ impl A {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;
 
-        let resource = extend(storage.read("single", schema::a::resources::SINGLE));
-        let single = resource.map(|x| super::n::S::from_bytes_slice(x))??;
-        let resource = extend(storage.read("list", schema::a::resources::LIST));
-        let list = resource.map(|x| <&[super::m::S]>::from_bytes(x))??;
+        let single = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("single", schema::a::resources::SINGLE));
+            check("single", |_| 0, max_size, resource.and_then(|x| super::n::S::from_bytes_slice(x)))?
+        };
+        let list = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            let resource = extend(storage.read("list", schema::a::resources::LIST));
+            check("list", |r| r.len(), max_size, resource.and_then(|x| <&[super::m::S]>::from_bytes(x)))?
+        };
         let multi = {
+            use flatdata::check_resource as check;
+            let max_size = None;
             let index_schema = &format!("index({})", schema::a::resources::MULTI);
             let index = extend(storage.read("multi_index", &index_schema));
             let data = extend(storage.read("multi", schema::a::resources::MULTI));
@@ -627,12 +651,20 @@ impl A {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            result?
+            check("multi", |r| r.len(), max_size, result)?
         };
-        let inner = super::n::X::open(storage.subdir("inner"))?;
+        let inner = {
+            use flatdata::check_resource as check;
+            let max_size = None;
+            check("inner", |_| 0, max_size, super::n::X::open(storage.subdir("inner")))?
+        };
 
         Ok(Self {
             _storage: storage,

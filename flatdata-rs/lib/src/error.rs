@@ -42,6 +42,8 @@ pub enum ResourceStorageError {
         /// Size of the resource
         size: usize,
     },
+    /// A resource / archive is missing completely
+    Missing,
     #[doc(hidden)]
     __Nonexhaustive,
 }
@@ -71,6 +73,7 @@ impl error::Error for ResourceStorageError {
             ResourceStorageError::Utf8Error(_) => "utf8 error in schema",
             ResourceStorageError::WrongSignature { .. } => "schema is not matching expected schema",
             ResourceStorageError::TooBig { .. } => "resource is too big",
+            ResourceStorageError::Missing => "Missing resource / archive",
             ResourceStorageError::__Nonexhaustive => "n/a",
         }
     }

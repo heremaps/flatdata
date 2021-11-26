@@ -114,35 +114,31 @@ impl {{archive.name}} {
     {
         #[allow(unused_imports)]
         use flatdata::SliceExt;
+        #[allow(unused_variables)]
+        use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
         #[allow(unused_variables)]
-        let extend = |x : Result<&[u8], flatdata::ResourceStorageError>| -> Result<&'static [u8], flatdata::ResourceStorageError> {x.map(|x| unsafe{std::mem::transmute(x)})};
+        let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("{{archive.name}}"), schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }})?;
 
         {% for r in archive.resources | supported_resources %}
-        {% if [r] | vector_resources %}
-        {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
-        let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
-        let {{r.name}} = resource.map(|x| <&[{{t}}]>::from_bytes(x)){% if r.optional %}.ok().transpose()?{% else %}??{% endif %};
-        {% if r.max_size %}
-        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
-        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
-        {% endif %}
-        {% elif [r] | instance_resources %}
-        {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
-        let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
-        let {{r.name}} = resource.map(|x| {{t}}::from_bytes_slice(x)){% if r.optional %}.ok().transpose()?{% else %}??{% endif %};
-        {% elif [r] | rawdata_resources %}
-        let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
-        let {{r.name}} = resource.map(|x| flatdata::RawData::new(x)){% if r.optional %}.ok(){% else %}?{% endif %};
-        {% if r.max_size %}
-        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
-        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
-        {% endif %}
-        {% elif [r] | multivector_resources %}
-        {% set i = fully_qualified_name(archive, r.index_reference.node) %}
         let {{r.name}} = {
+            use flatdata::{% if r.optional %}check_optional_resource{% else %}check_resource{% endif %} as check;
+            let max_size = {% if r.max_size %}Some({{ r.max_size }}){% else %}None{% endif %};
+        {% if [r] | vector_resources %}
+            {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
+            let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
+            check("{{ r.name }}", |r| r.len(), max_size, resource.and_then(|x| <&[{{t}}]>::from_bytes(x)))?
+        {% elif [r] | instance_resources %}
+            {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
+            let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
+            check("{{ r.name }}", |_| 0, max_size, resource.and_then(|x| {{t}}::from_bytes_slice(x)))?
+        {% elif [r] | rawdata_resources %}
+            let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
+            check("{{ r.name }}", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+        {% elif [r] | multivector_resources %}
+            {% set i = fully_qualified_name(archive, r.index_reference.node) %}
             let index_schema = &format!("index({})", schema::{{ archive_ns }}::resources::{{ r.name | upper }});
             let index = extend(storage.read("{{r.name}}_index", &index_schema));
             let data = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
@@ -153,23 +149,19 @@ impl {{archive.name}} {
                         data
                     ))
                 }
-                (Ok(_), Err(x)) | (Err(x), Ok(_)) => {return Err(x);}
-                (Err(x), Err(_)) => Err(x),
+                // is resource completely missing?
+                (Err(Error::Missing), Err(Error::Missing))  => Err(Error::Missing),
+                // is resource partially missing / broken -> extract best error to propagate
+                (Ok(_), Err(Error::Missing)) | (Err(Error::Missing), Ok(_)) => Err(Error::MissingData),
+                (Err(Error::Missing), Err(x)) | (Err(x), Err(Error::Missing)) => {return Err(x);}
+                (_, Err(x)) | (Err(x), _) => {return Err(x);}
             };
-            {% if r.optional %}
-            result.ok()
-            {% else %}
-            result?
-            {% endif %}
-        };
-        {% if r.max_size %}
-        let size = {% if r.optional %}{{ r.name }}.as_ref().map(|r| r.len()).unwrap_or(0){% else %}{{ r.name }}.len(){% endif %};
-        if size > {{ r.max_size }} { return Err(flatdata::ResourceStorageError::TooBig{resource_name: "{{ r.name }}", size}); }
-        {% endif %}
+            check("{{ r.name }}", |r| r.len(), max_size, result)?
         {% elif [r] | subarchive_resources %}
-        {% set t = fully_qualified_name(archive, r.target.node) %}
-        let {{r.name}} = {{t}}::open(storage.subdir("{{r.name}}")){% if r.optional %}.ok(){% else %}?{% endif %};
+            {% set t = fully_qualified_name(archive, r.target.node) %}
+            check("{{ r.name }}", |_| 0, max_size, {{t}}::open(storage.subdir("{{r.name}}")))?
         {% endif %}
+        };
         {% endfor %}
 
         Ok(Self {
