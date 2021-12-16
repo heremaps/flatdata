@@ -22,7 +22,7 @@ impl MemoryMappedTarArchiveStorage {
     pub fn new(tar_path: &Path) -> Result<Self, io::Error> {
         let file = File::open(tar_path)?;
         let archive_map = unsafe { Mmap::map(&file)? };
-        let mut archive = tar::Archive::new(&archive_map[..]);
+        let mut archive = tar::Archive::new(std::io::Cursor::new(&archive_map[..]));
 
         let file_ranges = archive
             .entries_with_seek()?

@@ -1,5 +1,5 @@
 sudo: required
-dist: bionic
+dist: focal
 language: minimal
 
 matrix:
@@ -11,7 +11,7 @@ matrix:
     # flatdata-generator
     - language: python
       name: "flatdata-generator"
-      python: 3.6
+      python: 3.9
       install:
         - cd flatdata-generator
         - pip install -r requirements.txt # runtime requirements
@@ -26,7 +26,7 @@ matrix:
     # flatdata-py
     - language: python
       name: "flatdata-py"
-      python: 3.6
+      python: 3.9
       install:
         - pip install ./flatdata-generator
         - cd flatdata-py
@@ -112,6 +112,8 @@ matrix:
         - cd flatdata-rs
         - cargo build
         - cargo test
+        - cargo build --all-features
+        - cargo test --all-features
       after_success:
         - cargo coveralls
 
