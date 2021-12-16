@@ -25,7 +25,7 @@ impl MemoryMappedTarArchiveStorage {
         let mut archive = tar::Archive::new(&archive_map[..]);
 
         let file_ranges = archive
-            .entries()?
+            .entries_with_seek()?
             .map(|entry| {
                 let entry = entry?;
                 let path = entry.path()?;
