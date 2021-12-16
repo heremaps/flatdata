@@ -1,6 +1,6 @@
 [package]
 name = "flatdata"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["boxdot <d@zerovolt.org>", "Christian Vetter <veaac.fdirct@gmail.com>", "Gabriel Féron <feron.gabriel@gmail.com>"]
 license = "Apache-2.0"
 description = "Rust implementation of flatdata"
@@ -13,7 +13,7 @@ edition = "2018"
 [dependencies]
 diff = "0.1.11"
 memmap2 = "0.2.0"
-tar = { version = "0.4", optional = true }
+tar = { version = "0.4.38", optional = true }
 walkdir = "2.2.9"
 
 [package.metadata.docs.rs]
