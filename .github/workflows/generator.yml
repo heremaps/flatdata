@@ -1,0 +1,29 @@
+name: flatdata-generator
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLORS: always
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install
+        run: |
+          cd flatdata-generator
+          # runtime requirements
+          pip install -r requirements.txt
+          # CI requirements
+          pip install nose pylint
+      - name: Run tests
+        run: |
+          cd flatdata-generator
+          python -m nose
+          pip install .
+          flatdata-generator --help
