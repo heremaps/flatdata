@@ -1,0 +1,32 @@
+name: flatdata-rs
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLORS: always
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Dependencies
+        run: sudo apt-get install python3-venv
+      - name: Build
+        run: |
+          # use generator from source
+          export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator
+          cd flatdata-rs
+          cargo build --all-targets
+          cargo build --all-targets --all-features
+      - name: Run tests
+        run: |
+          # use generator from source
+          export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator
+          cd flatdata-rs
+          cargo test --all-targets
+          cargo test --all-targets --all-features
