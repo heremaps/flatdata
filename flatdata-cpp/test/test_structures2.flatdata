@@ -1,0 +1,12 @@
+namespace test_structures2 {
+
+struct AStruct {
+    value : u64 : 8;
+}
+
+// A 1:1 copy of the same multivector as in test-structures, makes sure we do not have clashes in builtins
+archive SimpleResources {
+    multivector_resource: multivector< 33, AStruct >;
+}
+
+} // namespace test_structures2

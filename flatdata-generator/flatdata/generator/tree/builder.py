@@ -113,8 +113,9 @@ def _build_node_tree(definition):
 
 
 def _append_builtin_structures(root):
-    for node in root.iterate(Multivector):
-        namespace = _ensure_namespace(root, "._builtin.multivector")
+    multivectors = list(root.iterate(Multivector))
+    for node in multivectors:
+        namespace = _ensure_namespace(root, node.parent.parent.path + "._builtin.multivector")
         for builtin in node.builtins:
             found = namespace.get_relative(builtin.name)
             if found is None:

@@ -122,7 +122,7 @@ subgraph cluster__a_A_multi
     fillcolor="#C4E6F8";
 
 
-_a_A_multi__builtin_multivector_IndexType32 [label=<
+_a_A_multi_a__builtin_multivector_IndexType32 [label=<
 <table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
     <tr>
         <td bgcolor="#257FAD">
@@ -130,7 +130,7 @@ _a_A_multi__builtin_multivector_IndexType32 [label=<
         </td>
     </tr>
     <tr>
-        <td bgcolor="#EBF8FF" port="port__a_A_multi__builtin_multivector_IndexType32_value">
+        <td bgcolor="#EBF8FF" port="port__a_A_multi_a__builtin_multivector_IndexType32_value">
             <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">32</font>
         </td>
     </tr>
@@ -166,15 +166,13 @@ _a_A_inner [style=invisible, fixedsize="true", width="0", height="0", label=""];
 }
 
     }
-}
-
-subgraph cluster___builtin
+subgraph cluster__a__builtin
 {
     penwidth=0;
     fontcolor="#516D7B";
     fillcolor="#F7F7F7";
     label=<<b>_builtin</b>>
-subgraph cluster___builtin_multivector
+subgraph cluster__a__builtin_multivector
 {
     penwidth=0;
     fontcolor="#516D7B";

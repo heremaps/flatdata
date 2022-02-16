@@ -182,10 +182,10 @@ archive X
         flatdata.archive_builder.ArchiveBuilder.__init__(self, resource_storage)
 
 #  Builtin type to for MultiVector index 
-class _builtin_multivector_IndexType32(flatdata.structure.Structure):
+class a__builtin_multivector_IndexType32(flatdata.structure.Structure):
     """/** Builtin type to for MultiVector index */"""
     _SCHEMA = """"""
-    _NAME = "_builtin_multivector_IndexType32"
+    _NAME = "a__builtin_multivector_IndexType32"
     _SIZE_IN_BITS = 32
     _SIZE_IN_BYTES = 4
     _FIELDS = {
@@ -310,7 +310,7 @@ archive A
             is_optional=False,
             doc=_LIST_DOC),
         "multi": flatdata.archive.ResourceSignature(container=flatdata.resources.Multivector,
-            initializer=[_builtin_multivector_IndexType32,n_S],
+            initializer=[a__builtin_multivector_IndexType32,n_S],
             schema=_MULTI_SCHEMA,
             is_optional=False,
             doc=_MULTI_DOC),
@@ -440,7 +440,7 @@ archive A
             is_optional=False,
             doc=_LIST_DOC),
         "multi": flatdata.archive_builder.ResourceSignature(container=flatdata.resources.Multivector,
-            initializer=[_builtin_multivector_IndexType32,n_S],
+            initializer=[a__builtin_multivector_IndexType32,n_S],
             schema=_MULTI_SCHEMA,
             is_optional=False,
             doc=_MULTI_DOC),

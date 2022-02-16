@@ -56,7 +56,7 @@ The `flatdata` generator works in several stages which are clearly separated fro
 
    -  **Add builtin structures** if any of the resources require them. For
       example, `multivector< N, ... >` requires
-      `_builtin.multivector.IndexTypeN` to be available.
+      `_builtin.multivector.IndexTypeN` to be available in the parent namespace.
    -  **Add constant references** to all archives so that constants are
       available for schema resolution.
 

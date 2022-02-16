@@ -4,12 +4,16 @@ flatdata_generate_source(generate_flatdata_test_code
     ${CMAKE_CURRENT_SOURCE_DIR}/test_structures.flatdata
     ${CMAKE_CURRENT_BINARY_DIR}/generated/test_structures.hpp)
 
+flatdata_generate_source(generate_flatdata_test_code2
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_structures2.flatdata
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/test_structures2.hpp)
+
 flatdata_generate_source(generate_flatdata_test_case_ranges
     ${CMAKE_CURRENT_SOURCE_DIR}/../../test_cases/archives/ranges.flatdata
     ${CMAKE_CURRENT_BINARY_DIR}/generated/ranges.hpp)
 
 add_executable(flatdata_test ${TEST_FLATDATA_SOURCES})
-add_dependencies(flatdata_test generate_flatdata_test_code generate_flatdata_test_case_ranges)
+add_dependencies(flatdata_test generate_flatdata_test_code generate_flatdata_test_code2 generate_flatdata_test_case_ranges)
 
 target_include_directories(flatdata_test
     PRIVATE ${Boost_INCLUDE_DIRS}

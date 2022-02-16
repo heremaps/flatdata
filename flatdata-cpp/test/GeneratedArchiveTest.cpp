@@ -5,6 +5,10 @@
 
 #include "test_structures.hpp"
 
+// include to make sure we can compile if we have two identical multivector resources in different
+// namespaces
+#include "test_structures2.hpp"
+
 #include <flatdata/FileResourceStorage.h>
 #include <flatdata/MemoryResourceStorage.h>
 #include <boost/filesystem.hpp>
