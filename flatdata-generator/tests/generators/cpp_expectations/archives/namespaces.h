@@ -244,6 +244,7 @@ private:
 
 } // namespace m
 
+namespace a {
 namespace _builtin {
 namespace multivector {
 
@@ -299,7 +300,7 @@ union IndexType32Template
 typedef IndexType32Template< flatdata::Reader > IndexType32;
 typedef IndexType32Template< flatdata::Writer > IndexType32Mutator;
 
-}} // namespace _builtin.multivector
+}}} // namespace a._builtin.multivector
 
 namespace a {
 
@@ -328,7 +329,7 @@ public:
     using ListType = flatdata::ArrayView< ::m::S >;
     const ListType& list( ) const;
 
-    using MultiType = flatdata::MultiArrayView< ::_builtin::multivector::IndexType32, ::n::S >;
+    using MultiType = flatdata::MultiArrayView< ::a::_builtin::multivector::IndexType32, ::n::S >;
     const MultiType& multi( ) const;
 
     using InnerType = ::n::X;
@@ -374,8 +375,8 @@ public:  /// Resources
     ListType start_list( );
     bool set_list( ListReaderType data );
 
-    using MultiType = flatdata::MultiVector< ::_builtin::multivector::IndexType32, ::n::S >;
-    using MultiReaderType = flatdata::MultiArrayView< ::_builtin::multivector::IndexType32, ::n::S >;
+    using MultiType = flatdata::MultiVector< ::a::_builtin::multivector::IndexType32, ::n::S >;
+    using MultiReaderType = flatdata::MultiArrayView< ::a::_builtin::multivector::IndexType32, ::n::S >;
     MultiType start_multi( );
 
 
@@ -887,6 +888,7 @@ XBuilder::set_payload( PayloadReaderType data )
 
 } // namespace m
 
+namespace a {
 namespace _builtin {
 namespace multivector {
 namespace internal
@@ -994,7 +996,7 @@ std::string IndexType32Template< Member >::describe( size_t /*unused*/ ) const
     }
     return ss.str( );
 }
-}} // namespace _builtin.multivector
+}}} // namespace a._builtin.multivector
 
 namespace a {
 namespace internal
@@ -1238,7 +1240,7 @@ ABuilder::set_list( ListReaderType data )
 inline auto ABuilder::start_multi( ) -> MultiType
 {
     check_created( );
-    return storage( ).create_multi_vector< ::_builtin::multivector::IndexType32, ::n::S >( "multi", internal::A__multi__schema__ );
+    return storage( ).create_multi_vector< ::a::_builtin::multivector::IndexType32, ::n::S >( "multi", internal::A__multi__schema__ );
 }
 
 inline auto

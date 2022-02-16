@@ -1,3 +1,296 @@
+pub mod n {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
+
+#[doc(hidden)]
+pub mod _builtin {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
+
+#[allow(missing_docs)]
+pub mod multivector {
+#[allow(unused_imports)]
+use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+
+
+/// Builtin type to for MultiVector index
+#[repr(transparent)]
+pub struct IndexType8 {
+    data: [u8; 1],
+}
+
+impl IndexType8 {
+    /// Unsafe since the struct might not be self-contained
+    pub unsafe fn new_unchecked( ) -> Self {
+        Self{data : [0; 1]}
+    }
+}
+
+impl flatdata::Struct for IndexType8 {
+    unsafe fn create_unchecked( ) -> Self {
+        Self{data : [0; 1]}
+    }
+
+    const SIZE_IN_BYTES: usize = 1;
+    const IS_OVERLAPPING_WITH_NEXT : bool = true;
+}
+
+impl flatdata::Overlap for IndexType8 {}
+
+impl IndexType8 {
+    /// First element of the range [`range`].
+    ///
+    /// [`range`]: #method.range
+    #[inline]
+    pub fn value(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 8);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+    #[inline]
+    pub fn range(&self) -> std::ops::Range<u64> {
+        let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 8);
+        let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 1 * 8, 8);
+        start..end
+    }
+
+}
+
+impl std::fmt::Debug for IndexType8 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("IndexType8")
+            .field("value", &self.value())
+            .finish()
+    }
+}
+
+impl std::cmp::PartialEq for IndexType8 {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.value() == other.value()     }
+}
+
+impl IndexType8 {
+    /// First element of the range [`range`].
+    ///
+    /// [`range`]: struct.IndexType8Ref.html#method.range
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_value(&mut self, value: u64) {
+        flatdata_write_bytes!(u64; value, self.data, 0, 8)
+    }
+
+
+    /// Copies the data from `other` into this struct.
+    #[inline]
+    pub fn fill_from(&mut self, other: &IndexType8) {
+        self.set_value(other.value());
+    }
+}
+
+impl flatdata::IndexStruct for IndexType8 {
+    #[inline]
+    fn range(&self) -> std::ops::Range<usize> {
+        let range = self.range();
+        range.start as usize..range.end as usize
+    }
+
+    #[inline]
+    fn set_index(&mut self, value: usize) {
+        self.set_value(value as u64);
+    }
+}
+
+
+/// Builtin type to for MultiVector index
+#[repr(transparent)]
+pub struct IndexType16 {
+    data: [u8; 2],
+}
+
+impl IndexType16 {
+    /// Unsafe since the struct might not be self-contained
+    pub unsafe fn new_unchecked( ) -> Self {
+        Self{data : [0; 2]}
+    }
+}
+
+impl flatdata::Struct for IndexType16 {
+    unsafe fn create_unchecked( ) -> Self {
+        Self{data : [0; 2]}
+    }
+
+    const SIZE_IN_BYTES: usize = 2;
+    const IS_OVERLAPPING_WITH_NEXT : bool = true;
+}
+
+impl flatdata::Overlap for IndexType16 {}
+
+impl IndexType16 {
+    /// First element of the range [`range`].
+    ///
+    /// [`range`]: #method.range
+    #[inline]
+    pub fn value(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 16);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+    #[inline]
+    pub fn range(&self) -> std::ops::Range<u64> {
+        let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 16);
+        let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 2 * 8, 16);
+        start..end
+    }
+
+}
+
+impl std::fmt::Debug for IndexType16 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("IndexType16")
+            .field("value", &self.value())
+            .finish()
+    }
+}
+
+impl std::cmp::PartialEq for IndexType16 {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.value() == other.value()     }
+}
+
+impl IndexType16 {
+    /// First element of the range [`range`].
+    ///
+    /// [`range`]: struct.IndexType16Ref.html#method.range
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_value(&mut self, value: u64) {
+        flatdata_write_bytes!(u64; value, self.data, 0, 16)
+    }
+
+
+    /// Copies the data from `other` into this struct.
+    #[inline]
+    pub fn fill_from(&mut self, other: &IndexType16) {
+        self.set_value(other.value());
+    }
+}
+
+impl flatdata::IndexStruct for IndexType16 {
+    #[inline]
+    fn range(&self) -> std::ops::Range<usize> {
+        let range = self.range();
+        range.start as usize..range.end as usize
+    }
+
+    #[inline]
+    fn set_index(&mut self, value: usize) {
+        self.set_value(value as u64);
+    }
+}
+
+
+/// Builtin type to for MultiVector index
+#[repr(transparent)]
+pub struct IndexType64 {
+    data: [u8; 8],
+}
+
+impl IndexType64 {
+    /// Unsafe since the struct might not be self-contained
+    pub unsafe fn new_unchecked( ) -> Self {
+        Self{data : [0; 8]}
+    }
+}
+
+impl flatdata::Struct for IndexType64 {
+    unsafe fn create_unchecked( ) -> Self {
+        Self{data : [0; 8]}
+    }
+
+    const SIZE_IN_BYTES: usize = 8;
+    const IS_OVERLAPPING_WITH_NEXT : bool = true;
+}
+
+impl flatdata::Overlap for IndexType64 {}
+
+impl IndexType64 {
+    /// First element of the range [`range`].
+    ///
+    /// [`range`]: #method.range
+    #[inline]
+    pub fn value(&self) -> u64 {
+        let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 64);
+        unsafe { std::mem::transmute::<u64, u64>(value) }
+    }
+
+    #[inline]
+    pub fn range(&self) -> std::ops::Range<u64> {
+        let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 64);
+        let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 8 * 8, 64);
+        start..end
+    }
+
+}
+
+impl std::fmt::Debug for IndexType64 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("IndexType64")
+            .field("value", &self.value())
+            .finish()
+    }
+}
+
+impl std::cmp::PartialEq for IndexType64 {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.value() == other.value()     }
+}
+
+impl IndexType64 {
+    /// First element of the range [`range`].
+    ///
+    /// [`range`]: struct.IndexType64Ref.html#method.range
+    #[inline]
+    #[allow(missing_docs)]
+    pub fn set_value(&mut self, value: u64) {
+        flatdata_write_bytes!(u64; value, self.data, 0, 64)
+    }
+
+
+    /// Copies the data from `other` into this struct.
+    #[inline]
+    pub fn fill_from(&mut self, other: &IndexType64) {
+        self.set_value(other.value());
+    }
+}
+
+impl flatdata::IndexStruct for IndexType64 {
+    #[inline]
+    fn range(&self) -> std::ops::Range<usize> {
+        let range = self.range();
+        range.start as usize..range.end as usize
+    }
+
+    #[inline]
+    fn set_index(&mut self, value: usize) {
+        self.set_value(value as u64);
+    }
+}
+
+
+#[doc(hidden)]
+pub mod schema {
+}
+}
+
+#[doc(hidden)]
+pub mod schema {
+}
+}
 #[repr(transparent)]
 #[derive(Clone)]
 pub struct S {
@@ -316,7 +609,7 @@ impl<'a> DataBuilder<'a> {
 pub struct Data {}
 
 impl flatdata::VariadicIndex for Data {
-    type Index = super::_builtin::multivector::IndexType8;
+    type Index = super::n::_builtin::multivector::IndexType8;
 }
 
 impl<'a> flatdata::VariadicStruct<'a> for Data {
@@ -430,7 +723,7 @@ impl<'a> OptionalDataBuilder<'a> {
 pub struct OptionalData {}
 
 impl flatdata::VariadicIndex for OptionalData {
-    type Index = super::_builtin::multivector::IndexType16;
+    type Index = super::n::_builtin::multivector::IndexType16;
 }
 
 impl<'a> flatdata::VariadicStruct<'a> for OptionalData {
@@ -544,7 +837,7 @@ impl<'a> DataU64IndexBuilder<'a> {
 pub struct DataU64Index {}
 
 impl flatdata::VariadicIndex for DataU64Index {
-    type Index = super::_builtin::multivector::IndexType64;
+    type Index = super::n::_builtin::multivector::IndexType64;
 }
 
 impl<'a> flatdata::VariadicStruct<'a> for DataU64Index {
@@ -632,7 +925,7 @@ impl A {
             let result = match (index, data) {
                 (Ok(index), Ok(data)) => {
                     Ok(flatdata::MultiArrayView::new(
-                        <&[super::_builtin::multivector::IndexType8]>::from_bytes(index)?,
+                        <&[super::n::_builtin::multivector::IndexType8]>::from_bytes(index)?,
                         data
                     ))
                 }
@@ -654,7 +947,7 @@ impl A {
             let result = match (index, data) {
                 (Ok(index), Ok(data)) => {
                     Ok(flatdata::MultiArrayView::new(
-                        <&[super::_builtin::multivector::IndexType16]>::from_bytes(index)?,
+                        <&[super::n::_builtin::multivector::IndexType16]>::from_bytes(index)?,
                         data
                     ))
                 }
@@ -676,7 +969,7 @@ impl A {
             let result = match (index, data) {
                 (Ok(index), Ok(data)) => {
                     Ok(flatdata::MultiArrayView::new(
-                        <&[super::_builtin::multivector::IndexType64]>::from_bytes(index)?,
+                        <&[super::n::_builtin::multivector::IndexType64]>::from_bytes(index)?,
                         data
                     ))
                 }

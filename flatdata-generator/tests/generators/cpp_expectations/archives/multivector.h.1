@@ -1,8 +1,8 @@
-    using DataType = flatdata::MultiArrayView< ::_builtin::multivector::IndexType8, ::n::S, ::n::T >;
+    using DataType = flatdata::MultiArrayView< ::n::_builtin::multivector::IndexType8, ::n::S, ::n::T >;
     const DataType& data( ) const;
 
-    using OptionalDataType = flatdata::MultiArrayView< ::_builtin::multivector::IndexType16, ::n::S, ::n::T >;
+    using OptionalDataType = flatdata::MultiArrayView< ::n::_builtin::multivector::IndexType16, ::n::S, ::n::T >;
     const boost::optional< OptionalDataType >& optional_data( ) const;
 
-    using DataU64IndexType = flatdata::MultiArrayView< ::_builtin::multivector::IndexType64, ::n::S, ::n::T >;
+    using DataU64IndexType = flatdata::MultiArrayView< ::n::_builtin::multivector::IndexType64, ::n::S, ::n::T >;
     const DataU64IndexType& data_u64_index( ) const;

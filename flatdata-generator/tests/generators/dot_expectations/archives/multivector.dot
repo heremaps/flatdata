@@ -18,7 +18,7 @@ subgraph cluster__n_A_data
     fillcolor="#C4E6F8";
 
 
-_n_A_data__builtin_multivector_IndexType8 [label=<
+_n_A_data_n__builtin_multivector_IndexType8 [label=<
 <table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
     <tr>
         <td bgcolor="#257FAD">
@@ -26,7 +26,7 @@ _n_A_data__builtin_multivector_IndexType8 [label=<
         </td>
     </tr>
     <tr>
-        <td bgcolor="#EBF8FF" port="port__n_A_data__builtin_multivector_IndexType8_value">
+        <td bgcolor="#EBF8FF" port="port__n_A_data_n__builtin_multivector_IndexType8_value">
             <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">8</font>
         </td>
     </tr>
@@ -71,7 +71,7 @@ subgraph cluster__n_A_optional_data
     fillcolor="#C4E6F8";
 
 
-_n_A_optional_data__builtin_multivector_IndexType16 [label=<
+_n_A_optional_data_n__builtin_multivector_IndexType16 [label=<
 <table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
     <tr>
         <td bgcolor="#257FAD">
@@ -79,7 +79,7 @@ _n_A_optional_data__builtin_multivector_IndexType16 [label=<
         </td>
     </tr>
     <tr>
-        <td bgcolor="#EBF8FF" port="port__n_A_optional_data__builtin_multivector_IndexType16_value">
+        <td bgcolor="#EBF8FF" port="port__n_A_optional_data_n__builtin_multivector_IndexType16_value">
             <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">16</font>
         </td>
     </tr>
@@ -124,7 +124,7 @@ subgraph cluster__n_A_data_u64_index
     fillcolor="#C4E6F8";
 
 
-_n_A_data_u64_index__builtin_multivector_IndexType64 [label=<
+_n_A_data_u64_index_n__builtin_multivector_IndexType64 [label=<
 <table border="0" cellborder="0" cellspacing="1" cellpadding="1" color="#516D7B">
     <tr>
         <td bgcolor="#257FAD">
@@ -132,7 +132,7 @@ _n_A_data_u64_index__builtin_multivector_IndexType64 [label=<
         </td>
     </tr>
     <tr>
-        <td bgcolor="#EBF8FF" port="port__n_A_data_u64_index__builtin_multivector_IndexType64_value">
+        <td bgcolor="#EBF8FF" port="port__n_A_data_u64_index_n__builtin_multivector_IndexType64_value">
             <b><font color="#516D7B">value</font></b>:<font color="#568C3B">u64</font>:<font color="#D22D72">64</font>
         </td>
     </tr>
@@ -170,15 +170,13 @@ _n_A_data_u64_index_n_T [label=<
 }
 
     }
-}
-
-subgraph cluster___builtin
+subgraph cluster__n__builtin
 {
     penwidth=0;
     fontcolor="#516D7B";
     fillcolor="#F7F7F7";
     label=<<b>_builtin</b>>
-subgraph cluster___builtin_multivector
+subgraph cluster__n__builtin_multivector
 {
     penwidth=0;
     fontcolor="#516D7B";

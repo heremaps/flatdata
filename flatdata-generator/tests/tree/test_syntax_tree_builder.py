@@ -186,9 +186,9 @@ def test_multi_vector_references_builtin_type():
         """)
     assert_equal({
         ".n", ".n.T", ".n.T.t", ".n.A", ".n.A.r", ".n.A.r.@@n@T",
-        ".n.A.r.@@_builtin@multivector@IndexType33",
-        "._builtin", "._builtin.multivector",
-        "._builtin.multivector.IndexType33", "._builtin.multivector.IndexType33.value"
+        ".n.A.r.@@n@_builtin@multivector@IndexType33",
+        ".n._builtin", ".n._builtin.multivector",
+        ".n._builtin.multivector.IndexType33", ".n._builtin.multivector.IndexType33.value"
     }, tree.symbols())
 
 
@@ -203,10 +203,10 @@ def test_duplicate_multivector_builtin_types_are_not_produced():
         """)
     assert_equal({
         ".n", ".n.T", ".n.T.t", ".n.A",
-        ".n.A.r", ".n.A.r.@@n@T", ".n.A.r.@@_builtin@multivector@IndexType33",
-        ".n.A.r2", ".n.A.r2.@@n@T", ".n.A.r2.@@_builtin@multivector@IndexType33",
-        "._builtin", "._builtin.multivector",
-        "._builtin.multivector.IndexType33", "._builtin.multivector.IndexType33.value"
+        ".n.A.r", ".n.A.r.@@n@T", ".n.A.r.@@n@_builtin@multivector@IndexType33",
+        ".n.A.r2", ".n.A.r2.@@n@T", ".n.A.r2.@@n@_builtin@multivector@IndexType33",
+        ".n._builtin", ".n._builtin.multivector",
+        ".n._builtin.multivector.IndexType33", ".n._builtin.multivector.IndexType33.value"
     }, tree.symbols())
 
 
@@ -266,10 +266,6 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
 
     assert_equal.__self__.maxDiff = None
     assert_equal({
-        '._builtin': Namespace,
-        '._builtin.multivector': Namespace,
-        '._builtin.multivector.IndexType14': Structure,
-        '._builtin.multivector.IndexType14.value': Field,
         '.ns': Namespace,
         '.ns.A0': Archive,
         '.ns.A0.@@ns@C': ConstantValueReference,
@@ -279,8 +275,8 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A0.v0': Vector,
         '.ns.A0.v0.@@ns@S1': StructureReference,
         '.ns.A0.v1': Multivector,
-        '.ns.A0.v1.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A0.v1.@@ns@S1': StructureReference,
+        '.ns.A0.v1.@@ns@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A1': Archive,
         '.ns.A1.@@ns@C': ConstantValueReference,
         '.ns.A1.a': res.Archive,
@@ -288,8 +284,8 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.A1.i': Instance,
         '.ns.A1.i.@@ns@S0': StructureReference,
         '.ns.A1.mv': Multivector,
-        '.ns.A1.mv.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A1.mv.@@ns@S0': StructureReference,
+        '.ns.A1.mv.@@ns@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A1.mv.er__ns_S0_f0_v0': ExplicitReference,
         '.ns.A1.mv.er__ns_S0_f0_v0.@@ns@A1@v0': ResourceReference,
         '.ns.A1.mv.er__ns_S0_f0_v0.@@ns@S0': StructureReference,
@@ -341,6 +337,10 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns.XXX.e.@@ns@Enum1': EnumerationReference,
         '.ns.XXX.f': Field,
         '.ns.XXX.f.@@ns@Enum1': EnumerationReference,
+        '.ns._builtin': Namespace,
+        '.ns._builtin.multivector': Namespace,
+        '.ns._builtin.multivector.IndexType14': Structure,
+        '.ns._builtin.multivector.IndexType14.value': Field,
     }, tree.symbols(include_types=True))
 
 
@@ -349,10 +349,6 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
     schema = tree.schema(tree.find('.ns.A1'))
     generated_tree = build_ast(schema)
     assert_equal({
-        '._builtin': Namespace,
-        '._builtin.multivector': Namespace,
-        '._builtin.multivector.IndexType14': Structure,
-        '._builtin.multivector.IndexType14.value': Field,
         '.ns': Namespace,
         '.ns.A0': Archive,
         '.ns.A0.@@ns@C': ConstantValueReference,
@@ -362,7 +358,7 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.A0.v0': Vector,
         '.ns.A0.v0.@@ns@S1': StructureReference,
         '.ns.A0.v1': Multivector,
-        '.ns.A0.v1.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
+        '.ns.A0.v1.@@ns@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A0.v1.@@ns@S1': StructureReference,
         '.ns.A1': Archive,
         '.ns.A1.@@ns@C': ConstantValueReference,
@@ -371,7 +367,7 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.A1.i': Instance,
         '.ns.A1.i.@@ns@S0': StructureReference,
         '.ns.A1.mv': Multivector,
-        '.ns.A1.mv.@@_builtin@multivector@IndexType14': BuiltinStructureReference,
+        '.ns.A1.mv.@@ns@_builtin@multivector@IndexType14': BuiltinStructureReference,
         '.ns.A1.mv.@@ns@S0': StructureReference,
         '.ns.A1.mv.er__ns_S0_f0__ns_A1_v0': ExplicitReference,
         '.ns.A1.mv.er__ns_S0_f0__ns_A1_v0.@@ns@A1@v0': ResourceReference,
@@ -424,6 +420,10 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns.XXX.e.@@ns@Enum1': EnumerationReference,
         '.ns.XXX.f': Field,
         '.ns.XXX.f.@@ns@Enum1': EnumerationReference,
+        '.ns._builtin': Namespace,
+        '.ns._builtin.multivector': Namespace,
+        '.ns._builtin.multivector.IndexType14': Structure,
+        '.ns._builtin.multivector.IndexType14.value': Field,
     }, generated_tree.symbols(include_types=True))
 
 
@@ -452,7 +452,7 @@ def test_resource_types_are_populated_from_structure_references():
         ("T", res.Instance, {"referenced_structures": [".n.A.r.@@n@T"]}),
         ("vector< T >", res.Vector, {"referenced_structures": [".n.A.r.@@n@T"]}),
         ("multivector< 33, T>", res.Multivector, {
-            "referenced_structures": ['.n.A.r.@@_builtin@multivector@IndexType33',
+            "referenced_structures": ['.n.A.r.@@n@_builtin@multivector@IndexType33',
                                       '.n.A.r.@@n@T']}),
         ("raw_data", res.RawData, {"referenced_structures": []})
     ]:
