@@ -13,10 +13,8 @@ use std::{
     sync::Arc,
 };
 
-use diff;
-
 /// A handle to a resource storage used by archives
-pub type StorageHandle = Arc<dyn ResourceStorage + std::marker::Sync + std::marker::Send>;
+pub type StorageHandle = Arc<dyn ResourceStorage + Sync + Send>;
 
 pub trait Stream: Write + Seek {}
 impl<T: Write + Seek> Stream for T {}
@@ -195,7 +193,7 @@ pub fn check_resource<T>(
 /// storage.
 #[doc(hidden)]
 pub fn create_external_vector<'a, T>(
-    storage: &'a dyn ResourceStorage,
+    storage: &'a (dyn ResourceStorage + Sync + Send),
     resource_name: &str,
     schema: &str,
 ) -> io::Result<ExternalVector<'a, T>>
@@ -221,7 +219,7 @@ where
 /// storage.
 #[doc(hidden)]
 pub fn create_multi_vector<'a, Ts>(
-    storage: &'a dyn ResourceStorage,
+    storage: &'a (dyn ResourceStorage + Sync + Send),
     resource_name: &str,
     schema: &str,
 ) -> io::Result<MultiVector<'a, Ts>>
@@ -289,7 +287,7 @@ pub fn create_archive(
 pub struct ResourceHandle<'a> {
     stream: Box<dyn Stream>,
     size_in_bytes: usize,
-    storage: &'a dyn ResourceStorage,
+    storage: &'a (dyn ResourceStorage + Sync + Send),
     name: String,
     schema: String,
     finalized: bool,
@@ -303,7 +301,7 @@ impl<'a> ResourceHandle<'a> {
     /// Resource storage will try to reserve space in the beginning of the
     /// stream for the size of the resource, will may result in an `io::Error`.
     pub(crate) fn try_new(
-        storage: &'a dyn ResourceStorage,
+        storage: &'a (dyn ResourceStorage + Sync + Send),
         name: String,
         schema: String,
         mut stream: Box<dyn Stream>,
