@@ -59,6 +59,12 @@ use std::{
 /// If you are working on the generator, you can make sure your `build.rs`
 /// script picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to
 /// the `flatdata-generator` folder.
+/// 
+/// ## Build
+/// 
+/// This method will try to install flatdata-generator in a python venv automatically
+/// You can provide your own generator by setting `FLATDATA_GENERATOR_BIN` to point to
+/// the `flatdata-generator` binary.
 pub fn generate(
     schemas_path: impl AsRef<Path>,
     out_dir: impl AsRef<Path>,
@@ -66,34 +72,41 @@ pub fn generate(
     let schemas_path = schemas_path.as_ref();
     let out_dir = out_dir.as_ref();
 
-    // create a virtualenv in the target folder
-    eprintln!("creating python virtualenv");
-    let _ = Command::new("python3")
-        .arg("-m")
-        .arg("venv")
-        .arg(out_dir)
-        .spawn()
-        .map_err(GeneratorError::PythonError)?
-        .wait()?;
-
-    // install dependencies
-    let generator_path = if let Ok(path) = env::var("FLATDATA_GENERATOR_PATH") {
-        // we want to rebuild automatically if we edit the generator's code
-        let path = PathBuf::from(path).canonicalize()?;
-        println!("cargo:rerun-if-changed={}", path.display());
-        eprintln!("installing flatdata-generator from source");
-        path
+    let generator_bin = if let Ok(bin_path) = env::var("FLATDATA_GENERATOR_BIN") {
+        eprintln!("using provided generator binary {}", bin_path);
+        PathBuf::from(bin_path)
     } else {
-        eprintln!("installing flatdata-generator from PyPI");
-        PathBuf::from("flatdata-generator==0.4.5")
+        // create a virtualenv in the target folder
+        eprintln!("creating python virtualenv");
+        let _ = Command::new("python3")
+            .arg("-m")
+            .arg("venv")
+            .arg(out_dir)
+            .spawn()
+            .map_err(GeneratorError::PythonError)?
+            .wait()?;
+
+        // install dependencies
+        let generator_path = if let Ok(path) = env::var("FLATDATA_GENERATOR_PATH") {
+            // we want to rebuild automatically if we edit the generator's code
+            let path = PathBuf::from(path).canonicalize()?;
+            println!("cargo:rerun-if-changed={}", path.display());
+            eprintln!("installing flatdata-generator from source");
+            path
+        } else {
+            eprintln!("installing flatdata-generator from PyPI");
+            PathBuf::from("flatdata-generator==0.4.5")
+        };
+        let _ = Command::new(out_dir.join("bin/pip3"))
+            .arg("install")
+            .arg("--disable-pip-version-check")
+            .arg(&generator_path)
+            .spawn()
+            .map_err(GeneratorError::PythonError)?
+            .wait()?;
+
+        out_dir.join("bin/flatdata-generator")
     };
-    let _ = Command::new(out_dir.join("bin/pip3"))
-        .arg("install")
-        .arg("--disable-pip-version-check")
-        .arg(&generator_path)
-        .spawn()
-        .map_err(GeneratorError::PythonError)?
-        .wait()?;
 
     for entry in walkdir::WalkDir::new(&schemas_path) {
         let entry = entry?;
@@ -117,7 +130,7 @@ pub fn generate(
         );
 
         std::fs::create_dir_all(result.parent().unwrap())?;
-        let exit_code = Command::new(out_dir.join("bin/flatdata-generator"))
+        let exit_code = Command::new(&generator_bin)
             .arg("-g")
             .arg("rust")
             .arg("-s")
