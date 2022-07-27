@@ -44,7 +44,9 @@ struct Reader
                                      : ( typename BitsToUnsigned< num_bits >::type( 1 )
                                          << ( bit_width - std::is_signed< T >::value ) )
                                            - 1 ),
-        min = bit_width == 0 || !std::is_signed< T >::value ? 0 : -max - 1
+        min = bit_width == 0 || !std::is_signed< T >::value
+                  ? static_cast< typename UnderlyingType< T >::type >( 0 )
+                  : static_cast< typename UnderlyingType< T >::type >( -max - 1 )
     };
 
     StreamType data;
