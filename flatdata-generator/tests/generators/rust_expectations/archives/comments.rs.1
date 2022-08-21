@@ -27,15 +27,13 @@ impl ::std::fmt::Debug for Foo {
 }
 
 impl Foo {
+    #[allow(unused_imports, unused_variables)]
     pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
-        #[allow(unused_imports)]
         use flatdata::SliceExt;
-        #[allow(unused_variables)]
         use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
-        #[allow(unused_variables)]
         let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("Foo"), schema::foo::FOO)?;
@@ -44,9 +42,8 @@ impl Foo {
             use flatdata::check_resource as check;
             let max_size = None;
             let resource = extend(storage.read("bar", schema::foo::resources::BAR));
-            check("bar", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+            check("bar", |r| r.len(), max_size, resource.map(flatdata::RawData::new))?
         };
-
 
         Ok(Self {
             _storage: storage,
@@ -115,15 +112,13 @@ impl ::std::fmt::Debug for Bar {
 }
 
 impl Bar {
+    #[allow(unused_imports, unused_variables)]
     pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
-        #[allow(unused_imports)]
         use flatdata::SliceExt;
-        #[allow(unused_variables)]
         use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
-        #[allow(unused_variables)]
         let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("Bar"), schema::bar::BAR)?;
@@ -132,9 +127,8 @@ impl Bar {
             use flatdata::check_resource as check;
             let max_size = None;
             let resource = extend(storage.read("foo", schema::bar::resources::FOO));
-            check("foo", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+            check("foo", |r| r.len(), max_size, resource.map(flatdata::RawData::new))?
         };
-
 
         Ok(Self {
             _storage: storage,

@@ -5,6 +5,8 @@ pub struct StructEnumI8 {
 }
 
 impl StructEnumI8 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -38,6 +40,7 @@ impl StructEnumI8 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -50,6 +53,7 @@ impl StructEnumI8 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -76,6 +80,7 @@ unsafe impl flatdata::NoOverlap for StructEnumI8 {}
 
 impl StructEnumI8 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumI8 {
         let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<i8, super::n::EnumI8>(value) }
@@ -118,6 +123,8 @@ pub struct StructEnumU8 {
 }
 
 impl StructEnumU8 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -151,6 +158,7 @@ impl StructEnumU8 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -163,6 +171,7 @@ impl StructEnumU8 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -189,6 +198,7 @@ unsafe impl flatdata::NoOverlap for StructEnumU8 {}
 
 impl StructEnumU8 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumU8 {
         let value = flatdata_read_bytes!(u8, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<u8, super::n::EnumU8>(value) }
@@ -231,6 +241,8 @@ pub struct StructEnumI16 {
 }
 
 impl StructEnumI16 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -264,6 +276,7 @@ impl StructEnumI16 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -276,6 +289,7 @@ impl StructEnumI16 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -302,6 +316,7 @@ unsafe impl flatdata::NoOverlap for StructEnumI16 {}
 
 impl StructEnumI16 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumI16 {
         let value = flatdata_read_bytes!(i16, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<i16, super::n::EnumI16>(value) }
@@ -344,6 +359,8 @@ pub struct StructEnumU16 {
 }
 
 impl StructEnumU16 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -377,6 +394,7 @@ impl StructEnumU16 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -389,6 +407,7 @@ impl StructEnumU16 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -415,6 +434,7 @@ unsafe impl flatdata::NoOverlap for StructEnumU16 {}
 
 impl StructEnumU16 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumU16 {
         let value = flatdata_read_bytes!(u16, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<u16, super::n::EnumU16>(value) }
@@ -457,6 +477,8 @@ pub struct StructEnumI32 {
 }
 
 impl StructEnumI32 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -490,6 +512,7 @@ impl StructEnumI32 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -502,6 +525,7 @@ impl StructEnumI32 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -528,6 +552,7 @@ unsafe impl flatdata::NoOverlap for StructEnumI32 {}
 
 impl StructEnumI32 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumI32 {
         let value = flatdata_read_bytes!(i32, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<i32, super::n::EnumI32>(value) }
@@ -570,6 +595,8 @@ pub struct StructEnumU32 {
 }
 
 impl StructEnumU32 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -603,6 +630,7 @@ impl StructEnumU32 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -615,6 +643,7 @@ impl StructEnumU32 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -641,6 +670,7 @@ unsafe impl flatdata::NoOverlap for StructEnumU32 {}
 
 impl StructEnumU32 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumU32 {
         let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<u32, super::n::EnumU32>(value) }
@@ -683,6 +713,8 @@ pub struct StructEnumI64 {
 }
 
 impl StructEnumI64 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -716,6 +748,7 @@ impl StructEnumI64 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -728,6 +761,7 @@ impl StructEnumI64 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -754,6 +788,7 @@ unsafe impl flatdata::NoOverlap for StructEnumI64 {}
 
 impl StructEnumI64 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumI64 {
         let value = flatdata_read_bytes!(i64, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<i64, super::n::EnumI64>(value) }
@@ -796,6 +831,8 @@ pub struct StructEnumU64 {
 }
 
 impl StructEnumU64 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -829,6 +866,7 @@ impl StructEnumU64 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -841,6 +879,7 @@ impl StructEnumU64 {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 1 {
@@ -867,6 +906,7 @@ unsafe impl flatdata::NoOverlap for StructEnumU64 {}
 
 impl StructEnumU64 {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> super::n::EnumU64 {
         let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 1);
         unsafe { std::mem::transmute::<u64, super::n::EnumU64>(value) }

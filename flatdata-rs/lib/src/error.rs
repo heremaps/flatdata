@@ -5,6 +5,7 @@ use std::{error, fmt, io, str::Utf8Error};
 ///
 /// [`Storage`]: trait.Storage.html
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum ResourceStorageError {
     /// Wrapper of [`io::Error`] with resource name for which the error
     /// occurred.
@@ -44,8 +45,6 @@ pub enum ResourceStorageError {
     },
     /// A resource / archive is missing completely
     Missing,
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl ResourceStorageError {
@@ -74,7 +73,6 @@ impl error::Error for ResourceStorageError {
             ResourceStorageError::WrongSignature { .. } => "schema is not matching expected schema",
             ResourceStorageError::TooBig { .. } => "resource is too big",
             ResourceStorageError::Missing => "Missing resource / archive",
-            ResourceStorageError::__Nonexhaustive => "n/a",
         }
     }
 }

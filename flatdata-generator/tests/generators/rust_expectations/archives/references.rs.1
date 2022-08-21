@@ -24,6 +24,8 @@ pub struct IndexType32 {
 }
 
 impl IndexType32 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 4]}
@@ -46,12 +48,14 @@ impl IndexType32 {
     ///
     /// [`range`]: #method.range
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn value(&self) -> u64 {
         let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 32);
         unsafe { std::mem::transmute::<u64, u64>(value) }
     }
 
     #[inline]
+    #[allow(clippy::identity_op)]
     pub fn range(&self) -> std::ops::Range<u64> {
         let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 32);
         let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 4 * 8, 32);
@@ -122,6 +126,8 @@ pub struct S {
 }
 
 impl S {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 4]}
@@ -155,6 +161,7 @@ impl S {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 4 {
@@ -167,6 +174,7 @@ impl S {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 4 {
@@ -193,6 +201,7 @@ unsafe impl flatdata::NoOverlap for S {}
 
 impl S {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn x(&self) -> u32 {
         let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 0, 32);
         unsafe { std::mem::transmute::<u32, u32>(value) }
@@ -235,6 +244,8 @@ pub struct R {
 }
 
 impl R {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 2]}
@@ -268,6 +279,7 @@ impl R {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 2 {
@@ -280,6 +292,7 @@ impl R {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 2 {
@@ -306,12 +319,14 @@ unsafe impl flatdata::NoOverlap for R {}
 
 impl R {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn ref_(&self) -> u32 {
         let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 0, 8);
         unsafe { std::mem::transmute::<u32, u32>(value) }
     }
 
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn ref2(&self) -> u32 {
         let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 8, 4);
         unsafe { std::mem::transmute::<u32, u32>(value) }
@@ -398,7 +413,7 @@ impl<'a> Multilist1Builder<'a> {
     ///
     /// [`S`]: struct.S.html
     #[inline]
-    pub fn add_s<'b>(&'b mut self) -> &'b mut super::n::S {
+    pub fn add_s(&mut self) -> &mut super::n::S {
         let old_len = self.data.len();
         let increment = 1 + <super::n::S as flatdata::Struct>::SIZE_IN_BYTES;
         self.data.resize(old_len + increment, 0);
@@ -440,7 +455,7 @@ impl<'a> flatdata::VariadicStruct<'a> for Multilist1 {
     fn create(index: flatdata::TypeIndex, data: &'a [u8]) -> Self::Item
     {
         match index {
-                0 => Multilist1Ref::S(super::n::S::from_bytes_slice(&data).expect("Corrupted data")),
+                0 => Multilist1Ref::S(super::n::S::from_bytes_slice(data).expect("Corrupted data")),
             _ => panic!("invalid type index {} for variadic type Multilist1Ref", index),
         }
     }
@@ -494,7 +509,7 @@ impl<'a> Multilist2Builder<'a> {
     ///
     /// [`S`]: struct.S.html
     #[inline]
-    pub fn add_s<'b>(&'b mut self) -> &'b mut super::n::S {
+    pub fn add_s(&mut self) -> &mut super::n::S {
         let old_len = self.data.len();
         let increment = 1 + <super::n::S as flatdata::Struct>::SIZE_IN_BYTES;
         self.data.resize(old_len + increment, 0);
@@ -536,7 +551,7 @@ impl<'a> flatdata::VariadicStruct<'a> for Multilist2 {
     fn create(index: flatdata::TypeIndex, data: &'a [u8]) -> Self::Item
     {
         match index {
-                0 => Multilist2Ref::S(super::n::S::from_bytes_slice(&data).expect("Corrupted data")),
+                0 => Multilist2Ref::S(super::n::S::from_bytes_slice(data).expect("Corrupted data")),
             _ => panic!("invalid type index {} for variadic type Multilist2Ref", index),
         }
     }
@@ -590,7 +605,7 @@ impl<'a> MultirefsBuilder<'a> {
     ///
     /// [`R`]: struct.R.html
     #[inline]
-    pub fn add_r<'b>(&'b mut self) -> &'b mut super::n::R {
+    pub fn add_r(&mut self) -> &mut super::n::R {
         let old_len = self.data.len();
         let increment = 1 + <super::n::R as flatdata::Struct>::SIZE_IN_BYTES;
         self.data.resize(old_len + increment, 0);
@@ -632,7 +647,7 @@ impl<'a> flatdata::VariadicStruct<'a> for Multirefs {
     fn create(index: flatdata::TypeIndex, data: &'a [u8]) -> Self::Item
     {
         match index {
-                0 => MultirefsRef::R(super::n::R::from_bytes_slice(&data).expect("Corrupted data")),
+                0 => MultirefsRef::R(super::n::R::from_bytes_slice(data).expect("Corrupted data")),
             _ => panic!("invalid type index {} for variadic type MultirefsRef", index),
         }
     }
@@ -722,15 +737,13 @@ impl ::std::fmt::Debug for A {
 }
 
 impl A {
+    #[allow(unused_imports, unused_variables)]
     pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
-        #[allow(unused_imports)]
         use flatdata::SliceExt;
-        #[allow(unused_variables)]
         use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
-        #[allow(unused_variables)]
         let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;
@@ -739,18 +752,18 @@ impl A {
             use flatdata::check_optional_resource as check;
             let max_size = Some(16);
             let resource = extend(storage.read("list1", schema::a::resources::LIST1));
-            check("list1", |r| r.len(), max_size, resource.and_then(|x| <&[super::n::S]>::from_bytes(x)))?
+            check("list1", |r| r.len(), max_size, resource.and_then(<&[super::n::S]>::from_bytes))?
         };
         let list2 = {
             use flatdata::check_resource as check;
             let max_size = Some(16);
             let resource = extend(storage.read("list2", schema::a::resources::LIST2));
-            check("list2", |r| r.len(), max_size, resource.and_then(|x| <&[super::n::S]>::from_bytes(x)))?
+            check("list2", |r| r.len(), max_size, resource.and_then(<&[super::n::S]>::from_bytes))?
         };
         let multilist1 = {
             use flatdata::check_optional_resource as check;
             let max_size = Some(16);
-            let index_schema = &format!("index({})", schema::a::resources::MULTILIST1);
+            let index_schema = format!("index({})", schema::a::resources::MULTILIST1);
             let index = extend(storage.read("multilist1_index", &index_schema));
             let data = extend(storage.read("multilist1", schema::a::resources::MULTILIST1));
             let result = match (index, data) {
@@ -772,7 +785,7 @@ impl A {
         let multilist2 = {
             use flatdata::check_resource as check;
             let max_size = Some(16);
-            let index_schema = &format!("index({})", schema::a::resources::MULTILIST2);
+            let index_schema = format!("index({})", schema::a::resources::MULTILIST2);
             let index = extend(storage.read("multilist2_index", &index_schema));
             let data = extend(storage.read("multilist2", schema::a::resources::MULTILIST2));
             let result = match (index, data) {
@@ -795,24 +808,24 @@ impl A {
             use flatdata::check_optional_resource as check;
             let max_size = Some(16);
             let resource = extend(storage.read("raw1", schema::a::resources::RAW1));
-            check("raw1", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+            check("raw1", |r| r.len(), max_size, resource.map(flatdata::RawData::new))?
         };
         let raw2 = {
             use flatdata::check_resource as check;
             let max_size = Some(16);
             let resource = extend(storage.read("raw2", schema::a::resources::RAW2));
-            check("raw2", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+            check("raw2", |r| r.len(), max_size, resource.map(flatdata::RawData::new))?
         };
         let refs = {
             use flatdata::check_resource as check;
             let max_size = None;
             let resource = extend(storage.read("refs", schema::a::resources::REFS));
-            check("refs", |r| r.len(), max_size, resource.and_then(|x| <&[super::n::R]>::from_bytes(x)))?
+            check("refs", |r| r.len(), max_size, resource.and_then(<&[super::n::R]>::from_bytes))?
         };
         let multirefs = {
             use flatdata::check_resource as check;
             let max_size = None;
-            let index_schema = &format!("index({})", schema::a::resources::MULTIREFS);
+            let index_schema = format!("index({})", schema::a::resources::MULTIREFS);
             let index = extend(storage.read("multirefs_index", &index_schema));
             let data = extend(storage.read("multirefs", schema::a::resources::MULTIREFS));
             let result = match (index, data) {

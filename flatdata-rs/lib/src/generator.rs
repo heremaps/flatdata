@@ -59,9 +59,9 @@ use std::{
 /// If you are working on the generator, you can make sure your `build.rs`
 /// script picks up the source by setting `FLATDATA_GENERATOR_PATH` to point to
 /// the `flatdata-generator` folder.
-/// 
+///
 /// ## Build
-/// 
+///
 /// This method will try to install flatdata-generator in a python venv automatically
 /// You can provide your own generator by setting `FLATDATA_GENERATOR_BIN` to point to
 /// the `flatdata-generator` binary.
@@ -184,7 +184,7 @@ pub enum GeneratorError {
 }
 
 impl std::fmt::Display for GeneratorError {
-    fn fmt(self: &Self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
             GeneratorError::PythonError(err) => {
                 writeln!(f, "{} could not be executed", err)?;

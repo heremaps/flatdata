@@ -66,7 +66,7 @@ mod test {
         assert_eq!(vec.len(), 3);
         assert_eq!(vec[0].x(), 10..20);
         assert_eq!(vec[1].x(), 20..30);
-        assert_eq!(vec[2].x(), 30..0);
+        assert!(vec[2].x().is_empty());
 
         assert_eq!(vec[0..1].len(), 1);
         assert_eq!(vec[0..1][0].x(), 10..20);
@@ -90,7 +90,7 @@ mod test {
         let mut buffer = vec![255_u8; A::SIZE_IN_BYTES];
         buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10]);
         let data = &buffer[..];
-        let view = <&[A]>::from_bytes(&data).unwrap();
+        let view = <&[A]>::from_bytes(data).unwrap();
         assert_eq!(11, view.len());
         let first = &view[0];
         assert_eq!(65535, first.x());
@@ -99,22 +99,6 @@ mod test {
             assert_eq!(0, x.x());
             assert_eq!(0, x.y());
         }
-
-        let x = {
-            // test clone and lifetime of returned reference
-            let view_copy = view.clone();
-            &view_copy[0]
-        };
-        assert_eq!(65535, x.x());
-        assert_eq!(65535, x.y());
-
-        let x = {
-            // test clone and lifetime of returned reference
-            let view_copy = view.clone();
-            view_copy.iter().next().unwrap()
-        };
-        assert_eq!(65535, x.x());
-        assert_eq!(65535, x.y());
     }
 
     fn create_values(size: usize) -> Vector<B> {
@@ -138,11 +122,11 @@ mod test {
         for _ in 0..size {
             iter.next().unwrap();
         }
-        if let Some(_) = iter.next() {
-            assert!(false, "Iterator did not end properly");
+        if iter.next().is_some() {
+            panic!("Iterator did not end properly");
         }
-        if let Some(_) = iter.next() {
-            assert!(false, "Iterator did not fuse properly");
+        if iter.next().is_some() {
+            panic!("Iterator did not fuse properly");
         }
     }
 
@@ -154,6 +138,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::iter_next_slice)]
     fn slice() {
         let v = create_values(10);
         let view = v.as_view();

@@ -102,7 +102,7 @@ where
         if !self.data.is_empty() {
             let type_index = self.data[0];
             self.data = &self.data[1..];
-            let res = <Ts as VariadicStruct>::create(type_index, &self.data);
+            let res = <Ts as VariadicStruct>::create(type_index, self.data);
             self.data = &self.data[res.size_in_bytes()..];
             Some(res)
         } else {
@@ -257,8 +257,8 @@ mod tests {
         test::{Ab, AbRef},
     };
 
-    fn create_view<'a>(storage: &'a MemoryResourceStorage, size: usize) -> MultiArrayView<'a, Ab> {
-        let mut mv = create_multi_vector::<Ab>(&*storage, "multivector", "Some schema")
+    fn create_view(storage: &MemoryResourceStorage, size: usize) -> MultiArrayView<Ab> {
+        let mut mv = create_multi_vector::<Ab>(storage, "multivector", "Some schema")
             .expect("failed to create MultiVector");
 
         for i in 0..size {
@@ -351,11 +351,11 @@ mod tests {
         for _ in 0..size {
             iter.next().unwrap();
         }
-        if let Some(_) = iter.next() {
-            assert!(false, "Iterator did not end properly");
+        if iter.next().is_some() {
+            panic!("Iterator did not end properly");
         }
-        if let Some(_) = iter.next() {
-            assert!(false, "Iterator did not fuse properly");
+        if iter.next().is_some() {
+            panic!("Iterator did not fuse properly");
         }
     }
 

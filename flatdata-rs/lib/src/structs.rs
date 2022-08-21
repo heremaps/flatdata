@@ -52,6 +52,10 @@ pub trait Struct: Debug {
 }
 
 /// Marks structs that can be used stand-alone, e.g. no range
+///
+/// # Safety
+///
+/// Compiler can't guarantee that the struct does not overlap in the storage (memory)
 pub unsafe trait NoOverlap {}
 /// Marks structs that cannot be used stand-alone, e.g. no range
 pub trait Overlap {}
@@ -140,6 +144,6 @@ mod test {
 
     #[test]
     fn test_range() {
-        assert_eq!(<R as Struct>::IS_OVERLAPPING_WITH_NEXT, true);
+        const _: [(); 0 - !{ <R as Struct>::IS_OVERLAPPING_WITH_NEXT } as usize] = [];
     }
 }

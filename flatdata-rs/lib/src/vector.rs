@@ -138,8 +138,8 @@ where
 }
 
 /// Safety: We must not implement DerefMut if T is not NoOverlap,
-/// since it would allow getting a mutable refernce to one element,
-/// and refernece to the next: Both use the same memory address for data of ranges
+/// since it would allow getting a mutable reference to one element,
+/// and reference to the next: Both use the same memory address for data of ranges
 impl<T> std::ops::DerefMut for Vector<T>
 where
     T: Struct + NoOverlap,
@@ -296,7 +296,7 @@ where
     fn flush(&mut self) -> io::Result<()> {
         self.resource_handle
             .borrow_mut()
-            .write(&self.data.as_view().as_bytes())?;
+            .write(self.data.as_view().as_bytes())?;
         self.data.clear();
         Ok(())
     }
@@ -349,7 +349,7 @@ mod tests {
 
         assert_eq!(v[0].x(), 10..20);
         assert_eq!(v[1].x(), 20..30);
-        assert_eq!(v[2].x(), 30..0);
+        assert!(v[2].x().is_empty());
     }
 
     #[test]

@@ -5,6 +5,8 @@ pub struct Foo {
 }
 
 impl Foo {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 4]}
@@ -38,6 +40,7 @@ impl Foo {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 4 {
@@ -50,6 +53,7 @@ impl Foo {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 4 {
@@ -76,6 +80,7 @@ unsafe impl flatdata::NoOverlap for Foo {}
 
 impl Foo {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> u32 {
         let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 0, 32);
         unsafe { std::mem::transmute::<u32, u32>(value) }
@@ -129,6 +134,8 @@ pub struct Foo {
 }
 
 impl Foo {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 4]}
@@ -162,6 +169,7 @@ impl Foo {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice(data: &[u8]) -> Result<&Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 4 {
@@ -174,6 +182,7 @@ impl Foo {
     }
 
     /// Create reference from byte array
+    #[allow(clippy::len_zero)]
     pub fn from_bytes_slice_mut(data: &mut [u8]) -> Result<&mut Self, flatdata::ResourceStorageError> {
         // We cannot rely on TryFrom here, since it does not yet support > 33 bytes
         if data.len() < 4 {
@@ -200,6 +209,7 @@ unsafe impl flatdata::NoOverlap for Foo {}
 
 impl Foo {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn f(&self) -> u32 {
         let value = flatdata_read_bytes!(u32, self.data.as_ptr(), 0, 32);
         unsafe { std::mem::transmute::<u32, u32>(value) }

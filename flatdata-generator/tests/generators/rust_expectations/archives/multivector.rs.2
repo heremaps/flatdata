@@ -17,6 +17,8 @@ pub struct IndexType8 {
 }
 
 impl IndexType8 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 1]}
@@ -39,12 +41,14 @@ impl IndexType8 {
     ///
     /// [`range`]: #method.range
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn value(&self) -> u64 {
         let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 8);
         unsafe { std::mem::transmute::<u64, u64>(value) }
     }
 
     #[inline]
+    #[allow(clippy::identity_op)]
     pub fn range(&self) -> std::ops::Range<u64> {
         let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 8);
         let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 1 * 8, 8);
@@ -106,6 +110,8 @@ pub struct IndexType16 {
 }
 
 impl IndexType16 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 2]}
@@ -128,12 +134,14 @@ impl IndexType16 {
     ///
     /// [`range`]: #method.range
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn value(&self) -> u64 {
         let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 16);
         unsafe { std::mem::transmute::<u64, u64>(value) }
     }
 
     #[inline]
+    #[allow(clippy::identity_op)]
     pub fn range(&self) -> std::ops::Range<u64> {
         let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 16);
         let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 2 * 8, 16);
@@ -195,6 +203,8 @@ pub struct IndexType64 {
 }
 
 impl IndexType64 {
+    /// # Safety
+    ///
     /// Unsafe since the struct might not be self-contained
     pub unsafe fn new_unchecked( ) -> Self {
         Self{data : [0; 8]}
@@ -217,12 +227,14 @@ impl IndexType64 {
     ///
     /// [`range`]: #method.range
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn value(&self) -> u64 {
         let value = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 64);
         unsafe { std::mem::transmute::<u64, u64>(value) }
     }
 
     #[inline]
+    #[allow(clippy::identity_op)]
     pub fn range(&self) -> std::ops::Range<u64> {
         let start = flatdata_read_bytes!(u64, self.data.as_ptr(), 0, 64);
         let end = flatdata_read_bytes!(u64, self.data.as_ptr(), 0 + 8 * 8, 64);

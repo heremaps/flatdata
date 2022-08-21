@@ -109,15 +109,13 @@ impl ::std::fmt::Debug for {{archive.name}} {
 }
 
 impl {{archive.name}} {
+    #[allow(unused_imports, unused_variables)]
     pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
-        #[allow(unused_imports)]
         use flatdata::SliceExt;
-        #[allow(unused_variables)]
         use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
-        #[allow(unused_variables)]
         let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("{{archive.name}}"), schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }})?;
@@ -129,17 +127,17 @@ impl {{archive.name}} {
         {% if [r] | vector_resources %}
             {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
             let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
-            check("{{ r.name }}", |r| r.len(), max_size, resource.and_then(|x| <&[{{t}}]>::from_bytes(x)))?
+            check("{{ r.name }}", |r| r.len(), max_size, resource.and_then(<&[{{t}}]>::from_bytes))?
         {% elif [r] | instance_resources %}
             {% set t = fully_qualified_name(archive, r.referenced_structures[0].node) %}
             let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
-            check("{{ r.name }}", |_| 0, max_size, resource.and_then(|x| {{t}}::from_bytes_slice(x)))?
+            check("{{ r.name }}", |_| 0, max_size, resource.and_then({{t}}::from_bytes_slice))?
         {% elif [r] | rawdata_resources %}
             let resource = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
-            check("{{ r.name }}", |r| r.len(), max_size, resource.map(|x| flatdata::RawData::new(x)))?
+            check("{{ r.name }}", |r| r.len(), max_size, resource.map(flatdata::RawData::new))?
         {% elif [r] | multivector_resources %}
             {% set i = fully_qualified_name(archive, r.index_reference.node) %}
-            let index_schema = &format!("index({})", schema::{{ archive_ns }}::resources::{{ r.name | upper }});
+            let index_schema = format!("index({})", schema::{{ archive_ns }}::resources::{{ r.name | upper }});
             let index = extend(storage.read("{{r.name}}_index", &index_schema));
             let data = extend(storage.read("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }}));
             let result = match (index, data) {

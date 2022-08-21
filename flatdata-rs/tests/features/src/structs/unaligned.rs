@@ -58,7 +58,7 @@ fn test_max_values() {
     assert_eq!(value.f(), (1 << (8 - 3)) - 1);
 
     let mut value = n::I8::new();
-    value.set_f((1 << (8 - 3) - 1) - 1);
+    value.set_f((1 << (8 - 3 - 1)) - 1);
     assert_eq!(value.f(), (1 << (8 - 3 - 1)) - 1);
 
     let mut value = n::U16::new();
