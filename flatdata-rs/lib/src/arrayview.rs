@@ -57,6 +57,7 @@ mod test {
     };
 
     #[test]
+    #[allow(clippy::reversed_empty_ranges)]
     fn range() {
         let mut vec: Vector<R> = Vector::with_len(3);
         vec[0].set_first_x(10);
@@ -66,7 +67,7 @@ mod test {
         assert_eq!(vec.len(), 3);
         assert_eq!(vec[0].x(), 10..20);
         assert_eq!(vec[1].x(), 20..30);
-        assert!(vec[2].x().is_empty());
+        assert_eq!(vec[2].x(), 30..0);
 
         assert_eq!(vec[0..1].len(), 1);
         assert_eq!(vec[0..1][0].x(), 10..20);

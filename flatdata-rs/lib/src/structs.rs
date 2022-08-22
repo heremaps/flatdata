@@ -143,7 +143,8 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::assertions_on_constants)]
     fn test_range() {
-        const _: [(); 0 - !{ <R as Struct>::IS_OVERLAPPING_WITH_NEXT } as usize] = [];
+        assert!(<R as Struct>::IS_OVERLAPPING_WITH_NEXT);
     }
 }
