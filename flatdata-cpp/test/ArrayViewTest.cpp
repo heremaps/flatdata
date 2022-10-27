@@ -7,7 +7,7 @@
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 using namespace flatdata;
 using namespace test_structures;
@@ -75,4 +75,30 @@ TEST_CASE( "Slicing ArrayView with Ranges", "[ArrayView]" )
     REQUIRE( view.slice_before( 8 ).front( ).x == 0 );
     REQUIRE( view.slice( 2, 6 ).size( ) == 6 );
     REQUIRE( view.slice( 2, 6 ).front( ).x == 2 );
+}
+
+TEST_CASE( "Iterators", "[ArrayView]" )
+{
+    Vector< n::S > data( 11 );
+    for ( size_t i = 0; i < 11; i++ )
+    {
+        data[ i ].x = i;
+    }
+
+    ArrayView< n::S > view = data;
+    auto iter = view.begin( );
+    REQUIRE( iter->x == 0 );
+    iter++;
+    REQUIRE( iter->x == 1 );
+    ++iter;
+    REQUIRE( iter->x == 2 );
+    iter += 2;
+    REQUIRE( iter->x == 4 );
+    iter -= 1;
+    REQUIRE( iter->x == 3 );
+    auto iter2 = iter++;
+    REQUIRE( iter2->x == 3 );
+    REQUIRE( iter->x == 4 );
+    REQUIRE( iter > view.begin( ) );
+    REQUIRE( iter < view.end( ) );
 }

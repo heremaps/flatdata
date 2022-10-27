@@ -12,7 +12,7 @@
 #include <flatdata/FileResourceStorage.h>
 #include <flatdata/MemoryResourceStorage.h>
 #include <boost/filesystem.hpp>
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 #include <type_traits>
 

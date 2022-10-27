@@ -5,7 +5,7 @@
 
 #include <flatdata/flatdata.h>
 #include <boost/filesystem.hpp>
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 #include <fstream>
 

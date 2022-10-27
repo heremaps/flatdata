@@ -7,7 +7,7 @@
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 using namespace flatdata;
 using namespace test_structures;

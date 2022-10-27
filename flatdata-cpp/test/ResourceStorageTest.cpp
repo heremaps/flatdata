@@ -6,7 +6,7 @@
 #include "test_structures.hpp"
 
 #include <flatdata/flatdata.h>
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 using test_structures::AStruct;
 using test_structures::TestIndexType32;

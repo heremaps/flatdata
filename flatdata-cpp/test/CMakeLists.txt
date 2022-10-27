@@ -1,4 +1,4 @@
-file(GLOB TEST_FLATDATA_SOURCES "*.cpp")
+file(GLOB TEST_FLATDATA_SOURCES "*.cpp" "../vendor/catch_amalgamated.cpp")
 
 flatdata_generate_source(generate_flatdata_test_code
     ${CMAKE_CURRENT_SOURCE_DIR}/test_structures.flatdata
