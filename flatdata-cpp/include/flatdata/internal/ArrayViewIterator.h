@@ -10,7 +10,7 @@
 
 namespace flatdata
 {
-template< typename T >
+template < typename T >
 class ArrayViewIterator
 {
 private:
@@ -37,9 +37,9 @@ public:
 public:
     explicit ArrayViewIterator( ConstStreamType ptr = nullptr );
     ArrayViewIterator& operator++( );
-    ArrayViewIterator& operator++( int );
+    ArrayViewIterator operator++( int );
     ArrayViewIterator& operator--( );
-    ArrayViewIterator& operator--( int );
+    ArrayViewIterator operator--( int );
     ArrayViewIterator& operator+=( difference_type offset );
     ArrayViewIterator& operator-=( difference_type offset );
     ArrayViewIterator operator+( difference_type offset ) const;

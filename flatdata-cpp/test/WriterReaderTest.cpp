@@ -4,7 +4,7 @@
  */
 
 #include <flatdata/flatdata.h>
-#include "catch.hpp"
+#include "catch_amalgamated.hpp"
 
 using namespace flatdata;
 

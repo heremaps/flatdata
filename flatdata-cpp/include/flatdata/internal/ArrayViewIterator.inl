@@ -14,8 +14,7 @@ ArrayViewIterator< T >::PointerWrapper::PointerWrapper( ConstStreamType ptr )
 }
 
 template < typename T >
-typename ArrayViewIterator< T >::pointer ArrayViewIterator< T >::PointerWrapper::operator->( )
-    const
+typename ArrayViewIterator< T >::pointer ArrayViewIterator< T >::PointerWrapper::operator->( ) const
 {
     return &m_data;
 }
@@ -34,7 +33,7 @@ ArrayViewIterator< T >& ArrayViewIterator< T >::operator++( )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator++( int )
+ArrayViewIterator< T > ArrayViewIterator< T >::operator++( int )
 {
     auto copy = *this;
     operator++( );
@@ -49,7 +48,7 @@ ArrayViewIterator< T >& ArrayViewIterator< T >::operator--( )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator--( int )
+ArrayViewIterator< T > ArrayViewIterator< T >::operator--( int )
 {
     auto copy = *this;
     operator--( );
@@ -57,21 +56,24 @@ ArrayViewIterator< T >& ArrayViewIterator< T >::operator--( int )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator+=( difference_type offset )
+ArrayViewIterator< T >&
+ArrayViewIterator< T >::operator+=( difference_type offset )
 {
     m_ptr += T::size_in_bytes( ) * offset;
     return *this;
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator-=( difference_type offset )
+ArrayViewIterator< T >&
+ArrayViewIterator< T >::operator-=( difference_type offset )
 {
     m_ptr -= T::size_in_bytes( ) * offset;
     return *this;
 }
 
 template < typename T >
-ArrayViewIterator< T > ArrayViewIterator< T >::operator+( difference_type offset ) const
+ArrayViewIterator< T >
+ArrayViewIterator< T >::operator+( difference_type offset ) const
 {
     auto copy = *this;
     copy += offset;
@@ -79,7 +81,8 @@ ArrayViewIterator< T > ArrayViewIterator< T >::operator+( difference_type offset
 }
 
 template < typename T >
-ArrayViewIterator< T > ArrayViewIterator< T >::operator-( difference_type offset ) const
+ArrayViewIterator< T >
+ArrayViewIterator< T >::operator-( difference_type offset ) const
 {
     auto copy = *this;
     copy -= offset;
@@ -94,37 +97,43 @@ ArrayViewIterator< T >::operator-( const ArrayViewIterator& other ) const
 }
 
 template < typename T >
-bool ArrayViewIterator< T >::operator==( const ArrayViewIterator& rhs ) const
+bool
+ArrayViewIterator< T >::operator==( const ArrayViewIterator& rhs ) const
 {
     return m_ptr == rhs.m_ptr;
 }
 
 template < typename T >
-bool ArrayViewIterator< T >::operator!=( const ArrayViewIterator& rhs ) const
+bool
+ArrayViewIterator< T >::operator!=( const ArrayViewIterator& rhs ) const
 {
     return m_ptr != rhs.m_ptr;
 }
 
 template < typename T >
-bool ArrayViewIterator< T >::operator<( const ArrayViewIterator& rhs ) const
+bool
+ArrayViewIterator< T >::operator<( const ArrayViewIterator& rhs ) const
 {
     return m_ptr < rhs.m_ptr;
 }
 
 template < typename T >
-bool ArrayViewIterator< T >::operator<=( const ArrayViewIterator& rhs ) const
+bool
+ArrayViewIterator< T >::operator<=( const ArrayViewIterator& rhs ) const
 {
     return m_ptr <= rhs.m_ptr;
 }
 
 template < typename T >
-bool ArrayViewIterator< T >::operator>( const ArrayViewIterator& rhs ) const
+bool
+ArrayViewIterator< T >::operator>( const ArrayViewIterator& rhs ) const
 {
     return m_ptr > rhs.m_ptr;
 }
 
 template < typename T >
-bool ArrayViewIterator< T >::operator>=( const ArrayViewIterator& rhs ) const
+bool
+ArrayViewIterator< T >::operator>=( const ArrayViewIterator& rhs ) const
 {
     return m_ptr >= rhs.m_ptr;
 }
@@ -148,4 +157,4 @@ typename ArrayViewIterator< T >::PointerWrapper ArrayViewIterator< T >::operator
     return PointerWrapper( m_ptr );
 }
 
-} // namespace flatdata
+}  // namespace flatdata
