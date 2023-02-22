@@ -1,5 +1,5 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2023 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
