@@ -11,12 +11,11 @@ env:
 
 jobs:
   Build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Install
         run: |
-          sudo apt install python3.9
           pip install ./flatdata-generator
           cd flatdata-py
           # runtime requirements
