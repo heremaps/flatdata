@@ -190,16 +190,16 @@ class RawData(ResourceBase):
 
     def sub_str(self, index, separator = b'\0'):
         for i in range(index, len(self)):
-            if all(a == b for (a, b) in zip(self[i:], separator)):
+            if self[i:i + len(separator)] == separator:
                 return bytes(self[index:i]).decode("utf-8")
         return bytes(self[index]).decode("utf-8")
 
     def sub_str_list(self, index, separator = b'\0', list_separator = b'\0\0'):
         result = []
         for i in range(index, len(self)):
-            if index == i and all(a == b for (a, b) in zip(self[i:], list_separator)):
+            if index == i and self[i:i + len(list_separator)] == list_separator:
                 break
-            if all(a == b for (a, b) in zip(self[i:], separator)):
+            if self[i:i + len(separator)] == separator:
                 result.append(bytes(self[index:i]).decode("utf-8"))
                 index = i + 1
         return result
@@ -207,7 +207,7 @@ class RawData(ResourceBase):
     def sub_str_array(self, index, size, separator = b'\0'):
         result = []
         for i in range(index, len(self)):
-            if all(a == b for (a, b) in zip(self[i:], separator)):
+            if self[i:i + len(separator)] == separator:
                 result.append(bytes(self[index:i]).decode("utf-8"))
                 index = i + 1
                 if len(result) == size:
