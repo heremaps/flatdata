@@ -117,7 +117,7 @@ class Archive:
 
     @staticmethod
     def _check_non_subarchive_schema(name, resource_signature, storage):
-        actual_schema = storage.read().decode()
+        actual_schema = bytes(storage).decode()
         if actual_schema != resource_signature.schema:
             raise SchemaMismatchError(
                 name, resource_signature.schema.splitlines(), actual_schema.splitlines())
