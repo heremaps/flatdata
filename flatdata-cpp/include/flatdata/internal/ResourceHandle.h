@@ -67,7 +67,7 @@ ResourceHandle::close( )
 {
     if ( m_stream == nullptr )
     {
-        return {};
+        return { };
     }
     resource_storage::write_padding( *m_stream );
 
@@ -79,7 +79,7 @@ ResourceHandle::close( )
     m_stream.reset( );
     if ( !success )
     {
-        return {};
+        return { };
     }
 
     return m_resource_reader( );

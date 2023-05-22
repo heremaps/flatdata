@@ -178,11 +178,13 @@ inline GraphGenerator::NodeRange::NodeRange( uint32_t current, uint32_t end, uin
     , m_diameter( diameter )
 {
 }
-inline void GraphGenerator::NodeRange::operator++( )
+inline void
+GraphGenerator::NodeRange::operator++( )
 {
     m_current++;
 }
-inline void GraphGenerator::NodeRange::operator++( int )
+inline void
+GraphGenerator::NodeRange::operator++( int )
 {
     m_current++;
 }
@@ -199,7 +201,7 @@ GraphGenerator::NodeRange::size( ) const
 inline NodeId
 GraphGenerator::NodeRange::id( ) const
 {
-    return NodeId{m_current};
+    return NodeId{ m_current };
 }
 inline Coordinates
 GraphGenerator::NodeRange::coordinates( ) const
@@ -210,7 +212,7 @@ GraphGenerator::NodeRange::coordinates( ) const
     x |= y;
     y <<= 16;
     y |= x;
-    return Coordinates{x, y};
+    return Coordinates{ x, y };
 }
 inline GraphGenerator::EdgeRange
 GraphGenerator::NodeRange::edges( ) const
@@ -229,11 +231,13 @@ GraphGenerator::EdgeRange::EdgeRange( uint32_t node, uint32_t current, uint32_t 
     , m_diameter( diameter )
 {
 }
-void GraphGenerator::EdgeRange::operator++( )
+void
+GraphGenerator::EdgeRange::operator++( )
 {
     m_current++;
 }
-void GraphGenerator::EdgeRange::operator++( int )
+void
+GraphGenerator::EdgeRange::operator++( int )
 {
     m_current++;
 }
@@ -276,12 +280,12 @@ GraphGenerator::Edge::Edge( uint32_t id, uint32_t diameter )
 InternalId
 GraphGenerator::Edge::id( ) const
 {
-    return InternalId{m_id};
+    return InternalId{ m_id };
 }
 ExternalId
 GraphGenerator::Edge::external_id( ) const
 {
-    return ExternalId{( static_cast< uint64_t >( m_id ) << 32 ) | ( m_id * 13 )};
+    return ExternalId{ ( static_cast< uint64_t >( m_id ) << 32 ) | ( m_id * 13 ) };
 }
 uint32_t
 GraphGenerator::Edge::length_m( ) const
@@ -308,15 +312,18 @@ GraphGenerator::Edge::is_d( ) const
 {
     return ( ( m_id % 7853 ) & 2 ) != 0;
 }
-bool GraphGenerator::Edge::is_e( Direction ) const
+bool
+GraphGenerator::Edge::is_e( Direction ) const
 {
     return ( ( m_id % 6967 ) & 2 ) != 0;
 }
-bool GraphGenerator::Edge::is_f( Direction ) const
+bool
+GraphGenerator::Edge::is_f( Direction ) const
 {
     return ( ( m_id % 5741 ) & 2 ) != 0;
 }
-bool GraphGenerator::Edge::is_g( Direction ) const
+bool
+GraphGenerator::Edge::is_g( Direction ) const
 {
     return ( ( m_id % 5881 ) & 2 ) != 0;
 }
@@ -342,7 +349,7 @@ GraphGenerator::Edge::frc( ) const
 uint8_t
 GraphGenerator::Edge::speed_km_h( Direction dir ) const
 {
-    uint8_t table[ 5 ] = {30, 40, 50, 60, 70};
+    uint8_t table[ 5 ] = { 30, 40, 50, 60, 70 };
     if ( dir == Direction::POSITIVE )
         return table[ frc( ) ];
     return table[ frc( ) ] - 1;

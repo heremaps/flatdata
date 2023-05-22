@@ -21,7 +21,7 @@ TEST_CASE( "Simple layout is in little endian", "[SerializedStruct]" )
     x.b = 0x89abcdef;
 
     const uint8_t* data = x.data( );
-    SimpleStruct reader{data};
+    SimpleStruct reader{ data };
     REQUIRE( uint32_t( reader.a ) == 0x01234567u );
     REQUIRE( uint32_t( reader.b ) == 0x89abcdefu );
 
@@ -45,7 +45,7 @@ TEST_CASE( "Bit packed works", "[SerializedStruct]" )
     x.c = 0x48;
 
     const uint8_t* data = x.data( );
-    BitPackedStruct reader{data};
+    BitPackedStruct reader{ data };
     REQUIRE( uint32_t( reader.a ) == true );
     REQUIRE( uint32_t( reader.b ) == 0x01234567u );
     REQUIRE( uint32_t( reader.c ) == 0x48u );
@@ -68,7 +68,7 @@ TEST_CASE( "Signed struct works", "[SerializedStruct]" )
     x.d = 0;
 
     const uint8_t* data = x.data( );  // 17002468ACFF
-    SignedStruct reader{data};
+    SignedStruct reader{ data };
     REQUIRE( int16_t( reader.a ) == -0x1 );
     REQUIRE( uint32_t( reader.b ) == 0x01234567u );
     REQUIRE( int32_t( reader.c ) == -0x28 );

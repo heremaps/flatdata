@@ -269,12 +269,13 @@ inline std::string
 MemoryResourceStorage::hexdump( bool dump_schemas ) const
 {
     auto dump_hex = []( const std::string& key, const std::string& contents, std::ostream& out ) {
-        helpers::dump_resource( key, contents, 16,
-                                []( std::ostream& out, uint8_t ch ) {
-                                    out << std::setw( 2 ) << std::setfill( '0' ) << std::hex
-                                        << static_cast< uint32_t >( ch );
-                                },
-                                2, out );
+        helpers::dump_resource(
+            key, contents, 16,
+            []( std::ostream& out, uint8_t ch ) {
+                out << std::setw( 2 ) << std::setfill( '0' ) << std::hex
+                    << static_cast< uint32_t >( ch );
+            },
+            2, out );
     };
     return dump_resources( dump_schemas, dump_hex );
 }

@@ -107,7 +107,7 @@ struct DoPrint
     static void
     call( const Graph& graph )
     {
-        measure( [&]( ) { print_graph( graph ); } );
+        measure( [ & ]( ) { print_graph( graph ); } );
     }
 };
 
@@ -117,7 +117,7 @@ struct DoBFS
     static void
     call( const Graph& graph, uint32_t num_runs )
     {
-        measure( [&]( ) { bfs( graph, num_runs ); } );
+        measure( [ & ]( ) { bfs( graph, num_runs ); } );
     }
 };
 
@@ -127,7 +127,7 @@ struct DoDijkstra
     static void
     call( const Graph& graph, uint32_t num_runs )
     {
-        measure( [&]( ) { dijkstra( graph, num_runs ); } );
+        measure( [ & ]( ) { dijkstra( graph, num_runs ); } );
     }
 };
 
@@ -137,7 +137,7 @@ struct DoLookup
     static void
     call( const Graph& graph, uint32_t num_runs )
     {
-        measure( [&]( ) { lookup( graph, num_runs ); } );
+        measure( [ & ]( ) { lookup( graph, num_runs ); } );
     }
 };
 
@@ -199,7 +199,7 @@ Options:
 int
 main( int argc, char** argv )
 {
-    auto args = docopt::docopt( USAGE, {argv + 1, argv + argc} );
+    auto args = docopt::docopt( USAGE, { argv + 1, argv + argc } );
     try
     {
         size_t num_nodes = args.at( "--num-nodes" ).asLong( );
@@ -207,7 +207,7 @@ main( int argc, char** argv )
 
         if ( args.at( "create" ).asBool( ) )
         {
-            measure( [&]( ) { create( argv[ 2 ], num_nodes ); } );
+            measure( [ & ]( ) { create( argv[ 2 ], num_nodes ); } );
         }
         else if ( args.at( "print" ).asBool( ) )
         {

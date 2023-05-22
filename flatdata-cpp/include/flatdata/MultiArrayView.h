@@ -103,7 +103,7 @@ public:
     {
         internal::ExplicitForEachAssert< F, AcceptedArgsList< AcceptedArgs... >,
                                          Args... >::do_assert( );
-        return {};
+        return { };
     }
 
     /**
@@ -126,7 +126,7 @@ public:
     for_each( uint64_t /*unused*/, F&& /*unused*/ ) const
     {
         internal::ImplicitForEachAssert< F, Args... >::do_assert( );
-        return {};
+        return { };
     }
 
     size_t size( ) const;
@@ -195,7 +195,8 @@ MultiArrayView< IndexType, Args... >::size( ) const
 }
 
 template < typename IndexType, typename... Args >
-std::string MultiArrayView< IndexType, Args... >::describe( size_t /*unused*/ ) const
+std::string
+MultiArrayView< IndexType, Args... >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
     if ( this->operator bool( ) )
@@ -294,10 +295,11 @@ MultiArrayView< IndexType, Args... >::Iterator< ElementType >::Iterator( StreamT
 
 template < typename IndexType, typename... Args >
 template < typename ElementType >
-void MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator++( )
+void
+MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator++( )
 {
     bool found = false;
-    auto callback = [&]( ElementType ) { found = true; };
+    auto callback = [ & ]( ElementType ) { found = true; };
     while ( !found && m_data_current != m_data_end )
     {
         unsigned char type = *m_data_current;
@@ -312,16 +314,18 @@ void MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator++( 
 
 template < typename IndexType, typename... Args >
 template < typename ElementType >
-void MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator++( int )
+void
+MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator++( int )
 {
     operator++( );
 }
 
 template < typename IndexType, typename... Args >
 template < typename ElementType >
-ElementType MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator*( ) const
+ElementType
+MultiArrayView< IndexType, Args... >::Iterator< ElementType >::operator*( ) const
 {
-    return ElementType{m_data_current - ElementType::size_in_bytes( )};
+    return ElementType{ m_data_current - ElementType::size_in_bytes( ) };
 }
 
 template < typename IndexType, typename... Args >

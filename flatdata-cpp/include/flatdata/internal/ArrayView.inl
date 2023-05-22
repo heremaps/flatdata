@@ -26,9 +26,10 @@ ArrayView< T >::ArrayView( ConstStreamType data, size_t size )
 }
 
 template < typename T >
-typename ArrayView< T >::ConstValueType ArrayView< T >::operator[]( size_t i ) const
+typename ArrayView< T >::ConstValueType
+ArrayView< T >::operator[]( size_t i ) const
 {
-    return ConstValueType{m_data + T::size_in_bytes( ) * i};
+    return ConstValueType{ m_data + T::size_in_bytes( ) * i };
 }
 
 template < typename T >
@@ -136,7 +137,8 @@ ArrayView< T >::end( ) const
 }
 
 template < typename T >
-std::string ArrayView< T >::describe( size_t /*unused*/ ) const
+std::string
+ArrayView< T >::describe( size_t /*unused*/ ) const
 {
     std::ostringstream ss;
     if ( !empty( ) )

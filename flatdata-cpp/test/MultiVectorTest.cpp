@@ -140,15 +140,15 @@ TEST_CASE( "Test various data overloaded lambda", "[MultiVector]" )
     bool has_b = false;
     bool has_c = false;
 
-    auto reset = [&]( ) {
+    auto reset = [ & ]( ) {
         has_a = false;
         has_b = false;
         has_c = false;
     };
 
-    auto reader = flatdata::make_overload( [&]( AStruct x ) { has_a |= x.value == 8; },
-                                           [&]( BStruct x ) { has_b |= x.value == 1000; },
-                                           [&]( CStruct x ) { has_c |= x.value == 1000000; } );
+    auto reader = flatdata::make_overload( [ & ]( AStruct x ) { has_a |= x.value == 8; },
+                                           [ & ]( BStruct x ) { has_b |= x.value == 1000; },
+                                           [ & ]( CStruct x ) { has_c |= x.value == 1000000; } );
 
     reset( );
     view.second.for_each( 0, reader );
@@ -193,7 +193,7 @@ TEST_CASE( "for_each with explicit lambda", "[MultiVector]" )
 
     // also check that lambda works with explicit for_each
     bool has_b = false;
-    view.second.for_each< BStruct >( 0, [&]( BStruct x ) { has_b = x.value == 1000; } );
+    view.second.for_each< BStruct >( 0, [ & ]( BStruct x ) { has_b = x.value == 1000; } );
     REQUIRE( has_b );
 }
 
@@ -203,7 +203,7 @@ TEST_CASE( "for_each with implicit lambda", "[MultiVector]" )
 
     // also check that lambda works with implicit for_each
     bool has_b = false;
-    view.second.for_each( 0, make_overload( [&]( BStruct x ) { has_b = x.value == 1000; } ) );
+    view.second.for_each( 0, make_overload( [ & ]( BStruct x ) { has_b = x.value == 1000; } ) );
     REQUIRE( has_b );
 }
 
@@ -330,14 +330,14 @@ TEST_CASE( "Close view is same as storage view", "[MultiVector]" )
     {
         view_from_close.for_each(
             i, flatdata::make_overload(
-                   [&]( AStruct x ) { values_view_from_close.push_back( x.value ); },
-                   [&]( BStruct x ) { values_view_from_close.push_back( x.value ); },
-                   [&]( CStruct x ) { values_view_from_close.push_back( x.value ); } ) );
+                   [ & ]( AStruct x ) { values_view_from_close.push_back( x.value ); },
+                   [ & ]( BStruct x ) { values_view_from_close.push_back( x.value ); },
+                   [ & ]( CStruct x ) { values_view_from_close.push_back( x.value ); } ) );
         view_from_storage.for_each(
             i, flatdata::make_overload(
-                   [&]( AStruct x ) { values_view_from_storage.push_back( x.value ); },
-                   [&]( BStruct x ) { values_view_from_storage.push_back( x.value ); },
-                   [&]( CStruct x ) { values_view_from_storage.push_back( x.value ); } ) );
+                   [ & ]( AStruct x ) { values_view_from_storage.push_back( x.value ); },
+                   [ & ]( BStruct x ) { values_view_from_storage.push_back( x.value ); },
+                   [ & ]( CStruct x ) { values_view_from_storage.push_back( x.value ); } ) );
     };
 
     REQUIRE( values_view_from_storage.size( ) == values_view_from_close.size( ) );

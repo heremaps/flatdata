@@ -9,7 +9,8 @@ namespace flatdata
 {
 namespace functraits_test
 {
-void free_function( std::true_type )
+void
+free_function( std::true_type )
 {
 }
 
@@ -20,7 +21,8 @@ zero_arity_function( )
 
 struct Functor
 {
-    void operator( )( std::true_type, std::true_type )
+    void
+    operator( )( std::true_type, std::true_type )
     {
     }
 };

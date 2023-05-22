@@ -132,7 +132,7 @@ MultiVector< IndexType, Args... >::grow( )
     }
     add_to_index( );
 
-    return ListBuilder{&m_data};
+    return ListBuilder{ &m_data };
 }
 
 template < typename IndexType, typename... Args >
@@ -146,10 +146,10 @@ MultiVector< IndexType, Args... >::close( )
     ArrayView< IndexType > index_view = m_index.close( );
     if ( !data || !index_view )
     {
-        return {};
+        return { };
     }
 
-    return {index_view, data.data( )};
+    return { index_view, data.data( ) };
 }
 
 template < typename IndexType, typename... Args >

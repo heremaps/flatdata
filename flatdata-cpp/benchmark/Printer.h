@@ -38,6 +38,6 @@ print_graph( const Graph& graph )
 
     for ( uint32_t i = 0; i < graph.edge_count( ); i++ )
     {
-        print_edge( graph.edge( InternalId{i} ) );
+        print_edge( graph.edge( InternalId{ i } ) );
     }
 }

@@ -22,7 +22,8 @@ namespace flatdata
 struct Hash
 {
     template < typename T >
-    size_t operator( )( const T& value ) const
+    size_t
+    operator( )( const T& value ) const
     {
         std::size_t hash = 0;
         auto data = value.data( );
