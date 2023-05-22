@@ -6,7 +6,7 @@ SOURCE_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name="flatdata-py",
-    version="0.4.5",
+    version="0.4.6",
     author="Flatdata Developers",
     description="Python 3 implementation of Flatdata",
     long_description=open(os.path.join(SOURCE_FILEPATH, "README.md")).read(),
