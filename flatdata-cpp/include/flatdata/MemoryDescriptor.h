@@ -30,7 +30,8 @@ public:
         return m_ptr != nullptr;
     }
 
-    std::string describe( size_t /*nest_level*/ = 0 ) const
+    std::string
+    describe( size_t /*nest_level*/ = 0 ) const
     {
         std::ostringstream ss;
         if ( this->operator bool( ) )

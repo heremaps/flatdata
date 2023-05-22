@@ -106,8 +106,8 @@ struct Reader< std::pair< T, T >, offset, num_bits, struct_size_bytes >
     template < typename U >
     operator std::pair< U, U >( ) const
     {
-        Reader< T, offset, num_bits > start{data};
-        Reader< T, offset, num_bits > end{data + struct_size_bytes};
+        Reader< T, offset, num_bits > start{ data };
+        Reader< T, offset, num_bits > end{ data + struct_size_bytes };
         return std::pair< T, T >( start, end );
     }
 };
@@ -121,24 +121,25 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
 
     explicit operator bool( ) const
     {
-        return Reader< T, offset, num_bits >{data} != INVALID_VALUE;
+        return Reader< T, offset, num_bits >{ data } != INVALID_VALUE;
     }
 
-    T operator*( ) const
+    T
+    operator*( ) const
     {
-        return Reader< T, offset, num_bits >{data};
+        return Reader< T, offset, num_bits >{ data };
     }
 
     template < typename U >
     operator boost::optional< U >( ) const
     {
-        if ( Reader< T, offset, num_bits >{data} == INVALID_VALUE )
+        if ( Reader< T, offset, num_bits >{ data } == INVALID_VALUE )
         {
-            return {};
+            return { };
         }
         else
         {
-            return boost::optional< U >( Reader< T, offset, num_bits >{data} );
+            return boost::optional< U >( Reader< T, offset, num_bits >{ data } );
         }
     }
 };

@@ -98,7 +98,7 @@ verify_checksum( const TarFileHeader& header )
 
     return sum == decode_numeric_field( header.chksum, sizeof( header.chksum ) );
 }
-}
+}  // namespace
 
 std::vector< TarFileEntry >
 read_tar_file_entries( MemoryDescriptor data )
@@ -113,7 +113,7 @@ read_tar_file_entries( MemoryDescriptor data )
 
     std::vector< TarFileEntry > file_entries;
 
-    std::array< char, BLOCK_SIZE > zero_block{};
+    std::array< char, BLOCK_SIZE > zero_block{ };
     std::string long_name;
     size_t offset = 0;
 

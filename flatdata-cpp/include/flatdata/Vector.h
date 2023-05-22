@@ -61,15 +61,17 @@ Vector< T >::Vector( size_t size )
 }
 
 template < typename T >
-typename Vector< T >::ConstValueType Vector< T >::operator[]( size_t i ) const
+typename Vector< T >::ConstValueType
+Vector< T >::operator[]( size_t i ) const
 {
-    return ConstValueType{m_data.data( ) + T::size_in_bytes( ) * i};
+    return ConstValueType{ m_data.data( ) + T::size_in_bytes( ) * i };
 }
 
 template < typename T >
-typename Vector< T >::ValueType Vector< T >::operator[]( size_t i )
+typename Vector< T >::ValueType
+Vector< T >::operator[]( size_t i )
 {
-    return ValueType{m_data.data( ) + T::size_in_bytes( ) * i};
+    return ValueType{ m_data.data( ) + T::size_in_bytes( ) * i };
 }
 
 template < typename T >
@@ -159,7 +161,7 @@ Vector< T >::pop_back( )
 }
 
 template < typename T >
-Vector< T >::operator ArrayView< typename Vector<T>::ConstValueType >( ) const
+Vector< T >::operator ArrayView< typename Vector< T >::ConstValueType >( ) const
 {
     return ArrayView< ConstValueType >( m_data.data( ),
                                         m_data.data( ) + m_data.size( ) - PADDING_SIZE );

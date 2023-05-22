@@ -22,7 +22,7 @@ const char* const incorrect_schema = "bar";
 TEST_CASE( "schema is checked for multivector", "[ResourceStorage]" )
 {
     std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
-    auto create = [&] {
+    auto create = [ & ] {
         auto v
             = a->create_multi_vector< TestIndexType32, AStruct >( resource_name, correct_schema );
         v.close( );
@@ -40,7 +40,7 @@ TEST_CASE( "schema is checked for multivector", "[ResourceStorage]" )
 TEST_CASE( "schema is checked for external vector", "[ResourceStorage]" )
 {
     std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
-    auto create = [&] {
+    auto create = [ & ] {
         auto v = a->create_external_vector< AStruct >( resource_name, correct_schema );
         v.close( );
     };
@@ -55,7 +55,7 @@ TEST_CASE( "schema is checked for external vector", "[ResourceStorage]" )
 TEST_CASE( "schema is checked for written structure", "[ResourceStorage]" )
 {
     std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
-    auto create = [&] {
+    auto create = [ & ] {
         std::vector< uint8_t > data( AStruct::size_in_bytes( ) );
         AStruct v( data.data( ) );
         a->write( resource_name, correct_schema, v );
@@ -69,7 +69,7 @@ TEST_CASE( "schema is checked for written structure", "[ResourceStorage]" )
 TEST_CASE( "schema is checked for written vector", "[ResourceStorage]" )
 {
     std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
-    auto create = [&] {
+    auto create = [ & ] {
         Vector< AStruct > v;
         a->write( resource_name, correct_schema, v );
     };

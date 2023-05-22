@@ -31,7 +31,7 @@ struct ValueCreator
         {
             return boost::none;
         }
-        return T{data.data( )};
+        return T{ data.data( ) };
     }
 };
 
@@ -47,7 +47,7 @@ struct ValueCreator< ArrayView< T > >
         {
             return boost::none;
         }
-        return ArrayView< T >{data.data( ), data.data( ) + data.size_in_bytes( )};
+        return ArrayView< T >{ data.data( ), data.data( ) + data.size_in_bytes( ) };
     }
 };
 
@@ -66,7 +66,7 @@ struct ValueCreator< MultiArrayView< IndexType, Args... > >
         {
             return boost::none;
         }
-        return MultiArrayView< IndexType, Args... >{*index, data.data( )};
+        return MultiArrayView< IndexType, Args... >{ *index, data.data( ) };
     }
 };
 
@@ -117,7 +117,7 @@ template < typename T >
 boost::optional< T >
 ResourceStorage::read( const char* resource_name, const char* schema )
 {
-    auto loader = [this]( const char* name, const char* schema ) {
+    auto loader = [ this ]( const char* name, const char* schema ) {
         return read_and_check_schema( name, schema );
     };
     return internal::ValueCreator< T >( )( resource_name, schema, loader );
@@ -155,7 +155,7 @@ ResourceStorage::read_and_check_schema( const char* resource_name, const char* e
         return MemoryDescriptor( );
     }
 
-    Reader< resource_storage::size_type > size_reader{data.data( )};
+    Reader< resource_storage::size_type > size_reader{ data.data( ) };
     auto size = size_reader;
     if ( size + sizeof( resource_storage::size_type ) + PADDING_SIZE != data.size_in_bytes( ) )
     {
@@ -170,7 +170,7 @@ ResourceStorage::read_and_check_schema( const char* resource_name, const char* e
         return MemoryDescriptor( );
     }
 
-    return MemoryDescriptor{data.data( ) + sizeof( resource_storage::size_type ), size};
+    return MemoryDescriptor{ data.data( ) + sizeof( resource_storage::size_type ), size };
 }
 
 template < typename T >

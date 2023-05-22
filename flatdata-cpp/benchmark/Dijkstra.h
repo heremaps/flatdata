@@ -13,7 +13,7 @@ cost_function( Edge edge, Direction dir )
 {
     // A very simple (arbitrary) cost function that uses each attribute to benchmark reading all the
     // data;
-    uint32_t multiplier[ 5 ] = {20, 19, 18, 17, 16};
+    uint32_t multiplier[ 5 ] = { 20, 19, 18, 17, 16 };
     uint32_t divident = 200 * edge.speed_km_h( dir );
     uint32_t virtual_cost = 0;
     virtual_cost += edge.is_a( ) * 1;
@@ -82,7 +82,7 @@ dijkstra( const Graph& graph, uint32_t num_iterations )
             }
             num_nodes++;
             sum_cost += node.cost;
-            auto edge = graph.edge( InternalId{node.id >> 1} );
+            auto edge = graph.edge( InternalId{ node.id >> 1 } );
             auto edges
                 = ( node.id & 1 ) == 0 ? edge.to_node( ).edges( ) : edge.from_node( ).edges( );
             for ( ; edges.valid( ); edges++ )
@@ -101,7 +101,6 @@ dijkstra( const Graph& graph, uint32_t num_iterations )
             }
         }
         std::cout << "Start " << ( ( ( start & 1 ) == 0 ) ? "+" : "-" ) << ( start >> 1 )
-                  << " SumCosts: " << sum_cost
-                  << " Queue Size: " << num_nodes << std::endl;
+                  << " SumCosts: " << sum_cost << " Queue Size: " << num_nodes << std::endl;
     }
 }

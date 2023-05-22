@@ -133,7 +133,7 @@ compute_diff( const char* expected, const char* found )
 {
     if ( !found )
     {
-        return {};
+        return { };
     }
     std::vector< std::string > lines_expected = to_lines( expected );
     std::vector< std::string > lines_found = to_lines( found );
@@ -144,7 +144,7 @@ compute_diff( const char* expected, const char* found )
 
     distances.resize( expected_length * found_length );
 
-    auto entry = [&]( size_t expected_pos, size_t found_pos ) -> size_t& {
+    auto entry = [ & ]( size_t expected_pos, size_t found_pos ) -> size_t& {
         assert( expected_pos < expected_length );
         assert( found_pos < found_length );
         return distances[ expected_pos + found_pos * expected_length ];
@@ -183,14 +183,15 @@ compute_diff( const char* expected, const char* found )
     {
         size_t next_found_pos = found_pos;
         size_t next_expected_pos = expected_pos;
-        auto check = [&]( size_t new_expected_pos, size_t new_found_pos, size_t transition_cost ) {
-            size_t cost = entry( new_expected_pos, new_found_pos );
-            if ( cost + transition_cost == entry( expected_pos, found_pos ) )
-            {
-                next_found_pos = new_found_pos;
-                next_expected_pos = new_expected_pos;
-            }
-        };
+        auto check
+            = [ & ]( size_t new_expected_pos, size_t new_found_pos, size_t transition_cost ) {
+                  size_t cost = entry( new_expected_pos, new_found_pos );
+                  if ( cost + transition_cost == entry( expected_pos, found_pos ) )
+                  {
+                      next_found_pos = new_found_pos;
+                      next_expected_pos = new_expected_pos;
+                  }
+              };
         if ( found_pos != 0 )
         {
             check( expected_pos, found_pos - 1, 1 );
@@ -225,7 +226,7 @@ compute_diff( const char* expected, const char* found )
 
     return create_context( diff );
 }
-}
+}  // namespace
 
 std::string
 Archive::describe( size_t nest_level ) const

@@ -30,14 +30,15 @@ public:
                    "Cannot use range/overlapping structs standalone" );
 
 public:
-
     Struct( );
 
     ValueType operator*( );
     ConstValueType operator*( ) const;
 
 private:
-    std::array< typename std::remove_pointer< StreamType >::type, T::size_in_bytes( ) + PADDING_SIZE> m_data;
+    std::array< typename std::remove_pointer< StreamType >::type,
+                T::size_in_bytes( ) + PADDING_SIZE >
+        m_data;
 };
 
 // -----------------------------------------------------------------------------
@@ -49,15 +50,17 @@ Struct< T >::Struct( )
 }
 
 template < typename T >
-typename Struct< T >::ConstValueType Struct< T >::operator*( ) const
+typename Struct< T >::ConstValueType
+Struct< T >::operator*( ) const
 {
-    return ConstValueType{m_data.data( )};
+    return ConstValueType{ m_data.data( ) };
 }
 
 template < typename T >
-typename Struct< T >::ValueType Struct< T >::operator*( )
+typename Struct< T >::ValueType
+Struct< T >::operator*( )
 {
-    return ValueType{m_data.data( )};
+    return ValueType{ m_data.data( ) };
 }
 
 }  // namespace flatdata

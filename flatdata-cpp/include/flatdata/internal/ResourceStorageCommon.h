@@ -21,8 +21,8 @@ template < typename T >
 void
 write_to_stream( std::ostream& stream, T value )
 {
-    unsigned char data[ sizeof( T ) ] = {0};
-    Writer< T > writer{data};
+    unsigned char data[ sizeof( T ) ] = { 0 };
+    Writer< T > writer{ data };
     writer = value;
     stream.write( reinterpret_cast< const char* >( data ), sizeof( T ) );
 }
@@ -30,7 +30,7 @@ write_to_stream( std::ostream& stream, T value )
 inline void
 write_padding( std::ostream& stream )
 {
-    char zero[ PADDING_SIZE ] = {0};
+    char zero[ PADDING_SIZE ] = { 0 };
     stream.write( zero, PADDING_SIZE );
 }
 

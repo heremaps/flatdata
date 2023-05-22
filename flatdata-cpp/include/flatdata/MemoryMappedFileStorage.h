@@ -36,9 +36,8 @@ MemoryMappedFileStorage::read( const char* path )
     if ( found != m_maps.end( ) )
     {
         const boost::interprocess::mapped_region& region = found->second;
-        return MemoryDescriptor(
-            static_cast< const unsigned char* >( region.get_address( ) ),
-            region.get_size( ) );
+        return MemoryDescriptor( static_cast< const unsigned char* >( region.get_address( ) ),
+                                 region.get_size( ) );
     }
 
     try

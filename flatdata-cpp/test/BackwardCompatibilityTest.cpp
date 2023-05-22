@@ -113,40 +113,40 @@ openable_storage( )
 }
 
 std::array< uint8_t, 27 > expected_instance_binary
-    = {"\x0a\x00\x00\x00\x00\x00\x00\x00"    // Size of payload in bytes
-       "\xff\xac\x68\x24\x00\x0b\x00\x00"    // Payload
-       "\x00\x00"                            // Payload
-       "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
+    = { "\x0a\x00\x00\x00\x00\x00\x00\x00"     // Size of payload in bytes
+        "\xff\xac\x68\x24\x00\x0b\x00\x00"     // Payload
+        "\x00\x00"                             // Payload
+        "\x00\x00\x00\x00\x00\x00\x00\x00" };  // Padding
 
 std::array< uint8_t, 37 > expected_vector_binary
-    = {"\x14\x00\x00\x00\x00\x00\x00\x00"    // Payload size in bytes
-       "\xff\xac\x68\x24\x00\x0b\x00\x00"    // Payload
-       "\x00\x00\xff\xac\x68\x24\x00\x0b"    // Payload
-       "\x00\x00\x00\x00"                    // Payload
-       "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
+    = { "\x14\x00\x00\x00\x00\x00\x00\x00"     // Payload size in bytes
+        "\xff\xac\x68\x24\x00\x0b\x00\x00"     // Payload
+        "\x00\x00\xff\xac\x68\x24\x00\x0b"     // Payload
+        "\x00\x00\x00\x00"                     // Payload
+        "\x00\x00\x00\x00\x00\x00\x00\x00" };  // Padding
 
 std::array< uint8_t, 66 > expected_multivector_data
-    = {"\x31\x00\x00\x00\x00\x00\x00\x00"              // Payload size in bytes
-       "\x01\xff\xac\x68\x24\x00\x0b\x00\x00\x00\x00"  // Payload
-       "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
-       "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
-       "\x01\xff\xac\x68\x24\x00\x0b\x00\x00\x00\x00"  // Payload
-       "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
-       "\x00\x00\x00\x00\x00\x00\x00\x00"};            // Padding
+    = { "\x31\x00\x00\x00\x00\x00\x00\x00"              // Payload size in bytes
+        "\x01\xff\xac\x68\x24\x00\x0b\x00\x00\x00\x00"  // Payload
+        "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
+        "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
+        "\x01\xff\xac\x68\x24\x00\x0b\x00\x00\x00\x00"  // Payload
+        "\x00\xff\xff\xff\xff\xef\xbe\xad\xde"          // Payload
+        "\x00\x00\x00\x00\x00\x00\x00\x00" };           // Padding
 
 std::array< uint8_t, 42 > expected_multivector_index
-    = {"\x19\x00\x00\x00\x00\x00\x00\x00"    // Index size in bytes
-       "\x00\x00\x00\x00\x00"                // Data pointer 1
-       "\x14\x00\x00\x00\x00"                // Data pointer 2
-       "\x14\x00\x00\x00\x00"                // Data pointer 3
-       "\x28\x00\x00\x00\x00"                // Data pointer 4
-       "\x31\x00\x00\x00\x00"                // Sentinel (end of data 4)
-       "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
+    = { "\x19\x00\x00\x00\x00\x00\x00\x00"     // Index size in bytes
+        "\x00\x00\x00\x00\x00"                 // Data pointer 1
+        "\x14\x00\x00\x00\x00"                 // Data pointer 2
+        "\x14\x00\x00\x00\x00"                 // Data pointer 3
+        "\x28\x00\x00\x00\x00"                 // Data pointer 4
+        "\x31\x00\x00\x00\x00"                 // Sentinel (end of data 4)
+        "\x00\x00\x00\x00\x00\x00\x00\x00" };  // Padding
 
 std::array< uint8_t, 22 > expected_raw_data_binary
-    = {"\x05\x00\x00\x00\x00\x00\x00\x00"    // Payload size in bytes
-       "\xff\xef\xbe\xad\xde"                // Payload
-       "\x00\x00\x00\x00\x00\x00\x00\x00"};  // Padding
+    = { "\x05\x00\x00\x00\x00\x00\x00\x00"     // Payload size in bytes
+        "\xff\xef\xbe\xad\xde"                 // Payload
+        "\x00\x00\x00\x00\x00\x00\x00\x00" };  // Padding
 
 const std::string multivector_index_schema = std::string( "index(" )
                                              + tbi::TestMultivector__multivector_resource__schema__
@@ -270,34 +270,34 @@ TEST_CASE( "Reading multivector resources layout", "[BackwardCompatibility]" )
     auto mv = archive.multivector_resource( );
     size_t number_of_expected_structs = 0;
     mv.for_each( 0, make_overload(
-                        [&]( SimpleStruct s ) {
+                        [ & ]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct s ) {
+                        [ & ]( SignedStruct s ) {
                             check_signed_struct( s );
                             number_of_expected_structs++;
                         } ) );
 
-    mv.for_each(
-        1, make_overload( [&]( SimpleStruct ) { FAIL( ); }, [&]( SignedStruct ) { FAIL( ); } ) );
+    mv.for_each( 1, make_overload( [ & ]( SimpleStruct ) { FAIL( ); },
+                                   [ & ]( SignedStruct ) { FAIL( ); } ) );
 
     mv.for_each( 2, make_overload(
-                        [&]( SimpleStruct s ) {
+                        [ & ]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct s ) {
+                        [ & ]( SignedStruct s ) {
                             check_signed_struct( s );
                             number_of_expected_structs++;
                         } ) );
 
     mv.for_each( 3, make_overload(
-                        [&]( SimpleStruct s ) {
+                        [ & ]( SimpleStruct s ) {
                             check_simple_struct( s );
                             number_of_expected_structs++;
                         },
-                        [&]( SignedStruct ) { FAIL( ); } ) );
+                        [ & ]( SignedStruct ) { FAIL( ); } ) );
     REQUIRE( number_of_expected_structs == 5u );
 }
 
@@ -307,7 +307,7 @@ TEST_CASE( "Writing raw data resources layout", "[BackwardCompatibility]" )
     auto builder = TestRawDataBuilder::open( storage );
     REQUIRE( builder.is_open( ) );
 
-    std::array< uint8_t, 6 > raw_data = {"\xff\xef\xbe\xad\xde"};
+    std::array< uint8_t, 6 > raw_data = { "\xff\xef\xbe\xad\xde" };
     builder.set_raw_data_resource(
         flatdata::MemoryDescriptor( raw_data.data( ), raw_data.size( ) - 1 ) );
 
@@ -328,7 +328,7 @@ TEST_CASE( "Reading raw data resources layout", "[BackwardCompatibility]" )
     INFO( archive.describe( ) );
     REQUIRE( archive.is_open( ) );
 
-    std::array< uint8_t, 6 > expected = {"\xff\xef\xbe\xad\xde"};
+    std::array< uint8_t, 6 > expected = { "\xff\xef\xbe\xad\xde" };
     compare_byte_arrays( expected, archive.raw_data_resource( ), *storage );
 }
 

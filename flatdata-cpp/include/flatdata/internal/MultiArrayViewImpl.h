@@ -37,10 +37,9 @@ struct ExplicitForEachAssert
         typename static_list::map< get_accessor_type,
                                    static_list::list< MultiArrayViewArgs... > >::type >::value;
 
-    static const bool F_is_callable_with_all_accepted_types
-        = is_callable_with_for_all< F,
-                                    typename static_list::map< static_list::list,
-                                                               AcceptedArgsList >::type >::value;
+    static const bool F_is_callable_with_all_accepted_types = is_callable_with_for_all<
+        F,
+        typename static_list::map< static_list::list, AcceptedArgsList >::type >::value;
 
     static const bool value
         = accepted_types_is_subset_of_multivector_types && F_is_callable_with_all_accepted_types;
@@ -65,10 +64,10 @@ struct ImplicitForEachAssert
 
     static const bool F_has_args_list = !std::is_same< F_args_list, static_list::emptylist >::value;
 
-    using args_list = typename static_list::
-        map< static_list::list,
-             typename static_list::map< get_accessor_type,
-                                        static_list::list< MultiArrayViewArgs... > >::type >::type;
+    using args_list = typename static_list::map<
+        static_list::list,
+        typename static_list::map< get_accessor_type,
+                                   static_list::list< MultiArrayViewArgs... > >::type >::type;
 
     static const bool F_is_callable_only_with_types_from_container
         = static_list::is_subset< F_args_list, args_list >::value;

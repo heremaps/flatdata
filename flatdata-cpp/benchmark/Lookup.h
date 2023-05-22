@@ -18,7 +18,7 @@ lookup( const Graph& graph, uint32_t num_iterations )
 
         for ( uint32_t edge_index = 0; edge_index < graph.edge_count( ); edge_index++ )
         {
-            InternalId id{edge_index};
+            InternalId id{ edge_index };
             auto edge = graph.edge( id );
             buckets[ dis( gen ) ].emplace_back( id, edge.external_id( ) );
         }

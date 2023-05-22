@@ -157,9 +157,9 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
     REQUIRE( archive.multivector_resource( ).size( ) == 2u );
 
     archive.multivector_resource( ).template for_each< AStruct >(
-        0, [&]( const AStruct& s ) { REQUIRE( s.value == 17u ); } );
+        0, [ & ]( const AStruct& s ) { REQUIRE( s.value == 17u ); } );
     archive.multivector_resource( ).template for_each< AStruct >(
-        1, [&]( const AStruct& s ) { REQUIRE( s.value == 42u ); } );
+        1, [ & ]( const AStruct& s ) { REQUIRE( s.value == 42u ); } );
 }
 
 TEMPLATE_TEST_CASE_METHOD( Fixture,
@@ -516,8 +516,8 @@ TEMPLATE_TEST_CASE_METHOD( Fixture,
 TEST_CASE( "Optional resource is returned by reference", "[GeneratedArchive]" )
 {
     static_assert(
-        std::is_reference< decltype(
-            std::declval< OnlyOptional >( ).optional_resource( ) ) >::value,
+        std::is_reference<
+            decltype( std::declval< OnlyOptional >( ).optional_resource( ) ) >::value,
         "Optional members should be returned as references to avoid memory potential issues"
         " in release mode" );
     REQUIRE( true );
@@ -694,8 +694,8 @@ make_small_ref_archive( size_t size, std::shared_ptr< ResourceStorage > storage 
     builder.set_list1( Vector< SmallRef >( size ) );
     builder.set_list2( Vector< SmallRef >( size ) );
     std::string raw( size, 'd' );
-    builder.set_raw1( MemoryDescriptor{raw.c_str( ), raw.size( )} );
-    builder.set_raw2( MemoryDescriptor{raw.c_str( ), raw.size( )} );
+    builder.set_raw1( MemoryDescriptor{ raw.c_str( ), raw.size( ) } );
+    builder.set_raw2( MemoryDescriptor{ raw.c_str( ), raw.size( ) } );
     auto ml1 = builder.start_multi_list1( );
     for ( size_t i = 0; i < size; i++ )
     {

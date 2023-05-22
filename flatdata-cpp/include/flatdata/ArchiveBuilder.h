@@ -41,7 +41,6 @@ public:
      */
     bool is_open( ) const;
 
-
     /**
      * @brief Returns true if archive is correctly loaded
      */

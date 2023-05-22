@@ -76,7 +76,7 @@ convert_chapter( const std::string& s )
         throw std::runtime_error( "Major chapter overflow" );
     }
 
-    return {static_cast< uint8_t >( major ), static_cast< uint8_t >( minor )};
+    return { static_cast< uint8_t >( major ), static_cast< uint8_t >( minor ) };
 }
 
 void
@@ -214,7 +214,7 @@ convert( const char* json_path, const char* archive_path )
     convert_characters( characters, characters_index, builder, strings );
     const auto& coappearances = root.at( "coappearances" ).get< picojson::array >( );
     convert_coappearances( coappearances, characters_index, builder );
-    builder.set_strings( {strings.data( ), strings.size( )} );
+    builder.set_strings( { strings.data( ), strings.size( ) } );
 }
 
 // Note: The linear search below is slow for big graphs for obvious reasons, where it is much better
@@ -337,17 +337,17 @@ read( const char* archive_path )
         auto vertex = vertices[ vertex_ref ];
         std::cout << strings + vertex.name_ref;
         auto visitor = flatdata::make_overload(
-            [strings]( co::Nickname nickname ) {
+            [ strings ]( co::Nickname nickname ) {
                 std::cout << " (" << strings + nickname.ref << ")";
             },
-            [strings]( co::Description desciption ) {
+            [ strings ]( co::Description desciption ) {
                 std::cout << ": Description: " << strings + desciption.ref;
             },
-            [strings, vertices]( co::UnaryRelation relation ) {
+            [ strings, vertices ]( co::UnaryRelation relation ) {
                 std::cout << ": Relation(kind=" << strings + relation.kind_ref
                           << ", to=" << strings + vertices[ relation.to_ref ].name_ref << ")";
             },
-            [strings, vertices]( co::BinaryRelation relation ) {
+            [ strings, vertices ]( co::BinaryRelation relation ) {
                 std::cout << ": Relation(kind=" << strings + relation.kind_ref
                           << ", to=" << strings + vertices[ relation.to_a_ref ].name_ref
                           << ", to=" << strings + vertices[ relation.to_b_ref ].name_ref << ")";
@@ -418,7 +418,7 @@ Commands:
 int
 main( int argc, char const* argv[] )
 {
-    auto args = docopt::docopt( USAGE, {argv + 1, argv + argc} );
+    auto args = docopt::docopt( USAGE, { argv + 1, argv + argc } );
     try
     {
         const auto& output_folder = args.at( "<output_folder>" ).asString( );
