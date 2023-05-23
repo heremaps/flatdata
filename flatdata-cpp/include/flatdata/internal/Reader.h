@@ -15,8 +15,169 @@
 #include <cstring>
 #include <utility>
 
+#include <flatdata/MemoryDescriptor.h>
+
+#include <mutex>
+#include <map>
+#include <atomic>
+#include <vector>
+#include <memory>
+#include <iostream>
+#include <bitset>
+#include <cassert>
+
 namespace flatdata
 {
+struct DebugDataAccessStatistics
+{
+    static void
+    register_mapping( const char* name, MemoryDescriptor data )
+    {
+        auto& self = instance( );
+        std::vector< std::atomic< uint8_t > > accessed( ( data.size( ) + 7 ) / 8 );
+        for ( auto& x : accessed )
+        {
+            // We have to initialize the vector this way since atomic is not copyable/moveable
+            x = 0;
+        }
+        auto mapping = std::make_shared< Mapping >( name, data, std::move( accessed ) );
+        std::unique_lock lock( self.m_mutex );
+        // it's ok if we fail to insert here, we just take the data the another thread inserted)
+        if ( auto [ iter, was_inserted ]
+             = self.m_active_mappings.try_emplace( data.data( ), mapping );
+             !was_inserted )
+        {
+            iter->second->references++;
+        }
+    }
+
+    static void
+    deregister_mapping( MemoryDescriptor data )
+    {
+        auto& self = instance( );
+        std::unique_lock lock( self.m_mutex );
+        if ( auto iter = self.m_active_mappings.find( data.data( ) );
+             iter != self.m_active_mappings.end( ) )
+        {
+            if ( --iter->second->references == 0 )
+            {
+                self.m_inactive_mappings.emplace_back(
+                    self.m_active_mappings.extract( iter ).mapped( ) );
+            }
+        }
+        else
+        {
+            std::cerr << "Error: Trying to unregister mapping in DebugDataAccessStatistics that "
+                         "was not registered"
+                      << std::endl;
+        }
+    }
+
+    static void
+    read( MemoryDescriptor data )
+    {
+        auto& self = instance( );
+        std::shared_lock lock( self.m_mutex );
+        auto previous_mapping = self.m_active_mappings.upper_bound( data.data( ) );
+        bool found = false;
+        if ( !self.m_active_mappings.empty( )
+             && previous_mapping != self.m_active_mappings.begin( ) )
+        {
+            previous_mapping--;
+            if ( previous_mapping->second->data.data( ) > data.data( ) )
+            {
+                std::cerr << "ARAGHS" << std::endl;
+            }
+            if ( previous_mapping->second->data.data( ) + previous_mapping->second->data.size( )
+                 >= data.data( ) + data.size( ) )
+            {
+                found = true;
+            }
+        }
+        if ( found )
+        {
+            for ( size_t i = 0; i < data.size( ); i++ )
+            {
+                size_t pos = data.data( ) - previous_mapping->second->data.data( ) + i;
+                size_t byte_pos = pos / 8;
+                size_t bit_pos = pos % 8;
+                uint8_t BIT_MASK = 1 << bit_pos;
+                previous_mapping->second->accessed[ byte_pos ] |= BIT_MASK;
+            }
+        }
+        else
+        {
+            self.m_unregistered_bytes_read += data.size( );
+        }
+    }
+
+    ~DebugDataAccessStatistics( )
+    {
+        std::cerr << "===== flatdata debug statistics =====" << std::endl;
+        std::cerr << "Usage statistics:" << std::endl;
+        for ( auto& x : m_inactive_mappings )
+        {
+            size_t num_bytes_accessed = 0;
+            for ( auto& bits : x->accessed )
+            {
+                num_bytes_accessed += std::bitset< 8 >( bits ).count( );
+            }
+            // We ignore access to the first 8 bytes (usually the size of the resource)
+            if ( num_bytes_accessed <= 8 || x->data.size( ) == 0 )
+            {
+                continue;
+            }
+            std::cerr << "    " << x->name << ": " << num_bytes_accessed << " out of "
+                      << x->data.size( ) << " (" << ( num_bytes_accessed * 100.0 / x->data.size( ) )
+                      << "%)" << std::endl;
+        }
+        if ( !m_active_mappings.empty( ) )
+        {
+            std::cerr << "Resources not properly closed:" << std::endl;
+            for ( auto& x : m_active_mappings )
+            {
+                std::cerr << "    " << x.second->name << std::endl;
+            }
+        }
+        if ( m_unregistered_bytes_read != 0 )
+        {
+            std::cerr << "Unregistered data reads:" << std::endl;
+            std::cerr << "    " << m_unregistered_bytes_read << std::endl;
+        }
+    }
+
+private:
+    static DebugDataAccessStatistics&
+    instance( )
+    {
+        static DebugDataAccessStatistics self;
+        return self;
+    }
+
+    struct Mapping
+    {
+        Mapping( std::string name,
+                 MemoryDescriptor data,
+                 std::vector< std::atomic< uint8_t > > accessed )
+            : references( 1 )
+            , name( std::move( name ) )
+            , data( data )
+            , accessed( std::move( accessed ) )
+        {
+        }
+
+        std::atomic< size_t > references;
+        std::string name;
+        MemoryDescriptor data;
+        std::vector< std::atomic< uint8_t > > accessed;
+    };
+
+    mutable std::shared_mutex m_mutex;
+    mutable std::map< const uint8_t*, std::shared_ptr< Mapping > > m_active_mappings;
+    mutable std::vector< std::shared_ptr< Mapping > > m_inactive_mappings;
+    mutable std::atomic< size_t > m_unregistered_bytes_read;
+};
+
 /**
  * This class allows reading integers/booleans/enumeration to a bitstream
  * Its data member is shared with other instances within the same structure by being part of the
@@ -68,6 +229,11 @@ struct Reader
          */
         static const int BYTE_OFFSET = offset / 8;
         static const int BIT_OFFSET = offset % 8;
+
+        DebugDataAccessStatistics::read(
+            { data + BYTE_OFFSET,
+              sizeof( UnsignedType )
+                  + ( sizeof( UnsignedType ) * 8 - BIT_OFFSET < num_bits ? 1 : 0 ) } );
 
         if ( num_bits == 1 )
         {

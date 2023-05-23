@@ -28,6 +28,7 @@ class MemoryResourceStorage : public ResourceStorage
 
 public:
     static std::unique_ptr< MemoryResourceStorage > create( );
+    ~MemoryResourceStorage( );
     bool exists( const char* key ) override;
     std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
@@ -90,6 +91,16 @@ inline MemoryResourceStorage::MemoryResourceStorage( std::shared_ptr< Storage > 
 {
 }
 
+inline MemoryResourceStorage::~MemoryResourceStorage( )
+{
+    for ( auto& resource : m_storage->resources )
+    {
+        auto& string = resource.second;
+        DebugDataAccessStatistics::deregister_mapping( MemoryDescriptor(
+            reinterpret_cast< const unsigned char* >( string->c_str( ) ), string->size( ) ) );
+    }
+}
+
 inline MemoryDescriptor
 MemoryResourceStorage::read_resource( const char* key )
 {
@@ -104,6 +115,11 @@ MemoryResourceStorage::read_resource( const char* key )
             return MemoryDescriptor( );
         }
         m_storage->resources[ path ].reset( new std::string( found->second->str( ) ) );
+        auto& string = m_storage->resources[ path ];
+        DebugDataAccessStatistics::register_mapping(
+            path.c_str( ),
+            MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
+                              string->size( ) ) );
     }
     auto& string = m_storage->resources[ path ];
 
