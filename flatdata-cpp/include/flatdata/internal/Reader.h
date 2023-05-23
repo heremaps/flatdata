@@ -130,41 +130,72 @@ struct DebugDataAccessStatistics
         }
     }
 
+    static void
+    clear( )
+    {
+        auto& self = instance( );
+        std::unique_lock lock( self.m_mutex );
+        self.m_inactive_mappings.clear( );
+        for ( auto& mapping : self.m_active_mappings )
+        {
+            for ( auto& x : mapping.second->accessed )
+            {
+                x = 0;
+            }
+            for ( auto& x : mapping.second->struct_sizes )
+            {
+                x = 0;
+            }
+            mapping.second->struct_sizes_misalignments = 0;
+        }
+    }
+
     ~DebugDataAccessStatistics( )
     {
-        std::cerr << "===== flatdata debug statistics =====" << std::endl;
-        std::cerr << "Usage statistics:" << std::endl;
+        size_t sum_pages = 0;
         for ( auto& x : m_inactive_mappings )
         {
-            size_t num_bytes_accessed = 0;
             size_t last_page = std::numeric_limits< size_t >::max( );
-            size_t num_pages = 0;
             // ignore the first 8 bytes, they are containing the size of the resource
             for ( size_t i = 1; i < x->accessed.size( ); i++ )
             {
                 size_t num_bits_set = std::bitset< 8 >( x->accessed[ i ] ).count( );
-                num_bytes_accessed += num_bits_set;
+                x->num_bytes_accessed += num_bits_set;
                 size_t page = i / ( ( 1 << 12 ) / 8 );  // 8 bits per byte, 4kb per page
                 if ( num_bits_set != 0 && last_page != page )
                 {
                     last_page = page;
-                    num_pages++;
+                    x->num_pages++;
+                    sum_pages++;
                 }
             }
+        }
+        std::stable_sort(
+            m_inactive_mappings.begin( ), m_inactive_mappings.end( ),
+            []( auto& left, auto& right ) { return left->num_pages > right->num_pages; } );
+
+        std::cerr << "===== flatdata debug statistics =====" << std::endl;
+        std::cerr << "Total pages: " << sum_pages << std::endl;
+        std::cerr << "Usage statistics:" << std::endl;
+
+        for ( auto& x : m_inactive_mappings )
+        {
             // We ignore access to the first 8 bytes (usually the size of the resource)
-            if ( num_bytes_accessed <= 8 || x->data.size( ) == 0 )
+            if ( x->num_bytes_accessed <= 8 || x->data.size( ) == 0 )
             {
                 continue;
             }
-            std::cerr << "    " << x->name << ": " << std::endl;
-            std::cerr << "        bytes [count]: " << num_bytes_accessed << " out of "
+            std::cerr << "    " << x->name << "(" << x->num_pages * 100.0 / sum_pages
+                      << "% of pages): " << std::endl;
+            std::cerr << "        bytes [count]: " << x->num_bytes_accessed << " out of "
                       << x->data.size( ) << std::endl;
             std::cerr << "        bytes [accessed]: "
-                      << ( num_bytes_accessed * 100.0 / x->data.size( ) ) << "%" << std::endl;
-            std::cerr << "        pages [count]: " << num_pages << " out of "
+                      << ( x->num_bytes_accessed * 100.0 / x->data.size( ) ) << "%" << std::endl;
+            std::cerr << "        pages [count]: " << x->num_pages << " out of "
                       << x->data.size( ) / ( 1 << 12 ) << std::endl;
             std::cerr << "        pages [data access]: "
-                      << num_bytes_accessed * 100.0 / num_pages / ( 1 << 12 ) << "%" << std::endl;
+                      << x->num_bytes_accessed * 100.0 / x->num_pages / ( 1 << 12 ) << "%"
+                      << std::endl;
 
             // check padding / useless data in structs
             std::optional< size_t > most_used_size = 0;
@@ -218,7 +249,7 @@ struct DebugDataAccessStatistics
                 std::cerr << "        unused struct members:" << std::endl;
                 for ( size_t byte = 0; byte < *most_used_size; byte++ )
                 {
-                    if ( offset_counts[ byte ] * 100.0 / num_structs > 10 )
+                    if ( offset_counts[ byte ] * 100.0 / num_structs >= 25 )
                     {
                         std::cerr << "            byte " << std::setw( 3 ) << byte
                                   << " redundant: " << offset_counts[ byte ] * 100.0 / num_structs
@@ -275,6 +306,8 @@ private:
         std::vector< std::atomic< uint8_t > > accessed;
         std::vector< std::atomic< size_t > > struct_sizes;
         std::atomic< size_t > struct_sizes_misalignments;
+        size_t num_pages = 0;
+        size_t num_bytes_accessed = 0;
     };
 
     mutable std::shared_mutex m_mutex;
