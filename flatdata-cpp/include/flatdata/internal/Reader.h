@@ -25,6 +25,9 @@
 #include <iostream>
 #include <bitset>
 #include <cassert>
+#include <shared_mutex>
+#include <iomanip>
+#include <optional>
 
 namespace flatdata
 {
@@ -74,7 +77,7 @@ struct DebugDataAccessStatistics
     }
 
     static void
-    read( MemoryDescriptor data )
+    read( MemoryDescriptor data, size_t byte_pos, size_t size_of_struct )
     {
         auto& self = instance( );
         std::shared_lock lock( self.m_mutex );
@@ -104,6 +107,22 @@ struct DebugDataAccessStatistics
                 uint8_t BIT_MASK = 1 << bit_pos;
                 previous_mapping->second->accessed[ byte_pos ] |= BIT_MASK;
             }
+            if ( size_of_struct > 0 && size_of_struct < 256
+                 && data.data( ) >= previous_mapping->second->data.data( ) + 8 )
+            {
+                // keep track of struct sizes encountered, unless its at the start (where the
+                // resource length is stored and read from)
+                previous_mapping->second->struct_sizes[ size_of_struct ]++;
+                if ( ( data.data( ) - byte_pos - previous_mapping->second->data.data( )
+                       - 8 /*length*/ )
+                         % size_of_struct
+                     != 0 )
+                {
+                    // we want to keep track of whether struct sizes where aligned or not, otherwise
+                    // we cannot do analysis on it in the end
+                    previous_mapping->second->struct_sizes_misalignments++;
+                }
+            }
         }
         else
         {
@@ -118,18 +137,95 @@ struct DebugDataAccessStatistics
         for ( auto& x : m_inactive_mappings )
         {
             size_t num_bytes_accessed = 0;
-            for ( auto& bits : x->accessed )
+            size_t last_page = std::numeric_limits< size_t >::max( );
+            size_t num_pages = 0;
+            // ignore the first 8 bytes, they are containing the size of the resource
+            for ( size_t i = 1; i < x->accessed.size( ); i++ )
             {
-                num_bytes_accessed += std::bitset< 8 >( bits ).count( );
+                size_t num_bits_set = std::bitset< 8 >( x->accessed[ i ] ).count( );
+                num_bytes_accessed += num_bits_set;
+                size_t page = i / ( ( 1 << 12 ) / 8 );  // 8 bits per byte, 4kb per page
+                if ( num_bits_set != 0 && last_page != page )
+                {
+                    last_page = page;
+                    num_pages++;
+                }
             }
             // We ignore access to the first 8 bytes (usually the size of the resource)
             if ( num_bytes_accessed <= 8 || x->data.size( ) == 0 )
             {
                 continue;
             }
-            std::cerr << "    " << x->name << ": " << num_bytes_accessed << " out of "
-                      << x->data.size( ) << " (" << ( num_bytes_accessed * 100.0 / x->data.size( ) )
-                      << "%)" << std::endl;
+            std::cerr << "    " << x->name << ": " << std::endl;
+            std::cerr << "        bytes [count]: " << num_bytes_accessed << " out of "
+                      << x->data.size( ) << std::endl;
+            std::cerr << "        bytes [accessed]: "
+                      << ( num_bytes_accessed * 100.0 / x->data.size( ) ) << "%" << std::endl;
+            std::cerr << "        pages [count]: " << num_pages << " out of "
+                      << x->data.size( ) / ( 1 << 12 ) << std::endl;
+            std::cerr << "        pages [data access]: "
+                      << num_bytes_accessed * 100.0 / num_pages / ( 1 << 12 ) << "%" << std::endl;
+
+            // check padding / useless data in structs
+            std::optional< size_t > most_used_size = 0;
+            size_t sizes_sum = 0;
+            for ( size_t i = 0; i < 256; i++ )
+            {
+                sizes_sum += x->struct_sizes[ i ];
+                if ( !most_used_size || x->struct_sizes[ *most_used_size ] < x->struct_sizes[ i ] )
+                {
+                    most_used_size = i;
+                }
+            }
+
+            if ( !most_used_size || sizes_sum <= 1
+                 || x->struct_sizes_misalignments > sizes_sum / 100
+                 || x->struct_sizes[ *most_used_size ] * 1.01 < sizes_sum )
+            {
+                std::cerr << "        mixed data -> no padding analysis" << std::endl;
+            }
+            else
+            {
+                std::vector< size_t > offset_counts( *most_used_size, 0 );
+                size_t num_structs = 0;
+                for ( size_t pos = 8; pos + *most_used_size <= x->data.size( );
+                      pos += *most_used_size )
+                {
+                    bool struct_accessed = false;
+                    for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size;
+                          struct_pos++ )
+                    {
+                        size_t byte_pos = struct_pos / 8;
+                        size_t bit_pos = struct_pos % 8;
+                        uint8_t BIT_MASK = 1 << bit_pos;
+                        struct_accessed |= ( x->accessed[ byte_pos ] & BIT_MASK ) != 0;
+                    }
+                    if ( struct_accessed )
+                    {
+                        num_structs++;
+                        for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size;
+                              struct_pos++ )
+                        {
+                            size_t byte_pos = struct_pos / 8;
+                            size_t bit_pos = struct_pos % 8;
+                            uint8_t BIT_MASK = 1 << bit_pos;
+                            offset_counts[ struct_pos - pos ]
+                                += ( x->accessed[ byte_pos ] & BIT_MASK ) != 0 ? 0 : 1;
+                        }
+                    }
+                }
+
+                std::cerr << "        unused struct members:" << std::endl;
+                for ( size_t byte = 0; byte < *most_used_size; byte++ )
+                {
+                    if ( offset_counts[ byte ] * 100.0 / num_structs > 10 )
+                    {
+                        std::cerr << "            byte " << std::setw( 3 ) << byte
+                                  << " redundant: " << offset_counts[ byte ] * 100.0 / num_structs
+                                  << "%" << std::endl;
+                    }
+                }
+            }
         }
         if ( !m_active_mappings.empty( ) )
         {
@@ -163,13 +259,22 @@ private:
             , name( std::move( name ) )
             , data( data )
             , accessed( std::move( accessed ) )
+            , struct_sizes( 256 )
         {
+            for ( auto& x : struct_sizes )
+            {
+                // std::atomtic initialization requires this
+                x = 0;
+            }
+            struct_sizes_misalignments = 0;
         }
 
         std::atomic< size_t > references;
         std::string name;
         MemoryDescriptor data;
         std::vector< std::atomic< uint8_t > > accessed;
+        std::vector< std::atomic< size_t > > struct_sizes;
+        std::atomic< size_t > struct_sizes_misalignments;
     };
 
     mutable std::shared_mutex m_mutex;
@@ -233,7 +338,8 @@ struct Reader
         DebugDataAccessStatistics::read(
             { data + BYTE_OFFSET,
               sizeof( UnsignedType )
-                  + ( sizeof( UnsignedType ) * 8 - BIT_OFFSET < num_bits ? 1 : 0 ) } );
+                  + ( sizeof( UnsignedType ) * 8 - BIT_OFFSET < num_bits ? 1 : 0 ) },
+            BYTE_OFFSET, struct_size_bytes );
 
         if ( num_bits == 1 )
         {
@@ -272,8 +378,8 @@ struct Reader< std::pair< T, T >, offset, num_bits, struct_size_bytes >
     template < typename U >
     operator std::pair< U, U >( ) const
     {
-        Reader< T, offset, num_bits > start{ data };
-        Reader< T, offset, num_bits > end{ data + struct_size_bytes };
+        Reader< T, offset, num_bits, struct_size_bytes > start{ data };
+        Reader< T, offset, num_bits, struct_size_bytes > end{ data + struct_size_bytes };
         return std::pair< T, T >( start, end );
     }
 };
@@ -305,7 +411,7 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         }
         else
         {
-            return boost::optional< U >( Reader< T, offset, num_bits >{ data } );
+            return boost::optional< U >( Reader< T, offset, num_bits, struct_size_bytes >{ data } );
         }
     }
 };
