@@ -8,6 +8,7 @@
 #define BOOST_DATE_TIME_NO_LIB
 
 #include "MemoryDescriptor.h"
+#include "DebugDataAccessStatistics.h"
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>

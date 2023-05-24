@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ResourceStorage.h"
+#include "DebugDataAccessStatistics.h"
 
 #include <bitset>
 #include <iomanip>
