@@ -37,13 +37,7 @@ struct DebugDataAccessStatistics
     register_mapping( const char* name, MemoryDescriptor data )
     {
         auto& self = instance( );
-        std::vector< std::atomic< uint8_t > > accessed( ( data.size( ) + 7 ) / 8 );
-        for ( auto& x : accessed )
-        {
-            // We have to initialize the vector this way since atomic is not copyable/moveable
-            x = 0;
-        }
-        auto mapping = std::make_shared< Mapping >( name, data, std::move( accessed ) );
+        auto mapping = std::make_shared< Mapping >( name, data );
         std::unique_lock lock( self.m_mutex );
         // it's ok if we fail to insert here, we just take the data the another thread inserted)
         if ( auto [ iter, was_inserted ]
@@ -87,10 +81,6 @@ struct DebugDataAccessStatistics
              && previous_mapping != self.m_active_mappings.begin( ) )
         {
             previous_mapping--;
-            if ( previous_mapping->second->data.data( ) > data.data( ) )
-            {
-                std::cerr << "ARAGHS" << std::endl;
-            }
             if ( previous_mapping->second->data.data( ) + previous_mapping->second->data.size( )
                  >= data.data( ) + data.size( ) )
             {
@@ -102,12 +92,12 @@ struct DebugDataAccessStatistics
             for ( size_t i = 0; i < data.size( ); i++ )
             {
                 size_t pos = data.data( ) - previous_mapping->second->data.data( ) + i;
-                size_t byte_pos = pos / 8;
-                size_t bit_pos = pos % 8;
-                uint8_t BIT_MASK = 1 << bit_pos;
-                previous_mapping->second->accessed[ byte_pos ] |= BIT_MASK;
+                size_t item_pos = pos / BITS_PER_ITEM;
+                size_t bit_pos = pos % BITS_PER_ITEM;
+                BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
+                previous_mapping->second->accessed[ item_pos ] |= bit_mask;
             }
-            if ( size_of_struct > 0 && size_of_struct < 256
+            if ( size_of_struct > 0 && size_of_struct < MAX_STRUCT_SIZE
                  && data.data( ) >= previous_mapping->second->data.data( ) + 8 )
             {
                 // keep track of struct sizes encountered, unless its at the start (where the
@@ -156,12 +146,11 @@ struct DebugDataAccessStatistics
         for ( auto& x : m_inactive_mappings )
         {
             size_t last_page = std::numeric_limits< size_t >::max( );
-            // ignore the first 8 bytes, they are containing the size of the resource
-            for ( size_t i = 1; i < x->accessed.size( ); i++ )
+            for ( size_t i = 0; i < x->accessed.size( ); i++ )
             {
-                size_t num_bits_set = std::bitset< 8 >( x->accessed[ i ] ).count( );
+                size_t num_bits_set = std::bitset< BITS_PER_ITEM >( x->accessed[ i ] ).count( );
                 x->num_bytes_accessed += num_bits_set;
-                size_t page = i / ( ( 1 << 12 ) / 8 );  // 8 bits per byte, 4kb per page
+                size_t page = i / ( PAGE_SIZE / BITS_PER_ITEM );
                 if ( num_bits_set != 0 && last_page != page )
                 {
                     last_page = page;
@@ -192,15 +181,15 @@ struct DebugDataAccessStatistics
             std::cerr << "        bytes [accessed]: "
                       << ( x->num_bytes_accessed * 100.0 / x->data.size( ) ) << "%" << std::endl;
             std::cerr << "        pages [count]: " << x->num_pages << " out of "
-                      << x->data.size( ) / ( 1 << 12 ) << std::endl;
+                      << x->data.size( ) / PAGE_SIZE << std::endl;
             std::cerr << "        pages [data access]: "
-                      << x->num_bytes_accessed * 100.0 / x->num_pages / ( 1 << 12 ) << "%"
+                      << x->num_bytes_accessed * 100.0 / x->num_pages / PAGE_SIZE << "%"
                       << std::endl;
 
             // check padding / useless data in structs
             std::optional< size_t > most_used_size = 0;
             size_t sizes_sum = 0;
-            for ( size_t i = 0; i < 256; i++ )
+            for ( size_t i = 0; i < MAX_STRUCT_SIZE; i++ )
             {
                 sizes_sum += x->struct_sizes[ i ];
                 if ( !most_used_size || x->struct_sizes[ *most_used_size ] < x->struct_sizes[ i ] )
@@ -226,10 +215,10 @@ struct DebugDataAccessStatistics
                     for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size;
                           struct_pos++ )
                     {
-                        size_t byte_pos = struct_pos / 8;
-                        size_t bit_pos = struct_pos % 8;
-                        uint8_t BIT_MASK = 1 << bit_pos;
-                        struct_accessed |= ( x->accessed[ byte_pos ] & BIT_MASK ) != 0;
+                        size_t item_pos = struct_pos / BITS_PER_ITEM;
+                        size_t bit_pos = struct_pos % BITS_PER_ITEM;
+                        BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
+                        struct_accessed |= ( x->accessed[ item_pos ] & bit_mask ) != 0;
                     }
                     if ( struct_accessed )
                     {
@@ -237,11 +226,11 @@ struct DebugDataAccessStatistics
                         for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size;
                               struct_pos++ )
                         {
-                            size_t byte_pos = struct_pos / 8;
-                            size_t bit_pos = struct_pos % 8;
-                            uint8_t BIT_MASK = 1 << bit_pos;
+                            size_t item_pos = struct_pos / BITS_PER_ITEM;
+                            size_t bit_pos = struct_pos % BITS_PER_ITEM;
+                            BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
                             offset_counts[ struct_pos - pos ]
-                                += ( x->accessed[ byte_pos ] & BIT_MASK ) != 0 ? 0 : 1;
+                                += ( x->accessed[ item_pos ] & bit_mask ) != 0 ? 0 : 1;
                         }
                     }
                 }
@@ -274,6 +263,11 @@ struct DebugDataAccessStatistics
     }
 
 private:
+    static constexpr size_t MAX_STRUCT_SIZE = 256;
+    static constexpr size_t PAGE_SIZE = 1 << 12;
+    using BitsetType = uint32_t;
+    static constexpr size_t BITS_PER_ITEM = sizeof( BitsetType ) * 8;
+
     static DebugDataAccessStatistics&
     instance( )
     {
@@ -283,18 +277,20 @@ private:
 
     struct Mapping
     {
-        Mapping( std::string name,
-                 MemoryDescriptor data,
-                 std::vector< std::atomic< uint8_t > > accessed )
+        Mapping( std::string name, MemoryDescriptor data )
             : references( 1 )
             , name( std::move( name ) )
             , data( data )
-            , accessed( std::move( accessed ) )
-            , struct_sizes( 256 )
+            , accessed( ( data.size( ) + BITS_PER_ITEM - 1 ) / BITS_PER_ITEM )
+            , struct_sizes( MAX_STRUCT_SIZE )
         {
+            // We have to initialize atomic members
+            for ( auto& x : accessed )
+            {
+                x = 0;
+            }
             for ( auto& x : struct_sizes )
             {
-                // std::atomtic initialization requires this
                 x = 0;
             }
             struct_sizes_misalignments = 0;
@@ -303,7 +299,7 @@ private:
         std::atomic< size_t > references;
         std::string name;
         MemoryDescriptor data;
-        std::vector< std::atomic< uint8_t > > accessed;
+        std::vector< std::atomic< BitsetType > > accessed;
         std::vector< std::atomic< size_t > > struct_sizes;
         std::atomic< size_t > struct_sizes_misalignments;
         size_t num_pages = 0;
