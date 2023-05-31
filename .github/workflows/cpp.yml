@@ -23,7 +23,7 @@ jobs:
         run: pip3 install ./flatdata-generator
       - name: Build and Test
         run: |
-           CC=gcc CXX=g++ EXTRA_CMAKE_ARGS=${{ debug-stats }} flatdata-cpp/ci/build-and-test-cpp.sh
+           CC=gcc CXX=g++ EXTRA_CMAKE_ARGS=${{ matrix.debug-stats }} flatdata-cpp/ci/build-and-test-cpp.sh
   Clang:
     runs-on: ubuntu-latest
     strategy:
@@ -37,4 +37,4 @@ jobs:
         run: pip3 install ./flatdata-generator
       - name: Build and Test
         run: |
-          CC=clang CXX=clang++ EXTRA_CMAKE_ARGS=${{ debug-stats }} flatdata-cpp/ci/build-and-test-cpp.sh
+          CC=clang CXX=clang++ EXTRA_CMAKE_ARGS=${{ matrix.debug-stats }} flatdata-cpp/ci/build-and-test-cpp.sh
