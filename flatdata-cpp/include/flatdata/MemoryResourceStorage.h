@@ -96,8 +96,8 @@ inline MemoryResourceStorage::~MemoryResourceStorage( )
 {
     for ( auto& resource : m_storage->resources )
     {
-        auto& string = resource.second;
 #ifdef DEBUG_DATA_ACCESS_STATISTICS
+        auto& string = resource.second;
         DebugDataAccessStatistics::deregister_mapping( MemoryDescriptor(
             reinterpret_cast< const unsigned char* >( string->c_str( ) ), string->size( ) ) );
 #endif

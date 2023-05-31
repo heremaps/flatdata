@@ -83,8 +83,14 @@ struct DebugDataAccessStatistics
     static void
     read( MemoryDescriptor data, size_t byte_pos, size_t size_of_struct )
     {
+        if ( data.size( ) == 0 )
+        {
+            return;
+        }
         auto& self = instance( );
         std::shared_lock lock( self.m_mutex );
+
+        // Look for the mapping that contains this memory region completely
         auto previous_mapping = self.m_active_mappings.upper_bound( data.data( ) );
         bool found = false;
         if ( !self.m_active_mappings.empty( )
@@ -97,49 +103,49 @@ struct DebugDataAccessStatistics
                 found = true;
             }
         }
-        if ( found && data.size( ) != 0 )
-        {
-            // process reads up to 64 bytes at once. Most reads access at most 2 chunks (all
-            // structure members are at most 64 bit)
-            size_t offset = data.data( ) - previous_mapping->second->data.data( );
-            BitsetType chunk = 0;
-            size_t chunk_pos = offset / BITS_PER_ITEM;
-            for ( size_t i = 0; i < data.size( ); i++ )
-            {
-                size_t pos = offset + i;
-                size_t item_pos = pos / BITS_PER_ITEM;
-                if ( item_pos != chunk_pos )
-                {
-                    previous_mapping->second->accessed[ chunk_pos ] |= chunk;
-                    chunk = 0;
-                    chunk_pos = item_pos;
-                }
-                size_t bit_pos = pos % BITS_PER_ITEM;
-                BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
-                chunk |= bit_mask;
-            }
-            previous_mapping->second->accessed[ chunk_pos ] |= chunk;
-
-            if ( size_of_struct > 0 && size_of_struct < MAX_STRUCT_SIZE
-                 && data.data( ) >= previous_mapping->second->data.data( ) + 8 )
-            {
-                // keep track of struct sizes encountered, unless its at the start (where the
-                // resource length is stored and read from)
-                previous_mapping->second->struct_sizes[ size_of_struct ]++;
-                if ( ( data.data( ) - byte_pos - previous_mapping->second->data.data( )
-                       - 8 /*length*/ )
-                         % size_of_struct
-                     != 0 )
-                {
-                    // we want to keep track of whether struct sizes where aligned or not, otherwise
-                    // we cannot do analysis on it in the end
-                    previous_mapping->second->struct_sizes_misalignments++;
-                }
-            }
-        }
-        else
+        if ( !found )
         {
             self.m_unregistered_bytes_read += data.size( );
+            return;
+        }
+
+        // mark all bytes `data` points to as read
+        // process reads up to 64 bytes at once. Most reads access at most 2 chunks (all
+        // structure members are at most 64 bit)
+        size_t offset = data.data( ) - previous_mapping->second->data.data( );
+        BitsetType chunk = 0;
+        size_t chunk_pos = offset / BITS_PER_ITEM;
+        for ( size_t i = 0; i < data.size( ); i++ )
+        {
+            size_t pos = offset + i;
+            size_t item_pos = pos / BITS_PER_ITEM;
+            if ( item_pos != chunk_pos )
+            {
+                previous_mapping->second->accessed[ chunk_pos ] |= chunk;
+                chunk = 0;
+                chunk_pos = item_pos;
+            }
+            size_t bit_pos = pos % BITS_PER_ITEM;
+            BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
+            chunk |= bit_mask;
+        }
+        previous_mapping->second->accessed[ chunk_pos ] |= chunk;
+
+        // Mark the struct size that was used for later analysis
+        if ( size_of_struct > 0 && size_of_struct < MAX_STRUCT_SIZE
+             && data.data( ) >= previous_mapping->second->data.data( ) + 8 )
+        {
+            // keep track of struct sizes encountered, unless its at the start (where the
+            // resource length is stored and read from)
+            previous_mapping->second->struct_sizes[ size_of_struct ]++;
+            if ( ( data.data( ) - byte_pos - previous_mapping->second->data.data( ) - 8 /*length*/ )
+                     % size_of_struct
+                 != 0 )
+            {
+                // we want to keep track of whether struct sizes where aligned or not, otherwise
+                // we cannot do analysis on it in the end
+                previous_mapping->second->struct_sizes_misalignments++;
+            }
         }
     }
 
@@ -174,6 +180,7 @@ struct DebugDataAccessStatistics
      */
     ~DebugDataAccessStatistics( )
     {
+        // compute number of pages accessed for each mapping and sort by that
         size_t sum_pages = 0;
         for ( auto& x : m_inactive_mappings )
         {
@@ -235,67 +242,71 @@ struct DebugDataAccessStatistics
                  || x->struct_sizes[ *most_used_size ] * 1.01 < sizes_sum || x->pages.empty( ) )
             {
                 std::cerr << "        mixed data -> no padding analysis" << std::endl;
+                continue;
             }
-            else
+
+            // Analys which struct bytes were not read and might be redundant (or better decoupled
+            // from the others)
+            std::vector< size_t > offset_counts( *most_used_size, 0 );
+            size_t num_structs = 0;
+            size_t current_page = 0;
+            for ( size_t pos = 8; pos + *most_used_size <= x->data.size( ); pos += *most_used_size )
             {
-                std::vector< size_t > offset_counts( *most_used_size, 0 );
-                size_t num_structs = 0;
-                size_t current_page = 0;
-                for ( size_t pos = 8; pos + *most_used_size <= x->data.size( );
-                      pos += *most_used_size )
+                // performance: we use the page data to skip structs that were never read
+                size_t start_page = pos / PAGE_SIZE;
+                if ( start_page + 1 < x->pages[ current_page ] )
                 {
-                    size_t start_page = pos / PAGE_SIZE;
-                    if ( start_page + 1 < x->pages[ current_page ] )
+                    continue;  // no data to be found here
+                }
+                if ( start_page > x->pages[ current_page ] )
+                {
+                    if ( ++current_page >= x->pages.size( ) )
                     {
-                        continue;  // no data to be found here
+                        break;
                     }
-                    if ( start_page > x->pages[ current_page ] )
-                    {
-                        if ( ++current_page >= x->pages.size( ) )
-                        {
-                            break;
-                        }
-                    }
-                    // Check if any byte was accessed, and if so compute access stats for this
-                    // instance
-                    auto compute_stats = [ & ] {
-                        num_structs++;
-                        for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size;
-                              struct_pos++ )
-                        {
-                            size_t item_pos = struct_pos / BITS_PER_ITEM;
-                            size_t bit_pos = struct_pos % BITS_PER_ITEM;
-                            BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
-                            offset_counts[ struct_pos - pos ]
-                                += ( x->accessed[ item_pos ] & bit_mask ) != 0 ? 0 : 1;
-                        }
-                    };
+                }
+
+                // Check if any byte was accessed, and if so compute access stats for this
+                // instance
+                auto compute_stats = [ & ] {
+                    num_structs++;
                     for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size;
                           struct_pos++ )
                     {
                         size_t item_pos = struct_pos / BITS_PER_ITEM;
                         size_t bit_pos = struct_pos % BITS_PER_ITEM;
                         BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
-                        if ( ( x->accessed[ item_pos ] & bit_mask ) != 0 )
-                        {
-                            compute_stats( );
-                            break;
-                        }
+                        offset_counts[ struct_pos - pos ]
+                            += ( x->accessed[ item_pos ] & bit_mask ) != 0 ? 0 : 1;
                     }
-                }
-
-                std::cerr << "        unused struct members:" << std::endl;
-                for ( size_t byte = 0; byte < *most_used_size; byte++ )
+                };
+                for ( size_t struct_pos = pos; struct_pos < pos + *most_used_size; struct_pos++ )
                 {
-                    if ( offset_counts[ byte ] * 100.0 / num_structs >= 25 )
+                    size_t item_pos = struct_pos / BITS_PER_ITEM;
+                    size_t bit_pos = struct_pos % BITS_PER_ITEM;
+                    BitsetType bit_mask = static_cast< BitsetType >( 1 ) << bit_pos;
+                    if ( ( x->accessed[ item_pos ] & bit_mask ) != 0 )
                     {
-                        std::cerr << "            byte " << std::setw( 3 ) << byte
-                                  << " redundant: " << offset_counts[ byte ] * 100.0 / num_structs
-                                  << "%" << std::endl;
+                        compute_stats( );
+                        break;
                     }
                 }
             }
+
+            std::cerr << "        unused struct members:" << std::endl;
+            for ( size_t byte = 0; byte < *most_used_size; byte++ )
+            {
+                // Only output stats in case the byte was unused for at least 25% of the time
+                if ( offset_counts[ byte ] * 100.0 / num_structs >= 25 )
+                {
+                    std::cerr << "            byte " << std::setw( 3 ) << byte
+                              << " redundant: " << offset_counts[ byte ] * 100.0 / num_structs
+                              << "%" << std::endl;
+                }
+            }
         }
+
+        // warn about resources not properly closed
         if ( !m_active_mappings.empty( ) )
         {
             std::cerr << "Resources not properly closed:" << std::endl;
@@ -304,6 +315,8 @@ struct DebugDataAccessStatistics
                 std::cerr << "    " << x.second->name << std::endl;
             }
         }
+
+        // stats about unregistered reads (not necessarily an error/warning)
         if ( m_unregistered_bytes_read != 0 )
         {
             std::cerr << "Unregistered data reads:" << std::endl;
