@@ -25,11 +25,12 @@ class MemoryResourceStorage : public ResourceStorage
         std::map< std::string, std::shared_ptr< std::stringstream > > streams;
         std::map< std::string, std::shared_ptr< std::string > > resources;
         std::set< std::string > created_directories;
+
+        ~Storage( );
     };
 
 public:
     static std::unique_ptr< MemoryResourceStorage > create( );
-    ~MemoryResourceStorage( );
     bool exists( const char* key ) override;
     std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
@@ -92,16 +93,16 @@ inline MemoryResourceStorage::MemoryResourceStorage( std::shared_ptr< Storage > 
 {
 }
 
-inline MemoryResourceStorage::~MemoryResourceStorage( )
+inline MemoryResourceStorage::Storage::~Storage( )
 {
-    for ( auto& resource : m_storage->resources )
-    {
 #ifdef DEBUG_DATA_ACCESS_STATISTICS
+    for ( auto& resource : resources )
+    {
         auto& string = resource.second;
         DebugDataAccessStatistics::deregister_mapping( MemoryDescriptor(
             reinterpret_cast< const unsigned char* >( string->c_str( ) ), string->size( ) ) );
-#endif
     }
+#endif
 }
 
 inline MemoryDescriptor
@@ -139,6 +140,12 @@ MemoryResourceStorage::assign_value( const char* key, MemoryDescriptor value )
     m_storage->resources.insert( std::make_pair(
         std::string( key ),
         std::make_shared< std::string >( value.char_ptr( ), value.size_in_bytes( ) ) ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+    auto& string = m_storage->resources[ key ];
+    DebugDataAccessStatistics::register_mapping(
+        key, MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
+                               string->size( ) ) );
+#endif
 }
 
 inline void
@@ -147,6 +154,12 @@ MemoryResourceStorage::assign_value( const char* key, const char* value )
     std::lock_guard< std::mutex > lock( m_storage_mutex );
     m_storage->resources.insert(
         std::make_pair( std::string( key ), std::make_shared< std::string >( value ) ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+    auto& string = m_storage->resources[ key ];
+    DebugDataAccessStatistics::register_mapping(
+        key, MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
+                               string->size( ) ) );
+#endif
 }
 
 inline std::unique_ptr< ResourceStorage >
