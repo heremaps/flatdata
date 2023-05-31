@@ -12,6 +12,8 @@ env:
 jobs:
   GCC:
     runs-on: ubuntu-latest
+    matrix:
+      EXTRA_CMAKE_ARGS: ["", "-DWITH_DEBUG_DATA_ACCESS_STATISTICS=ON"]
     steps:
       - uses: actions/checkout@v2
       - name: Dependencies
@@ -23,6 +25,8 @@ jobs:
            CC=gcc CXX=g++ flatdata-cpp/ci/build-and-test-cpp.sh
   Clang:
     runs-on: ubuntu-latest
+    matrix:
+      EXTRA_CMAKE_ARGS: ["", "-DWITH_DEBUG_DATA_ACCESS_STATISTICS=ON"]
     steps:
       - uses: actions/checkout@v2
       - name: Dependencies

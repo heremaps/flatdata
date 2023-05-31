@@ -18,6 +18,11 @@ add_library(flatdata STATIC ${FLATDATA_SOURCE})
 
 set_target_properties(flatdata PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+if(WITH_DEBUG_DATA_ACCESS_STATISTICS)
+  message(STATUS "WITH_DEBUG_DATA_ACCESS_STATISTICS enabled")
+  target_compile_definitions(flatdata PUBLIC DEBUG_DATA_ACCESS_STATISTICS)
+endif()
+
 target_include_directories(flatdata
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PUBLIC $<INSTALL_INTERFACE:include>

@@ -73,11 +73,13 @@ struct Reader
         static const int BYTE_OFFSET = offset / 8;
         static const int BIT_OFFSET = offset % 8;
 
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
         DebugDataAccessStatistics::read(
             { data + BYTE_OFFSET,
               sizeof( UnsignedType )
                   + ( sizeof( UnsignedType ) * 8 - BIT_OFFSET < num_bits ? 1 : 0 ) },
             BYTE_OFFSET, struct_size_bytes );
+#endif
 
         if ( num_bits == 1 )
         {

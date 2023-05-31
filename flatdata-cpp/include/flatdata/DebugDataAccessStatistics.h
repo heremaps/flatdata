@@ -5,6 +5,8 @@
 
 #pragma once
 
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+
 #include <flatdata/MemoryDescriptor.h>
 
 #include <atomic>
@@ -374,3 +376,5 @@ private:
 };
 
 }  // namespace flatdata
+
+#endif

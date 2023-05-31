@@ -53,7 +53,9 @@ MemoryMappedFileStorage::read( const char* path )
         MemoryDescriptor result( static_cast< const unsigned char* >( region.get_address( ) ),
                                  region.get_size( ) );
         m_maps.emplace( path, std::move( region ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
         DebugDataAccessStatistics::register_mapping( path, result );
+#endif
 
         return result;
     }
@@ -69,7 +71,9 @@ inline MemoryMappedFileStorage::~MemoryMappedFileStorage( )
     {
         MemoryDescriptor mapping( static_cast< const unsigned char* >( value.get_address( ) ),
                                   value.get_size( ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
         DebugDataAccessStatistics::deregister_mapping( mapping );
+#endif
     }
 }
 

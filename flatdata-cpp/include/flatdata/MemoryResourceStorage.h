@@ -97,8 +97,10 @@ inline MemoryResourceStorage::~MemoryResourceStorage( )
     for ( auto& resource : m_storage->resources )
     {
         auto& string = resource.second;
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
         DebugDataAccessStatistics::deregister_mapping( MemoryDescriptor(
             reinterpret_cast< const unsigned char* >( string->c_str( ) ), string->size( ) ) );
+#endif
     }
 }
 
@@ -117,10 +119,12 @@ MemoryResourceStorage::read_resource( const char* key )
         }
         m_storage->resources[ path ].reset( new std::string( found->second->str( ) ) );
         auto& string = m_storage->resources[ path ];
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
         DebugDataAccessStatistics::register_mapping(
             path.c_str( ),
             MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
                               string->size( ) ) );
+#endif
     }
     auto& string = m_storage->resources[ path ];
 
