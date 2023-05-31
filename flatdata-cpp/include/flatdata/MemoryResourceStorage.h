@@ -118,8 +118,8 @@ MemoryResourceStorage::read_resource( const char* key )
             return MemoryDescriptor( );
         }
         m_storage->resources[ path ].reset( new std::string( found->second->str( ) ) );
-        auto& string = m_storage->resources[ path ];
 #ifdef DEBUG_DATA_ACCESS_STATISTICS
+        auto& string = m_storage->resources[ path ];
         DebugDataAccessStatistics::register_mapping(
             path.c_str( ),
             MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
