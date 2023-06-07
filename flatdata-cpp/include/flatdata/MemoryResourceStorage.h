@@ -6,6 +6,7 @@
 #pragma once
 
 #include "ResourceStorage.h"
+#include "DebugDataAccessStatistics.h"
 
 #include <bitset>
 #include <iomanip>
@@ -24,6 +25,8 @@ class MemoryResourceStorage : public ResourceStorage
         std::map< std::string, std::shared_ptr< std::stringstream > > streams;
         std::map< std::string, std::shared_ptr< std::string > > resources;
         std::set< std::string > created_directories;
+
+        ~Storage( );
     };
 
 public:
@@ -90,6 +93,18 @@ inline MemoryResourceStorage::MemoryResourceStorage( std::shared_ptr< Storage > 
 {
 }
 
+inline MemoryResourceStorage::Storage::~Storage( )
+{
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+    for ( auto& resource : resources )
+    {
+        auto& string = resource.second;
+        DebugDataAccessStatistics::deregister_mapping( MemoryDescriptor(
+            reinterpret_cast< const unsigned char* >( string->c_str( ) ), string->size( ) ) );
+    }
+#endif
+}
+
 inline MemoryDescriptor
 MemoryResourceStorage::read_resource( const char* key )
 {
@@ -104,6 +119,13 @@ MemoryResourceStorage::read_resource( const char* key )
             return MemoryDescriptor( );
         }
         m_storage->resources[ path ].reset( new std::string( found->second->str( ) ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+        auto& string = m_storage->resources[ path ];
+        DebugDataAccessStatistics::register_mapping(
+            path.c_str( ),
+            MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
+                              string->size( ) ) );
+#endif
     }
     auto& string = m_storage->resources[ path ];
 
@@ -118,6 +140,12 @@ MemoryResourceStorage::assign_value( const char* key, MemoryDescriptor value )
     m_storage->resources.insert( std::make_pair(
         std::string( key ),
         std::make_shared< std::string >( value.char_ptr( ), value.size_in_bytes( ) ) ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+    auto& string = m_storage->resources[ key ];
+    DebugDataAccessStatistics::register_mapping(
+        key, MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
+                               string->size( ) ) );
+#endif
 }
 
 inline void
@@ -126,6 +154,12 @@ MemoryResourceStorage::assign_value( const char* key, const char* value )
     std::lock_guard< std::mutex > lock( m_storage_mutex );
     m_storage->resources.insert(
         std::make_pair( std::string( key ), std::make_shared< std::string >( value ) ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+    auto& string = m_storage->resources[ key ];
+    DebugDataAccessStatistics::register_mapping(
+        key, MemoryDescriptor( reinterpret_cast< const unsigned char* >( string->c_str( ) ),
+                               string->size( ) ) );
+#endif
 }
 
 inline std::unique_ptr< ResourceStorage >

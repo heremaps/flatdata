@@ -15,8 +15,12 @@
 #include <cstring>
 #include <utility>
 
+#include <flatdata/MemoryDescriptor.h>
+#include <flatdata/DebugDataAccessStatistics.h>
+
 namespace flatdata
 {
+
 /**
  * This class allows reading integers/booleans/enumeration to a bitstream
  * Its data member is shared with other instances within the same structure by being part of the
@@ -69,6 +73,14 @@ struct Reader
         static const int BYTE_OFFSET = offset / 8;
         static const int BIT_OFFSET = offset % 8;
 
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+        DebugDataAccessStatistics::read(
+            { data + BYTE_OFFSET,
+              sizeof( UnsignedType )
+                  + ( sizeof( UnsignedType ) * 8 - BIT_OFFSET < num_bits ? 1 : 0 ) },
+            BYTE_OFFSET, struct_size_bytes );
+#endif
+
         if ( num_bits == 1 )
         {
             return static_cast< T >( ( data[ BYTE_OFFSET ] & ( 1 << BIT_OFFSET ) ) != 0 );
@@ -106,8 +118,8 @@ struct Reader< std::pair< T, T >, offset, num_bits, struct_size_bytes >
     template < typename U >
     operator std::pair< U, U >( ) const
     {
-        Reader< T, offset, num_bits > start{ data };
-        Reader< T, offset, num_bits > end{ data + struct_size_bytes };
+        Reader< T, offset, num_bits, struct_size_bytes > start{ data };
+        Reader< T, offset, num_bits, struct_size_bytes > end{ data + struct_size_bytes };
         return std::pair< T, T >( start, end );
     }
 };
@@ -139,7 +151,7 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         }
         else
         {
-            return boost::optional< U >( Reader< T, offset, num_bits >{ data } );
+            return boost::optional< U >( Reader< T, offset, num_bits, struct_size_bytes >{ data } );
         }
     }
 };

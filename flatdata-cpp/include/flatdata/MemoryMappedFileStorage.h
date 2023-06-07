@@ -8,6 +8,7 @@
 #define BOOST_DATE_TIME_NO_LIB
 
 #include "MemoryDescriptor.h"
+#include "DebugDataAccessStatistics.h"
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
@@ -24,6 +25,7 @@ class MemoryMappedFileStorage
 {
 public:
     MemoryDescriptor read( const char* path );
+    ~MemoryMappedFileStorage( );
 
 private:
     std::map< std::string, boost::interprocess::mapped_region > m_maps;
@@ -51,12 +53,27 @@ MemoryMappedFileStorage::read( const char* path )
         MemoryDescriptor result( static_cast< const unsigned char* >( region.get_address( ) ),
                                  region.get_size( ) );
         m_maps.emplace( path, std::move( region ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+        DebugDataAccessStatistics::register_mapping( path, result );
+#endif
 
         return result;
     }
     catch ( boost::interprocess::interprocess_exception& )
     {
         return MemoryDescriptor( );
+    }
+}
+
+inline MemoryMappedFileStorage::~MemoryMappedFileStorage( )
+{
+    for ( const auto& [ key, value ] : m_maps )
+    {
+        MemoryDescriptor mapping( static_cast< const unsigned char* >( value.get_address( ) ),
+                                  value.get_size( ) );
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+        DebugDataAccessStatistics::deregister_mapping( mapping );
+#endif
     }
 }
 
