@@ -18,6 +18,7 @@
 // TODO: Implement missing docs
 // TODO: Implement missing debugs
 #![allow(dead_code, missing_debug_implementations, missing_docs)]
+#![allow(clippy::module_inception)]
 
 include!("test_generated.rs");
 

@@ -31,7 +31,7 @@ def generate_and_compare(test_case):
         test = test_file.read()
 
     expectations = list()
-    for file in  glob.glob(test_case[1] + '*'):
+    for file in glob.glob(test_case[1] + '*'):
         with open(file, 'r') as expectation_file:
             expectations.append(expectation_file.read())
 

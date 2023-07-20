@@ -218,7 +218,7 @@ mod tests {
             let mut item = view.at(0);
             let a = item.next().unwrap();
             match a {
-                AbRef::A(ref a) => {
+                AbRef::A(a) => {
                     assert_eq!(a.x(), 1);
                     assert_eq!(a.y(), 2);
                 }
@@ -230,17 +230,17 @@ mod tests {
             .read_and_check_schema("multivector_index", "index(Some schema)")
             .expect("read_and_check_schema failed");
         use crate::SliceExt;
-        let index = <&[IndexType16]>::from_bytes(&index_resource).expect("Corrupted data");
+        let index = <&[IndexType16]>::from_bytes(index_resource).expect("Corrupted data");
         let resource = storage
             .read_and_check_schema("multivector", "Some schema")
             .expect("read_and_check_schema failed");
-        let mv: MultiArrayView<Ab> = MultiArrayView::new(index, &resource);
+        let mv: MultiArrayView<Ab> = MultiArrayView::new(index, resource);
 
         assert_eq!(mv.len(), 1);
         let mut item = mv.at(0);
         let a = item.next().unwrap();
         match a {
-            AbRef::A(ref a) => {
+            AbRef::A(a) => {
                 assert_eq!(a.x(), 1);
                 assert_eq!(a.y(), 2);
             }
@@ -248,7 +248,7 @@ mod tests {
         }
         let b = item.next().unwrap();
         match b {
-            AbRef::A(ref a) => {
+            AbRef::A(a) => {
                 assert_eq!(a.x(), 3);
                 assert_eq!(a.y(), 4);
             }
@@ -261,7 +261,7 @@ mod tests {
             mv_copy.at(0).next().unwrap()
         };
         match x {
-            AbRef::A(ref a) => {
+            AbRef::A(a) => {
                 assert_eq!(a.x(), 1);
                 assert_eq!(a.y(), 2);
             }
@@ -274,7 +274,7 @@ mod tests {
             mv_copy.iter().next().unwrap().next().unwrap()
         };
         match x {
-            AbRef::A(ref a) => {
+            AbRef::A(a) => {
                 assert_eq!(a.x(), 1);
                 assert_eq!(a.y(), 2);
             }

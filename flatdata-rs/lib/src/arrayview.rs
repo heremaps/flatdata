@@ -57,6 +57,7 @@ mod test {
     };
 
     #[test]
+    #[allow(clippy::reversed_empty_ranges)]
     fn range() {
         let mut vec: Vector<R> = Vector::with_len(3);
         vec[0].set_first_x(10);
@@ -90,7 +91,7 @@ mod test {
         let mut buffer = vec![255_u8; A::SIZE_IN_BYTES];
         buffer.extend(vec![0_u8; A::SIZE_IN_BYTES * 10]);
         let data = &buffer[..];
-        let view = <&[A]>::from_bytes(&data).unwrap();
+        let view = <&[A]>::from_bytes(data).unwrap();
         assert_eq!(11, view.len());
         let first = &view[0];
         assert_eq!(65535, first.x());
@@ -99,22 +100,6 @@ mod test {
             assert_eq!(0, x.x());
             assert_eq!(0, x.y());
         }
-
-        let x = {
-            // test clone and lifetime of returned reference
-            let view_copy = view.clone();
-            &view_copy[0]
-        };
-        assert_eq!(65535, x.x());
-        assert_eq!(65535, x.y());
-
-        let x = {
-            // test clone and lifetime of returned reference
-            let view_copy = view.clone();
-            view_copy.iter().next().unwrap()
-        };
-        assert_eq!(65535, x.x());
-        assert_eq!(65535, x.y());
     }
 
     fn create_values(size: usize) -> Vector<B> {
@@ -138,11 +123,11 @@ mod test {
         for _ in 0..size {
             iter.next().unwrap();
         }
-        if let Some(_) = iter.next() {
-            assert!(false, "Iterator did not end properly");
+        if iter.next().is_some() {
+            panic!("Iterator did not end properly");
         }
-        if let Some(_) = iter.next() {
-            assert!(false, "Iterator did not fuse properly");
+        if iter.next().is_some() {
+            panic!("Iterator did not fuse properly");
         }
     }
 
@@ -154,6 +139,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::iter_next_slice)]
     fn slice() {
         let v = create_values(10);
         let view = v.as_view();

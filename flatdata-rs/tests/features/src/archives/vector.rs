@@ -14,7 +14,7 @@ fn test() {
 
         let builder = n::ABuilder::new(storage.clone()).expect("Failed to create builder");
         builder
-            .set_data(&data.as_view())
+            .set_data(data.as_view())
             .expect("Failed to set data");
 
         if set_optional {

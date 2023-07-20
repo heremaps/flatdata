@@ -1,5 +1,6 @@
 impl Bar {
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn invalid_zero(&self) -> Option<i8> {
         let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 0, 8);
         let x = unsafe { std::mem::transmute::<i8, i8>(value) };
@@ -7,6 +8,7 @@ impl Bar {
     }
 
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn invalid_min_int(&self) -> Option<i8> {
         let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 8, 8);
         let x = unsafe { std::mem::transmute::<i8, i8>(value) };
@@ -14,6 +16,7 @@ impl Bar {
     }
 
     #[inline]
+    #[allow(clippy::useless_transmute)]
     pub fn invalid_max_int(&self) -> Option<i8> {
         let value = flatdata_read_bytes!(i8, self.data.as_ptr(), 16, 8);
         let x = unsafe { std::mem::transmute::<i8, i8>(value) };

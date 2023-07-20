@@ -18,15 +18,13 @@ impl ::std::fmt::Debug for A {
 }
 
 impl A {
+    #[allow(unused_imports, unused_variables)]
     pub fn open(storage: flatdata::StorageHandle)
         -> ::std::result::Result<Self, flatdata::ResourceStorageError>
     {
-        #[allow(unused_imports)]
         use flatdata::SliceExt;
-        #[allow(unused_variables)]
         use flatdata::ResourceStorageError as Error;
         // extend lifetime since Rust cannot know that we reference a cache here
-        #[allow(unused_variables)]
         let extend = |x : Result<&[u8], Error>| -> Result<&'static [u8], Error> {x.map(|x| unsafe{std::mem::transmute(x)})};
 
         storage.read(&Self::signature_name("A"), schema::a::A)?;

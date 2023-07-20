@@ -52,7 +52,7 @@ impl<'a> {{name}}Builder<'a> {
     ///
     /// [`{{type.node.name}}`]: struct.{{type.node.name}}.html
     #[inline]
-    pub fn add_{{ type.node.name | camel_to_snake_case }}<'b>(&'b mut self) -> &'b mut {{inner_type}} {
+    pub fn add_{{ type.node.name | camel_to_snake_case }}(&mut self) -> &mut {{inner_type}} {
         let old_len = self.data.len();
         let increment = 1 + <{{inner_type}} as flatdata::Struct>::SIZE_IN_BYTES;
         self.data.resize(old_len + increment, 0);
@@ -101,7 +101,7 @@ impl<'a> flatdata::VariadicStruct<'a> for {{name}} {
         match index {
             {% for type in types %}
             {% set inner_type = fully_qualified_name(archive, type.node) %}
-                {{loop.index0}} => {{name}}Ref::{{type.node.name}}({{inner_type}}::from_bytes_slice(&data).expect("Corrupted data")),
+                {{loop.index0}} => {{name}}Ref::{{type.node.name}}({{inner_type}}::from_bytes_slice(data).expect("Corrupted data")),
             {% endfor %}
             _ => panic!("invalid type index {} for variadic type {{name}}Ref", index),
         }

@@ -26,7 +26,7 @@ fn test() {
                 let mut stream = storage
                     .create_output_stream("/my_test/optional_data/payload.schema")
                     .expect("Failed to overwrite schema");
-                stream
+                let _ = stream
                     .write(b"broken stuff")
                     .expect("Failed to overwrite schema");
                 stream.flush().expect("Failed to overwrite schema");

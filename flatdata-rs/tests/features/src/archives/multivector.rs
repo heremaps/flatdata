@@ -48,11 +48,11 @@ fn test() {
             let mut iter = data.at(x);
             match iter.next().expect("Missing item") {
                 n::DataRef::S(s) => assert_eq!(s.x(), x as u64),
-                _ => assert!(false, "Found wrong item"),
+                _ => panic!("Found wrong item"),
             }
             match iter.next().expect("Missing item") {
                 n::DataRef::T(s) => assert_eq!(s.x(), x as u64),
-                _ => assert!(false, "Found wrong item"),
+                _ => panic!("Found wrong item"),
             }
             assert!(iter.next().is_none(), "Too many items");
         }
@@ -70,7 +70,7 @@ fn test() {
             let mut iter = data_u64_index.at(x);
             match iter.next().expect("Missing item") {
                 n::DataU64IndexRef::S(s) => assert_eq!(s.x(), x as u64),
-                _ => assert!(false, "Found wrong item"),
+                _ => panic!("Found wrong item"),
             }
             assert!(iter.next().is_none(), "Too many items");
         }

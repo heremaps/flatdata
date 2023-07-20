@@ -1,6 +1,7 @@
 #![cfg(test)]
 
-use std::{env, fs, io::Read, path, str};
+use std::path::{Path, PathBuf};
+use std::{env, fs, io::Read, str};
 
 pub mod coappearances;
 
@@ -76,7 +77,7 @@ fn read_and_validate_coappearances(
     let data: Vec<_> = vertices_data.at(0).collect();
     assert_eq!(data.len(), 1);
     match data[0] {
-        coappearances::VerticesDataRef::UnaryRelation(ref data) => {
+        coappearances::VerticesDataRef::UnaryRelation(data) => {
             assert_eq!(g.strings().substring(data.kind_ref() as usize)?, "maid");
             assert_eq!(
                 g.strings()
@@ -84,13 +85,13 @@ fn read_and_validate_coappearances(
                 "Anna Arkadyevna Karenina"
             );
         }
-        _ => assert!(false),
+        _ => unreachable!(),
     };
 
     let data: Vec<_> = vertices_data.at(1).collect();
     assert_eq!(data.len(), 1);
     match data[0] {
-        coappearances::VerticesDataRef::UnaryRelation(ref data) => {
+        coappearances::VerticesDataRef::UnaryRelation(data) => {
             assert_eq!(
                 g.strings().substring(data.kind_ref() as usize)?,
                 "housekeeper"
@@ -101,13 +102,13 @@ fn read_and_validate_coappearances(
                 "Konstantin Dmitrievitch Levin"
             );
         }
-        _ => assert!(false),
+        _ => unreachable!(),
     };
 
     let data: Vec<_> = vertices_data.at(vertices_data.len() - 1).collect();
     assert_eq!(data.len(), 1);
     match data[0] {
-        coappearances::VerticesDataRef::UnaryRelation(ref data) => {
+        coappearances::VerticesDataRef::UnaryRelation(data) => {
             assert_eq!(
                 g.strings().substring(data.kind_ref() as usize)?,
                 "gambling friend"
@@ -118,28 +119,26 @@ fn read_and_validate_coappearances(
                 "Count Alexey Kirillovitch Vronsky"
             );
         }
-        _ => assert!(false),
+        _ => unreachable!(),
     };
     Ok(())
 }
 
 #[test]
 fn read_and_validate_coappearances_from_file_storage() -> Result<(), std::str::Utf8Error> {
-    let storage =
-        flatdata::FileResourceStorage::new(path::PathBuf::from("assets/karenina.archive"));
+    let storage = flatdata::FileResourceStorage::new("assets/karenina.archive");
     read_and_validate_coappearances(storage)
 }
 
 #[test]
 #[cfg(feature = "tar")]
 fn read_and_validate_coappearances_from_tar_archive_storage() -> Result<(), std::str::Utf8Error> {
-    let storage =
-        flatdata::TarArchiveResourceStorage::new(path::PathBuf::from("assets/karenina.tar"))
-            .expect("failed to read tar archive");
+    let storage = flatdata::TarArchiveResourceStorage::new("assets/karenina.tar")
+        .expect("failed to read tar archive");
     read_and_validate_coappearances(storage)
 }
 
-fn check_files(name_a: &path::Path, name_b: &path::Path) {
+fn check_files(name_a: &Path, name_b: &Path) {
     let mut fa = fs::File::open(name_a).unwrap();
     let mut buf_a = Vec::new();
     fa.read_to_end(&mut buf_a).unwrap();
@@ -157,7 +156,7 @@ fn check_files(name_a: &path::Path, name_b: &path::Path) {
     );
 }
 
-fn check_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &str) {
+fn check_resource(from: &Path, to: &Path, resource_name: &str) {
     check_files(&from.join(resource_name), &to.join(resource_name));
     check_files(
         &from.join(format!("{}.schema", resource_name)),
@@ -168,9 +167,9 @@ fn check_resource(from: &path::PathBuf, to: &path::PathBuf, resource_name: &str)
 fn copy_coappearances_archive(
     from_path: &str,
     to_path: &str,
-) -> (path::PathBuf, coappearances::GraphBuilder) {
+) -> (PathBuf, coappearances::GraphBuilder) {
     // open for reading
-    let source_archive_path = path::PathBuf::from(from_path);
+    let source_archive_path = PathBuf::from(from_path);
     let storage = flatdata::FileResourceStorage::new(source_archive_path.clone());
     let g = coappearances::Graph::open(storage).expect("invalid archive");
 
@@ -186,30 +185,30 @@ fn copy_coappearances_archive(
 
     // copy data
     let mut meta = coappearances::Meta::new();
-    meta.fill_from(&g.meta());
+    meta.fill_from(g.meta());
     gb.set_meta(&meta).expect("set_meta failed");
     check_resource(&source_archive_path, &archive_path, "meta");
 
     {
         let mut vertices = gb.start_vertices().expect("start_vertices failed");
-        for v in g.vertices().iter() {
+        for v in g.vertices() {
             let w = vertices.grow().expect("grow failed");
-            w.fill_from(&v);
+            w.fill_from(v);
         }
         vertices.close().expect("close failed");
     }
     check_resource(&source_archive_path, &archive_path, "vertices");
 
     let mut edges = flatdata::Vector::<coappearances::Coappearance>::new();
-    for e in g.edges().iter() {
-        edges.grow().fill_from(&e);
+    for e in g.edges() {
+        edges.grow().fill_from(e);
     }
     // add final sentinel
     let sentinel = edges.grow();
     sentinel.set_first_chapter_ref(g.edges()[g.edges().len() - 1].chapters_range().end);
     sentinel.set_a_ref(std::u16::MAX as u32);
     sentinel.set_b_ref(std::u16::MAX as u32);
-    gb.set_edges(&edges.as_view()).expect("set_edges failed");
+    gb.set_edges(edges.as_view()).expect("set_edges failed");
 
     check_resource(&source_archive_path, &archive_path, "edges");
 
@@ -221,19 +220,19 @@ fn copy_coappearances_archive(
             let mut new_item = vertices_data.grow().expect("grow failed");
             for element in item {
                 match element {
-                    coappearances::VerticesDataRef::Nickname(ref nickname) => {
+                    coappearances::VerticesDataRef::Nickname(nickname) => {
                         let new_element = new_item.add_nickname();
                         new_element.fill_from(nickname);
                     }
-                    coappearances::VerticesDataRef::Description(ref desc) => {
+                    coappearances::VerticesDataRef::Description(desc) => {
                         let new_element = new_item.add_description();
                         new_element.fill_from(desc);
                     }
-                    coappearances::VerticesDataRef::UnaryRelation(ref rel) => {
+                    coappearances::VerticesDataRef::UnaryRelation(rel) => {
                         let new_element = new_item.add_unary_relation();
                         new_element.fill_from(rel);
                     }
-                    coappearances::VerticesDataRef::BinaryRelation(ref rel) => {
+                    coappearances::VerticesDataRef::BinaryRelation(rel) => {
                         let new_element = new_item.add_binary_relation();
                         new_element.fill_from(rel);
                     }
@@ -247,11 +246,11 @@ fn copy_coappearances_archive(
     check_resource(&source_archive_path, &archive_path, "vertices_data_index");
 
     let mut chapters = flatdata::Vector::<coappearances::Chapter>::new();
-    for ch in g.chapters().iter() {
-        chapters.grow().fill_from(&ch);
+    for ch in g.chapters() {
+        chapters.grow().fill_from(ch);
     }
 
-    gb.set_chapters(&chapters.as_view())
+    gb.set_chapters(chapters.as_view())
         .expect("set_chapters failed");
     check_resource(&source_archive_path, &archive_path, "chapters");
 
@@ -338,9 +337,8 @@ fn read_write_statistics_subarchive() {
 
 #[test]
 fn read_and_validate_calculate_data_subarchive() {
-    let storage = flatdata::FileResourceStorage::new(path::PathBuf::from(
-        "assets/karenina.archive/statistics",
-    ));
+    let storage =
+        flatdata::FileResourceStorage::new(PathBuf::from("assets/karenina.archive/statistics"));
     let stats = coappearances::Statistics::open(storage).expect("invalid archive");
     println!("{:?}", stats);
 
