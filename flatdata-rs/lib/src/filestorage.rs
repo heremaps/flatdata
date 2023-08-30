@@ -28,7 +28,7 @@ impl MemoryMappedFileStorage {
         // We cannot prove to Rust that the buffer will live as long as the storage
         // (we never delete mappings), so we need to manually extend lifetime
         let extended_lifetime_data = unsafe { slice::from_raw_parts(data.as_ptr(), data.len()) };
-        Ok(&extended_lifetime_data)
+        Ok(extended_lifetime_data)
     }
 }
 

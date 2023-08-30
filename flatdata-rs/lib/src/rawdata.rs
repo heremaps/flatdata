@@ -44,6 +44,9 @@ impl<'a> RawData<'a> {
 
     /// Reads a \0 terminated substring starting at specified offset without checking that the
     /// string contains valid UTF-8.
+    ///
+    /// # Safety
+    /// Same as str::from_utf8_unchecked
     #[inline]
     pub unsafe fn substring_unchecked(&self, start: usize) -> &'a str {
         self.substring_with(start, |bytes| str::from_utf8_unchecked(bytes))

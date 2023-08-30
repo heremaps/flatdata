@@ -102,7 +102,7 @@ where
         if !self.data.is_empty() {
             let type_index = self.data[0];
             self.data = &self.data[1..];
-            let res = <Ts as VariadicStruct>::create(type_index, &self.data);
+            let res = <Ts as VariadicStruct>::create(type_index, self.data);
             self.data = &self.data[res.size_in_bytes()..];
             Some(res)
         } else {
