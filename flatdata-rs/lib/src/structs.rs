@@ -52,6 +52,11 @@ pub trait Struct: Debug {
 }
 
 /// Marks structs that can be used stand-alone, e.g. no range
+///
+/// # Safety
+///
+/// Safe only if the struct does not any memory outside of its own memory range
+/// E.g. @range annotations use the next struct's memory and must not implement this
 pub unsafe trait NoOverlap {}
 /// Marks structs that cannot be used stand-alone, e.g. no range
 pub trait Overlap {}

@@ -296,7 +296,7 @@ where
     fn flush(&mut self) -> io::Result<()> {
         self.resource_handle
             .borrow_mut()
-            .write(&self.data.as_view().as_bytes())?;
+            .write(self.data.as_view().as_bytes())?;
         self.data.clear();
         Ok(())
     }
