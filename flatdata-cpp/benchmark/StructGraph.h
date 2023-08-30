@@ -52,7 +52,7 @@ public:
         InternalId
         id( ) const
         {
-            return InternalId{m_id};
+            return InternalId{ m_id };
         }
         ExternalId
         external_id( ) const
@@ -211,7 +211,7 @@ public:
         NodeId
         id( ) const
         {
-            return NodeId{m_current};
+            return NodeId{ m_current };
         }
         Coordinates
         coordinates( ) const
@@ -288,7 +288,7 @@ public:
 
         for ( uint32_t i = 0; i < graph.edge_count( ); i++ )
         {
-            auto edge = graph.edge( InternalId{i} );
+            auto edge = graph.edge( InternalId{ i } );
             auto& target = edge_data[ i ];
 
             target.id = edge.external_id( );

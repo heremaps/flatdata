@@ -6,7 +6,8 @@
 #include <random>
 #include <vector>
 
-/// Computes a simple Breath-First-Search. For big graphs this can mean a lot of random memory access.
+/// Computes a simple Breath-First-Search. For big graphs this can mean a lot of random memory
+/// access.
 template < typename Graph >
 void
 bfs( const Graph& graph, uint32_t num_iterations )
@@ -24,7 +25,7 @@ bfs( const Graph& graph, uint32_t num_iterations )
         {
             uint32_t id = q[ q_pos ];
             uint32_t depth = depths[ id ];
-            auto edge = graph.edge( InternalId{id >> 1} );
+            auto edge = graph.edge( InternalId{ id >> 1 } );
             auto edges
                 = ( q[ q_pos ] & 1 ) == 0 ? edge.to_node( ).edges( ) : edge.from_node( ).edges( );
             for ( ; edges.valid( ); edges++ )

@@ -143,7 +143,7 @@ create_test_tar_archive( )
 
     return tmpfile;
 }
-}
+}  // namespace
 
 TEST_CASE( "Read TAR file entries", "[TarReader]" )
 {

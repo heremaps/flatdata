@@ -23,7 +23,7 @@ class TarArchiveResourceStorage:
 
     @classmethod
     def create(cls, tar_path, sub_path=""):
-        tar_map = FileResourceStorage.memory_map(tar_path)
+        tar_map = memoryview(FileResourceStorage.memory_map(tar_path))
         file_entries = dict()
         dir_entries = set()
         with tarfile.open(tar_path, "r:") as tar:
@@ -44,7 +44,7 @@ class TarArchiveResourceStorage:
         path = self._path(key)
         if path in self.file_entries:
             (offset, length) = self.file_entries[path]
-            return MemoryMapSection(self.tar_map, offset, length)
+            return self.tar_map[offset:offset + length]
 
         if path in self.dir_entries:
             return TarArchiveResourceStorage(self.tar_map, self.file_entries, self.dir_entries, path)
@@ -70,43 +70,3 @@ class TarArchiveResourceStorage:
             return key
         else:
             return self.sub_path + '/' + key
-
-
-class MemoryMapSection:
-    """
-    Represent a slice of a memory mapped file.
-    Keeps track of its position, as to emulate pointing to a dedicated file.
-    """
-
-    def __init__(self, inner, offset, length):
-        self.inner = inner
-        self.offset = offset
-        self.length = length;
-        self.pos = 0
-
-    def __len__(self):
-        return self.size()
-
-    def __getitem__(self, key):
-        if isinstance(key, slice):
-            start = key.start if key.start is not None else 0
-            start = self.offset + min(start, self.length)
-            stop = key.stop if key.stop is not None else self.length
-            stop = self.offset + min(stop, self.length)
-            return self.inner[slice(start, stop, key.step)]
-        else:
-            if key < self.length:
-                return self.inner.__getitem__(self.offset + key)
-            else:
-                raise IndexError('index out of range')
-
-    def read(self, n=None):
-        if n is None:
-            n = self.length - self.pos
-        self.inner.seek(self.offset + self.pos)
-        data = self.inner.read(min(n, self.length - self.pos))
-        self.pos += len(data)
-        return data
-
-    def size(self):
-        return min(self.length, self.inner.size() - self.offset)

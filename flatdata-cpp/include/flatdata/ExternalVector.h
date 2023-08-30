@@ -90,7 +90,7 @@ ExternalVector< T >::grow( )
     size_t old_size = m_data.size( );
     m_data.resize( old_size + ValueType::size_in_bytes( ) );
     m_size++;
-    return ValueType{m_data.data( ) + old_size - PADDING_SIZE};
+    return ValueType{ m_data.data( ) + old_size - PADDING_SIZE };
 }
 
 template < typename T >
@@ -108,8 +108,8 @@ ExternalVector< T >::close( )
 {
     flush( );
     MemoryDescriptor data = m_array->close( );
-    return data ? ArrayView< T >{data.data( ), data.data( ) + data.size_in_bytes( )}
-                : ArrayView< T >{};
+    return data ? ArrayView< T >{ data.data( ), data.data( ) + data.size_in_bytes( ) }
+                : ArrayView< T >{ };
 }
 
 }  // namespace flatdata

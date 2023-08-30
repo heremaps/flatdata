@@ -59,8 +59,8 @@ ArchiveBuilder::initialize( )
     if ( !storage( ).exists( signature_name.c_str( ) ) )
     {
         m_created = true;
-        return m_storage->write< flatdata::MemoryDescriptor >( signature_name.c_str( ), schema( ),
-                                                               flatdata::MemoryDescriptor{"", 0} );
+        return m_storage->write< flatdata::MemoryDescriptor >(
+            signature_name.c_str( ), schema( ), flatdata::MemoryDescriptor{ "", 0 } );
     }
     auto signature
         = storage( ).read< flatdata::MemoryDescriptor >( signature_name.c_str( ), schema( ) );

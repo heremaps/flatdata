@@ -84,10 +84,10 @@ private:
     };
 
 public:
-    using type = typename static_list::reduce< static_list::conjuction,
-                                               std::true_type,
-                                               typename static_list::map< F_is_callable_with,
-                                                                          ListArgs >::type >::type;
+    using type = typename static_list::reduce<
+        static_list::conjuction,
+        std::true_type,
+        typename static_list::map< F_is_callable_with, ListArgs >::type >::type;
     static const bool value = std::is_same< type, std::true_type >::value;
 };
 
@@ -99,7 +99,8 @@ apply_if_accepts_argument( Functor&& f, Arg arg )
 }
 
 // SFINAE fallback to be used in case functor does not accept arguments
-inline void apply_if_accepts_argument( ... )
+inline void
+apply_if_accepts_argument( ... )
 {
 }
 }  // namespace flatdata

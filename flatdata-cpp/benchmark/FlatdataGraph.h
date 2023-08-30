@@ -26,12 +26,12 @@ public:
         InternalId
         id( ) const
         {
-            return InternalId{m_id};
+            return InternalId{ m_id };
         }
         ExternalId
         external_id( ) const
         {
-            return ExternalId{m_data.id};
+            return ExternalId{ m_data.id };
         }
         uint32_t
         length_m( ) const
@@ -108,11 +108,13 @@ public:
             , m_graph( )
         {
         }
-        void operator++( )
+        void
+        operator++( )
         {
             m_current++;
         }
-        void operator++( int )
+        void
+        operator++( int )
         {
             m_current++;
         }
@@ -160,11 +162,13 @@ public:
             , m_graph( )
         {
         }
-        void operator++( )
+        void
+        operator++( )
         {
             m_current++;
         }
-        void operator++( int )
+        void
+        operator++( int )
         {
             m_current++;
         }
@@ -181,12 +185,12 @@ public:
         NodeId
         id( ) const
         {
-            return NodeId{m_current};
+            return NodeId{ m_current };
         }
         Coordinates
         coordinates( ) const
         {
-            return Coordinates{m_graph->m_nodes[ m_current ].x, m_graph->m_nodes[ m_current ].y};
+            return Coordinates{ m_graph->m_nodes[ m_current ].x, m_graph->m_nodes[ m_current ].y };
         }
         EdgeRange
         edges( ) const
@@ -240,7 +244,7 @@ public:
 
         for ( uint32_t i = 0; i < graph.edge_count( ); i++ )
         {
-            auto edge = graph.edge( InternalId{i} );
+            auto edge = graph.edge( InternalId{ i } );
             auto output_data = edge_data.grow( );
 
             output_data.id = edge.external_id( ).id;

@@ -1,5 +1,5 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2023 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
@@ -20,7 +20,7 @@ class ResourceBase:
     def __init__(self, mem, element_type):
         if len(mem) < (SIZE_OFFSET_IN_BYTES + SIZE_PADDING_IN_BYTES):
             raise CorruptResourceError()
-        self._mem = mem
+        self._mem = memoryview(mem)
         self._element_type = element_type
         self._element_types = [element_type]
         self._type_size_in_bytes = self._element_type._SIZE_IN_BYTES if self._element_type else 1
@@ -66,7 +66,7 @@ class _VectorSlice:
             shape=num_items,
             dtype=self._sequence._element_type.dtype()
         )
-        for index, item in self:
+        for index, item in enumerate(self):
             result[index] = item.as_tuple()
         return result
 
@@ -102,7 +102,7 @@ class Vector(ResourceBase):
         if index < 0:
             index += len(self)
         if index >= self._size or index < 0:
-            raise IndexError("Vector access out of bounds")
+            raise IndexError("Vector access out of bounds: " + str(index))
         return self._get_item(index)
 
     def __iter__(self):
@@ -114,6 +114,19 @@ class Vector(ResourceBase):
 
     def __len__(self):
         return self._size
+
+
+class _MultivectorSlice:
+    def __init__(self, s, sequence):
+        self._slice = s
+        self._sequence = sequence
+
+    def __iter__(self):
+        for i in range(*self._slice.indices(len(self._sequence))):
+            yield self._sequence[i]
+
+    def __repr__(self):
+        return [x for x in self].__repr__()
 
 
 class Multivector(ResourceBase):
@@ -130,12 +143,16 @@ class Multivector(ResourceBase):
                    *initializer)
 
     def __len__(self):
-        return len(self._index)
+        # The last entry is just a sentinel
+        return max(0, len(self._index) - 1)
 
     def _bucket_offset(self, index):
         return self._index[index].value + SIZE_OFFSET_IN_BYTES
 
     def __getitem__(self, index):
+        if isinstance(index, slice):
+            return _MultivectorSlice(index, self)
+
         offset = self._bucket_offset(index)
         next_offset = self._bucket_offset(index + 1)
         elements = []
@@ -170,6 +187,32 @@ class RawData(ResourceBase):
                       item.step)
             ]
         return self._mem[item + SIZE_OFFSET_IN_BYTES:item + SIZE_OFFSET_IN_BYTES + 1]
+
+    def sub_str(self, index, separator = b'\0'):
+        for i in range(index, len(self)):
+            if self[i:i + len(separator)] == separator:
+                return bytes(self[index:i]).decode("utf-8")
+        return bytes(self[index]).decode("utf-8")
+
+    def sub_str_list(self, index, separator = b'\0', list_separator = b'\0\0'):
+        result = []
+        for i in range(index, len(self)):
+            if index == i and self[i:i + len(list_separator)] == list_separator:
+                break
+            if self[i:i + len(separator)] == separator:
+                result.append(bytes(self[index:i]).decode("utf-8"))
+                index = i + 1
+        return result
+
+    def sub_str_array(self, index, size, separator = b'\0'):
+        result = []
+        for i in range(index, len(self)):
+            if self[i:i + len(separator)] == separator:
+                result.append(bytes(self[index:i]).decode("utf-8"))
+                index = i + 1
+                if len(result) == size:
+                    break
+        return result
 
 
 class Instance(ResourceBase):

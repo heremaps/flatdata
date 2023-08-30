@@ -40,7 +40,7 @@ TEST_CASE( "Struct with enum", "[Enum]" )
     x.c = Enum1::VALUE_3;
 
     const uint8_t* data = x.data( );
-    StructWithEnum reader{data};
+    StructWithEnum reader{ data };
     REQUIRE( uint32_t( reader.a ) == 0x789abu );
     Enum1 b = reader.b;
     REQUIRE( b == Enum1::VALUE_1 );
@@ -63,7 +63,7 @@ TEST_CASE( "Struct with signed enum", "[Enum]" )
     StructWithSignedEnumMutator x = v[ 0 ];
     REQUIRE( x.size_in_bytes( ) == size_t( 1 ) );
     const uint8_t* data = x.data( );
-    StructWithSignedEnum reader{data};
+    StructWithSignedEnum reader{ data };
 
     {
         x.a = SignedEnum1::VALUE_MINUS_ONE;

@@ -9,12 +9,13 @@ namespace flatdata
 {
 template < typename T >
 ArrayViewIterator< T >::PointerWrapper::PointerWrapper( ConstStreamType ptr )
-    : m_data{ptr}
+    : m_data{ ptr }
 {
 }
 
 template < typename T >
-typename ArrayViewIterator< T >::pointer ArrayViewIterator< T >::PointerWrapper::operator->( ) const
+typename ArrayViewIterator< T >::pointer
+ArrayViewIterator< T >::PointerWrapper::operator->( ) const
 {
     return &m_data;
 }
@@ -26,14 +27,16 @@ ArrayViewIterator< T >::ArrayViewIterator( ConstStreamType ptr )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator++( )
+ArrayViewIterator< T >&
+ArrayViewIterator< T >::operator++( )
 {
     m_ptr += T::size_in_bytes( );
     return *this;
 }
 
 template < typename T >
-ArrayViewIterator< T > ArrayViewIterator< T >::operator++( int )
+ArrayViewIterator< T >
+ArrayViewIterator< T >::operator++( int )
 {
     auto copy = *this;
     operator++( );
@@ -41,14 +44,16 @@ ArrayViewIterator< T > ArrayViewIterator< T >::operator++( int )
 }
 
 template < typename T >
-ArrayViewIterator< T >& ArrayViewIterator< T >::operator--( )
+ArrayViewIterator< T >&
+ArrayViewIterator< T >::operator--( )
 {
     m_ptr -= T::size_in_bytes( );
     return *this;
 }
 
 template < typename T >
-ArrayViewIterator< T > ArrayViewIterator< T >::operator--( int )
+ArrayViewIterator< T >
+ArrayViewIterator< T >::operator--( int )
 {
     auto copy = *this;
     operator--( );
@@ -139,20 +144,22 @@ ArrayViewIterator< T >::operator>=( const ArrayViewIterator& rhs ) const
 }
 
 template < typename T >
-typename ArrayViewIterator< T >::ConstValueType ArrayViewIterator< T >::operator*( ) const
+typename ArrayViewIterator< T >::ConstValueType
+ArrayViewIterator< T >::operator*( ) const
 {
-    return ConstValueType{m_ptr};
+    return ConstValueType{ m_ptr };
 }
 
 template < typename T >
-typename ArrayViewIterator< T >::ConstValueType ArrayViewIterator< T >::operator[](
-    difference_type index ) const
+typename ArrayViewIterator< T >::ConstValueType
+ArrayViewIterator< T >::operator[]( difference_type index ) const
 {
-    return ConstValueType{m_ptr + T::size_in_bytes( ) * index};
+    return ConstValueType{ m_ptr + T::size_in_bytes( ) * index };
 }
 
 template < typename T >
-typename ArrayViewIterator< T >::PointerWrapper ArrayViewIterator< T >::operator->( ) const
+typename ArrayViewIterator< T >::PointerWrapper
+ArrayViewIterator< T >::operator->( ) const
 {
     return PointerWrapper( m_ptr );
 }

@@ -49,7 +49,7 @@ template < template < typename, int, int, int > class Reader,
 void
 test_value( type value )
 {
-    std::array< uint8_t, sizeof( type ) + ( offset + 7 ) / 8 + 8 > buffer = {{0}};
+    std::array< uint8_t, sizeof( type ) + ( offset + 7 ) / 8 + 8 > buffer = { { 0 } };
     if ( pre_fill_buffer )
     {
         for ( auto& value : buffer )
@@ -57,7 +57,7 @@ test_value( type value )
             value = 0xff;
         }
     }
-    Writer< type, offset, num_bits, 0 > writer{buffer.data( )};
+    Writer< type, offset, num_bits, 0 > writer{ buffer.data( ) };
     writer = value;
 
 #if ( GENERATE_PYTHON_READER_TESTS )
@@ -73,7 +73,7 @@ test_value( type value )
               << std::endl;
 #endif  // GENERATE_PYTHON_READER_TESTS
 
-    Reader< type, offset, num_bits, 0 > reader{buffer.data( )};
+    Reader< type, offset, num_bits, 0 > reader{ buffer.data( ) };
     type result = reader;
     REQUIRE( result == value );
 }
@@ -184,13 +184,13 @@ TEST_CASE( "Read enum", "[Reader]" )
 
 TEST_CASE( "Range", "[Read/Write]" )
 {
-    std::array< uint8_t, 64 > buffer = {{0}};
-    Writer< uint32_t, 7, 7, 0 > writer_start{buffer.data( )};
+    std::array< uint8_t, 64 > buffer = { { 0 } };
+    Writer< uint32_t, 7, 7, 0 > writer_start{ buffer.data( ) };
     writer_start = 16;
-    Writer< uint32_t, 7, 7, 0 > writer_end{buffer.data( ) + 32};
+    Writer< uint32_t, 7, 7, 0 > writer_end{ buffer.data( ) + 32 };
     writer_end = 32;
 
-    Reader< std::pair< uint32_t, uint32_t >, 7, 7, 32 > reader{buffer.data( )};
+    Reader< std::pair< uint32_t, uint32_t >, 7, 7, 32 > reader{ buffer.data( ) };
     std::pair< uint32_t, uint32_t > result = reader;
     REQUIRE( result.first == 16 );
     REQUIRE( result.second == 32 );

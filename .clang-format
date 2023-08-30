@@ -1,22 +1,53 @@
+# Clang-format v14 based configuration
+---
 BasedOnStyle:  Google
+Language: Cpp
+Standard: c++17
 AccessModifierOffset: -4
-BreakBeforeBinaryOperators: true
-BreakBeforeTernaryOperators: true
-BinPackParameters: false
-ColumnLimit:     100
-DerivePointerBinding: false
-PenaltyBreakComment: 60
-IndentWidth:     4
-TabWidth:        4
-BreakBeforeBraces: Allman
-SpacesInParentheses: true
-SpacesInSquareBrackets: true
-SpacesInAngles:  true
-SpaceInEmptyParentheses: true
-IndentCaseLabels : false
-AllowShortFunctionsOnASingleLine : false
-BreakConstructorInitializersBeforeComma: true
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
-AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine : None
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: true
+AlwaysBreakAfterDefinitionReturnType: All
+BinPackParameters: false
+BreakBeforeBinaryOperators: All
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeComma
+ColumnLimit:     100
+PackConstructorInitializers: BinPack
+IndentCaseLabels : false
+IndentWidth:     4
+PenaltyBreakComment: 60
+SortIncludes: Never
+SortUsingDeclarations: false
+SpacesInContainerLiterals: false
+SpacesInAngles:  Always
+SpacesInParentheses: true
+SpaceInEmptyParentheses: true
+SpacesInSquareBrackets: true
+SpaceInEmptyBlock: false
+TabWidth:        4
+Cpp11BracedListStyle: false
+SpaceBeforeCpp11BracedList: false
+SpacesInCStyleCastParentheses: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel:         true
+  AfterClass:             true
+  AfterControlStatement:  Always
+  AfterEnum:              true
+  AfterFunction:          true
+  AfterNamespace:         true
+  AfterObjCDeclaration:   true
+  AfterStruct:            true
+  AfterUnion:             true
+  AfterExternBlock:       true
+  BeforeCatch:            true
+  BeforeElse:             true
+  BeforeLambdaBody:       false
+  BeforeWhile:            false
+  IndentBraces:           false
+  SplitEmptyFunction:     true
+  SplitEmptyRecord:       true
+  SplitEmptyNamespace:    true
+...

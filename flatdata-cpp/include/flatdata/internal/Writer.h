@@ -87,7 +87,7 @@ struct Writer
 
     operator T( ) const
     {
-        return Reader< T, offset, num_bits >{data};
+        return Reader< T, offset, num_bits >{ data };
     }
 };
 
@@ -110,23 +110,25 @@ struct Writer< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
 
     explicit operator bool( ) const
     {
-        return static_cast< bool >( Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{data} );
+        return static_cast< bool >(
+            Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{ data } );
     }
 
-    T operator*( ) const
+    T
+    operator*( ) const
     {
-        return *Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{data};
+        return *Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{ data };
     }
 
     operator boost::optional< T >( ) const
     {
-        return Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{data};
+        return Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{ data };
     }
 
     Writer&
     operator=( T t )
     {
-        Writer< T, offset, num_bits >{data} = t;
+        Writer< T, offset, num_bits >{ data } = t;
         return *this;
     }
 
@@ -135,11 +137,11 @@ struct Writer< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
     {
         if ( t )
         {
-            Writer< T, offset, num_bits >{data} = t;
+            Writer< T, offset, num_bits >{ data } = t;
         }
         else
         {
-            Writer< T, offset, num_bits >{data} = INVALID_VALUE;
+            Writer< T, offset, num_bits >{ data } = INVALID_VALUE;
         }
     }
 };

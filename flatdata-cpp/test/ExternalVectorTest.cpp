@@ -53,14 +53,14 @@ private:
 
 public:
     explicit Barrier( size_t count )
-        : m_count{count}
+        : m_count{ count }
     {
     }
 
     void
     wait( )
     {
-        std::unique_lock< std::mutex > lock{m_mutex};
+        std::unique_lock< std::mutex > lock{ m_mutex };
         m_count -= 1;
         if ( m_count == 0 )
         {
@@ -68,7 +68,7 @@ public:
         }
         else
         {
-            m_cv.wait( lock, [this] { return m_count == 0; } );
+            m_cv.wait( lock, [ this ] { return m_count == 0; } );
         }
     }
 };
@@ -83,7 +83,7 @@ run_close_in_loop( std::unique_ptr< ResourceStorage > storage )
         Barrier barrier( NUM_THREADS );
         for ( uint32_t thread_id = 0; thread_id < NUM_THREADS; ++thread_id )
         {
-            threads.emplace_back( [&storage, thread_id, &barrier] {
+            threads.emplace_back( [ &storage, thread_id, &barrier ] {
                 std::string resource_name = "data_" + std::to_string( thread_id );
                 auto data
                     = storage->create_external_vector< AStruct >( resource_name.c_str( ), "foo" );

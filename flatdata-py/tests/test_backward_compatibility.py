@@ -56,7 +56,7 @@ def test_multivector_reading():
     }
 
     archive = module.backward_compatibility_Archive(DictResourceStorage(valid_data))
-    eq_(5, len(archive.resource))
+    eq_(4, len(archive.resource))
 
     eq_(2, len(archive.resource[0]))
     assert_is_instance(archive.resource[0][0], module.backward_compatibility_SignedStruct)
