@@ -102,7 +102,7 @@ mod test {
 
         let x = {
             // test clone and lifetime of returned reference
-            let view_copy = view.clone();
+            let view_copy = view;
             &view_copy[0]
         };
         assert_eq!(65535, x.x());
@@ -110,7 +110,7 @@ mod test {
 
         let x = {
             // test clone and lifetime of returned reference
-            let view_copy = view.clone();
+            let view_copy = view;
             view_copy.iter().next().unwrap()
         };
         assert_eq!(65535, x.x());
