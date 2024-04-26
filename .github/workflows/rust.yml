@@ -21,12 +21,12 @@ jobs:
           # use generator from source
           export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator
           cd flatdata-rs
-          cargo build --all-targets
-          cargo build --all-targets --all-features
+          cargo build --all-targets -j 1
+          cargo build --all-targets --all-features -j 1
       - name: Run tests
         run: |
           # use generator from source
           export FLATDATA_GENERATOR_PATH=${PWD}/flatdata-generator
           cd flatdata-rs
-          cargo test --all-targets
-          cargo test --all-targets --all-features
+          cargo test --all-targets -j 1
+          cargo test --all-targets --all-features -j 1
