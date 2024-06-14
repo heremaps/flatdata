@@ -1,6 +1,43 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flatdata-py"
+version = "0.4.7"
+description = "Python 3 implementation of Flatdata"
+readme = "README.md"
+license = ""
+authors = [
+    { name = "Flatdata Developers" },
 ]
-build-backend = "setuptools.build_meta"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "flatdata-generator==0.4.6",
+    "numpy",
+    "pandas",
+]
+
+[project.optional-dependencies]
+inspector = [
+    "IPython",
+]
+
+[project.scripts]
+flatdata-inspector = "flatdata.lib.inspector:main[inspector]"
+flatdata-writer = "flatdata.lib.writer:main[writer]"
+
+[project.urls]
+Homepage = "https://github.com/heremaps/flatdata"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/flatdata",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["flatdata"]
