@@ -3,7 +3,7 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-import imp
+import types
 
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial.namespace import Namespace
@@ -70,7 +70,7 @@ class Engine:
         """
         root_namespace = self._find_root_namespace(self.tree)
         module_code = self.render("py")
-        module = imp.new_module(module_name if module_name is not None else root_namespace.name)
+        module = types.ModuleType(module_name if module_name is not None else root_namespace.name)
         #pylint: disable=exec-used
         exec(module_code, module.__dict__)
         if archive_name is None:

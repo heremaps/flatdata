@@ -1,6 +1,36 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "flatdata-generator"
+version = "0.4.6"
+description = "Generate source code for C++, Rust, Go or Python from a Flatdata schema file"
+readme = "README.md"
+license = ""
+authors = [
+    { name = "Flatdata Developers" },
 ]
-build-backend = "setuptools.build_meta"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "jinja2>=2.2",
+    "pyparsing>=2.0",
+]
+
+[project.scripts]
+flatdata-generator = "flatdata.generator.app:main"
+
+[project.urls]
+Homepage = "https://github.com/heremaps/flatdata"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/flatdata",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["flatdata"]
