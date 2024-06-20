@@ -361,9 +361,6 @@ Resource                             Optional  Too Large  Loaded    Details
 outer1                               NO        NO         YES       Structure of size 1
 outer2                               NO        NO         YES       Structure of size 1
 inner                                NO        NO         NO        Uninitialized Archive InnerArchive
-|
-|-> Flatdata Archive: InnerArchive
-    inner                            NO        NO         NO        Uninitialized Structure AStruct
 ================================================================================
 )data";
 
@@ -395,9 +392,44 @@ Resource                             Optional  Too Large  Loaded    Details
 ================================================================================
 outer                                NO        NO         YES       Structure of size 1
 archive_resource                     YES       NO         NO        Uninitialized Archive InnerArchive
+================================================================================
+)data";
+
+    REQUIRE( outer.describe( ) == expected );
+}
+
+TEMPLATE_TEST_CASE_METHOD(
+    Fixture, "Sub-archives are described", "[GeneratedArchive]", std::true_type, std::false_type )
+{
+    {
+        auto outer_builder = OuterArchiveBuilder::open( Fixture< TestType >::storage );
+        CHECK( outer_builder );
+
+        flatdata::Struct< AStruct > o;
+        outer_builder.set_outer1( *o );
+        outer_builder.set_outer2( *o );
+
+        auto inner_builder = outer_builder.inner( );
+        CHECK( inner_builder );
+        inner_builder.set_inner( *o );
+    }
+
+    auto outer = OuterArchive::open( Fixture< TestType >::storage );
+    REQUIRE( outer.is_open( ) );
+    REQUIRE( outer.inner( ).is_open( ) );
+
+    const char* const expected
+        = R"data(================================================================================
+Flatdata Archive: OuterArchive
+================================================================================
+Resource                             Optional  Too Large  Loaded    Details
+================================================================================
+outer1                               NO        NO         YES       Structure of size 1
+outer2                               NO        NO         YES       Structure of size 1
+inner                                NO        NO         YES       
 |
 |-> Flatdata Archive: InnerArchive
-    inner                            NO        NO         NO        Uninitialized Structure AStruct
+    inner                            NO        NO         YES       Structure of size 1
 ================================================================================
 )data";
 
@@ -531,16 +563,6 @@ TEST_CASE( "Describe ouputs fatal errors", "[GeneratedArchive]" )
         R"data(================================================================================
 FATAL: Resource storage not initialized. Please check archive path.
 ================================================================================
-Flatdata Archive: SimpleResources
-================================================================================
-Resource                             Optional  Too Large  Loaded    Details
-================================================================================
-object_resource                      NO        NO         NO        Uninitialized Structure AStruct
-vector_resource                      NO        NO         NO        Uninitialized Array
-multivector_resource                 NO        NO         NO        Uninitialized MultiArray
-raw_data_resource                    NO        NO         NO        Uninitialized Raw data
-optional_resource                    YES       NO         NO        Uninitialized Raw data
-================================================================================
 )data";
 
     REQUIRE( archive.describe( ) == expected );
@@ -604,24 +626,6 @@ FATAL: Archive signature does not match software expectations.
  "}"
  "}"
 ...
-================================================================================
-FATAL: Archive initialization failed. Failed loading mandatory resources.
-================================================================================
-Flatdata Archive: OutermostArchive
-================================================================================
-Resource                             Optional  Too Large  Loaded    Details
-================================================================================
-outermost                            NO        NO         NO        Uninitialized Structure AStruct
-outer                                NO        NO         NO        Uninitialized Archive OuterArchive
-|
-|-> Flatdata Archive: OuterArchive
-    outer1                           NO        NO         NO        Uninitialized Structure AStruct
-    outer2                           NO        NO         NO        Uninitialized Structure AStruct
-    inner                            NO        NO         NO        Uninitialized Archive InnerArchive
-    |
-    |-> Flatdata Archive: InnerArchive
-        inner                        NO        NO         NO        Uninitialized Structure AStruct
-================================================================================
 )";
     REQUIRE( description == expectation );
 }
@@ -668,19 +672,6 @@ FATAL: Archive signature does not match software expectations.
  "}"
  "}"
 ...
-================================================================================
-FATAL: Archive initialization failed. Failed loading mandatory resources.
-================================================================================
-Flatdata Archive: OuterWithOptional
-================================================================================
-Resource                             Optional  Too Large  Loaded    Details
-================================================================================
-outer                                NO        NO         NO        Uninitialized Structure AStruct
-archive_resource                     YES       NO         NO        Uninitialized Archive InnerArchive
-|
-|-> Flatdata Archive: InnerArchive
-    inner                            NO        NO         NO        Uninitialized Structure AStruct
-================================================================================
 )";
     REQUIRE( description == expectation );
 }

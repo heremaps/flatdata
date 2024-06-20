@@ -243,15 +243,16 @@ Archive::describe( size_t nest_level ) const
         if ( is_root_node )
         {
             result << hline << "FATAL: Resource storage not initialized. Please check archive path."
-                   << newl;
+                   << newl << hline;
         }
         else
         {
-            result << "Uninitialized Archive " << name( );
+            result << "Uninitialized Archive " << name( ) << newl;
         }
+        return result.str( );
     }
 
-    if ( m_storage && !m_signature )
+    if ( !m_signature )
     {
         result << ( is_root_node ? hline : empty )
                << "FATAL: Archive signature does not match software expectations."
@@ -259,9 +260,10 @@ Archive::describe( size_t nest_level ) const
         result << compute_diff(
             schema( ),
             m_storage->read_schema( internal::signature_name( name( ) ).c_str( ) ).char_ptr( ) );
+        return result.str( );
     }
 
-    if ( m_storage && !m_is_open )
+    if ( !m_is_open )
     {
         // Error propagated to root and storage is not initialized in respective child. No root
         // check needed.
@@ -282,7 +284,7 @@ Archive::describe( size_t nest_level ) const
     {
         const std::string indent( ( nest_level - 1 ) * TAB_WIDTH, ' ' );
         result << newl + indent + std::string( "|" ) + newl + indent + std::string( "|->" )
-               << " Flatdata Archive: " << name( ) << std::endl;
+               << " Flatdata Archive: " << name( ) << newl;
     }
 
     describe_resources( result, nest_level );
