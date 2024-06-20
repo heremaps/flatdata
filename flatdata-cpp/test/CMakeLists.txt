@@ -21,6 +21,8 @@ target_include_directories(flatdata_test
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../vendor
 )
 
+target_compile_definitions(flatdata_test PRIVATE CATCH_CONFIG_CONSOLE_WIDTH=120)
+
 target_link_libraries(flatdata_test
     flatdata
     ${CMAKE_THREAD_LIBS_INIT}
