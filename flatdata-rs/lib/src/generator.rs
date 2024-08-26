@@ -95,7 +95,7 @@ pub fn generate(
             path
         } else {
             eprintln!("installing flatdata-generator from PyPI");
-            PathBuf::from("flatdata-generator==0.4.5")
+            PathBuf::from("flatdata-generator==0.4.6")
         };
         let _ = Command::new(out_dir.join("bin/pip3"))
             .arg("install")
