@@ -1,6 +1,6 @@
 [package]
 name = "flatdata"
-version = "0.5.7"
+version = "0.5.8"
 authors = ["boxdot <d@zerovolt.org>", "Christian Vetter <veaac.fdirct@gmail.com>", "Gabriel Féron <feron.gabriel@gmail.com>"]
 license = "Apache-2.0"
 description = "Rust implementation of flatdata"
