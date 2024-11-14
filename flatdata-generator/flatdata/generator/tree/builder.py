@@ -10,7 +10,7 @@ from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
     InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
     InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference,
-    InvalidStructInExplicitReference)
+    InvalidStructInExplicitReference, OptionalRange)
 from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
@@ -181,6 +181,9 @@ def _check_ranges(root):
         for sibling in field.parent.fields:
             if sibling.name == name:
                 raise InvalidRangeName(name)
+        # Also check that the range is not optional
+        if field.invalid_value:
+            raise OptionalRange(name)
 
     # Now check that structs with ranges are only used in vectors
     for reference in root.iterate(StructureReference):

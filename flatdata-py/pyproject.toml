@@ -7,7 +7,6 @@ name = "flatdata-py"
 version = "0.4.7"
 description = "Python 3 implementation of Flatdata"
 readme = "README.md"
-license = ""
 authors = [
     { name = "Flatdata Developers" },
 ]

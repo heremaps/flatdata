@@ -10,7 +10,7 @@ from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_t
 sys.path.insert(0, "..")
 from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference, \
     InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference, \
-    InvalidStructInExplicitReference
+    InvalidStructInExplicitReference, OptionalRange
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial import Namespace, Structure, Field, Constant, Enumeration, EnumerationValue
 from flatdata.generator.tree.nodes.archive import Archive
@@ -20,8 +20,6 @@ from flatdata.generator.tree.nodes.resources import Vector, Multivector, RawData
 from flatdata.generator.tree.nodes.references import ResourceReference, StructureReference, \
     FieldReference, ArchiveReference, BuiltinStructureReference, ConstantValueReference, \
     EnumerationReference, InvalidValueReference
-
-
 
 def test_validating_archive_with_no_structure_defined_raises_missing_symbol_error():
     def __test(resource_type):
@@ -102,6 +100,17 @@ def test_range_cannot_be_used_in_struct_resource():
             }
             }
             """)
+
+def test_optional_range():
+    with assert_raises(OptionalRange):
+        build_ast("""namespace foo{
+            const u32 NO_EDGES_REF = 200;
+            struct Node {
+                @range(edges_range)
+                @optional( NO_EDGES_REF )
+                first_edge_ref : u32;
+            }
+            }""")
 
 def test_ranges_can_be_used_in_normally():
     build_ast("""namespace foo{

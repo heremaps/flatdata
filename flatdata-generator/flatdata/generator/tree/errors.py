@@ -149,3 +149,9 @@ class InvalidRangeReference(FlatdataSyntaxError):
         super().__init__(
             "Structs with @range can only be used in vectors: {name}"
             .format(name=name))
+
+class OptionalRange(FlatdataSyntaxError):
+    def __init__(self, name):
+        super().__init__(
+            "@range cannot be combined with @optional, store empty ranges instead: {name}"
+            .format(name=name))
