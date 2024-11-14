@@ -113,7 +113,7 @@ impl {{ struct.name }} {
         let start = flatdata_read_bytes!({{ field.type.name }}, self.data.as_ptr(), {{ field.offset }}, {{ field.type.width }});
         let end = flatdata_read_bytes!({{ field.type.name }}, self.data.as_ptr(), {{ field.offset }} + {{ struct.size_in_bytes }} * 8, {{ field.type.width }});
         {% if field.invalid_value %}
-        let check = |x| {% if field.invalid_value %}Some(x).filter(|&x| x != {{ fully_qualified_name(struct, field.invalid_value.node) }}{% else %}x{% endif %};
+        let check = |x| {% if field.invalid_value %}Some(x).filter(|&x| x != {{ fully_qualified_name(struct, field.invalid_value.node) }}){% else %}x{% endif %};
         check(start)..check(end)
         {% else %}
         start..end
