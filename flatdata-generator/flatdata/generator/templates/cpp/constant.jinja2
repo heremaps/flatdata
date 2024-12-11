@@ -4,6 +4,6 @@ enum : {{ node.type|cpp_base_type}}
 {% if node.doc %}
     {{- node.doc|cpp_doc }}
 {% endif %}
-    {{ node.name }} = {{ node.value }}
+    {{ node.name }} = {{ node.value }}{{ node.type.annotation }}
 };
 {%- endmacro %}
