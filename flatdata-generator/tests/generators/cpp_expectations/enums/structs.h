@@ -282,8 +282,8 @@ namespace n {
 
 enum class EnumI32 : int32_t
 {
-    VALUE = 0,
-    UNKNOWN_VALUE_MINUS_1 = -1
+    VALUE = 0L,
+    UNKNOWN_VALUE_MINUS_1 = -1L
 };
 
 inline
@@ -350,8 +350,8 @@ namespace n {
 
 enum class EnumU32 : uint32_t
 {
-    VALUE = 0,
-    UNKNOWN_VALUE_1 = 1
+    VALUE = 0UL,
+    UNKNOWN_VALUE_1 = 1UL
 };
 
 inline
@@ -418,8 +418,8 @@ namespace n {
 
 enum class EnumI64 : int64_t
 {
-    VALUE = 0,
-    UNKNOWN_VALUE_MINUS_1 = -1
+    VALUE = 0LL,
+    UNKNOWN_VALUE_MINUS_1 = -1LL
 };
 
 inline
@@ -486,8 +486,8 @@ namespace n {
 
 enum class EnumU64 : uint64_t
 {
-    VALUE = 0,
-    UNKNOWN_VALUE_1 = 1
+    VALUE = 0ULL,
+    UNKNOWN_VALUE_1 = 1ULL
 };
 
 inline

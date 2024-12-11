@@ -9,7 +9,7 @@ enum class {{ enum.name }} : {{ enum.type|cpp_base_type }}
     {% if value.doc %}
     {{ value.doc|cpp_doc }}
     {% endif %}
-    {{ value.name }} = {{ value.value }}{{ "," if not loop.last }}
+    {{ value.name }} = {{ value.value }}{{ enum.type.annotation }}{{ "," if not loop.last }}
     {% endfor %}
 };
 

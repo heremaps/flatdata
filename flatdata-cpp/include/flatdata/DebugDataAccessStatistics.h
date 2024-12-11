@@ -20,6 +20,7 @@
 #include <shared_mutex>
 #include <utility>
 #include <vector>
+#include <algorithm>
 
 namespace flatdata
 {

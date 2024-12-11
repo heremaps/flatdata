@@ -16,6 +16,18 @@ class BasicType:
         "i64": 64
     }
 
+    _TYPE_ANNOTATION = {
+        "bool": "",
+        "u8": "",
+        "i8": "",
+        "u16": "",
+        "i16": "",
+        "u32": "UL",
+        "i32": "L",
+        "u64": "ULL",
+        "i64": "LL"
+    }
+
     @staticmethod
     def is_basic_type(name):
         return name in grammar.BASIC_TYPES
@@ -40,6 +52,10 @@ class BasicType:
     @property
     def is_signed(self):
         return self._name[0] == 'i'
+
+    @property
+    def annotation(self):
+        return self._TYPE_ANNOTATION[self._name]
 
     def bits_required(self, value):
         if self.is_signed:

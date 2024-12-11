@@ -16,5 +16,9 @@ class EnumType:
         return self._type.width
 
     @property
+    def annotation(self):
+        return self._type.annotation
+
+    @property
     def is_signed(self):
         return self._type.is_signed
