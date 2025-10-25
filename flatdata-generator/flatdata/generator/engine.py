@@ -1,5 +1,5 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
@@ -61,14 +61,15 @@ class Engine:
         output_content = generator.render(self.tree)
         return output_content
 
-    def render_python_module(self, module_name=None, archive_name=None):
+    def render_python_module(self, module_name=None, archive_name=None, root_namespace=None):
         """
         Render python module.
         :param module_name: Module name to use. If none, root namespace name is used.
         :param archive_name: Archive name to lookup,
             if specified, archive type is returned along with the model
+        :param root_namespace: Root namespace to pick in case of multiple top level namespaces.
         """
-        root_namespace = self._find_root_namespace(self.tree)
+        root_namespace = self._find_root_namespace(self.tree, root_namespace)
         module_code = self.render("py")
         module = types.ModuleType(module_name if module_name is not None else root_namespace.name)
         #pylint: disable=exec-used
@@ -89,7 +90,7 @@ class Engine:
         return generator_type()
 
     @staticmethod
-    def _find_root_namespace(tree):
+    def _find_root_namespace(tree, root_namespace=None):
         root_children = tree.root.children
         root_namespaces = [
             child for child in root_children
@@ -97,6 +98,12 @@ class Engine:
         ]
         if not root_namespaces:
             raise RuntimeError("No root namespace found.")
+        elif root_namespace:
+            for namespace in root_namespaces:
+                if namespace.name == root_namespace:
+                    return namespace
+            raise RuntimeError("Invalid root namespace provided. Could not find root namespace in archive.")
         elif len(root_namespaces) > 1:
             raise RuntimeError("Ambiguous root namespace. Could not find root archive.")
+
         return root_namespaces[0]

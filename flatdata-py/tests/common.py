@@ -29,6 +29,23 @@ ARCHIVE_SIGNATURE_PAYLOAD = (
 )
 
 
+MULTI_NAMESPACE_TEST_SCHEMA = """
+namespace backward_compatibility {
+    struct SignedStruct {
+        a : i16 : 5;
+        b : u32 : 32;
+        c : i32 : 7;
+        d : u32 : 32;
+    }
+    archive Archive {
+        resource: SignedStruct;
+    }
+}
+namespace second {
+}
+"""
+
+
 
 VECTOR_TEST_SCHEMA = """
 namespace backward_compatibility {
