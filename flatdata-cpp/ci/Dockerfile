@@ -16,7 +16,7 @@ RUN apk --no-cache add \
     breathe \
     sphinx \
     jinja2 \
-    nose \
+    pytest \
     pandas \
     pyparsing
 

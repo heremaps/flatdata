@@ -2,17 +2,17 @@ from common import *
 from flatdata.generator.engine import Engine
 from flatdata.lib.tar_archive_resource_storage import TarArchiveResourceStorage
 
-from nose.tools import eq_
+import pytest
 import tarfile
 import tempfile
 import os
 
 
 def check_signed_struct(s):
-    eq_(-0x1, s.a)
-    eq_(0x01234567, s.b)
-    eq_(-0x28, s.c)
-    eq_(0, s.d)
+    assert -0x1 == s.a
+    assert 0x01234567 == s.b
+    assert -0x28 == s.c
+    assert 0 == s.d
 
 
 def test_tar_resource_storage():

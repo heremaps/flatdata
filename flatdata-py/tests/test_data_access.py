@@ -1,4 +1,4 @@
-from nose.tools import assert_equal
+import pytest
 from flatdata.lib.data_access import read_value, write_value
 
 
@@ -9,7 +9,7 @@ def test_reader():
     C++ originals.
     """
     def _test_reader(buffer, offset, num_bits, is_signed, expected):
-        assert_equal(read_value(buffer, offset, num_bits, is_signed), expected)
+        assert read_value(buffer, offset, num_bits, is_signed) == expected
 
     _test_reader(b"\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 8, 8, False, 1)
     _test_reader(b"\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 8, 7, False, 1)
@@ -1133,7 +1133,7 @@ def test_writer():
     def _test_writer(buffer, offset, num_bits, is_signed, expected):
         bout = bytearray(len(buffer))
         write_value(bout, offset, num_bits, is_signed, expected)
-        assert_equal(bout, buffer)
+        assert bout == buffer
 
     _test_writer(b"\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 8, 8, False, 1)
     _test_writer(b"\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 8, 7, False, 1)

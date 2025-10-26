@@ -1,11 +1,10 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
 import sys
-
-from nose.tools import assert_equal, assert_is_instance, assert_raises, assert_true
+import pytest
 
 sys.path.insert(0, "..")
 from flatdata.generator.tree.errors import MissingSymbol, InvalidRangeName, InvalidRangeReference, \
@@ -21,17 +20,23 @@ from flatdata.generator.tree.nodes.references import ResourceReference, Structur
     FieldReference, ArchiveReference, BuiltinStructureReference, ConstantValueReference, \
     EnumerationReference, InvalidValueReference
 
-def test_validating_archive_with_no_structure_defined_raises_missing_symbol_error():
+def get_test_cases():
+    test_cases = []
+    for t in ["T", "vector< T >", "multivector< 33, V>"]:
+        test_cases.append(t)
+    return test_cases
+
+@pytest.mark.parametrize("test_case", get_test_cases())
+def test_validating_archive_with_no_structure_defined_raises_missing_symbol_error(test_case):
     def __test(resource_type):
-        with assert_raises(MissingSymbol):
+        with pytest.raises(MissingSymbol):
             build_ast(
                 """namespace foo{ archive A { resourceA : %s; } }""" % resource_type)
 
-    for t in ["T", "vector< T >", "multivector< 33, V>"]:
-        yield __test, t
+    __test(test_case)
 
 def test_const_ref_with_mismatched_type():
-    with assert_raises(InvalidConstReference):
+    with pytest.raises(InvalidConstReference):
         build_ast("""namespace foo{
             const u32 FOO = 10;
             struct A {
@@ -42,7 +47,7 @@ def test_const_ref_with_mismatched_type():
             """)
 
 def test_const_ref_with_too_few_bits():
-    with assert_raises(InvalidConstValueReference):
+    with pytest.raises(InvalidConstValueReference):
         build_ast("""namespace foo{
             const u32 FOO = 16;
             struct A {
@@ -53,7 +58,7 @@ def test_const_ref_with_too_few_bits():
             """)
 
 def test_duplicate_optional():
-    with assert_raises(DuplicateInvalidValueReference):
+    with pytest.raises(DuplicateInvalidValueReference):
         build_ast("""namespace foo{
             const u32 FOO = 16;
             const u32 BAR = 16;
@@ -66,7 +71,7 @@ def test_duplicate_optional():
             """)
 
 def test_range_with_duplicate_name():
-    with assert_raises(InvalidRangeName):
+    with pytest.raises(InvalidRangeName):
         build_ast("""namespace foo{
             struct A {
                 @range(ref_n)
@@ -76,7 +81,7 @@ def test_range_with_duplicate_name():
             """)
 
 def test_range_cannot_be_used_in_multivector():
-    with assert_raises(InvalidRangeReference):
+    with pytest.raises(InvalidRangeReference):
         build_ast("""namespace foo{
             struct A {
                 @range(my_range)
@@ -89,7 +94,7 @@ def test_range_cannot_be_used_in_multivector():
             """)
 
 def test_range_cannot_be_used_in_struct_resource():
-    with assert_raises(InvalidRangeReference):
+    with pytest.raises(InvalidRangeReference):
         build_ast("""namespace foo{
             struct A {
                 @range(my_range)
@@ -102,7 +107,7 @@ def test_range_cannot_be_used_in_struct_resource():
             """)
 
 def test_optional_range():
-    with assert_raises(OptionalRange):
+    with pytest.raises(OptionalRange):
         build_ast("""namespace foo{
             const u32 NO_EDGES_REF = 200;
             struct Node {
@@ -128,7 +133,7 @@ def test_ranges_can_be_used_in_normally():
         """)
 
 def test_explicit_reference_decoration_fails_when_unknown_type_is_referenced():
-    with assert_raises(MissingSymbol):
+    with pytest.raises(MissingSymbol):
         build_ast("""namespace foo{
             struct A {
                 refB : u64 : 64;
@@ -142,7 +147,7 @@ def test_explicit_reference_decoration_fails_when_unknown_type_is_referenced():
             """)
 
 def test_explicit_reference_decoration_fails_when_unknown_field_is_referenced():
-    with assert_raises(MissingSymbol):
+    with pytest.raises(MissingSymbol):
         build_ast("""namespace foo {
             struct A {
                 refB : u64 : 64;
@@ -157,7 +162,7 @@ def test_explicit_reference_decoration_fails_when_unknown_field_is_referenced():
 
 
 def test_explicit_reference_decoration_fails_when_unknown_resource_is_referenced():
-    with assert_raises(MissingSymbol):
+    with pytest.raises(MissingSymbol):
         build_ast("""namespace foo{
             struct A {
                 refB : u64 : 64;
@@ -171,7 +176,7 @@ def test_explicit_reference_decoration_fails_when_unknown_resource_is_referenced
 
 
 def test_implicit_references_fail_on_unknown_resource():
-    with assert_raises(MissingSymbol):
+    with pytest.raises(MissingSymbol):
         build_ast("""namespace foo{
             struct A {
                 refB : u64 : 64;
@@ -193,12 +198,12 @@ def test_multi_vector_references_builtin_type():
         }
         }
         """)
-    assert_equal({
+    assert {
         ".n", ".n.T", ".n.T.t", ".n.A", ".n.A.r", ".n.A.r.@@n@T",
         ".n.A.r.@@n@_builtin@multivector@IndexType33",
         ".n._builtin", ".n._builtin.multivector",
         ".n._builtin.multivector.IndexType33", ".n._builtin.multivector.IndexType33.value"
-    }, tree.symbols())
+    } == tree.symbols()
 
 
 def test_duplicate_multivector_builtin_types_are_not_produced():
@@ -210,13 +215,13 @@ def test_duplicate_multivector_builtin_types_are_not_produced():
         }
         }
         """)
-    assert_equal({
+    assert {
         ".n", ".n.T", ".n.T.t", ".n.A",
         ".n.A.r", ".n.A.r.@@n@T", ".n.A.r.@@n@_builtin@multivector@IndexType33",
         ".n.A.r2", ".n.A.r2.@@n@T", ".n.A.r2.@@n@_builtin@multivector@IndexType33",
         ".n._builtin", ".n._builtin.multivector",
         ".n._builtin.multivector.IndexType33", ".n._builtin.multivector.IndexType33.value"
-    }, tree.symbols())
+    } == tree.symbols()
 
 
 TREE_WITH_ALL_FEATURES = """
@@ -273,8 +278,7 @@ struct XXX { e : Enum1; f : .ns.Enum1 : 4; }
 def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
     tree = build_ast(TREE_WITH_ALL_FEATURES)
 
-    assert_equal.__self__.maxDiff = None
-    assert_equal({
+    assert {
         '.ns': Namespace,
         '.ns.A0': Archive,
         '.ns.A0.@@ns@C': ConstantValueReference,
@@ -350,14 +354,14 @@ def test_all_flatdata_features_look_as_expected_in_fully_built_tree():
         '.ns._builtin.multivector': Namespace,
         '.ns._builtin.multivector.IndexType14': Structure,
         '.ns._builtin.multivector.IndexType14.value': Field,
-    }, tree.symbols(include_types=True))
+    } == tree.symbols(include_types=True)
 
 
 def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
     tree = build_ast(TREE_WITH_ALL_FEATURES)
     schema = tree.schema(tree.find('.ns.A1'))
     generated_tree = build_ast(schema)
-    assert_equal({
+    assert {
         '.ns': Namespace,
         '.ns.A0': Archive,
         '.ns.A0.@@ns@C': ConstantValueReference,
@@ -433,10 +437,23 @@ def test_tree_with_all_features_schema_results_in_the_same_normalized_tree():
         '.ns._builtin.multivector': Namespace,
         '.ns._builtin.multivector.IndexType14': Structure,
         '.ns._builtin.multivector.IndexType14.value': Field,
-    }, generated_tree.symbols(include_types=True))
+    } == generated_tree.symbols(include_types=True)
 
+def get_test_cases_resource_types_are_populated_from_structure_references():
+    test_cases = []
+    for values in [
+        ("T", res.Instance, {"referenced_structures": [".n.A.r.@@n@T"]}),
+        ("vector< T >", res.Vector, {"referenced_structures": [".n.A.r.@@n@T"]}),
+        ("multivector< 33, T>", res.Multivector, {
+            "referenced_structures": ['.n.A.r.@@n@_builtin@multivector@IndexType33',
+                                      '.n.A.r.@@n@T']}),
+        ("raw_data", res.RawData, {"referenced_structures": []})
+    ]:
+        test_cases.append(values)
+    return test_cases
 
-def test_resource_types_are_populated_from_structure_references():
+@pytest.mark.parametrize("test_case", get_test_cases_resource_types_are_populated_from_structure_references())
+def test_resource_types_are_populated_from_structure_references(test_case):
     def __test(schema, resource_type, properties):
         tree = build_ast("""namespace n{
             struct T {
@@ -449,23 +466,15 @@ def test_resource_types_are_populated_from_structure_references():
             """ % schema)
 
         a = tree.find(".n.A")
-        assert_is_instance(a, Archive)
+        assert isinstance(a, Archive)
         r = a.find("A.r")
-        assert_is_instance(r, resource_type)
+        assert isinstance(r, resource_type)
 
         for k, values in properties.items():
-            assert_true(hasattr(r, k))
-            assert_equal([tree.find(v) for v in values], getattr(r, k))
+            assert hasattr(r, k)
+            assert [tree.find(v) for v in values] == getattr(r, k)
 
-    for values in [
-        ("T", res.Instance, {"referenced_structures": [".n.A.r.@@n@T"]}),
-        ("vector< T >", res.Vector, {"referenced_structures": [".n.A.r.@@n@T"]}),
-        ("multivector< 33, T>", res.Multivector, {
-            "referenced_structures": ['.n.A.r.@@n@_builtin@multivector@IndexType33',
-                                      '.n.A.r.@@n@T']}),
-        ("raw_data", res.RawData, {"referenced_structures": []})
-    ]:
-        yield __test, values[0], values[1], values[2]
+    __test(test_case[0], test_case[1], test_case[2])
 
 
 def test_constants_are_referred_from_every_archive():
@@ -489,7 +498,7 @@ namespace n{
     tree.find(".n.A.@@n@m@C")
 
 def test_explicit_reference_has_to_reference_struct_used_in_resource():
-    with assert_raises(InvalidStructInExplicitReference):
+    with pytest.raises(InvalidStructInExplicitReference):
         build_ast("""
             namespace prime {
             struct Factor {

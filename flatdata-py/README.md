@@ -7,7 +7,7 @@ Python 3 implementation of [flatdata](https://github.com/heremaps/flatdata).
 ## Running the tests
 
 ```sh
-python3 -m nose
+python3 -m pytest
 ```
 
 ## Basic usage

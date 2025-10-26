@@ -1,12 +1,14 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 import glob
+import pytest
 
 from flatdata.generator.generators.dot import DotGenerator
 from .assertions import generate_and_assert_in
 from .schemas import schemas_and_expectations
+
 
 def test_structures_outside_of_archives_are_not_represented():
     unexpected_lines = [
@@ -31,6 +33,12 @@ def generate_and_compare(test_case):
 
     generate_and_assert_in(test, DotGenerator, *expectations)
 
-def test_against_expectations():
+def get_test_cases():
+    test_cases = []
     for x in schemas_and_expectations(generator='dot', extension='dot'):
-        yield generate_and_compare, x
+        test_cases.append(x)
+    return test_cases
+
+@pytest.mark.parametrize("case", get_test_cases())
+def test_against_expectations(case):
+    generate_and_compare(case)

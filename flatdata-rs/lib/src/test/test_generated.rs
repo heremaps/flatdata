@@ -524,7 +524,7 @@ impl XBuilder {
     /// [`data`]: struct.X.html#method.data
     /// [`ExternalVector::close`]: flatdata/struct.ExternalVector.html#method.close
     #[inline]
-    pub fn start_data(&self) -> ::std::io::Result<crate::ExternalVector<super::test::A>> {
+    pub fn start_data(&self) -> ::std::io::Result<crate::ExternalVector<'_, super::test::A>> {
         crate::create_external_vector(&*self.storage, "data", schema::x::resources::DATA)
     }
 
@@ -623,7 +623,7 @@ impl YBuilder {
     /// [`data`]: struct.Y.html#method.data
     /// [`ExternalVector::close`]: flatdata/struct.ExternalVector.html#method.close
     #[inline]
-    pub fn start_data(&self) -> ::std::io::Result<crate::ExternalVector<super::test::R>> {
+    pub fn start_data(&self) -> ::std::io::Result<crate::ExternalVector<'_, super::test::R>> {
         crate::create_external_vector(&*self.storage, "data", schema::y::resources::DATA)
     }
 
@@ -767,7 +767,7 @@ impl Z {
     }
 
     #[inline]
-    pub fn ab(&self) -> &crate::MultiArrayView<Ab> {
+    pub fn ab(&self) -> &crate::MultiArrayView<'_, Ab> {
         &self.ab
     }
 
@@ -843,7 +843,7 @@ impl ZBuilder {
     /// [`ab`]: struct.Z.html#method.ab
     /// [`MultiVector::close`]: flatdata/struct.MultiVector.html#method.close
     #[inline]
-    pub fn start_ab(&self) -> ::std::io::Result<crate::MultiVector<Ab>> {
+    pub fn start_ab(&self) -> ::std::io::Result<crate::MultiVector<'_, Ab>> {
         crate::create_multi_vector(&*self.storage, "ab", schema::z::resources::AB)
     }
 
@@ -873,7 +873,7 @@ impl W {
     }
 
     #[inline]
-    pub fn blob(&self) -> crate::RawData {
+    pub fn blob(&self) -> crate::RawData<'_> {
         self.blob
     }
 

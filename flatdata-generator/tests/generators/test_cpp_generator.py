@@ -1,12 +1,14 @@
 '''
- Copyright (c) 2019 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 import glob
+import pytest
 
 from flatdata.generator.generators.cpp import CppGenerator
 from .assertions import generate_and_assert_in
 from .schemas import schemas_and_expectations
+
 
 def generate_and_compare(test_case):
     with open(test_case[0], 'r') as test_file:
@@ -19,6 +21,12 @@ def generate_and_compare(test_case):
 
     generate_and_assert_in(test, CppGenerator, *expectations)
 
-def test_against_expectations():
+def get_test_cases():
+    test_cases = []
     for x in schemas_and_expectations(generator='cpp', extension='h'):
-        yield generate_and_compare, x
+        test_cases.append(x)
+    return test_cases
+
+@pytest.mark.parametrize("case", get_test_cases())
+def test_against_expectations(case):
+    generate_and_compare(case)

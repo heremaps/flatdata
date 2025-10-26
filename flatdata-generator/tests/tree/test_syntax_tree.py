@@ -1,11 +1,10 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
 import sys
-
-from nose.tools import assert_equal, assert_raises
+import pytest
 
 sys.path.insert(0, "..")
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -55,11 +54,11 @@ def _check_traversal_order(tree, traversal, expected_paths, **kwargs):
         nodes.append(node)
         attrs.append(attr)
     expected_nodes = [tree.find(n) for n in expected_paths]
-    assert_equal(expected_paths, [n.path for n in nodes])
-    assert_equal(expected_nodes, [n for n in nodes])
+    assert expected_paths == [n.path for n in nodes]
+    assert expected_nodes == [n for n in nodes]
 
     for arg, value in kwargs.items():
-        assert_equal(value, [getattr(v, arg) for v in attrs])
+        assert value == [getattr(v, arg) for v in attrs]
 
 
 def test_bfs_traversal_basic_ordering():
@@ -109,20 +108,17 @@ def test_bfs_traversal_expands_type_references():
 
 
 def test_dfs_traversal_reports_cyclic_references():
-    with assert_raises(CircularReferencing):
+    with pytest.raises(CircularReferencing):
         for _, _ in DfsTraversal(create_tree_with_cycle()).iterate():
             pass
 
 
 def test_dfs_traversal_provides_topological_ordering():
-    assert_equal(
-        [
+    assert [
             "ns.S0",
             "ns.A1",
             "ns.A0.R0",
             "ns.A0.R1",
             "ns.A0",
             "ns"
-        ],
-        [n.path for n, _ in
-         DfsTraversal(create_tree_with_topological_ordering()).dependency_order()])
+        ] == [n.path for n, _ in DfsTraversal(create_tree_with_topological_ordering()).dependency_order()]

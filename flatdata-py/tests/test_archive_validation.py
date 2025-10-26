@@ -2,10 +2,19 @@ from flatdata.generator.engine import Engine
 from flatdata.lib.errors import CorruptArchiveError, SchemaMismatchError
 from common import DictResourceStorage, INSTANCE_TEST_SCHEMA, RESOURCE_PAYLOAD, ARCHIVE_SIGNATURE_PAYLOAD
 
-from nose.tools import assert_raises
+import pytest
 
 
-def test_archive_does_not_open_on_signature_resource_or_schemas_missing():
+@pytest.mark.parametrize("case", [
+    "missing_signature",
+    "corrupt_signature",
+    "missing_schema",
+    "corrupt_schema",
+    "missing_resource",
+    "missing_resource_schema",
+    "corrupt_resource_schema"
+])
+def test_archive_does_not_open_on_signature_resource_or_schemas_missing(case):
     module = Engine(INSTANCE_TEST_SCHEMA).render_python_module()
     valid_data = {
         "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
@@ -38,20 +47,19 @@ def test_archive_does_not_open_on_signature_resource_or_schemas_missing():
     corrupt_resource_schema = valid_data.copy()
     corrupt_resource_schema["resource.schema"] = b"foo"
 
-    datasets = [
-        (missing_signature, CorruptArchiveError),
-        (corrupt_signature, CorruptArchiveError),
-        (missing_schema, CorruptArchiveError),
-        (corrupt_schema, SchemaMismatchError),
-        (missing_resource, CorruptArchiveError),
-        (missing_resource_schema, CorruptArchiveError),
-        (corrupt_resource_schema, SchemaMismatchError),
-    ]
+    datasets = {
+        "missing_signature": (missing_signature, CorruptArchiveError),
+        "corrupt_signature": (corrupt_signature, CorruptArchiveError),
+        "missing_schema": (missing_schema, CorruptArchiveError),
+        "corrupt_schema": (corrupt_schema, SchemaMismatchError),
+        "missing_resource": (missing_resource, CorruptArchiveError),
+        "missing_resource_schema": (missing_resource_schema, CorruptArchiveError),
+        "corrupt_resource_schema": (corrupt_resource_schema, SchemaMismatchError),
+    }
 
-    def _test(index, data, error_type):
-        with assert_raises(error_type):
+    def _test(data, error_type):
+        with pytest.raises(error_type):
             module.backward_compatibility_Archive(DictResourceStorage(data))
 
-    for index, payload in enumerate(datasets):
-        data, error_type = payload
-        yield _test, index, data, error_type
+    data, error_type = datasets[case]
+    _test(data, error_type)

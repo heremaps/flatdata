@@ -1,14 +1,13 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 import glob
+import pytest
 
 from flatdata.generator.generators.go import GoGenerator
 from .assertions import generate_and_assert_in
 from .schemas import schemas_and_expectations
-
-from nose.plugins.skip import SkipTest
 
 
 def generate_and_compare(test_case):
@@ -24,13 +23,18 @@ def generate_and_compare(test_case):
 
 
 def skip(test_case):
-    raise SkipTest("Test %s is skipped" % test_case[0])
+    raise pytest.skip("Test %s is skipped" % test_case[0])
 
-
-def test_against_expectations():
+def get_test_cases():
+    test_cases = []
     for x in schemas_and_expectations(generator='go', extension='go'):
-        # Go does not yet support namespaces, enums, ranges, or constants, skip those tests
-        if "enums" not in x[0] and "constants" not in x[0] and "namespaces" not in x[0] and "ranges" not in x[0]:
-            yield generate_and_compare, x
-        else:
-            yield skip, x
+        test_cases.append(x)
+    return test_cases
+
+@pytest.mark.parametrize("test_case", get_test_cases())
+def test_against_expectations(test_case):
+    # Go does not yet support namespaces, enums, ranges, or constants, skip those tests
+    if "enums" not in test_case[0] and "constants" not in test_case[0] and "namespaces" not in test_case[0] and "ranges" not in test_case[0]:
+        generate_and_compare(test_case)
+    else:
+        skip(test_case)
