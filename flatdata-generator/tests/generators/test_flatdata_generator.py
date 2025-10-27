@@ -1,12 +1,13 @@
 '''
- Copyright (c) 2018 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
-from nose.tools import assert_equal
+import pytest
 
 from flatdata.generator.generators.flatdata import FlatdataGenerator
 from flatdata.generator.tree.builder import build_ast
 from .schemas import schemas_and_expectations
+
 
 def generate_and_compare(test_case):
     with open(test_case[0], 'r') as test_file:
@@ -15,13 +16,18 @@ def generate_and_compare(test_case):
         expectation = expectation_file.read()
     tree = build_ast(definition=test)
     contents = FlatdataGenerator().render(tree)
-    assert_equal.__self__.maxDiff = None
-    assert_equal(expectation, contents, test_case)
+    assert expectation == contents
 
-def test_against_expectations():
-    for i in schemas_and_expectations(generator='flatdata', extension='flatdata'):
-        yield generate_and_compare, i
+def get_test_cases():
+    test_cases = []
+    for x in schemas_and_expectations(generator='flatdata', extension='flatdata'):
+        test_cases.append(x)
+    return test_cases
 
-def test_normalization_is_fixed_point():
-    for i in schemas_and_expectations(generator='flatdata', extension='flatdata'):
-        yield generate_and_compare, (i[1], i[1])
+@pytest.mark.parametrize("case", get_test_cases())
+def test_against_expectations(case):
+    generate_and_compare(case)
+
+@pytest.mark.parametrize("case", get_test_cases())
+def test_normalization_is_fixed_point(case):
+    generate_and_compare((case[1], case[1]))

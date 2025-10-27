@@ -1,15 +1,15 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+
 import sys
+import pytest
 
 sys.path.insert(0, "..")
 from flatdata.generator.tree.syntax_tree import SyntaxTree
 from flatdata.generator.tree.builder import _build_node_tree, build_ast
 from flatdata.generator.tree.resolver import resolve_references
-
-from nose.tools import assert_equal, assert_raises
 
 
 def test_archive_member_schemas_references_dependent_types():
@@ -25,8 +25,7 @@ def test_archive_member_schemas_references_dependent_types():
         }
         """)
     resolve_references(root)
-    assert_equal(SyntaxTree.schema(root.find(".n.A.a")),
-                 """namespace n {
+    assert SyntaxTree.schema(root.find(".n.A.a")) == """namespace n {
 struct T
 {
     t : u8 : 7;
@@ -40,9 +39,9 @@ archive A
 }
 }
 
-""")
-    assert_equal(SyntaxTree.schema(root.find(".n.A.b")),
-                 """namespace n {
+"""
+
+    assert SyntaxTree.schema(root.find(".n.A.b")) == """namespace n {
 struct V
 {
     v : u8 : 7;
@@ -56,9 +55,9 @@ archive A
 }
 }
 
-""")
-    assert_equal(SyntaxTree.schema(root.find(".n.A.c")),
-                 """namespace n {
+"""
+
+    assert SyntaxTree.schema(root.find(".n.A.c")) == """namespace n {
 struct U
 {
     u : u8 : 7;
@@ -79,7 +78,7 @@ archive A
 }
 }
 
-""")
+"""
 
 
 def test_archive_schema_preserves_references():
@@ -111,7 +110,7 @@ archive A
 }
 
 """
-    assert_equal(SyntaxTree.schema(root.find(".foo.A")), expected)
+    assert SyntaxTree.schema(root.find(".foo.A")) == expected
 
 
 def test_schemas_are_not_duplicated_if_several_type_references_occur():
@@ -145,7 +144,7 @@ archive A
 
 """
     actual = SyntaxTree.schema(root.find(".foo.A"))
-    assert_equal(actual, expected)
+    assert actual == expected
 
 
 def test_archive_schemas_include_constants():
@@ -178,4 +177,4 @@ archive A
 
 """
     actual = SyntaxTree.schema(root.find(".foo.A"))
-    assert_equal(actual, expected)
+    assert actual == expected

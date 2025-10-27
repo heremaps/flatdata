@@ -130,7 +130,7 @@ where
     /// may fail due to different IO reasons.
     ///
     /// [`flush`]: #method.flush
-    pub fn grow(&mut self) -> io::Result<<Ts as VariadicStruct>::ItemMut> {
+    pub fn grow(&mut self) -> io::Result<<Ts as VariadicStruct<'_>>::ItemMut> {
         if self.data.len() > 1024 * 1024 * 32 {
             self.flush()?;
         }

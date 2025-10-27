@@ -1,9 +1,10 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
 import sys
+import pytest
 
 sys.path.insert(0, "..")
 import flatdata.generator.tree.nodes.trivial as nodes
@@ -14,8 +15,6 @@ from flatdata.generator.tree.nodes.archive import Archive
 import flatdata.generator.tree.nodes.references as refs
 from flatdata.generator.tree.resolver import resolve_references
 import flatdata.generator.tree.errors as errors
-
-from nose.tools import assert_equal, assert_is_instance, assert_raises
 
 
 def _create_tree_resource_to_struct(actual, reference):
@@ -71,16 +70,16 @@ def _assert_missing_symbol_is_thrown(root, message):
     try:
         resolve_references(root)
     except errors.MissingSymbol as e:
-        assert_equal(message, str(e))
+        assert message == str(e)
     else:
-        assert_false(True, "MissingSymbol was not thrown")
+        assert False == "MissingSymbol was not thrown"
 
 
 def test_resource_to_struct_references_are_resolved_for_the_current_scope():
     root = _create_tree_resource_to_struct(actual="Struct", reference="Struct")
-    assert_is_instance(root.find('.ns.Archive.resource.@Struct'), refs.StructureReference)
+    assert isinstance(root.find('.ns.Archive.resource.@Struct'), refs.StructureReference)
     resolve_references(root)
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@Struct'), refs.StructureReference)
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@Struct'), refs.StructureReference)
 
 
 def test_resource_to_struct_references_throw_missing_symbol_if_no_name_found_in_current_scope():
@@ -98,14 +97,14 @@ def test_resource_to_struct_references_throw_missing_symbol_if_no_name_found_in_
 
 def test_resource_to_struct_references_are_verified_if_global_path_is_specified():
     root = _create_tree_resource_to_struct_with_extra_folding("Struct", ".ns.fold.Struct")
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@fold@Struct'), refs.StructureReference)
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@fold@Struct'), refs.StructureReference)
     resolve_references(root)
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@fold@Struct'), refs.StructureReference)
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@fold@Struct'), refs.StructureReference)
 
 
 def test_resource_references_are_verified_if_global_path_is_specified():
     root = _create_tree_resource_to_struct_with_extra_folding("Strict", ".ns.fold.Struct")
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@fold@Struct'), refs.StructureReference)
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@fold@Struct'), refs.StructureReference)
     try:
         import Levenshtein
     except ImportError:
@@ -121,39 +120,39 @@ def test_resource_references_are_verified_if_global_path_is_specified():
 
 def test_resource_to_archive_references_are_resolved():
     root = _create_tree_resource_to_archive()
-    assert_is_instance(root.find('.ns.Archive.resource.@RefArchive'), refs.ArchiveReference)
+    assert isinstance(root.find('.ns.Archive.resource.@RefArchive'), refs.ArchiveReference)
     resolve_references(root)
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@RefArchive'), refs.ArchiveReference)
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@RefArchive'), refs.ArchiveReference)
 
 
 def test_resource_to_field_references_are_resolved():
     root = _create_tree_with_explicit_reference("Archive.resource2")
-    assert_is_instance(root.find('.ns.Archive.resource.@Struct@Field'), refs.FieldReference)
+    assert isinstance(root.find('.ns.Archive.resource.@Struct@Field'), refs.FieldReference)
     resolve_references(root)
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@Struct@Field'), refs.FieldReference)
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@Struct@Field'), refs.FieldReference)
 
 
 def test_resource_to_resource_references_are_resolved_for_namespace_path():
     root = _create_tree_with_explicit_reference("Archive.resource2")
-    assert_is_instance(root.find('.ns.Archive.resource.@Archive@resource2'), refs.ResourceReference)
+    assert isinstance(root.find('.ns.Archive.resource.@Archive@resource2'), refs.ResourceReference)
     resolve_references(root)
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@Archive@resource2'),
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@Archive@resource2'),
                        refs.ResourceReference)
 
 
 def test_resource_to_resource_references_are_resolved_for_parent_scope():
     root = _create_tree_with_explicit_reference("resource2")
-    assert_is_instance(root.find('.ns.Archive.resource.@resource2'), refs.ResourceReference)
+    assert isinstance(root.find('.ns.Archive.resource.@resource2'), refs.ResourceReference)
     resolve_references(root)
-    assert_is_instance(root.find('.ns.Archive.resource.@@ns@Archive@resource2'),
+    assert isinstance(root.find('.ns.Archive.resource.@@ns@Archive@resource2'),
                        refs.ResourceReference)
 
 
 def test_resolved_references_appear_in_original_order():
     root = _create_tree_with_two_struct_references()
     resolve_references(root)
-    assert_equal("@@ns@S1", root.find('.ns.Archive.resource').children[0].name)
-    assert_equal("@@ns@S2", root.find('.ns.Archive.resource').children[1].name)
+    assert "@@ns@S1" == root.find('.ns.Archive.resource').children[0].name
+    assert "@@ns@S2" == root.find('.ns.Archive.resource').children[1].name
 
 
 def test_implicit_references_structure_is_resolved():
@@ -163,5 +162,5 @@ def test_implicit_references_structure_is_resolved():
                                 refs.ResourceReference("A.r1"),
                                 refs.ResourceReference("A.r2")))))
     resolve_references(root)
-    assert_equal("@@n@A@r1", root.find('.n.A.b').children[0].name)
-    assert_equal("@@n@A@r2", root.find('.n.A.b').children[1].name)
+    assert "@@n@A@r1" == root.find('.n.A.b').children[0].name
+    assert "@@n@A@r2" == root.find('.n.A.b').children[1].name

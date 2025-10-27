@@ -11,19 +11,14 @@ env:
 
 jobs:
   Build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install
-        run: |
-          cd flatdata-generator
-          # runtime requirements
-          pip install -r requirements.txt
-          # CI requirements
-          pip install nose pylint
+      - name: Dependencies
+        uses: astral-sh/setup-uv@v6
       - name: Run tests
         run: |
           cd flatdata-generator
-          python -m nose
+          uv run --with pytest pytest -v
           pip install .
           flatdata-generator --help

@@ -1,14 +1,14 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
 import sys
+import pytest
 
 sys.path.insert(0, "..")
-from nose.tools import assert_equal, assert_raises
 import flatdata.generator.tree.nodes.references as refs
 
 
 def test_reference_name_is_at_prefixed_and_at_separated():
-    assert_equal("@foo@bar@baz", refs.TypeReference(name="foo.bar.baz").name)
+    assert "@foo@bar@baz" == refs.TypeReference(name="foo.bar.baz").name
