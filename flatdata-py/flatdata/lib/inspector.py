@@ -1,5 +1,5 @@
 '''
- Copyright (c) 2017 HERE Europe B.V.
+ Copyright (c) 2025 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
 
@@ -29,7 +29,7 @@ DESCRIPTION = \
     """
 
 
-def open_archive(path, archive=None, module_name=None):
+def open_archive(path, archive=None, module_name=None, root_namespace=None):
     """
     Opens archive at a given path.
     Archive schema is read and python bindings are generated on the fly.
@@ -38,6 +38,7 @@ def open_archive(path, archive=None, module_name=None):
     :param archive: Archive name to open (in case multiple archives reside in one directory)
                     if None, will be implied. If cannot be implied, RuntimeError is raised.
     :param module_name: Module name to create. If None, will match the highest-level namespace.
+    :param root_namespace: Root namespace to pick in case of multiple top level namespaces.
     :return: tuple archive, module
     """
     if not os.path.exists(path):
@@ -73,7 +74,8 @@ def open_archive(path, archive=None, module_name=None):
     try:
         module, archive_type = \
             Engine(schema.read().decode()).render_python_module(module_name=module_name,
-                                                                archive_name=archive_name)
+                                                                archive_name=archive_name,
+                                                                root_namespace=root_namespace)
     except FlatdataSyntaxError as err:
         raise RuntimeError("Error reading schema: %s " % err)
 
@@ -87,12 +89,14 @@ def main():
                         help="Path to archive")
     parser.add_argument("-a", "--archive", type=str, dest="archive", required=False, default=None,
                         help="Name of the archive")
+    parser.add_argument("-n", "--namespace", type=str, dest="namespace", required=False, default=None,
+                        help="Root namespace to pick in case of multiple top level namespaces")
     parser.add_argument("--non-interactive", type=str, dest="non_interactive", required=False,
                         default=None,
                         help="Python code to execute in non-interactive mode")
     args = parser.parse_args()
 
-    archive, _ = open_archive(args.path, args.archive)
+    archive, _ = open_archive(args.path, args.archive, None, args.namespace)
 
     pd.set_option('display.max_rows', 30)
     pd.set_option('expand_frame_repr', False)
