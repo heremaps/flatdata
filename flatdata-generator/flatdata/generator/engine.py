@@ -7,6 +7,7 @@ import types
 
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial.namespace import Namespace
+from flatdata.generator.tree.nodes.node import Node
 
 from .generators.cpp import CppGenerator
 from .generators.dot import DotGenerator
@@ -69,7 +70,7 @@ class Engine:
             if specified, archive type is returned along with the model
         :param root_namespace: Root namespace to pick in case of multiple top level namespaces.
         """
-        root_namespace = self._find_root_namespace(self.tree, root_namespace)
+        root_namespace = self._find_root_namespace(self.tree, archive_name, root_namespace)
         module_code = self.render("py")
         module = types.ModuleType(module_name if module_name is not None else root_namespace.name)
         #pylint: disable=exec-used
@@ -90,7 +91,7 @@ class Engine:
         return generator_type()
 
     @staticmethod
-    def _find_root_namespace(tree, root_namespace=None):
+    def _find_root_namespace(tree, archive_name, root_namespace=None):
         root_children = tree.root.children
         root_namespaces = [
             child for child in root_children
@@ -103,6 +104,13 @@ class Engine:
                 if namespace.name == root_namespace:
                     return namespace
             raise RuntimeError("Invalid root namespace provided. Could not find root namespace in archive.")
+        elif archive_name:
+            for namespace in root_namespaces:
+                archive_path = namespace.name + Node.PATH_SEPARATOR + archive_name
+                archive_node = namespace.get(archive_path)
+                if archive_node is not None:
+                    return namespace
+            raise RuntimeError("Archive direct parent namespace is not a root namespace.")
         elif len(root_namespaces) > 1:
             raise RuntimeError("Ambiguous root namespace. Could not find root archive.")
 
