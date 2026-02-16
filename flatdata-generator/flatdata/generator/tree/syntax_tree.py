@@ -39,6 +39,12 @@ class SyntaxTree:
         """
         return self._root.find(path)
 
+    def get(self, path, default=None):
+        """
+        Returns the node like find() does, but allows default value specification.
+        """
+        return self._root.get(path, default)
+
     def subtree(self, path):
         """
         Returns subtree of the given tree as a SyntaxTree

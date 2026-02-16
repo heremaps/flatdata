@@ -29,9 +29,25 @@ def test_instance_reading():
     check_signed_struct(archive.resource[0])
 
 
-def test_multi_namespace_instance_reading():
+def test_multi_namespace_instance_reading_implicit():
+    root_namespace = None
+    archive_name = "Archive"
+    module, archive_type = Engine(MULTI_NAMESPACE_TEST_SCHEMA).render_python_module(None, archive_name, root_namespace)
+    valid_data = {
+        "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
+        "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
+        "resource": RESOURCE_PAYLOAD,
+        "resource.schema": module.backward_compatibility_Archive.resource_schema('resource').encode()
+    }
+    archive = module.backward_compatibility_Archive(DictResourceStorage(valid_data))
+    check_signed_struct(archive.resource)
+    check_signed_struct(archive.resource[0])
+
+
+def test_multi_namespace_instance_reading_explicit():
     root_namespace = "backward_compatibility"
-    module = Engine(MULTI_NAMESPACE_TEST_SCHEMA).render_python_module(None, None, root_namespace)
+    archive_name = None
+    module = Engine(MULTI_NAMESPACE_TEST_SCHEMA).render_python_module(None, archive_name, root_namespace)
     valid_data = {
         "Archive.archive": ARCHIVE_SIGNATURE_PAYLOAD,
         "Archive.archive.schema": module.backward_compatibility_Archive.schema().encode(),
