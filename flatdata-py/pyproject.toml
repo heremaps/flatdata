@@ -16,7 +16,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "flatdata-generator==0.4.6",
+    "flatdata-generator==0.4.9",
     "numpy",
     "pandas",
 ]
