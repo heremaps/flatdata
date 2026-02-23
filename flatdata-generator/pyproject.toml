@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "flatdata-generator"
 version = "0.4.10"
-description = "Generate source code for C++, Rust, Go or Python from a Flatdata schema file"
+description = "Generate source code for C++, Rust, or Python from a Flatdata schema file"
 readme = "README.md"
 authors = [
     { name = "Flatdata Developers" },

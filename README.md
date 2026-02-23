@@ -59,7 +59,6 @@ The following languages are supported:
 * Read-only implementations:
   * **[Python](./flatdata-py)** - used mostly for inspecting the data
   * **[Dot](./flatdata-dot)** - used to generate diagrams of the schema
-  * **[Go](./flatdata-go)** - beta implementation
 
 ### Generate code
 
