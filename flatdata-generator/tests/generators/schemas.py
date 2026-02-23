@@ -5,7 +5,7 @@ NUM_TEST_CASES = 25
 def schemas_and_expectations(generator, extension):
     """
     Retrieves list of test cases filenames and generates corresponding expectation filenames
-    generator: one of the supported generator: `rust`, `cpp`, `flatdata`, `dot`, `rust`, `go
+    generator: one of the supported generator: `rust`, `cpp`, `flatdata`, `dot`, `py`
     extension: extension of the expectation files for this generator, e.g. `.h` for `cpp`
     """
     result = list()

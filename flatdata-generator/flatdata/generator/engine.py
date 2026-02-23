@@ -13,7 +13,6 @@ from flatdata.generator.tree.syntax_tree import SyntaxTree
 
 from .generators.cpp import CppGenerator
 from .generators.dot import DotGenerator
-from .generators.go import GoGenerator
 from .generators.python import PythonGenerator
 from .generators.rust import RustGenerator
 from .generators.flatdata import FlatdataGenerator
@@ -29,7 +28,6 @@ class Engine:
     _GENERATORS: dict[str, type[BaseGenerator]] = {
         "cpp": CppGenerator,
         "dot": DotGenerator,
-        "go": GoGenerator,
         "py": PythonGenerator,
         "rust": RustGenerator,
         "flatdata" : FlatdataGenerator

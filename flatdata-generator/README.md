@@ -21,7 +21,6 @@ Currently supported target languages:
 * C++
 * Rust
 * Python
-* Go
 * Dot (graph of the schema)
 * Flatdata (normalized stable schema)
 
