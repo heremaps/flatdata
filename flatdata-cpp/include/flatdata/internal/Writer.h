@@ -128,7 +128,7 @@ struct Writer< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
 
     operator std::optional< T >( ) const
     {
-        boost::optional< T > bopt = this;
+        boost::optional< T > bopt = static_cast< boost::optional< T > >( *this );
         if ( bopt )
         {
             return *bopt;

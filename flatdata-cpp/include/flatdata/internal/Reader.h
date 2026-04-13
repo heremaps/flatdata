@@ -159,7 +159,7 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
     template < typename U >
     operator std::optional< U >( ) const
     {
-        boost::optional< U > bopt = this;
+        boost::optional< U > bopt = static_cast< boost::optional< U > >( *this );
         if ( bopt )
         {
             return *bopt;
