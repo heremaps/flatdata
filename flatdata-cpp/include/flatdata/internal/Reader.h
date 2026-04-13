@@ -13,6 +13,7 @@
 #include <boost/optional/optional_io.hpp>
 
 #include <cstring>
+#include <optional>
 #include <utility>
 
 #include <flatdata/MemoryDescriptor.h>
@@ -152,6 +153,20 @@ struct Reader< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         else
         {
             return boost::optional< U >( Reader< T, offset, num_bits, struct_size_bytes >{ data } );
+        }
+    }
+
+    template < typename U >
+    operator std::optional< U >( ) const
+    {
+        boost::optional< U > bopt = this;
+        if ( bopt )
+        {
+            return *bopt;
+        }
+        else
+        {
+            return std::nullopt;
         }
     }
 };
