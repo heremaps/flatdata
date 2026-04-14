@@ -215,17 +215,14 @@ main( int argc, char** argv )
         }
         else if ( args.at( "lookup" ).asBool( ) )
         {
-            size_t num_runs = args.at( "--num-runs" ).asLong( );
             call_for_graph< DoLookup >( argv[ 2 ], num_nodes, num_runs );
         }
         else if ( args.at( "bfs" ).asBool( ) )
         {
-            size_t num_runs = args.at( "--num-runs" ).asLong( );
             call_for_graph< DoBFS >( argv[ 2 ], num_nodes, num_runs );
         }
         else if ( args.at( "dijkstra" ).asBool( ) )
         {
-            size_t num_runs = args.at( "--num-runs" ).asLong( );
             call_for_graph< DoDijkstra >( argv[ 2 ], num_nodes, num_runs );
         }
     }

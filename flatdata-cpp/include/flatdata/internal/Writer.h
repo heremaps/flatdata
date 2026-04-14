@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <type_traits>
+#include <optional>
 
 namespace flatdata
 {
@@ -125,6 +126,19 @@ struct Writer< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         return Reader< Tagged< T, INVALID_VALUE >, offset, num_bits >{ data };
     }
 
+    operator std::optional< T >( ) const
+    {
+        boost::optional< T > bopt = static_cast< boost::optional< T > >( *this );
+        if ( bopt )
+        {
+            return *bopt;
+        }
+        else
+        {
+            return std::nullopt;
+        }
+    }
+
     Writer&
     operator=( T t )
     {
@@ -143,6 +157,18 @@ struct Writer< Tagged< T, INVALID_VALUE >, offset, num_bits, struct_size_bytes >
         {
             Writer< T, offset, num_bits >{ data } = INVALID_VALUE;
         }
+        return *this;
+    }
+
+    Writer&
+    operator=( std::optional< T > t )
+    {
+        boost::optional< T > bopt;
+        if ( t )
+        {
+            bopt = *t;
+        }
+        return *this = bopt;
     }
 };
 
