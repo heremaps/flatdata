@@ -5,6 +5,7 @@
 
 from collections import namedtuple
 import os
+from typing import Any
 
 from .errors import IndexWriterError, MissingFieldError, UnknownFieldError, \
     UnknownStructureError, UnknownResourceError, ResourceAlreadySetError
@@ -60,6 +61,9 @@ class ArchiveBuilder:
     ArchiveBuilder class. Entry point to writing Flatdata.
     Provides methods to create flatdata archives.
     """
+    _NAME: str
+    _SCHEMA: str
+    _RESOURCES: dict[str, Any]
 
     def __init__(self, resource_storage, path=""):
         """

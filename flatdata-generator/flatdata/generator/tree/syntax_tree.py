@@ -61,7 +61,7 @@ class SyntaxTree:
     def dependent_types(node):
         def _unique(sequence):
             seen = set()
-            return [item for item in sequence if not (item in seen or seen.add(item))]
+            return [item for item in sequence if not (item in seen or seen.add(item))]  # type: ignore[func-returns-value]  # intentional idiom: set.add() returns None (falsy) to deduplicate while preserving order
 
         nodes = _unique([r.node for r in node.iterate(TypeReference)])
         for dependent_type in [SyntaxTree.dependent_types(n) for n in nodes]:

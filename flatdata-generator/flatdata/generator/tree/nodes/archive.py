@@ -5,6 +5,7 @@ import flatdata.generator.tree.nodes.resources as resources
 
 def _create_resource(properties):
     resource_type = properties.type
+    cls: type[resources.ResourceBase]
     if 'vector' in resource_type:
         cls = resources.Vector
     elif 'multivector' in resource_type:

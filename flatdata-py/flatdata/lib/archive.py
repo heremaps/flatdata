@@ -4,6 +4,7 @@
 '''
 
 from collections import namedtuple
+from typing import Any
 
 import pandas as pd
 
@@ -23,6 +24,9 @@ class Archive:
     Archive class. Entry point to Flatdata.
     Provides access to flatdata resources and verifies archive/resource schemas on opening.
     """
+    _NAME: str
+    _SCHEMA: str
+    _RESOURCES: dict[str, Any]
 
     def __init__(self, resource_storage):
         """

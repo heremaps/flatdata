@@ -62,5 +62,5 @@ no_implicit_optional = true
 strict_equality = true
 
 [[tool.mypy.overrides]]
-module = "pandas.*"
+module = "pandas"
 ignore_missing_imports = true

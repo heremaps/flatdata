@@ -62,7 +62,7 @@ class _Resource():
     def add_size(self):
         '''Calculate size of stored data and appends it to the begining'''
         self.data = int(len(self.data)).to_bytes(
-            8, byteorder="little", signed=False) + self.data
+            8, byteorder="little", signed=False) + self.data  # type: ignore[assignment]  # bytes + bytearray → bytes; data type changes from bytearray to bytes over lifecycle
 
     def add_padding(self):
         '''Add 8 byte zero padding at the end of data'''
@@ -79,7 +79,7 @@ class _Resource():
         '''
         if self._resource_writer:
             self._resource_writer.write(self.data)
-            self.data = None
+            self.data = None  # type: ignore[assignment]  # sentinel for closed resource; data lifecycle: bytearray → bytes → None
             self._resource_writer.close()
 
         self._valid = False

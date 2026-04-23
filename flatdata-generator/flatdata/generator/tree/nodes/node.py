@@ -107,7 +107,7 @@ class Node:
         if self.name == value:
             return
 
-        if self.parent is not None and value in self._parent._children:
+        if self.parent is not None and value in self._parent._children:  # type: ignore[union-attr]  # self.parent property returns self._parent; mypy can't narrow backing field through property
             raise RuntimeError(
                 "Cannot rename the node, name {value} is already in use".format(value=value))
 
@@ -185,7 +185,7 @@ class Node:
         """
         result = self
         while result.parent is not None:
-            result = result._parent
+            result = result._parent  # type: ignore[assignment]  # guarded by while loop; mypy can't narrow backing field through property
         return result
 
     def extract_subtree(self):

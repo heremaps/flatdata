@@ -44,7 +44,7 @@ class Enumeration(Node):
             bits_required = result.type.bits_required(value=value)
             if bits_required > result.type.width:
                 raise InvalidEnumValueError(enumeration_name=result._name, value=value)
-        result._bits_required = bits_required
+        result._bits_required = bits_required  # type: ignore[attr-defined]  # dead code: attribute is set but never read anywhere
 
         return result
 

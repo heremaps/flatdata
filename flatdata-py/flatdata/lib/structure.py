@@ -13,6 +13,9 @@ FieldSignature = namedtuple(
 class Structure:
     __slots__ = ('_mem', '_pos')
     _READERS: dict[str, Any] = {}
+    _FIELDS: dict[str, Any]
+    _FIELD_KEYS: list[str]
+    _SCHEMA: str
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -82,7 +85,7 @@ class Structure:
     def __repr__(cls):
         return json.dumps(cls._repr_attributes())
 
-    def __repr__(self):  # type: ignore[no-redef]
+    def __repr__(self):  # type: ignore[no-redef]  # intentional: instance __repr__ shadows classmethod __repr__ above
         return json.dumps({
             "name": self.__class__.__name__,
             "attributes":

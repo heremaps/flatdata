@@ -88,7 +88,7 @@ class Engine:
         if generator_type is None:
             return None
 
-        return generator_type()
+        return generator_type()  # type: ignore[abstract]  # dict values are concrete subclasses
 
     @staticmethod
     def _find_root_namespace(tree, archive_name, root_namespace=None):

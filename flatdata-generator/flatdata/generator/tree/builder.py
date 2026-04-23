@@ -104,7 +104,7 @@ def _build_node_tree(definition):
 
         for collection, cls in parsed_items:
             for item in collection:
-                target_namespace.insert(cls.create(properties=item,
+                target_namespace.insert(cls.create(properties=item,  # type: ignore[attr-defined]  # subclasses (Structure, Enumeration, Archive) define create()
                                                    definition=definition))
 
         roots.append(root_namespace)
