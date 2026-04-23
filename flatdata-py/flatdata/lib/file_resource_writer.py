@@ -49,4 +49,4 @@ class FileResourceWriter:
     def close(self):
         '''Flush data and close file'''
         self._file.flush()  # type: ignore[union-attr]  # _file is set by open() before close() is called
-        self._file.close()  # type: ignore[union-attr]
+        self._file.close()  # type: ignore[union-attr]  # _file is set by open() before close() is called
