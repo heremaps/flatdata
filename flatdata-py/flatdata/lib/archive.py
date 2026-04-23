@@ -13,8 +13,8 @@ from .errors import MissingResourceError, SchemaMismatchError
 ResourceSignature = namedtuple("ResourceSignature",
                                ["container", "initializer", "schema", "is_optional", "doc"])
 
-def _is_archive_signature(resource_signature):
-    return resource_signature.container == Archive
+def _is_archive_signature(resource_signature: Any) -> bool:
+    return bool(resource_signature.container == Archive)
 
 _SCHEMA_EXT = ".schema"
 
@@ -28,34 +28,34 @@ class Archive:
     _SCHEMA: str
     _RESOURCES: dict[str, Any]
 
-    def __init__(self, resource_storage):
+    def __init__(self, resource_storage: Any) -> None:
         """
         Opens archive from a given resource storage.
         :raises flatdata.errors.CorruptArchiveError
         :raises flatdata.errors.SchemaMismatchError
         :param resource_storage: Resource storage to use.
         """
-        self._resource_storage = resource_storage
-        self._loaded_resources = {}
+        self._resource_storage: Any = resource_storage
+        self._loaded_resources: dict[str, Any] = {}
 
         # Preload resources and check their schemas
         for name, _ in sorted(list(self._RESOURCES.items())):
             self.__getattr__(name)
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         if name not in self._RESOURCES:
             raise AttributeError("Resource %s not defined in archive." % name)
         if name not in self._loaded_resources:
             self._loaded_resources[name] = self._open_resource(name)
         return self._loaded_resources[name]
 
-    def __dir__(self):
+    def __dir__(self) -> list[str]:
         return list(self._RESOURCES.keys()) + ['schema']
 
-    def __repr__(self):
-        return self.to_data_frame().__repr__()
+    def __repr__(self) -> str:
+        return repr(self.to_data_frame())
 
-    def to_data_frame(self):
+    def to_data_frame(self) -> pd.DataFrame:
         result = []
         for name, signature in self._RESOURCES.items():
             resource = self.__getattr__(name)
@@ -66,34 +66,34 @@ class Archive:
                             columns=["Name", "Type", "Optional", "SizeInBytes", "Size"])
 
     @classmethod
-    def name(cls):
+    def name(cls) -> str:
         return cls._NAME
 
     @classmethod
-    def schema(cls):
+    def schema(cls) -> str:
         return cls._SCHEMA
 
     @classmethod
-    def resource_schema(cls, resource):
-        return cls._RESOURCES[resource].schema
+    def resource_schema(cls, resource: str) -> str:
+        return str(cls._RESOURCES[resource].schema)
 
     @classmethod
-    def open(cls, storage, name, initializer, is_optional=False):
+    def open(cls, storage: Any, name: str, initializer: Any, is_optional: bool = False) -> Any:
         nested_storage = storage.get(name, is_optional)
         assert nested_storage is not None or is_optional
         if nested_storage is None:
             return None
         return initializer(nested_storage)
 
-    def size_in_bytes(self):
+    def size_in_bytes(self) -> int:
         return sum(resource_value.size_in_bytes() for resource_value in
                    (self.__getattr__(resource) for resource in self._RESOURCES.keys())
                    if resource_value)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._RESOURCES)
 
-    def _schema_validated_resource_signature(self, name):
+    def _schema_validated_resource_signature(self, name: str) -> Any:
         resource_signature = self._RESOURCES[name]
         # We check only schema for non-subarchives, since the subarchives schema is checked,
         # when it is initialized.
@@ -107,7 +107,7 @@ class Archive:
                 return None
         return resource_signature
 
-    def _open_resource(self, name):
+    def _open_resource(self, name: str) -> Any:
         resource_signature = self._schema_validated_resource_signature(name)
         if resource_signature:
             resource = resource_signature.container.open(storage=self._resource_storage,
@@ -120,7 +120,7 @@ class Archive:
         return None
 
     @staticmethod
-    def _check_non_subarchive_schema(name, resource_signature, storage):
+    def _check_non_subarchive_schema(name: str, resource_signature: Any, storage: Any) -> None:
         actual_schema = bytes(storage).decode()
         if actual_schema != resource_signature.schema:
             raise SchemaMismatchError(

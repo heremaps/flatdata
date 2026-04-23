@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from typing import Any
+
 from flatdata.generator.engine import Engine
 from flatdata.generator.tree.errors import FlatdataSyntaxError
 
@@ -19,7 +21,7 @@ class Writer:
     flatdata.
     '''
 
-    def __init__(self, archive_schema, path, archive_name=""):
+    def __init__(self, archive_schema: str, path: str, archive_name: str = "") -> None:
         '''
         Creates instance or Writer class. Archive module is rendered by engine
         using provided schema.
@@ -40,7 +42,7 @@ class Writer:
         self.builder = archive_type(
             ResourceStorage(FileResourceWriter(), path))
 
-    def set(self, resource_name, resource_data):
+    def set(self, resource_name: str, resource_data: Any) -> None:
         '''
         It is the setter for flatdata creation. Expects data in JSON format. Caller has to provide
         resource name which is the flatdata schema.
@@ -50,12 +52,12 @@ class Writer:
         '''
         self.builder.set(resource_name, resource_data)
 
-    def finish(self):
+    def finish(self) -> None:
         '''Completes flatdata creation'''
         self.builder.finish()
 
     @classmethod
-    def _get_archive_name(cls, archive_schema):
+    def _get_archive_name(cls, archive_schema: str) -> str:
         '''
         Returns name of archive from flatdata schema.
 

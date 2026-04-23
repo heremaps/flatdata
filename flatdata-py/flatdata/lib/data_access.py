@@ -3,13 +3,17 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from collections.abc import Callable
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 # Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
 
 
-def make_field_reader(offset_bits, num_bits, is_signed):
+def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Callable[[Any, int], int]:
     """Build a specialized closure for reading a single field from a structure.
 
     Returns a function reader(data, pos_bytes) that reads the field value
@@ -76,7 +80,7 @@ def make_field_reader(offset_bits, num_bits, is_signed):
     return reader
 
 
-def read_field_vectorized(raw_bytes_2d, field_offset_bits, field_width_bits, is_signed):
+def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: int, field_width_bits: int, is_signed: bool) -> NDArray[Any]:
     """Read a bit-packed field from all elements at once, returning a numpy array.
 
     :param raw_bytes_2d: numpy uint8 array shaped (num_elements, struct_size_bytes)
@@ -122,7 +126,7 @@ def read_field_vectorized(raw_bytes_2d, field_offset_bits, field_width_bits, is_
     return result
 
 
-def read_value(data, offset_bits, num_bits, is_signed):
+def read_value(data: Any, offset_bits: int, num_bits: int, is_signed: bool) -> int:
     """Read a bit-packed value from data at the given bit offset.
 
     This is a convenience wrapper around :func:`make_field_reader` for one-off
@@ -133,7 +137,7 @@ def read_value(data, offset_bits, num_bits, is_signed):
     return reader(data, 0)
 
 
-def write_value(data, offset_bits, num_bits, is_signed, value):
+def write_value(data: bytearray, offset_bits: int, num_bits: int, is_signed: bool, value: int) -> None:
     assert num_bits <= 64, f'Number of bits to write is greater than 64'
 
     offset_bytes, offset_extra_bits = divmod(offset_bits, 8)

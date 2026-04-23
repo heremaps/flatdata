@@ -9,7 +9,7 @@ import json
 from .flatdata_writer import Writer
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--output-path", type=str, dest="path", required=True,
                         help="Path to archive")

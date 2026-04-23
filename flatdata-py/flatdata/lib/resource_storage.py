@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from typing import Any
+
 from flatdata.lib.errors import ArchivePathNotProvidedError, MissingResourceName
 
 
@@ -13,7 +15,7 @@ class _Resource():
     This class provides the functionality of in memory storage.
     It uses provided writer object to write stored data to file.
     '''
-    def __init__(self, name, writer=None, path="", is_subarchive=False):
+    def __init__(self, name: str, writer: Any = None, path: str = "", is_subarchive: bool = False) -> None:
         '''
         Creates in memory storage for resource.
 
@@ -32,9 +34,9 @@ class _Resource():
         if not path:
             raise ArchivePathNotProvidedError()
 
-        self.data = bytearray()
-        self._valid = True
-        self._resource_writer = None
+        self.data: bytearray | bytes = bytearray()
+        self._valid: bool = True
+        self._resource_writer: Any = None
 
         if writer:
             self._resource_writer = writer.create_instance()
@@ -42,11 +44,11 @@ class _Resource():
         if self._resource_writer:
             self._resource_writer.open(name, path)
 
-    def get_status(self):
+    def get_status(self) -> bool:
         '''Returns status of resource. Status is valid if resource is not yet written.'''
         return self._valid
 
-    def write(self, data):
+    def write(self, data: bytes | bytearray) -> None:
         '''
         Concatenates passed data to instance member bytearray or bytes.
 
@@ -55,24 +57,24 @@ class _Resource():
         if data and isinstance(data, bytearray) or isinstance(data, bytes):
             self.data += data
 
-    def get_data(self):
+    def get_data(self) -> bytearray | bytes:
         '''Returns resources data in bytearray'''
         return self.data
 
-    def add_size(self):
+    def add_size(self) -> None:
         '''Calculate size of stored data and appends it to the begining'''
         self.data = int(len(self.data)).to_bytes(
-            8, byteorder="little", signed=False) + self.data  # type: ignore[assignment]  # bytes + bytearray → bytes; data type changes from bytearray to bytes over lifecycle
+            8, byteorder="little", signed=False) + self.data
 
-    def add_padding(self):
+    def add_padding(self) -> None:
         '''Add 8 byte zero padding at the end of data'''
         self.data += b'\x00' * 8
 
-    def __str__(self):
+    def __str__(self) -> str:
         '''Facilitate print for debugging'''
-        return f'{self.data}'
+        return f'{self.data!r}'
 
-    def close(self):
+    def close(self) -> None:
         '''
         Marks the end of resource. It will invoke actual write to disk and
         mark this resource as already written by setting resource as invalid.
@@ -91,18 +93,18 @@ class ResourceStorage:
     It is responsible for creating and managing all resources available in archive.
     '''
 
-    def __init__(self, writer, path):
+    def __init__(self, writer: Any, path: str) -> None:
         '''
         Creates ResourceStorage object.
 
         :param writer(object): writes data to disc
         :param path(str): file path where resource is created
         '''
-        self._store = {}
-        self._resource_writer = writer
-        self._path = path
+        self._store: dict[str, _Resource] = {}
+        self._resource_writer: Any = writer
+        self._path: str = path
 
-    def get(self, resource_name, is_subarchive=False):
+    def get(self, resource_name: str, is_subarchive: bool = False) -> _Resource:
         '''
         Returns the instance of _Resource.
 
@@ -114,7 +116,7 @@ class ResourceStorage:
             resource_name, self._resource_writer, self._path, is_subarchive)
         return self._store[resource_name]
 
-    def close(self):
+    def close(self) -> None:
         '''Try to close _Resource objects which are not written to disc'''
         for key in self._store:
             if self._store[key].get_status():

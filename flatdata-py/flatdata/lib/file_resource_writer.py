@@ -4,6 +4,8 @@
 '''
 
 import os
+from typing import IO
+
 from flatdata.lib.errors import ArchivePathNotProvidedError, FileNameNotProvided
 
 class FileResourceWriter:
@@ -11,16 +13,16 @@ class FileResourceWriter:
     This is a factory class which will create instance of FileResourceWriter for
     resource. This class directly writes to disc on a file.
     '''
-    def __init__(self):
+    def __init__(self) -> None:
         '''Create instance of FileResourceWriter'''
-        self._file = None
+        self._file: IO[bytes] | None = None
 
     @staticmethod
-    def create_instance():
+    def create_instance() -> 'FileResourceWriter':
         '''Static method to create instances and gives this class a factory like behaviour'''
         return FileResourceWriter()
 
-    def open(self, name, file_path):
+    def open(self, name: str, file_path: str) -> None:
         '''
         Opens a file for writing. It will also create directory if it is not present.
 
@@ -41,12 +43,12 @@ class FileResourceWriter:
 
         self._file = open(file_name, 'wb')
 
-    def write(self, data):
+    def write(self, data: bytes | bytearray) -> None:
         '''Write data to file'''
         if data:
             self._file.write(data)  # type: ignore[union-attr]  # _file is set by open() before write() is called
 
-    def close(self):
+    def close(self) -> None:
         '''Flush data and close file'''
         self._file.flush()  # type: ignore[union-attr]  # _file is set by open() before close() is called
         self._file.close()  # type: ignore[union-attr]  # _file is set by open() before close() is called
