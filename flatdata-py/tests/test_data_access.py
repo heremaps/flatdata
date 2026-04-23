@@ -1,5 +1,5 @@
 import pytest
-from flatdata.lib.data_access import read_value, write_value
+from flatdata.lib.data_access import read_value, write_value, make_field_reader
 
 
 def test_reader():
@@ -2245,3 +2245,21 @@ def test_writer():
     _test_writer(b"\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 3, 16, True, 8192)
     _test_writer(b"\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 3, 16, True, 16384)
     _test_writer(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 3, 2, True, 0)
+
+
+def test_make_field_reader_with_nonzero_pos():
+    """Reader closures must produce correct results at arbitrary byte positions."""
+    data = bytearray(20)
+    struct_bytes = b'\xab\xcd\xef\x12\x98\x76\x54\x32\x10'
+    data[0:9] = struct_bytes
+    data[10:19] = struct_bytes
+
+    for offset_bits in [0, 3, 8, 13]:
+        for num_bits in [1, 5, 8, 16, 32, 64]:
+            for is_signed in [False, True]:
+                if offset_bits + num_bits > len(struct_bytes) * 8:
+                    continue
+                reader = make_field_reader(offset_bits, num_bits, is_signed)
+                assert reader(data, 0) == reader(data, 10), (
+                    f"offset={offset_bits}, width={num_bits}, signed={is_signed}: "
+                    f"pos=0 got {reader(data, 0)}, pos=10 got {reader(data, 10)}")

@@ -2,26 +2,31 @@ from collections import namedtuple
 import json
 import numpy as np
 
-from .data_access import read_value
+from .data_access import make_field_reader
 
 FieldSignature = namedtuple(
     "FieldSignature", ["offset", "width", "is_signed", "dtype"])
 
 
 class Structure:
+    _READERS = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        fields = cls.__dict__.get('_FIELDS')
+        if fields is not None:
+            cls._READERS = {name: make_field_reader(f.offset, f.width, f.is_signed)
+                            for name, f in fields.items()}
     def __init__(self, mem, pos):
         self._mem = mem
         self._pos = pos
 
     def __getattr__(self, name):
         try:
-            field = self._FIELDS[name]
+            reader = self._READERS[name]
         except KeyError:
             raise AttributeError("Field %s not found in structure" % name)
-        return self._get_value(field)
-
-    def _get_value(self, field):
-        return read_value(self._mem, self._pos * 8 + field.offset, field.width, field.is_signed)
+        return reader(self._mem, self._pos)
 
     def __dir__(self):
         return self._FIELD_KEYS
@@ -31,20 +36,24 @@ class Structure:
             yield getattr(self, name)
 
     def as_dict(self):
-        return {name: self._get_value(field) for name, field in self._FIELDS.items()}
+        mem, pos = self._mem, self._pos
+        return {name: reader(mem, pos) for name, reader in self._READERS.items()}
 
     def as_list(self):
-        return [self._get_value(field) for field in self._FIELDS.values()]
+        mem, pos = self._mem, self._pos
+        return [reader(mem, pos) for reader in self._READERS.values()]
 
     def as_tuple(self):
-        return tuple(self._get_value(field) for field in self._FIELDS.values())
+        mem, pos = self._mem, self._pos
+        return tuple(reader(mem, pos) for reader in self._READERS.values())
 
     @classmethod
     def dtype(cls):
         return [(name, np.dtype(field.dtype)) for name, field in cls._FIELDS.items()]
 
     def as_nparray(self):
-        return np.array([tuple(self._get_value(field) for name, field in self._FIELDS.items())],
+        mem, pos = self._mem, self._pos
+        return np.array([tuple(reader(mem, pos) for reader in self._READERS.values())],
                         dtype=self.dtype())
 
     def schema(self):
