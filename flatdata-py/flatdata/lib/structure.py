@@ -9,6 +9,8 @@ FieldSignature = namedtuple(
 
 
 class Structure:
+    __slots__ = ('_mem', '_pos')
+
     def __init__(self, mem, pos):
         self._mem = mem
         self._pos = pos

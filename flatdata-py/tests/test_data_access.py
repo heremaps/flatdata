@@ -1124,6 +1124,25 @@ def test_reader():
     _test_reader(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 3, 2, True, 0)
 
 
+def test_reader_unaligned_64bit():
+    """read_value must return at most 64 bits for a 64-bit field at a non-byte-aligned offset."""
+    data = b"\xff" * 9
+    # 64 bits starting at bit 1, all set → 0xFFFFFFFFFFFFFFFF
+    result = read_value(data, 1, 64, False)
+    assert result == 0xFFFFFFFFFFFFFFFF, \
+        f"Expected 0xFFFFFFFFFFFFFFFF, got {result:#x} ({result.bit_length()} bits)"
+
+    # Signed: all 1s → -1
+    result_signed = read_value(data, 1, 64, True)
+    assert result_signed == -1
+
+    # Other non-byte-aligned offsets
+    for offset in range(1, 8):
+        result = read_value(data, offset, 64, False)
+        assert result == 0xFFFFFFFFFFFFFFFF, \
+            f"offset={offset}: expected 0xFFFFFFFFFFFFFFFF, got {result:#x}"
+
+
 def test_writer():
     """
     Following tests were generated from C++ counterparts. Reasoning: python implementation lacks

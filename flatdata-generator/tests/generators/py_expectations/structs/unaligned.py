@@ -1,5 +1,6 @@
 class n_U8(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct U8
 {
@@ -23,6 +24,7 @@ struct U8
 
 class n_I8(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct I8
 {
@@ -46,6 +48,7 @@ struct I8
 
 class n_U16(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct U16
 {
@@ -69,6 +72,7 @@ struct U16
 
 class n_I16(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct I16
 {
@@ -92,6 +96,7 @@ struct I16
 
 class n_U32(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct U32
 {
@@ -115,6 +120,7 @@ struct U32
 
 class n_I32(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct I32
 {
@@ -138,6 +144,7 @@ struct I32
 
 class n_U64(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct U64
 {
@@ -161,6 +168,7 @@ struct U64
 
 class n_I64(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct I64
 {

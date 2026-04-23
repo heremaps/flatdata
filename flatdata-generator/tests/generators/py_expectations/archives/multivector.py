@@ -1,5 +1,6 @@
 class n_S(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct S
 {
@@ -20,6 +21,7 @@ struct S
 
 class n_T(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct T
 {
@@ -40,6 +42,7 @@ struct T
 #  Builtin type to for MultiVector index 
 class n__builtin_multivector_IndexType8(flatdata.structure.Structure):
     """/** Builtin type to for MultiVector index */"""
+    __slots__ = ()
     _SCHEMA = """"""
     _NAME = "n__builtin_multivector_IndexType8"
     _SIZE_IN_BITS = 8
@@ -53,6 +56,7 @@ class n__builtin_multivector_IndexType8(flatdata.structure.Structure):
 #  Builtin type to for MultiVector index 
 class n__builtin_multivector_IndexType16(flatdata.structure.Structure):
     """/** Builtin type to for MultiVector index */"""
+    __slots__ = ()
     _SCHEMA = """"""
     _NAME = "n__builtin_multivector_IndexType16"
     _SIZE_IN_BITS = 16
@@ -66,6 +70,7 @@ class n__builtin_multivector_IndexType16(flatdata.structure.Structure):
 #  Builtin type to for MultiVector index 
 class n__builtin_multivector_IndexType64(flatdata.structure.Structure):
     """/** Builtin type to for MultiVector index */"""
+    __slots__ = ()
     _SCHEMA = """"""
     _NAME = "n__builtin_multivector_IndexType64"
     _SIZE_IN_BITS = 64

@@ -19,7 +19,9 @@ jobs:
       - name: Run tests
         run: |
           cd flatdata-py
-          uv run --with pytest --with ../flatdata-generator pytest -v
-          pip install .
-          flatdata-inspector --help
+          uv venv
+          uv pip install ../flatdata-generator
+          uv pip install ".[inspector]" pytest
+          .venv/bin/pytest -v
+          .venv/bin/flatdata-inspector --help
 

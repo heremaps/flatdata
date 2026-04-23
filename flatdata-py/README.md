@@ -18,6 +18,37 @@ Once you have [created a flatdata schema file](../README.md#creating-a-schema), 
 flatdata-generator --gen py --schema locations.flatdata --output-file locations.py
 ```
 
+## Performance tips
+
+`flatdata-py` supports two data access patterns with very different performance characteristics on large archives.
+
+Iterating over a vector yields one Python object per element. Each field access unpacks bits from the underlying memory-mapped data. This is fine for accessing individual elements or small ranges, but has significant per-element overhead for bulk operations:
+
+```python
+count = sum(1 for x in archive.links if x.speed_limit > 100)
+```
+
+For bulk operations, use the vectorized access methods that read fields directly into NumPy arrays:
+
+```python
+# single column access, returns a pandas DataFrame
+df = archive.links.speed_limit
+count = len(df[df['speed_limit'] > 100])
+
+# full NumPy structured array with all fields
+arr = archive.links.to_numpy()
+count = int(np.sum(arr['speed_limit'] > 100))
+
+# slices work too
+arr = archive.links[1000:2000].to_numpy()
+df = archive.links[::10].to_data_frame()
+```
+
+* Use `vector.field_name` (column access) when you only need one or a few fields.
+* Use `vector.to_numpy()` or `vector.to_data_frame()` when you need all fields at once.
+* Use `vector[i].field` for random access to individual elements.
+* The underlying data is memory-mapped; the OS pages it from disk on demand. Vectorized results are materialized as NumPy arrays in RAM.
+
 ## Using the inspector
 
 `flatdata-py` comes with a handy tool called the `flatdata-inspector` to inspect the contents of an archive:
