@@ -22,9 +22,7 @@ def read_value(data, offset_bits, num_bits, is_signed):
         remainder = data[offset_bytes + total_bytes]
         result |= remainder << (total_bytes * 8 - offset_extra_bits)
 
-    if num_bits < 64:
-        result = result & ((1 << num_bits) - 1)
-    elif offset_extra_bits > 0:
+    if num_bits < 64 or offset_extra_bits > 0:
         result = result & ((1 << num_bits) - 1)
 
     if not is_signed:
