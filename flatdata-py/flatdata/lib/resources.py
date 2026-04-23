@@ -8,7 +8,7 @@ import json
 import pandas as pd
 import numpy as np
 
-from .data_access import read_value
+from .data_access import read_value, read_field_vectorized
 from .errors import CorruptResourceError
 
 SIZE_OFFSET_IN_BITS = 64
@@ -24,6 +24,7 @@ class ResourceBase:
         self._element_type = element_type
         self._element_types = [element_type]
         self._type_size_in_bytes = self._element_type._SIZE_IN_BYTES if self._element_type else 1
+        self._raw_numpy_2d = None
 
     def size_in_bytes(self):
         return len(self._mem)
@@ -34,6 +35,20 @@ class ResourceBase:
     def _get_item(self, index):
         offset = self._item_offset(index)
         return self._element_type(self._mem, offset)
+
+    def _as_numpy_2d(self):
+        """Return the raw data as a 2D numpy uint8 array of shape (n, struct_size).
+        Zero-copy via np.frombuffer on the mmap'd memory. Cached after first call.
+        """
+        if self._raw_numpy_2d is None:
+            n = len(self)
+            struct_size = self._type_size_in_bytes
+            raw = np.frombuffer(
+                self._mem[SIZE_OFFSET_IN_BYTES:SIZE_OFFSET_IN_BYTES + n * struct_size],
+                dtype=np.uint8,
+            )
+            self._raw_numpy_2d = raw.reshape(n, struct_size)
+        return self._raw_numpy_2d
 
     def _repr_attributes(self):
         return {
@@ -60,14 +75,19 @@ class _VectorSlice:
         self._sequence = sequence
 
     def to_numpy(self, limit=None):
+        raw_2d = self._sequence._as_numpy_2d()
         indices = self._slice.indices(len(self._sequence))
-        num_items = len(range(*indices)) if not limit else limit
-        result = np.empty(
-            shape=num_items,
-            dtype=self._sequence._element_type.dtype()
-        )
-        for index, item in enumerate(self):
-            result[index] = item.as_tuple()
+        sliced = raw_2d[self._slice]
+        if limit is not None:
+            sliced = sliced[:limit]
+
+        fields = self._sequence._element_type._FIELDS
+        dtype = self._sequence._element_type.dtype()
+        result = np.empty(sliced.shape[0], dtype=dtype)
+        for name, field in fields.items():
+            result[name] = read_field_vectorized(
+                sliced, field.offset, field.width, field.is_signed
+            )
         return result
 
     def to_data_frame(self, limit=None):
@@ -78,7 +98,10 @@ class _VectorSlice:
             yield self._sequence[i]
 
     def __getattr__(self, name):
-        return pd.DataFrame(data=[[getattr(item, name)] for item in self], columns=[name])
+        raw_2d = self._sequence._as_numpy_2d()[self._slice]
+        field = self._sequence._element_type._FIELDS[name]
+        values = read_field_vectorized(raw_2d, field.offset, field.width, field.is_signed)
+        return pd.DataFrame(data=values, columns=[name])
 
     def __repr__(self):
         return "Displaying first 100 records:\n" + self.to_data_frame(limit=100).__repr__()
@@ -92,8 +115,20 @@ class Vector(ResourceBase):
         assert rem == 0, "Malformed vector"
         self._size = size
 
+    def to_numpy(self):
+        """Convert entire vector to a numpy structured array (vectorized)."""
+        raw_2d = self._as_numpy_2d()
+        fields = self._element_type._FIELDS
+        dtype = self._element_type.dtype()
+        result = np.empty(self._size, dtype=dtype)
+        for name, field in fields.items():
+            result[name] = read_field_vectorized(
+                raw_2d, field.offset, field.width, field.is_signed
+            )
+        return result
+
     def to_data_frame(self):
-        return self[:].to_data_frame()
+        return pd.DataFrame(data=self.to_numpy())
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -106,11 +141,17 @@ class Vector(ResourceBase):
         return self._get_item(index)
 
     def __iter__(self):
-        for i in range(len(self)):
-            yield self._get_item(i)
+        mem = self._mem
+        element_type = self._element_type
+        size_bytes = self._type_size_in_bytes
+        for i in range(self._size):
+            yield element_type(mem, SIZE_OFFSET_IN_BYTES + size_bytes * i)
 
     def __getattr__(self, name):
-        return pd.DataFrame(data=[[getattr(item, name)] for item in self], columns=[name])
+        raw_2d = self._as_numpy_2d()
+        field = self._element_type._FIELDS[name]
+        values = read_field_vectorized(raw_2d, field.offset, field.width, field.is_signed)
+        return pd.DataFrame(data=values, columns=[name])
 
     def __len__(self):
         return self._size

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "flatdata-py"
-version = "0.4.10"
+version = "0.4.11"
 description = "Python 3 implementation of Flatdata"
 readme = "README.md"
 authors = [

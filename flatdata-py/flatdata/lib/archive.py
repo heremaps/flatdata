@@ -39,9 +39,9 @@ class Archive:
             self.__getattr__(name)
 
     def __getattr__(self, name):
-        if name not in list(self._RESOURCES.keys()):
+        if name not in self._RESOURCES:
             raise AttributeError("Resource %s not defined in archive." % name)
-        if name not in list(self._loaded_resources.keys()):
+        if name not in self._loaded_resources:
             self._loaded_resources[name] = self._open_resource(name)
         return self._loaded_resources[name]
 

@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+import numpy as np
+
 # Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
 
@@ -62,3 +64,32 @@ def write_value(data, offset_bits, num_bits, is_signed, value):
         surrounding_bits = data[offset_bytes + byte_idx] & ~((1 << offset_bits) - 1)
         data[offset_bytes + byte_idx] = value_in_little_endian[byte_idx] & ((1 << (8 - (bits_written % 8))) - 1)
         data[offset_bytes + byte_idx] |= surrounding_bits
+
+
+def read_field_vectorized(raw_bytes_2d, field_offset_bits, field_width_bits, is_signed):
+    """Read a bit-packed field from all elements at once, returning a numpy array.
+
+    :param raw_bytes_2d: numpy uint8 array shaped (num_elements, struct_size_bytes)
+    :param field_offset_bits: bit offset of the field within each element
+    :param field_width_bits: width of the field in bits (max 64)
+    :param is_signed: whether to sign-extend the result
+    :return: numpy array of field values
+    """
+    byte_start = field_offset_bits // 8
+    bit_shift = field_offset_bits % 8
+    bytes_needed = (bit_shift + field_width_bits + 7) // 8
+
+    result = np.zeros(raw_bytes_2d.shape[0], dtype=np.uint64)
+    for b in range(bytes_needed):
+        result |= raw_bytes_2d[:, byte_start + b].astype(np.uint64) << np.uint64(b * 8)
+    result >>= np.uint64(bit_shift)
+
+    if field_width_bits < 64:
+        result &= np.uint64((1 << field_width_bits) - 1)
+
+    if is_signed:
+        sign_bit = np.uint64(1 << (field_width_bits - 1))
+        signed = result.astype(np.int64) - np.int64(1 << field_width_bits)
+        result = np.where(result & sign_bit, signed, result.astype(np.int64))
+
+    return result
