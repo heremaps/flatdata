@@ -1,5 +1,6 @@
 class n_S(flatdata.structure.Structure):
     """"""
+    __slots__ = ()
     _SCHEMA = """namespace n {
 struct S
 {
