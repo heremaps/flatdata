@@ -1,5 +1,7 @@
 from collections import namedtuple
 import json
+from typing import Any
+
 import numpy as np
 
 from .data_access import make_field_reader
@@ -10,7 +12,7 @@ FieldSignature = namedtuple(
 
 class Structure:
     __slots__ = ('_mem', '_pos')
-    _READERS = {}
+    _READERS: dict[str, Any] = {}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -80,7 +82,7 @@ class Structure:
     def __repr__(cls):
         return json.dumps(cls._repr_attributes())
 
-    def __repr__(self):
+    def __repr__(self):  # type: ignore[no-redef]
         return json.dumps({
             "name": self.__class__.__name__,
             "attributes":

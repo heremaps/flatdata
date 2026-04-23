@@ -22,3 +22,7 @@ jobs:
           uv run --with pytest pytest -v
           pip install .
           flatdata-generator --help
+      - name: Type check
+        run: |
+          cd flatdata-generator
+          uv run --with mypy mypy flatdata/

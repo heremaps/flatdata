@@ -7,6 +7,7 @@ name = "flatdata-py"
 version = "0.4.11"
 description = "Python 3 implementation of Flatdata"
 readme = "README.md"
+requires-python = ">=3.10"
 authors = [
     { name = "Flatdata Developers" },
 ]
@@ -46,3 +47,20 @@ testpaths = [ "tests" ]
 python_files = [ "test_*.py" ]
 python_classes = [ "Test*" ]
 python_functions = [ "test_*" ]
+
+[tool.mypy]
+python_version = "3.10"
+namespace_packages = true
+explicit_package_bases = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "pandas.*"
+ignore_missing_imports = true
