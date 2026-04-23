@@ -24,6 +24,8 @@ def read_value(data, offset_bits, num_bits, is_signed):
 
     if num_bits < 64:
         result = result & ((1 << num_bits) - 1)
+    elif offset_extra_bits > 0:
+        result = result & ((1 << num_bits) - 1)
 
     if not is_signed:
         return result
@@ -75,21 +77,38 @@ def read_field_vectorized(raw_bytes_2d, field_offset_bits, field_width_bits, is_
     :param is_signed: whether to sign-extend the result
     :return: numpy array of field values
     """
+    if field_width_bits == 1:
+        byte_idx = field_offset_bits // 8
+        bit_idx = field_offset_bits % 8
+        return ((raw_bytes_2d[:, byte_idx].astype(np.uint64) >> np.uint64(bit_idx)) &
+                np.uint64(1))
+
     byte_start = field_offset_bits // 8
     bit_shift = field_offset_bits % 8
     bytes_needed = (bit_shift + field_width_bits + 7) // 8
 
+    # Use Python int arithmetic for the shift to avoid numpy overflow,
+    # then broadcast back to the array.
     result = np.zeros(raw_bytes_2d.shape[0], dtype=np.uint64)
-    for b in range(bytes_needed):
+    for b in range(min(bytes_needed, 8)):
         result |= raw_bytes_2d[:, byte_start + b].astype(np.uint64) << np.uint64(b * 8)
     result >>= np.uint64(bit_shift)
+
+    # If the field spans more than 8 bytes (unaligned 64-bit field), merge the extra byte.
+    bits_so_far = 8 * min(bytes_needed, 8) - bit_shift
+    if bits_so_far < field_width_bits and bytes_needed > 8:
+        extra = raw_bytes_2d[:, byte_start + 8].astype(np.uint64)
+        result |= extra << np.uint64(bits_so_far)
 
     if field_width_bits < 64:
         result &= np.uint64((1 << field_width_bits) - 1)
 
     if is_signed:
+        if field_width_bits == 64:
+            return result.view(np.int64)
         sign_bit = np.uint64(1 << (field_width_bits - 1))
-        signed = result.astype(np.int64) - np.int64(1 << field_width_bits)
+        offset = -(1 << field_width_bits)
+        signed = result.astype(np.int64) + np.int64(offset)
         result = np.where(result & sign_bit, signed, result.astype(np.int64))
 
     return result

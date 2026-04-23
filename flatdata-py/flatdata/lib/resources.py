@@ -76,7 +76,6 @@ class _VectorSlice:
 
     def to_numpy(self, limit=None):
         raw_2d = self._sequence._as_numpy_2d()
-        indices = self._slice.indices(len(self._sequence))
         sliced = raw_2d[self._slice]
         if limit is not None:
             sliced = sliced[:limit]
@@ -98,8 +97,11 @@ class _VectorSlice:
             yield self._sequence[i]
 
     def __getattr__(self, name):
+        try:
+            field = self._sequence._element_type._FIELDS[name]
+        except KeyError:
+            raise AttributeError("Field %s not found in structure" % name)
         raw_2d = self._sequence._as_numpy_2d()[self._slice]
-        field = self._sequence._element_type._FIELDS[name]
         values = read_field_vectorized(raw_2d, field.offset, field.width, field.is_signed)
         return pd.DataFrame(data=values, columns=[name])
 
@@ -148,8 +150,11 @@ class Vector(ResourceBase):
             yield element_type(mem, SIZE_OFFSET_IN_BYTES + size_bytes * i)
 
     def __getattr__(self, name):
+        try:
+            field = self._element_type._FIELDS[name]
+        except KeyError:
+            raise AttributeError("Field %s not found in structure" % name)
         raw_2d = self._as_numpy_2d()
-        field = self._element_type._FIELDS[name]
         values = read_field_vectorized(raw_2d, field.offset, field.width, field.is_signed)
         return pd.DataFrame(data=values, columns=[name])
 
