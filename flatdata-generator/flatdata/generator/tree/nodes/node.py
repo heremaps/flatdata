@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from collections.abc import Iterator
 from copy import copy
-from typing import Any, TypeVar, overload
+from typing import TypeVar, overload
 
 from pyparsing import ParseResults
 
@@ -253,7 +253,7 @@ class Node:
     def iterate(self, node_type: type[_T]) -> Iterator[_T]: ...
     @overload
     def iterate(self, node_type: None = ...) -> Iterator[Node]: ...
-    def iterate(self, node_type: type | None = None) -> Iterator[Any]:
+    def iterate(self, node_type: type | None = None) -> Iterator[Node]:
         """
         Iterates the nodes in pre-order traversal fashion
         """

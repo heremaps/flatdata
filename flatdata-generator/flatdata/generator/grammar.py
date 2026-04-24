@@ -5,12 +5,11 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from typing import Any
-
 from pyparsing import (
     Word, alphas, alphanums, nums, cppStyleComment,
     Keyword, Group, Optional, Or, OneOrMore, delimitedList, ZeroOrMore,
-    hexnums, Combine, FollowedBy, ParseException as pyparsingParseException
+    hexnums, Combine, FollowedBy, ParseException as pyparsingParseException,
+    ParseResults
 )
 
 ParseException = pyparsingParseException
@@ -124,7 +123,7 @@ resource_type = Group(
     single_object("object")
 )
 
-def _combine_list(t: Any) -> str:
+def _combine_list(t: ParseResults) -> str:
     return "".join(t[0].asList())
 
 explicit_field_reference_prefix = Group(
