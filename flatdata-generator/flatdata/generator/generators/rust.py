@@ -6,6 +6,8 @@ import re
 
 from jinja2 import Environment
 
+from typing import Any
+
 from flatdata.generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
                                             Archive as ArchiveResource)
 from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration
@@ -43,18 +45,18 @@ class RustGenerator(BaseGenerator):
             return value
 
     def _populate_environment(self, env: Environment) -> None:
-        def _camel_to_snake_case(expr):
+        def _camel_to_snake_case(expr: str) -> str:
             step1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', expr)
             return re.sub('([a-z0-9])(A-Z)', r'\1_\2', step1).lower()
 
         env.filters["camel_to_snake_case"] = _camel_to_snake_case
 
-        def _snake_to_upper_camel_case(expr):
+        def _snake_to_upper_camel_case(expr: str) -> str:
             return ''.join(p.title() for p in expr.split('_'))
 
         env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
-        def _rust_doc(expr):
+        def _rust_doc(expr: str) -> str:
             lines = [
                 re.sub(r'^[ \t]*(/\*\*\s?|/\*\s?|\*/|\*\s?)(.*?)\s*(\*/)?$',
                        r"/// \2", line).strip()
@@ -70,24 +72,24 @@ class RustGenerator(BaseGenerator):
 
         env.filters["rust_doc"] = _rust_doc
 
-        def _escape_rust_keywords(expr):
+        def _escape_rust_keywords(expr: str) -> str:
             if expr in self.RESERVED_KEYWORDS:
                 return "{}_".format(expr)
             return expr
 
-        def _field_type(field):
+        def _field_type(field: Any) -> str:
             if isinstance(field.type, EnumType):
                 return "{}".format(
                     _fully_qualified_name(field.parent, field.type_reference.node))
             return "{}".format(field.type.name)
 
-        def _primitive_type(field):
+        def _primitive_type(field: Any) -> str:
             if isinstance(field.type, EnumType):
                 return "{}".format(field.type_reference.node.type.name)
             return "{}".format(field.type.name)
 
-        def _fully_qualified_name(current, node):
-            return "::".join((current.path_depth() - 1) * ["super"]) + node.path_with("::")
+        def _fully_qualified_name(current: Any, node: Any) -> str:
+            return "::".join((current.path_depth() - 1) * ["super"]) + str(node.path_with("::"))
 
         env.globals["fully_qualified_name"] = _fully_qualified_name
         env.filters["escape_rust_keywords"] = _escape_rust_keywords

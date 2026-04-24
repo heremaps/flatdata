@@ -30,7 +30,7 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
 
     if num_bits == 1:
         bit_mask = 1 << offset_extra
-        def reader(data, pos):
+        def reader(data: Any, pos: int) -> int:
             return int((data[pos + offset_bytes] & bit_mask) != 0)
         return reader
 
@@ -38,21 +38,21 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
         sign_bit = _SIGN_BITS[num_bits]
         sign_mask = sign_bit - 1
         if needs_extra:
-            def reader(data, pos):
+            def reader(data: Any, pos: int) -> int:
                 result = int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte], byteorder="little")
                 result >>= offset_extra
                 result |= data[pos + end_byte] << extra_shift
                 result &= mask
-                return (result & sign_mask) - (result & sign_bit)
+                return int((result & sign_mask) - (result & sign_bit))
         elif offset_extra:
-            def reader(data, pos):
+            def reader(data: Any, pos: int) -> int:
                 result = (int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte],
                     byteorder="little") >> offset_extra) & mask
                 return (result & sign_mask) - (result & sign_bit)
         else:
-            def reader(data, pos):
+            def reader(data: Any, pos: int) -> int:
                 result = int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte],
                     byteorder="little") & mask
@@ -61,19 +61,19 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
 
     # Unsigned paths
     if needs_extra:
-        def reader(data, pos):
+        def reader(data: Any, pos: int) -> int:
             result = int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte], byteorder="little")
             result >>= offset_extra
             result |= data[pos + end_byte] << extra_shift
-            return result & mask
+            return int(result & mask)
     elif offset_extra:
-        def reader(data, pos):
+        def reader(data: Any, pos: int) -> int:
             return (int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte],
                 byteorder="little") >> offset_extra) & mask
     else:
-        def reader(data, pos):
+        def reader(data: Any, pos: int) -> int:
             return int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte],
                 byteorder="little") & mask

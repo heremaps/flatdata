@@ -197,10 +197,10 @@ class ArchiveBuilder:
         for index, obj_type in enumerate(initializer_list[1:]):
             initializers[obj_type._NAME] = (index, obj_type)
 
-        def valid_structure_name(_obj):
+        def valid_structure_name(_obj: dict[str, Any]) -> bool:
             return _obj['name'] in [_initializer._NAME for _initializer in initializer_list[1:]]
 
-        def validate_fields(_obj):
+        def validate_fields(_obj: dict[str, Any]) -> None:
             matched_obj_list = [
                 _initializer for _initializer in initializer_list[1:] \
                     if _initializer._NAME == _obj['name']]

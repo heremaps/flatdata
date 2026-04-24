@@ -6,6 +6,8 @@
 from flatdata.generator.tree.nodes.archive import Archive
 from . import BaseGenerator
 
+from typing import Any
+
 from jinja2 import Environment
 
 SCOPE_SEPARATOR = "__"
@@ -21,9 +23,9 @@ class DotGenerator(BaseGenerator):
     def _populate_environment(self, env: Environment) -> None:
         env.autoescape = True
 
-        def _field_value_type(field):
-            type_name = field.type.name.replace("@@", ".").replace("@", ".")
-            namespace_name = field.parent.parent.path
+        def _field_value_type(field: Any) -> str:
+            type_name = str(field.type.name).replace("@@", ".").replace("@", ".")
+            namespace_name = str(field.parent.parent.path)
             if type_name.startswith(namespace_name):
                 type_name = type_name[len(namespace_name):]
             if type_name.startswith("."):
