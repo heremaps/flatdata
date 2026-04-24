@@ -4,7 +4,7 @@
 '''
 
 import types
-from typing import Any
+from typing import Any, overload
 
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial.namespace import Namespace
@@ -64,6 +64,11 @@ class Engine:
 
         output_content = generator.render(self.tree)
         return str(output_content)
+
+    @overload
+    def render_python_module(self, module_name: str | None = None, *, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, Any]: ...
+    @overload
+    def render_python_module(self, module_name: str | None = None, archive_name: None = None, root_namespace: str | None = None) -> types.ModuleType: ...
 
     def render_python_module(self, module_name: str | None = None, archive_name: str | None = None, root_namespace: str | None = None) -> types.ModuleType | tuple[types.ModuleType, Any]:
         """
