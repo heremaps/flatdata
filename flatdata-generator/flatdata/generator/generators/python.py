@@ -8,6 +8,7 @@ from flatdata.generator.tree.nodes.resources import Instance, Vector, Multivecto
 from flatdata.generator.tree.nodes.resources.archive import Archive as ArchiveResource
 from flatdata.generator.tree.nodes.resources.base import ResourceBase
 from flatdata.generator.tree.nodes.trivial import Structure, Field
+from flatdata.generator.tree.nodes.trivial.enumeration import Enumeration
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -79,7 +80,10 @@ class PythonGenerator(BaseGenerator):
             if field.type.name in type_map:
                 return type_map[field.type.name]
             assert field.type_reference is not None
-            return str(type_map[field.type_reference.node.type.name])
+            enum_node = field.type_reference.node
+            assert isinstance(enum_node, Enumeration)
+            assert enum_node.type is not None
+            return str(type_map[enum_node.type.name])
 
         def _safe_py_string_line(value: str) -> str:
             return value.replace('\\', '\\\\').replace('"', r'\"')

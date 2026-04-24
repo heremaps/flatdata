@@ -89,7 +89,10 @@ class RustGenerator(BaseGenerator):
             assert field.type is not None
             if isinstance(field.type, EnumType):
                 assert field.type_reference is not None
-                return "{}".format(field.type_reference.node.type.name)
+                enum_node = field.type_reference.node
+                assert isinstance(enum_node, Enumeration)
+                assert enum_node.type is not None
+                return "{}".format(enum_node.type.name)
             return "{}".format(field.type.name)
 
         def _fully_qualified_name(current: Node, node: Node) -> str:
