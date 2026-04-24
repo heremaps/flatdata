@@ -5,12 +5,13 @@ from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from . import errors
 
-from typing import Any
+from collections.abc import Iterable
+
 
 _RESOLVED_BASE_TYPES = (refs.TypeReference, refs.RuntimeReference, refs.ConstantReference)
 
 
-def _filter_references(iterable: Any) -> list[str]:
+def _filter_references(iterable: Iterable[str]) -> list[str]:
     return [x for x in iterable if '@' not in x]
 
 

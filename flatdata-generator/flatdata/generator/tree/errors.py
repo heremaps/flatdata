@@ -3,7 +3,15 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from typing import Any
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
+from pyparsing import ParseException
+
+if TYPE_CHECKING:
+    from .nodes.node import Node
 
 
 class FlatdataSyntaxError(RuntimeError):
@@ -11,7 +19,7 @@ class FlatdataSyntaxError(RuntimeError):
 
 
 class SymbolRedefinition(FlatdataSyntaxError):
-    def __init__(self, duplicate: Any, existing: Any) -> None:
+    def __init__(self, duplicate: Node, existing: Node) -> None:
         super().__init__(
             "Symbol redefined: {duplicate} already exists at {existing}".format(
                 duplicate=duplicate,
@@ -19,14 +27,14 @@ class SymbolRedefinition(FlatdataSyntaxError):
 
 
 class CircularReferencing(FlatdataSyntaxError):
-    def __init__(self, node: Any, child: Any) -> None:
+    def __init__(self, node: Node, child: Node) -> None:
         super().__init__(
             "Circular reference in schema: {node} -> {child}".format(
                 node=node, child=child))
 
 
 class MissingSymbol(FlatdataSyntaxError):
-    def __init__(self, name: str, options: Any, node: Any) -> None:
+    def __init__(self, name: str, options: Iterable[str], node: Node) -> None:
         message = "Missing symbol \"{name}\" in {path}.".format(
             name=name, path=node.path)
         try:
@@ -57,12 +65,12 @@ class UnexpectedResourceType(FlatdataSyntaxError):
 
 
 class ParsingError(FlatdataSyntaxError):
-    def __init__(self, pyparsing_error: Any) -> None:
+    def __init__(self, pyparsing_error: ParseException) -> None:
         super().__init__(
             self.create_message(pyparsing_error))
 
     @staticmethod
-    def create_message(err: Any) -> str:
+    def create_message(err: ParseException) -> str:
         return "Failed to parse the schema. Details below:\n" \
                "  {line}\n" \
                "  {pointer}\n" \

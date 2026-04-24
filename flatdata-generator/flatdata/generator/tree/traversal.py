@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 from collections import deque
 from collections.abc import Iterator
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 from .errors import CircularReferencing
 from .nodes.node import Node
@@ -33,7 +33,7 @@ class _Traversal(metaclass=ABCMeta):
                [r.node for r in node.children if isinstance(r, TypeReference)]
 
     @abstractmethod
-    def iterate(self) -> Iterator[tuple[Node, Any]]:
+    def iterate(self) -> Iterator[tuple[Node, BfsAttr | DfsAttr]]:
         raise NotImplementedError("Derived classes must implement iterate()")
 
 
