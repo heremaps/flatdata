@@ -5,8 +5,8 @@
 
 from jinja2 import Environment
 
-from typing import Any
-
+from flatdata.generator.tree.nodes.node import Node
+from flatdata.generator.tree.nodes.references import BuiltinStructureReference, StructureReference
 from flatdata.generator.tree.nodes.resources import BoundResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant
 from flatdata.generator.tree.nodes.archive import Archive
@@ -24,7 +24,7 @@ class FlatdataGenerator(BaseGenerator):
         return [Structure, Archive, Constant, Enumeration]
 
     def _populate_environment(self, env: Environment) -> None:
-        def _is_builtin(node: Any) -> bool:
+        def _is_builtin(node: Node) -> bool:
             for namespace in SyntaxTree.namespaces(node):
                 if namespace.name == "_builtin":
                     return True
@@ -36,7 +36,7 @@ class FlatdataGenerator(BaseGenerator):
 
         env.filters["field_type"] = _field_type
 
-        def _to_type_params(refs: list[Any]) -> str:
+        def _to_type_params(refs: list[BuiltinStructureReference | StructureReference]) -> str:
             return ', '.join([ref.node.path_with(".") for ref in refs if not _is_builtin(ref.node)])
 
         env.filters["to_type_params"] = _to_type_params

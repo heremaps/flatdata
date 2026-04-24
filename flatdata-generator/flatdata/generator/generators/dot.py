@@ -4,9 +4,8 @@
 '''
 
 from flatdata.generator.tree.nodes.archive import Archive
+from flatdata.generator.tree.nodes.trivial import Field
 from . import BaseGenerator
-
-from typing import Any
 
 from jinja2 import Environment
 
@@ -23,7 +22,10 @@ class DotGenerator(BaseGenerator):
     def _populate_environment(self, env: Environment) -> None:
         env.autoescape = True
 
-        def _field_value_type(field: Any) -> str:
+        def _field_value_type(field: Field) -> str:
+            assert field.type is not None
+            assert field.parent is not None
+            assert field.parent.parent is not None
             type_name = str(field.type.name).replace("@@", ".").replace("@", ".")
             namespace_name = str(field.parent.parent.path)
             if type_name.startswith(namespace_name):

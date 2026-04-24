@@ -4,13 +4,13 @@
 '''
 from jinja2 import Environment
 
-from typing import Any
-
 from flatdata.generator.tree.nodes.resources import Instance, Vector, Multivector, RawData
 from flatdata.generator.tree.nodes.resources.archive import Archive as ArchiveResource
-from flatdata.generator.tree.nodes.trivial import Structure
+from flatdata.generator.tree.nodes.resources.base import ResourceBase
+from flatdata.generator.tree.nodes.trivial import Structure, Field
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.archive import Archive
+from flatdata.generator.tree.syntax_tree import SyntaxTree
 from . import BaseGenerator
 
 
@@ -24,7 +24,7 @@ class PythonGenerator(BaseGenerator):
         return [Structure, Archive]
 
     def _populate_environment(self, env: Environment) -> None:
-        def _decorate_archive_type(tree: Any, value: Node) -> str:
+        def _decorate_archive_type(tree: SyntaxTree, value: Node) -> str:
             assert isinstance(value, Node)
             return str(tree.namespace_path(value, "_") + "_" + value.name)
 
@@ -35,7 +35,7 @@ class PythonGenerator(BaseGenerator):
                                                                                            1) for
                  line in value.splitlines()])
 
-        def to_container(resource: Any) -> str:
+        def to_container(resource: ResourceBase) -> str:
             if isinstance(resource, Instance):
                 return "flatdata.resources.Instance"
             if isinstance(resource, Vector):
@@ -48,7 +48,7 @@ class PythonGenerator(BaseGenerator):
                 return "flatdata.archive.Archive"
             raise ValueError("Unknown resource type: %s" % (resource.__class__))
 
-        def to_initializer(resource: Any, tree: Any) -> str:
+        def to_initializer(resource: ResourceBase, tree: SyntaxTree) -> str:
             if isinstance(resource, Instance):
                 return str(_decorate_archive_type(tree, resource.referenced_structures[0].node))
             if isinstance(resource, Vector):
@@ -63,7 +63,7 @@ class PythonGenerator(BaseGenerator):
                 return "None"
             raise ValueError("Unknown resource type: %s" % (resource.__class__))
 
-        def to_dtype(field: Any) -> str:
+        def to_dtype(field: Field) -> str:
             type_map = {
                 "bool": "?",
                 "i8": "b",
@@ -75,8 +75,10 @@ class PythonGenerator(BaseGenerator):
                 "u64": "u8",
                 "i64": "i8"
             }
+            assert field.type is not None
             if field.type.name in type_map:
                 return type_map[field.type.name]
+            assert field.type_reference is not None
             return str(type_map[field.type_reference.node.type.name])
 
         def _safe_py_string_line(value: str) -> str:

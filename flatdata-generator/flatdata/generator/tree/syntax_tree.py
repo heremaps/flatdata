@@ -81,7 +81,7 @@ class SyntaxTree:
 
         # extract subtree from syntax tree
         subtree = node.extract_subtree()
-        return str(generator.render(subtree))
+        return str(generator.render(SyntaxTree(subtree)))
 
     @staticmethod
     def namespaces(node: Node) -> Iterator[Node]:

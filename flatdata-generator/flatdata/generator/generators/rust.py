@@ -6,11 +6,10 @@ import re
 
 from jinja2 import Environment
 
-from typing import Any
-
+from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
                                             Archive as ArchiveResource)
-from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration
+from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration, Field
 from flatdata.generator.tree.helpers.enumtype import EnumType
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -77,18 +76,23 @@ class RustGenerator(BaseGenerator):
                 return "{}_".format(expr)
             return expr
 
-        def _field_type(field: Any) -> str:
+        def _field_type(field: Field) -> str:
+            assert field.type is not None
             if isinstance(field.type, EnumType):
+                assert field.type_reference is not None
+                assert field.parent is not None
                 return "{}".format(
                     _fully_qualified_name(field.parent, field.type_reference.node))
             return "{}".format(field.type.name)
 
-        def _primitive_type(field: Any) -> str:
+        def _primitive_type(field: Field) -> str:
+            assert field.type is not None
             if isinstance(field.type, EnumType):
+                assert field.type_reference is not None
                 return "{}".format(field.type_reference.node.type.name)
             return "{}".format(field.type.name)
 
-        def _fully_qualified_name(current: Any, node: Any) -> str:
+        def _fully_qualified_name(current: Node, node: Node) -> str:
             return "::".join((current.path_depth() - 1) * ["super"]) + str(node.path_with("::"))
 
         env.globals["fully_qualified_name"] = _fully_qualified_name

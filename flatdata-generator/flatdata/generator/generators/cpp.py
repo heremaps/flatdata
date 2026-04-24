@@ -5,8 +5,10 @@
 
 from jinja2 import Environment
 
-from typing import Any
-
+from flatdata.generator.tree.helpers.basictype import BasicType
+from flatdata.generator.tree.helpers.enumtype import EnumType
+from flatdata.generator.tree.nodes.node import Node
+from flatdata.generator.tree.nodes.references import BuiltinStructureReference, StructureReference
 from flatdata.generator.tree.nodes.resources import Vector, Multivector, Instance, RawData, BoundResource, \
     ResourceBase, Archive as ArchiveResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
@@ -31,7 +33,7 @@ class CppGenerator(BaseGenerator):
 
         env.filters["safe_cpp_string_line"] = _safe_cpp_string_line
 
-        def _cpp_base_type(flatdata_type: Any) -> str:
+        def _cpp_base_type(flatdata_type: BasicType | EnumType | Node) -> str:
             type_map = {
                 "bool": "bool",
                 "i8": "int8_t",
@@ -49,7 +51,7 @@ class CppGenerator(BaseGenerator):
 
         env.filters["cpp_base_type"] = _cpp_base_type
 
-        def _to_type_params(refs: list[Any]) -> str:
+        def _to_type_params(refs: list[BuiltinStructureReference | StructureReference]) -> str:
             return ', '.join([ref.node.path_with("::") for ref in refs])
 
         env.filters["to_type_params"] = _to_type_params
@@ -59,13 +61,13 @@ class CppGenerator(BaseGenerator):
 
         env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
-        def _typedef_name(entity: Any, extra_suffix: str = "") -> str:
+        def _typedef_name(entity: Field | ResourceBase, extra_suffix: str = "") -> str:
             assert isinstance(entity, (Field, ResourceBase)), "Got: %s" % entity.__class__
             return _snake_to_upper_camel_case(entity.name) + extra_suffix + "Type"
 
         env.filters["typedef_name"] = _typedef_name
 
-        def _optional_typedef_usage(resource: Any, extra_suffix: str = "") -> str:
+        def _optional_typedef_usage(resource: ResourceBase, extra_suffix: str = "") -> str:
             def _wrap_in_optional(declaration: str) -> str:
                 if resource.optional:
                     return "boost::optional< %s >" % declaration
@@ -75,7 +77,7 @@ class CppGenerator(BaseGenerator):
 
         env.filters["archive_typedef_usage"] = _optional_typedef_usage
 
-        def _resource_provides_incremental_builder(resource: Any) -> bool:
+        def _resource_provides_incremental_builder(resource: ResourceBase) -> bool:
             assert isinstance(resource, ResourceBase)
             if isinstance(resource, Instance):
                 return False
@@ -90,7 +92,7 @@ class CppGenerator(BaseGenerator):
         env.filters[
             "resource_provides_incremental_builder"] = _resource_provides_incremental_builder
 
-        def provides_setter(resource: Any) -> bool:
+        def provides_setter(resource: ResourceBase) -> bool:
             assert isinstance(resource, ResourceBase)
             if isinstance(resource, Instance):
                 return True
