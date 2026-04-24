@@ -1,11 +1,11 @@
+from collections.abc import Iterable
+
 import flatdata.generator.tree.nodes.references as refs
 import flatdata.generator.tree.nodes.trivial as nodes
 import flatdata.generator.tree.nodes.resources as resources
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from . import errors
-
-from collections.abc import Iterable
 
 
 _RESOLVED_BASE_TYPES = (refs.TypeReference, refs.RuntimeReference, refs.ConstantReference)

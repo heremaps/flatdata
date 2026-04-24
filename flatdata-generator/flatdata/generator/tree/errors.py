@@ -8,7 +8,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
-from pyparsing import ParseException
+from pyparsing import ParseBaseException
 
 if TYPE_CHECKING:
     from .nodes.node import Node
@@ -39,13 +39,13 @@ class MissingSymbol(FlatdataSyntaxError):
             name=name, path=node.path)
         try:
             import Levenshtein
-            options = sorted(
+            ranked = sorted(
                 [(Levenshtein.distance(name, option.split('.')[-1]), option)
                  for option in options],
                 key=lambda x: x[0])
-            if options:
-                message += " Did you mean \"{options}\"?".format(
-                    options=options[0][1])
+            if ranked:
+                message += " Did you mean \"{opt}\"?".format(
+                    opt=ranked[0][1])
         except ImportError:
             pass
         super().__init__(message)
@@ -65,12 +65,12 @@ class UnexpectedResourceType(FlatdataSyntaxError):
 
 
 class ParsingError(FlatdataSyntaxError):
-    def __init__(self, pyparsing_error: ParseException) -> None:
+    def __init__(self, pyparsing_error: ParseBaseException) -> None:
         super().__init__(
             self.create_message(pyparsing_error))
 
     @staticmethod
-    def create_message(err: ParseException) -> str:
+    def create_message(err: ParseBaseException) -> str:
         return "Failed to parse the schema. Details below:\n" \
                "  {line}\n" \
                "  {pointer}\n" \
