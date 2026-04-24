@@ -23,8 +23,9 @@ class Constant(Node):
         return BasicType(self._properties.type)
 
     @property
-    def doc(self) -> Any:
-        return self._properties.doc
+    def doc(self) -> str:
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""
 
     @property
     def value(self) -> int:

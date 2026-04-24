@@ -28,8 +28,9 @@ class ResourceBase(Node, ABC):
         return any(['optional' in d for d in self.decorations])
 
     @property
-    def doc(self) -> Any:
-        return self._properties.doc
+    def doc(self) -> str:
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""
 
     @property
     def decorations(self) -> list[Any]:
@@ -40,8 +41,11 @@ class ResourceBase(Node, ABC):
         return self.children_like(ExplicitReference)
 
     @property
-    def referenced_structures(self) -> list[Any]:
-        return self.children_like(BuiltinStructureReference) + self.children_like(StructureReference)
+    def referenced_structures(self) -> list[BuiltinStructureReference | StructureReference]:
+        return [
+            *self.children_like(BuiltinStructureReference),
+            *self.children_like(StructureReference),
+        ]
 
     @property
     def max_size(self) -> int | None:

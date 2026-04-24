@@ -47,13 +47,12 @@ class Enumeration(Node):
             bits_required = result._type.bits_required(value=value)
             if bits_required > result._type.width:
                 raise InvalidEnumValueError(enumeration_name=result._name, value=value)
-        result._bits_required = bits_required  # type: ignore[attr-defined]  # dead code: attribute is set but never read anywhere
-
         return result
 
     @property
-    def doc(self) -> Any:
-        return self._properties.doc
+    def doc(self) -> str:
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""
 
     @property
     def type(self) -> BasicType | None:

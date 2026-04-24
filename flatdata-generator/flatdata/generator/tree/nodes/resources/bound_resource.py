@@ -1,5 +1,5 @@
 from flatdata.generator.tree.nodes.node import Node
-from flatdata.generator.tree.nodes.references import ResourceReference
+from flatdata.generator.tree.nodes.references import BuiltinStructureReference, ResourceReference, StructureReference
 from .base import ResourceBase
 
 from typing import Any
@@ -21,6 +21,6 @@ class BoundResource(ResourceBase):
         return [ResourceReference(name=r) for r in self._resources]
 
     @property
-    def referenced_structures(self) -> list[Any]:
+    def referenced_structures(self) -> list[BuiltinStructureReference | StructureReference]:
         return [s for r in self.children_like(ResourceReference) for s in
                 r.node.referenced_structures]  # type: ignore[attr-defined]  # .node resolves to a resource type with referenced_structures

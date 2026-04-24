@@ -52,5 +52,6 @@ class Archive(Node):
         return self.children_like(resources.ResourceBase)  # type: ignore[type-abstract]  # isinstance() with ABC is valid
 
     @property
-    def doc(self) -> Any:
-        return self._properties.doc
+    def doc(self) -> str:
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""

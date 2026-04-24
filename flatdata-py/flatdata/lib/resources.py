@@ -181,7 +181,7 @@ class Multivector(ResourceBase):
     def __init__(self, index_mem: Any, mem: Any, index_type: type[Any], *element_types: type[Any]) -> None:
         self._index = Vector(index_mem, index_type)
         self._mem = mem
-        self._element_types = element_types  # type: ignore[assignment]  # tuple from *args; parent declares list but both are indexable at runtime
+        self._element_types = list(element_types)
         self._index_type = index_type
 
     @classmethod
