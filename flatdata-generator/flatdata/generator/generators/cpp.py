@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from jinja2 import Environment
+
 from flatdata.generator.tree.nodes.resources import Vector, Multivector, Instance, RawData, BoundResource, \
     ResourceBase, Archive as ArchiveResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
@@ -13,13 +15,13 @@ from . import BaseGenerator
 class CppGenerator(BaseGenerator):
     """Flatdata to C++ header file generator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "cpp/cpp.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         env.filters["cpp_doc"] = lambda value: value
 
         def _safe_cpp_string_line(value):

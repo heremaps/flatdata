@@ -2,6 +2,8 @@
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+from jinja2 import Environment
+
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.resources import Instance, Vector, Multivector, RawData
@@ -14,13 +16,13 @@ from . import BaseGenerator
 class GoGenerator(BaseGenerator):
     """Flatdata to Go generator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "go/go.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant]
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         def _decorate_archive_type(value):
             assert isinstance(value, Node)
             return value.name
@@ -70,7 +72,7 @@ class GoGenerator(BaseGenerator):
                      for t in resource.referenced_structures]
                 ))
             if isinstance(resource, ArchiveResource):
-                return _decorate_archive_type(resource.children[0].node)
+                return _decorate_archive_type(resource.children[0].node)  # type: ignore[attr-defined]  # child is an ArchiveReference which has .node
             if isinstance(resource, RawData):
                 return "None"
             raise ValueError("Unknown resource type: %s" % (resource.__class__))

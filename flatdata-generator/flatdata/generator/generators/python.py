@@ -2,6 +2,8 @@
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+from jinja2 import Environment
+
 from flatdata.generator.tree.nodes.resources import Instance, Vector, Multivector, RawData
 from flatdata.generator.tree.nodes.resources.archive import Archive as ArchiveResource
 from flatdata.generator.tree.nodes.trivial import Structure
@@ -13,13 +15,13 @@ from . import BaseGenerator
 class PythonGenerator(BaseGenerator):
     """Flatdata to Python generator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "py/python.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive]
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         def _decorate_archive_type(tree, value):
             assert isinstance(value, Node)
             return tree.namespace_path(value, "_") + "_" + value.name
@@ -54,7 +56,7 @@ class PythonGenerator(BaseGenerator):
                     ','.join([_decorate_archive_type(tree, t.node) for t in
                               resource.referenced_structures]))
             if isinstance(resource, ArchiveResource):
-                return _decorate_archive_type(tree, resource.children[0].node)
+                return _decorate_archive_type(tree, resource.children[0].node)  # type: ignore[attr-defined]  # child is an ArchiveReference which has .node
             if isinstance(resource, RawData):
                 return "None"
             raise ValueError("Unknown resource type: %s" % (resource.__class__))

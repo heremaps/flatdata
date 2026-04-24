@@ -5,6 +5,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from typing import Any
+
 from pyparsing import (
     Word, alphas, alphanums, nums, cppStyleComment,
     Keyword, Group, Optional, Or, OneOrMore, delimitedList, ZeroOrMore,
@@ -122,7 +124,7 @@ resource_type = Group(
     single_object("object")
 )
 
-def _combine_list(t):
+def _combine_list(t: Any) -> str:
     return "".join(t[0].asList())
 
 explicit_field_reference_prefix = Group(

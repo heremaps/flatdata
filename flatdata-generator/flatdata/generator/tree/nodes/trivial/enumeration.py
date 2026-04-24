@@ -3,24 +3,26 @@ from flatdata.generator.tree.helpers.basictype import BasicType
 from flatdata.generator.tree.nodes.node import Node
 from .enumeration_value import EnumerationValue
 
+from typing import Any
+
 
 class Enumeration(Node):
-    def __init__(self, name, properties=None, type=None, width=None):
+    def __init__(self, name: str, properties: Any = None, type: str | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
-        self._type = type
+        self._type: BasicType | None = None
 
-        if self._type is not None:
-            self._type = BasicType(name=self._type, width=width)
+        if type is not None:
+            self._type = BasicType(name=type, width=width)
 
     @staticmethod
-    def create(properties, definition):
+    def create(properties: Any, definition: Any) -> 'Enumeration':
         width = None
         if properties.width:
             width = int(properties.width)
         result = Enumeration(name=properties.name, properties=properties, type=properties.type, width=width)
 
         current_assigned_value = 0
-        unique_values = set()
+        unique_values: set[int] = set()
         for value in properties.enum_values:
             if value.constant:
                 current_assigned_value = int(value.constant, 0)
@@ -32,30 +34,31 @@ class Enumeration(Node):
             current_assigned_value += 1
 
         # we do not want to genarate too many (exponential) values, so restrict to multiples of input size
-        if len(properties.enum_values) * 2 + 256 < 2 ** result.type.width:
-            raise SparseEnumError(enumeration_name=result._name, width=result.type.width)
+        assert result._type is not None
+        if len(properties.enum_values) * 2 + 256 < 2 ** result._type.width:
+            raise SparseEnumError(enumeration_name=result._name, width=result._type.width)
 
-        for missing_value in result.type.value_range():
+        for missing_value in result._type.value_range():
             if not missing_value in unique_values:
                 value_node = EnumerationValue(name="UNKNOWN_VALUE_" + str(missing_value).replace("-", "MINUS_"), value=missing_value, auto_generated=True)
                 result.insert(value_node)
 
         for value in unique_values:
-            bits_required = result.type.bits_required(value=value)
-            if bits_required > result.type.width:
+            bits_required = result._type.bits_required(value=value)
+            if bits_required > result._type.width:
                 raise InvalidEnumValueError(enumeration_name=result._name, value=value)
         result._bits_required = bits_required  # type: ignore[attr-defined]  # dead code: attribute is set but never read anywhere
 
         return result
 
     @property
-    def doc(self):
+    def doc(self) -> Any:
         return self._properties.doc
 
     @property
-    def type(self):
+    def type(self) -> BasicType | None:
         return self._type
 
     @property
-    def values(self):
+    def values(self) -> list[Any]:
         return self.children_like(EnumerationValue)

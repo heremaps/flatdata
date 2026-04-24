@@ -2,8 +2,10 @@ from flatdata.generator.tree.errors import UnexpectedResourceType
 from flatdata.generator.tree.nodes.node import Node
 import flatdata.generator.tree.nodes.resources as resources
 
+from typing import Any
 
-def _create_resource(properties):
+
+def _create_resource(properties: Any) -> resources.ResourceBase:
     resource_type = properties.type
     cls: type[resources.ResourceBase]
     if 'vector' in resource_type:
@@ -27,12 +29,12 @@ def _create_resource(properties):
 
 
 class Archive(Node):
-    def __init__(self, name, properties=None):
+    def __init__(self, name: str, properties: Any = None) -> None:
         super().__init__(name=name, properties=properties)
 
     #pylint: disable=unused-argument
     @staticmethod
-    def create(properties, definition):
+    def create(properties: Any, definition: Any) -> 'Archive':
         result = Archive(name=properties.name, properties=properties)
         for resource in properties.resources:
             result.insert(_create_resource(resource))
@@ -46,9 +48,9 @@ class Archive(Node):
         return result
 
     @property
-    def resources(self):
+    def resources(self) -> list[Any]:
         return self.children_like(resources.ResourceBase)
 
     @property
-    def doc(self):
+    def doc(self) -> Any:
         return self._properties.doc

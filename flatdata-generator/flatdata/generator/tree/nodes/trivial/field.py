@@ -2,13 +2,15 @@ from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import EnumerationReference, ConstantValueReference, InvalidValueReference
 from flatdata.generator.tree.helpers.basictype import BasicType
 
+from typing import Any
+
 
 class Field(Node):
-    def __init__(self, name, properties=None, type=None, offset=None, width=None):
+    def __init__(self, name: str, properties: Any = None, type: str | None = None, offset: int | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._offset = offset
         self._width = width
-        self._decorations = list()
+        self._decorations: list[Any] = list()
         if properties and 'decorations' in properties:
             self._decorations = properties.decorations
 
@@ -21,13 +23,13 @@ class Field(Node):
         if type is not None:
             if not BasicType.is_basic_type(type):
                 self._type_reference = EnumerationReference(type, width=self._width)
-                self._type = None
+                self._type: BasicType | Any | None = None
                 self.insert(self._type_reference)
             else:
                 self._type = BasicType(name=type, width=self._width)
 
     @staticmethod
-    def create(properties, offset=None):
+    def create(properties: Any, offset: int | None = None) -> 'Field':
         width = None
         if properties.width:
             width = int(properties.width)
@@ -38,46 +40,46 @@ class Field(Node):
                      width=width)
 
     @property
-    def range(self):
+    def range(self) -> str | None:
         for d in self.decorations:
             if "range" in d:
-                return d.range.name
+                return str(d.range.name)
         return None
 
     @property
-    def const_value_refs(self):
+    def const_value_refs(self) -> list[Any]:
         return self.children_like(ConstantValueReference)
 
     @property
-    def invalid_value(self):
+    def invalid_value(self) -> Any:
         for x in self.children_like(InvalidValueReference):
             return x
         return None
 
     @property
-    def decorations(self):
+    def decorations(self) -> list[Any]:
         return self._decorations
 
     @property
-    def type(self):
+    def type(self) -> Any:
         return self._type
 
     @type.setter
-    def type(self, value):
+    def type(self, value: Any) -> None:
         self._type = value
 
     @property
-    def type_reference(self):
+    def type_reference(self) -> Any:
         return self._type_reference
 
     @property
-    def offset(self):
+    def offset(self) -> int | None:
         return self._offset
 
     @offset.setter
-    def offset(self, value):
+    def offset(self, value: int) -> None:
         self._offset = value
 
     @property
-    def doc(self):
+    def doc(self) -> Any:
         return self._properties.doc

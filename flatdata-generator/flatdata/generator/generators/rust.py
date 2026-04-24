@@ -4,6 +4,8 @@
 '''
 import re
 
+from jinja2 import Environment
+
 from flatdata.generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
                                             Archive as ArchiveResource)
 from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration
@@ -23,14 +25,14 @@ class RustGenerator(BaseGenerator):
         "pure", "ref", "return", "self", "sizeof", "static", "struct", "super", "trait", "true",
         "type", "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "rust/rust.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
     @staticmethod
-    def _format_numeric_literal(value):
+    def _format_numeric_literal(value: str) -> str:
         try:
             # only apply this to integer values
             number = int(value)
@@ -40,7 +42,7 @@ class RustGenerator(BaseGenerator):
         except ValueError:
             return value
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         def _camel_to_snake_case(expr):
             step1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', expr)
             return re.sub('([a-z0-9])(A-Z)', r'\1_\2', step1).lower()

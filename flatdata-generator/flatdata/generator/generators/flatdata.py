@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from jinja2 import Environment
+
 from flatdata.generator.tree.nodes.resources import BoundResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant
 from flatdata.generator.tree.nodes.archive import Archive
@@ -13,13 +15,13 @@ from . import BaseGenerator
 class FlatdataGenerator(BaseGenerator):
     """Flatdata to Flatdata generator, used for debugging/testing"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "flatdata/flatdata.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         def _is_builtin(node):
             for namespace in SyntaxTree.namespaces(node):
                 if namespace.name == "_builtin":

@@ -6,6 +6,8 @@
 from flatdata.generator.tree.nodes.archive import Archive
 from . import BaseGenerator
 
+from jinja2 import Environment
+
 SCOPE_SEPARATOR = "__"
 DECORATION_BOUND = "__bound__"
 
@@ -13,10 +15,10 @@ DECORATION_BOUND = "__bound__"
 class DotGenerator(BaseGenerator):
     """Flatdata to DOT (graph description language) generator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "dot/dot.jinja2")
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         env.autoescape = True
 
         def _field_value_type(field):
@@ -31,5 +33,5 @@ class DotGenerator(BaseGenerator):
 
         env.filters["field_value_type"] = _field_value_type
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Archive]

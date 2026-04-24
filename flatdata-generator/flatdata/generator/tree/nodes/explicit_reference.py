@@ -1,13 +1,15 @@
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import ResourceReference, FieldReference, StructureReference
 
+from typing import Any
+
 
 class ExplicitReference(Node):
-    def __init__(self, name, properties=None):
+    def __init__(self, name: str, properties: Any = None) -> None:
         super().__init__(name=name, properties=properties)
 
     @staticmethod
-    def create(properties):
+    def create(properties: Any) -> 'ExplicitReference':
         destination = properties.destination
         field = Node.jointwo(properties.source_type, properties.source_field)
         result = ExplicitReference(
@@ -22,19 +24,19 @@ class ExplicitReference(Node):
 
 
     @property
-    def destination(self):
+    def destination(self) -> ResourceReference:
         result = self.children_like(ResourceReference)
         assert len(result) == 1
         return result[0]
 
     @property
-    def field(self):
+    def field(self) -> FieldReference:
         result = self.children_like(FieldReference)
         assert len(result) == 1
         return result[0]
 
     @property
-    def structure(self):
+    def structure(self) -> StructureReference:
         result = self.children_like(StructureReference)
         assert len(result) == 1
         return result[0]

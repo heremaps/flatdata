@@ -4,6 +4,8 @@
 '''
 
 from abc import ABCMeta, abstractmethod
+from typing import Any
+
 from jinja2 import Environment, PackageLoader
 from jinja2 import nodes
 from jinja2.ext import Extension
@@ -21,21 +23,21 @@ from flatdata.generator.tree.traversal import DfsTraversal
 class BaseGenerator(metaclass=ABCMeta):
     """Abstract base class for Flatdata generators"""
 
-    def __init__(self, template):
+    def __init__(self, template: str) -> None:
         self._template = template
 
     @abstractmethod
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         """List of supported nodes by this generator"""
         raise RuntimeError(
             "Derived generators must implement _supported_nodes")
 
     @abstractmethod
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         raise RuntimeError(
             "Derived generators must implement _populate_filters")
 
-    def render(self, tree):
+    def render(self, tree: Any) -> str:
         """Generate the language implementation from the AST"""
         env = Environment(loader=PackageLoader('flatdata.generator', 'templates'), lstrip_blocks=True,
                           trim_blocks=True, autoescape=False, extensions=[RaiseExtension])
@@ -71,7 +73,7 @@ class RaiseExtension(Extension):
 
     tags = set(['raise'])
 
-    def parse(self, parser):
+    def parse(self, parser: Any) -> nodes.CallBlock:
         """The first token is the line number, followed by the expression"""
         lineno = next(parser.stream).lineno
         message_node = parser.parse_expression()
@@ -81,6 +83,6 @@ class RaiseExtension(Extension):
         )
 
     #pylint: disable=no-self-use
-    def _raise(self, msg, caller):
+    def _raise(self, msg: str, caller: Any) -> str:
         """Helper callback."""
         raise TemplateRuntimeError(msg)
