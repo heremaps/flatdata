@@ -40,7 +40,7 @@ class Multivector(ResourceBase):
 
     @property
     def builtins(self) -> list[Structure]:
-        class MemberDict(dict):  # type: ignore[type-arg]  # intentionally unparameterized: mimics dynamic attribute access
+        class MemberDict(dict[str, Any]):
             def __getattr__(self, attr: str) -> Any:
                 return self.get(attr)
         decorations = [MemberDict({"range" : MemberDict({"name":"range"})})]
