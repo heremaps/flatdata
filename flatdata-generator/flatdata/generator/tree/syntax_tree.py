@@ -4,7 +4,7 @@
 '''
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from typing import Any
 
 from flatdata.generator.tree.nodes.references import TypeReference
@@ -111,21 +111,22 @@ class SyntaxTree:
         return False
 
     @staticmethod
-    def binding_resources(node: Node) -> list[Any]:
+    def binding_resources(node: Node) -> list[BoundResource]:
         if not isinstance(node, ResourceBase) or node.parent is None:
             return []
 
         assert isinstance(node.parent, Archive)
         archive = node.parent
         bound_resources = archive.children_like(BoundResource)
-        result: list[Any] = []
+        result: list[BoundResource] = []
         for resource in bound_resources:
             if any([c.node == node for c in resource.children_like(ResourceReference)]):
                 result.append(resource)
         return result
 
     @staticmethod
-    def binding_resources_or_self(node: Node) -> list[Any]:
+    def binding_resources_or_self(node: Node) -> Sequence[ResourceBase | BoundResource]:
         if SyntaxTree.is_bound_implicitly(node):
             return SyntaxTree.binding_resources(node)
+        assert isinstance(node, ResourceBase)
         return [node]

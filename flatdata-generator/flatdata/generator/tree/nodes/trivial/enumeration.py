@@ -60,5 +60,5 @@ class Enumeration(Node):
         return self._type
 
     @property
-    def values(self) -> list[Any]:
+    def values(self) -> list[EnumerationValue]:
         return self.children_like(EnumerationValue)

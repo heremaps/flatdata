@@ -48,8 +48,8 @@ class Archive(Node):
         return result
 
     @property
-    def resources(self) -> list[Any]:
-        return self.children_like(resources.ResourceBase)
+    def resources(self) -> list[resources.ResourceBase]:
+        return self.children_like(resources.ResourceBase)  # type: ignore[type-abstract]  # isinstance() with ABC is valid
 
     @property
     def doc(self) -> Any:

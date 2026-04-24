@@ -1,6 +1,7 @@
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import EnumerationReference, ConstantValueReference, InvalidValueReference
 from flatdata.generator.tree.helpers.basictype import BasicType
+from flatdata.generator.tree.helpers.enumtype import EnumType
 
 from typing import Any
 
@@ -23,7 +24,7 @@ class Field(Node):
         if type is not None:
             if not BasicType.is_basic_type(type):
                 self._type_reference = EnumerationReference(type, width=self._width)
-                self._type: BasicType | Any | None = None
+                self._type: BasicType | EnumType | None = None
                 self.insert(self._type_reference)
             else:
                 self._type = BasicType(name=type, width=self._width)
@@ -47,11 +48,11 @@ class Field(Node):
         return None
 
     @property
-    def const_value_refs(self) -> list[Any]:
+    def const_value_refs(self) -> list[ConstantValueReference]:
         return self.children_like(ConstantValueReference)
 
     @property
-    def invalid_value(self) -> Any:
+    def invalid_value(self) -> InvalidValueReference | None:
         for x in self.children_like(InvalidValueReference):
             return x
         return None
@@ -61,11 +62,11 @@ class Field(Node):
         return self._decorations
 
     @property
-    def type(self) -> Any:
+    def type(self) -> BasicType | EnumType | None:
         return self._type
 
     @type.setter
-    def type(self, value: Any) -> None:
+    def type(self, value: BasicType | EnumType | None) -> None:
         self._type = value
 
     @property

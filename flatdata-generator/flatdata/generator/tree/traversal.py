@@ -7,10 +7,11 @@ from typing import Any
 from .errors import CircularReferencing
 from .nodes.node import Node
 from .nodes.references import Reference, TypeReference
+from .syntax_tree import SyntaxTree
 
 
 class _Traversal(metaclass=ABCMeta):
-    def __init__(self, tree: Any) -> None:
+    def __init__(self, tree: SyntaxTree | Node) -> None:
         self._root: Node = tree.root
 
     @staticmethod

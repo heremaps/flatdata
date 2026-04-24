@@ -4,7 +4,7 @@
 '''
 
 from abc import ABCMeta, abstractmethod
-from typing import Any
+from typing import Any, NoReturn
 
 from jinja2 import Environment, PackageLoader
 from jinja2 import nodes
@@ -83,6 +83,6 @@ class RaiseExtension(Extension):
         )
 
     #pylint: disable=no-self-use
-    def _raise(self, msg: str, caller: Any) -> str:
+    def _raise(self, msg: str, caller: Any) -> NoReturn:
         """Helper callback."""
         raise TemplateRuntimeError(msg)

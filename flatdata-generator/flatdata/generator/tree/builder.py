@@ -163,6 +163,7 @@ def _compute_structure_sizes(root: Root) -> None:
             if not isinstance(field, nodes.Field):
                 continue
             field.offset = offset
+            assert field.type is not None
             offset += int(field.type.width)
         struct.size_in_bits = offset
 
@@ -200,6 +201,7 @@ def _check_ranges(root: Root) -> None:
 
 def _check_const_refs(root: Root) -> None:
     for field in root.iterate(nodes.Field):
+        assert field.type is not None
         for ref in field.children_like(ConstantReference):
             const_node = ref.node  # resolves to Constant at runtime
             # Check that type matches

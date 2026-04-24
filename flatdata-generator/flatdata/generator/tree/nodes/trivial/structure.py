@@ -44,5 +44,5 @@ class Structure(Node):
         return (self._size_in_bits + 7) // 8
 
     @property
-    def fields(self) -> list[Any]:
+    def fields(self) -> list[Field]:
         return self.children_like(Field)

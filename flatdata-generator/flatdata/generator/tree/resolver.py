@@ -64,10 +64,11 @@ def _validate_target_type(root: Node, ref: refs.Reference) -> None:
         raise errors.IncorrectReferenceType(ref.name, type(target), expected)
 
 
-def resolve_references(tree: Any) -> None:
+def resolve_references(tree: Node) -> None:
     for node in tree.root.iterate():
         assert type(node) not in _RESOLVED_BASE_TYPES, "Base reference types should not be used directly"
         if any([issubclass(type(node), t) for t in _RESOLVED_BASE_TYPES]):
+            assert isinstance(node, refs.Reference)
             if node.is_qualified:
                 resolved = _resolve_as_fully_qualified_reference(node)
             else:

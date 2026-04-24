@@ -72,14 +72,16 @@ class Node:
         """
         return self._parent
 
-    def first_parent_like(self, T: type) -> Node | None:
+    def first_parent_like(self, T: type[_T]) -> _T | None:
         """
         Returns first available parent of a given type or None if none found.
         """
         result = self
         while result.parent is not None and not isinstance(result.parent, T):
             result = result.parent
-        return result.parent
+        if isinstance(result.parent, T):
+            return result.parent
+        return None
 
     @property
     def path(self) -> str:

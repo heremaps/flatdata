@@ -36,7 +36,7 @@ class ResourceBase(Node, ABC):
         return self._decorations
 
     @property
-    def explicit_references(self) -> list[Any]:
+    def explicit_references(self) -> list[ExplicitReference]:
         return self.children_like(ExplicitReference)
 
     @property

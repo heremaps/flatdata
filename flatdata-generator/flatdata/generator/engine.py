@@ -82,7 +82,7 @@ class Engine:
             return module
 
         name = ns.name + "_" + archive_name
-        archive_type = getattr(module, name) if archive_name else None
+        archive_type = getattr(module, name)
         return module, archive_type
 
     @classmethod
