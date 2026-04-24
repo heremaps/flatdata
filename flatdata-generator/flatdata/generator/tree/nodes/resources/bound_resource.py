@@ -2,16 +2,16 @@ from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import BuiltinStructureReference, ResourceReference, StructureReference
 from .base import ResourceBase
 
-from typing import Any
+from pyparsing import ParseResults
 
 
 class BoundResource(ResourceBase):
-    def __init__(self, name: str, properties: Any = None, resources: list[str] | None = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None, resources: list[str] | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._resources = resources
 
     @staticmethod
-    def create(properties: Any) -> 'BoundResource':
+    def create(properties: ParseResults) -> 'BoundResource':
         return BoundResource(name=properties.name,
                              properties=properties,
                              resources=[r for r in properties.resources])

@@ -3,15 +3,17 @@ from flatdata.generator.tree.nodes.references import EnumerationReference, Const
 from flatdata.generator.tree.helpers.basictype import BasicType
 from flatdata.generator.tree.helpers.enumtype import EnumType
 
-from typing import Any
+from pyparsing import ParseResults
 
 
 class Field(Node):
-    def __init__(self, name: str, properties: Any = None, type: str | None = None, offset: int | None = None, width: int | None = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None, type: str | None = None, offset: int | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._offset = offset
         self._width = width
-        self._decorations: list[Any] = list()
+        self._type_reference: EnumerationReference | None = None
+        self._type: BasicType | EnumType | None = None
+        self._decorations: list[ParseResults] = list()
         if properties and 'decorations' in properties:
             self._decorations = properties.decorations
 
@@ -24,13 +26,13 @@ class Field(Node):
         if type is not None:
             if not BasicType.is_basic_type(type):
                 self._type_reference = EnumerationReference(type, width=self._width)
-                self._type: BasicType | EnumType | None = None
+                self._type = None
                 self.insert(self._type_reference)
             else:
                 self._type = BasicType(name=type, width=self._width)
 
     @staticmethod
-    def create(properties: Any, offset: int | None = None) -> 'Field':
+    def create(properties: ParseResults, offset: int | None = None) -> 'Field':
         width = None
         if properties.width:
             width = int(properties.width)
@@ -58,7 +60,7 @@ class Field(Node):
         return None
 
     @property
-    def decorations(self) -> list[Any]:
+    def decorations(self) -> list[ParseResults]:
         return self._decorations
 
     @property
@@ -70,7 +72,7 @@ class Field(Node):
         self._type = value
 
     @property
-    def type_reference(self) -> Any:
+    def type_reference(self) -> EnumerationReference | None:
         return self._type_reference
 
     @property
@@ -83,5 +85,6 @@ class Field(Node):
 
     @property
     def doc(self) -> str:
+        assert self._properties is not None
         doc = self._properties.doc
         return str(doc) if doc is not None else ""

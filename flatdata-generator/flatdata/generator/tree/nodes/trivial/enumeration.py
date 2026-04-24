@@ -3,11 +3,11 @@ from flatdata.generator.tree.helpers.basictype import BasicType
 from flatdata.generator.tree.nodes.node import Node
 from .enumeration_value import EnumerationValue
 
-from typing import Any
+from pyparsing import ParseResults
 
 
 class Enumeration(Node):
-    def __init__(self, name: str, properties: Any = None, type: str | None = None, width: int | None = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None, type: str | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._type: BasicType | None = None
 
@@ -15,7 +15,7 @@ class Enumeration(Node):
             self._type = BasicType(name=type, width=width)
 
     @staticmethod
-    def create(properties: Any, definition: Any) -> 'Enumeration':
+    def create(properties: ParseResults, definition: str) -> 'Enumeration':
         width = None
         if properties.width:
             width = int(properties.width)
@@ -51,6 +51,7 @@ class Enumeration(Node):
 
     @property
     def doc(self) -> str:
+        assert self._properties is not None
         doc = self._properties.doc
         return str(doc) if doc is not None else ""
 

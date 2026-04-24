@@ -1,11 +1,11 @@
 from flatdata.generator.tree.nodes.node import Node
 from .field import Field
 
-from typing import Any
+from pyparsing import ParseResults
 
 
 class Structure(Node):
-    def __init__(self, name: str, properties: Any = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         """
         Use to instantiate empty structure.
         No special properties are evaluated.
@@ -16,7 +16,7 @@ class Structure(Node):
         super().__init__(name=name, properties=properties)
 
     @staticmethod
-    def create(properties: Any, definition: Any) -> 'Structure':
+    def create(properties: ParseResults, definition: str) -> 'Structure':
         result = Structure(name=properties.name, properties=properties)
 
         for field in properties.fields:
@@ -29,6 +29,7 @@ class Structure(Node):
 
     @property
     def doc(self) -> str:
+        assert self._properties is not None
         doc = self._properties.doc
         return str(doc) if doc is not None else ""
 

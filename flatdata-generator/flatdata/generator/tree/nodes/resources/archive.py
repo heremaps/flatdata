@@ -2,16 +2,16 @@ from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import ArchiveReference
 from .base import ResourceBase
 
-from typing import Any
+from pyparsing import ParseResults
 
 
 class Archive(ResourceBase):
-    def __init__(self, name: str, properties: Any = None, target: str | None = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None, target: str | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._target = target
 
     @staticmethod
-    def create(properties: Any) -> 'Archive':
+    def create(properties: ParseResults) -> 'Archive':
         return Archive(name=properties.name,
                        properties=properties,
                        target=properties.type.archive.name)

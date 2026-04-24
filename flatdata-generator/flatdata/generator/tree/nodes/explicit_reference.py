@@ -1,15 +1,15 @@
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import ResourceReference, FieldReference, StructureReference
 
-from typing import Any
+from pyparsing import ParseResults
 
 
 class ExplicitReference(Node):
-    def __init__(self, name: str, properties: Any = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         super().__init__(name=name, properties=properties)
 
     @staticmethod
-    def create(properties: Any) -> 'ExplicitReference':
+    def create(properties: ParseResults) -> 'ExplicitReference':
         destination = properties.destination
         field = Node.jointwo(properties.source_type, properties.source_field)
         result = ExplicitReference(

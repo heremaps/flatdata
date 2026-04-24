@@ -3,11 +3,11 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from typing import Any
+from pyparsing import ParseResults
 
 from flatdata.generator.tree.nodes.node import Node
 
 
 class Namespace(Node):
-    def __init__(self, name: str, properties: Any = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         super().__init__(name=name, properties=properties)

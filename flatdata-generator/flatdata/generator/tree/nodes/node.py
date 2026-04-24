@@ -9,6 +9,8 @@ from collections.abc import Iterator
 from copy import copy
 from typing import Any, TypeVar, overload
 
+from pyparsing import ParseResults
+
 from flatdata.generator.tree.errors import SymbolRedefinition
 
 _T = TypeVar('_T', bound='Node')
@@ -37,7 +39,7 @@ class Node:
         """
         return Node.PATH_SEPARATOR.join([path, other])
 
-    def __init__(self, name: str, properties: Any = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         assert self.PATH_SEPARATOR not in name
         assert name
         self._name = name

@@ -5,9 +5,11 @@ from .base import ResourceBase
 
 from typing import Any
 
+from pyparsing import ParseResults
+
 
 class Multivector(ResourceBase):
-    def __init__(self, name: str, properties: Any = None, types: list[str] | None = None, width: int | None = None) -> None:
+    def __init__(self, name: str, properties: ParseResults | None = None, types: list[str] | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._types: list[str] = []
         if types is not None:
@@ -15,7 +17,7 @@ class Multivector(ResourceBase):
         self._width = width
 
     @staticmethod
-    def create(properties: Any) -> 'Multivector':
+    def create(properties: ParseResults) -> 'Multivector':
         return Multivector(name=properties.name,
                            properties=properties,
                            types=[t for t in properties.type.multivector.type],
@@ -50,5 +52,5 @@ class Multivector(ResourceBase):
             "schema":"struct IndexType%s { value : u64 : %s; }" % (self._width, self._width),
             "doc":"/** Builtin type to for MultiVector index */",
             "fields":[field]})
-        index_type = Structure.create(properties=properties, definition="")
+        index_type = Structure.create(properties=properties, definition="")  # type: ignore[arg-type]  # MemberDict duck-types ParseResults
         return [index_type]
