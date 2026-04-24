@@ -120,13 +120,13 @@ class ArchiveBuilder:
         self._write_raw_data(
             f"{resource_name}_index.schema", bytes(schema, 'utf-8'))
 
-    def subarchive(self, name: str) -> None:
+    def subarchive(self, name: str) -> 'ArchiveBuilder':
         """
         Returns an archive builder for the sub-archive `name`.
         :raises $name_not_subarchive_error
         :param name: name of the sub-archive
         """
-        NotImplemented
+        raise NotImplementedError(f"subarchive '{name}' is not implemented")
 
     @classmethod
     def __validate_structure_fields(cls, name: str, struct: dict[str, Any], initializer: Any) -> None:

@@ -46,9 +46,11 @@ class FileResourceWriter:
     def write(self, data: bytes | bytearray) -> None:
         '''Write data to file'''
         if data:
-            self._file.write(data)  # type: ignore[union-attr]  # _file is set by open() before write() is called
+            assert self._file is not None, "write() called before open()"
+            self._file.write(data)
 
     def close(self) -> None:
         '''Flush data and close file'''
-        self._file.flush()  # type: ignore[union-attr]  # _file is set by open() before close() is called
-        self._file.close()  # type: ignore[union-attr]  # _file is set by open() before close() is called
+        assert self._file is not None, "close() called before open()"
+        self._file.flush()
+        self._file.close()

@@ -34,7 +34,7 @@ class _Resource():
         if not path:
             raise ArchivePathNotProvidedError()
 
-        self.data: bytearray | bytes = bytearray()
+        self.data: bytearray | bytes | None = bytearray()
         self._valid: bool = True
         self._resource_writer: Any = None
 
@@ -54,24 +54,31 @@ class _Resource():
 
         :param data(bytearray): bytearray to be added to resource
         '''
+        assert self.data is not None, "write() called on closed resource"
         if data and isinstance(data, bytearray) or isinstance(data, bytes):
             self.data += data
 
-    def get_data(self) -> bytearray | bytes:
-        '''Returns resources data in bytearray'''
+    def get_data(self) -> bytearray | bytes | None:
+        '''Returns resources data in bytearray, or None if the resource is closed.'''
         return self.data
 
     def add_size(self) -> None:
         '''Calculate size of stored data and appends it to the begining'''
+        assert self.data is not None, "add_size() called on closed resource"
         self.data = int(len(self.data)).to_bytes(
             8, byteorder="little", signed=False) + self.data
 
     def add_padding(self) -> None:
         '''Add 8 byte zero padding at the end of data'''
+        assert self.data is not None, "add_padding() called on closed resource"
         self.data += b'\x00' * 8
 
     def __str__(self) -> str:
-        '''Facilitate print for debugging'''
+        '''Facilitate print for debugging.
+
+        Uses !r (repr) instead of implicit __format__ because format(bytes, '')
+        is deprecated in Python 3.12+ and raises TypeError in 3.14+.
+        '''
         return f'{self.data!r}'
 
     def close(self) -> None:
@@ -81,7 +88,7 @@ class _Resource():
         '''
         if self._resource_writer:
             self._resource_writer.write(self.data)
-            self.data = None  # type: ignore[assignment]  # sentinel for closed resource; data lifecycle: bytearray → bytes → None
+            self.data = None
             self._resource_writer.close()
 
         self._valid = False
