@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from .data_access import make_field_reader
+from .data_access import ReadableBuffer, make_field_reader
 
 FieldSignature = namedtuple(
     "FieldSignature", ["offset", "width", "is_signed", "dtype"])
@@ -13,8 +13,8 @@ FieldSignature = namedtuple(
 
 class Structure:
     __slots__ = ('_mem', '_pos')
-    _READERS: dict[str, Callable[[Any, int], int]] = {}
-    _FIELDS: dict[str, Any]
+    _READERS: dict[str, Callable[[ReadableBuffer, int], int]] = {}
+    _FIELDS: dict[str, FieldSignature]
     _FIELD_KEYS: list[str]
     _SCHEMA: str
 
@@ -25,7 +25,7 @@ class Structure:
             cls._READERS = {name: make_field_reader(f.offset, f.width, f.is_signed)
                             for name, f in fields.items()}
 
-    def __init__(self, mem: Any, pos: int) -> None:
+    def __init__(self, mem: ReadableBuffer, pos: int) -> None:
         self._mem = mem
         self._pos = pos
 

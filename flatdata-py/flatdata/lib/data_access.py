@@ -3,17 +3,19 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+import mmap
 from collections.abc import Callable
-from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
+
+ReadableBuffer = bytes | bytearray | memoryview | mmap.mmap
 
 # Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
 
 
-def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Callable[[Any, int], int]:
+def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Callable[[ReadableBuffer, int], int]:
     """Build a specialized closure for reading a single field from a structure.
 
     Returns a function reader(data, pos_bytes) that reads the field value
@@ -30,7 +32,7 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
 
     if num_bits == 1:
         bit_mask = 1 << offset_extra
-        def reader(data: Any, pos: int) -> int:
+        def reader(data: ReadableBuffer, pos: int) -> int:
             return int((data[pos + offset_bytes] & bit_mask) != 0)
         return reader
 
@@ -38,7 +40,7 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
         sign_bit = _SIGN_BITS[num_bits]
         sign_mask = sign_bit - 1
         if needs_extra:
-            def reader(data: Any, pos: int) -> int:
+            def reader(data: ReadableBuffer, pos: int) -> int:
                 result = int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte], byteorder="little")
                 result >>= offset_extra
@@ -46,13 +48,13 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
                 result &= mask
                 return int((result & sign_mask) - (result & sign_bit))
         elif offset_extra:
-            def reader(data: Any, pos: int) -> int:
+            def reader(data: ReadableBuffer, pos: int) -> int:
                 result = (int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte],
                     byteorder="little") >> offset_extra) & mask
                 return (result & sign_mask) - (result & sign_bit)
         else:
-            def reader(data: Any, pos: int) -> int:
+            def reader(data: ReadableBuffer, pos: int) -> int:
                 result = int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte],
                     byteorder="little") & mask
@@ -61,26 +63,26 @@ def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Calla
 
     # Unsigned paths
     if needs_extra:
-        def reader(data: Any, pos: int) -> int:
+        def reader(data: ReadableBuffer, pos: int) -> int:
             result = int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte], byteorder="little")
             result >>= offset_extra
             result |= data[pos + end_byte] << extra_shift
             return int(result & mask)
     elif offset_extra:
-        def reader(data: Any, pos: int) -> int:
+        def reader(data: ReadableBuffer, pos: int) -> int:
             return (int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte],
                 byteorder="little") >> offset_extra) & mask
     else:
-        def reader(data: Any, pos: int) -> int:
+        def reader(data: ReadableBuffer, pos: int) -> int:
             return int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte],
                 byteorder="little") & mask
     return reader
 
 
-def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: int, field_width_bits: int, is_signed: bool) -> NDArray[Any]:
+def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: int, field_width_bits: int, is_signed: bool) -> NDArray[np.uint64] | NDArray[np.int64]:
     """Read a bit-packed field from all elements at once, returning a numpy array.
 
     :param raw_bytes_2d: numpy uint8 array shaped (num_elements, struct_size_bytes)
@@ -126,7 +128,7 @@ def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: in
     return result
 
 
-def read_value(data: Any, offset_bits: int, num_bits: int, is_signed: bool) -> int:
+def read_value(data: ReadableBuffer, offset_bits: int, num_bits: int, is_signed: bool) -> int:
     """Read a bit-packed value from data at the given bit offset.
 
     This is a convenience wrapper around :func:`make_field_reader` for one-off
