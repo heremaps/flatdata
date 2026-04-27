@@ -3,13 +3,18 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from typing import Any
+from __future__ import annotations
+
+from typing import Any, TYPE_CHECKING
 
 from flatdata.generator.engine import Engine
 from flatdata.generator.tree.errors import FlatdataSyntaxError
 
 from .resource_storage import ResourceStorage
 from .file_resource_writer import FileResourceWriter
+
+if TYPE_CHECKING:
+    from .archive_builder import ArchiveBuilder
 
 
 class Writer:
@@ -39,7 +44,7 @@ class Writer:
             raise RuntimeError(
                 "Error in generating modules from provided schema: %s " % err)
 
-        self.builder = archive_type(
+        self.builder: ArchiveBuilder = archive_type(
             ResourceStorage(FileResourceWriter(), path))
 
     def set(self, resource_name: str, resource_data: Any) -> None:
