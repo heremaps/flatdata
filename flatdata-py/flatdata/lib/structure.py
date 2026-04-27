@@ -17,6 +17,8 @@ class Structure:
     _FIELDS: dict[str, FieldSignature]
     _FIELD_KEYS: list[str]
     _SCHEMA: str
+    _SIZE_IN_BYTES: int
+    _NAME: str
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)

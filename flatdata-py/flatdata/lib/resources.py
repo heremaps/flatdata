@@ -3,23 +3,32 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 from collections.abc import Iterator
 import json
-from typing import Any
+from typing import Any, Protocol, TYPE_CHECKING
 
 import pandas as pd
 import numpy as np
 
-from .data_access import read_value, read_field_vectorized
+from .data_access import ReadableBuffer, read_value, read_field_vectorized
 from .errors import CorruptResourceError
+
+if TYPE_CHECKING:
+    from .structure import Structure
 
 SIZE_OFFSET_IN_BITS = 64
 SIZE_OFFSET_IN_BYTES = SIZE_OFFSET_IN_BITS // 8
 SIZE_PADDING_IN_BYTES = 8
 
 
+class ReadStorage(Protocol):
+    def get(self, key: str, is_optional: bool = False) -> Any: ...
+
+
 class ResourceBase:
-    def __init__(self, mem: Any, element_type: type[Any]) -> None:
+    def __init__(self, mem: ReadableBuffer, element_type: type[Structure] | None) -> None:
         if len(mem) < (SIZE_OFFSET_IN_BYTES + SIZE_PADDING_IN_BYTES):
             raise CorruptResourceError()
         self._mem = memoryview(mem)
@@ -32,9 +41,11 @@ class ResourceBase:
         return len(self._mem)
 
     def _item_offset(self, index: int) -> int:
+        assert self._element_type is not None
         return int(SIZE_OFFSET_IN_BYTES + self._element_type._SIZE_IN_BYTES * index)
 
     def _get_item(self, index: int) -> Any:
+        assert self._element_type is not None
         offset = self._item_offset(index)
         return self._element_type(self._mem, offset)
 
@@ -67,7 +78,7 @@ class ResourceBase:
         return json.dumps(self._repr_attributes(), indent=4)
 
     @classmethod
-    def open(cls, storage: Any, name: str, initializer: Any, is_optional: bool = False) -> Any:
+    def open(cls, storage: ReadStorage, name: str, initializer: Any, is_optional: bool = False) -> Any:
         return cls(storage.get(name, is_optional), initializer)
 
 
@@ -82,6 +93,7 @@ class _VectorSlice:
         if limit is not None:
             sliced = sliced[:limit]
 
+        assert self._sequence._element_type is not None
         fields = self._sequence._element_type._FIELDS
         dtype = self._sequence._element_type.dtype()
         result = np.empty(sliced.shape[0], dtype=dtype)
@@ -99,6 +111,7 @@ class _VectorSlice:
             yield self._sequence[i]
 
     def __getattr__(self, name: str) -> pd.DataFrame:
+        assert self._sequence._element_type is not None
         try:
             field = self._sequence._element_type._FIELDS[name]
         except KeyError:
@@ -112,7 +125,7 @@ class _VectorSlice:
 
 
 class Vector(ResourceBase):
-    def __init__(self, mem: Any, element_type: type[Any]) -> None:
+    def __init__(self, mem: ReadableBuffer, element_type: type[Structure]) -> None:
         ResourceBase.__init__(self, mem, element_type)
         size_in_bytes = read_value(self._mem, 0, SIZE_OFFSET_IN_BITS, False)
         size, rem = divmod(size_in_bytes, self._type_size_in_bytes)
@@ -122,6 +135,7 @@ class Vector(ResourceBase):
     def to_numpy(self) -> Any:
         """Convert entire vector to a numpy structured array (vectorized)."""
         raw_2d = self._as_numpy_2d()
+        assert self._element_type is not None
         fields = self._element_type._FIELDS
         dtype = self._element_type.dtype()
         result = np.empty(self._size, dtype=dtype)
@@ -147,11 +161,13 @@ class Vector(ResourceBase):
     def __iter__(self) -> Iterator[Any]:
         mem = self._mem
         element_type = self._element_type
+        assert element_type is not None
         size_bytes = self._type_size_in_bytes
         for i in range(self._size):
             yield element_type(mem, SIZE_OFFSET_IN_BYTES + size_bytes * i)
 
     def __getattr__(self, name: str) -> pd.DataFrame:
+        assert self._element_type is not None
         try:
             field = self._element_type._FIELDS[name]
         except KeyError:
@@ -178,14 +194,14 @@ class _MultivectorSlice:
 
 
 class Multivector(ResourceBase):
-    def __init__(self, index_mem: Any, mem: Any, index_type: type[Any], *element_types: type[Any]) -> None:
+    def __init__(self, index_mem: ReadableBuffer, mem: ReadableBuffer, index_type: type[Structure], *element_types: type[Structure]) -> None:
         self._index = Vector(index_mem, index_type)
-        self._mem = mem
+        self._mem = memoryview(mem)
         self._element_types = list(element_types)
         self._index_type = index_type
 
     @classmethod
-    def open(cls, storage: Any, name: str, initializer: Any, is_optional: bool = False) -> 'Multivector':
+    def open(cls, storage: ReadStorage, name: str, initializer: list[type[Structure]], is_optional: bool = False) -> Multivector:
         return cls(storage.get(name + "_index", is_optional),
                    storage.get(name, is_optional),
                    *initializer)
@@ -208,6 +224,7 @@ class Multivector(ResourceBase):
             type_index = read_value(self._mem, offset * 8, 8, False)
             offset += 1
             element_type = self._element_types[type_index]
+            assert element_type is not None
             element = element_type(self._mem, offset)
             elements.append(element)
             offset += element_type._SIZE_IN_BYTES
@@ -280,6 +297,7 @@ class Instance(ResourceBase):
             yield self._get_item(i)
 
     def __getattr__(self, name: str) -> Any:
+        assert self._element_type is not None
         offset = self._item_offset(0)
         return getattr(self._element_type(self._mem, offset), name)
 

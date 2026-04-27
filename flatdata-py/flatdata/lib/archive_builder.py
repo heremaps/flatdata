@@ -3,9 +3,10 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from collections import namedtuple
+from __future__ import annotations
+
 import os
-from typing import Any
+from typing import Any, NamedTuple, Protocol, TYPE_CHECKING
 
 from .errors import IndexWriterError, MissingFieldError, UnknownFieldError, \
     UnknownStructureError, UnknownResourceError, ResourceAlreadySetError
@@ -13,10 +14,24 @@ from .errors import IndexWriterError, MissingFieldError, UnknownFieldError, \
 from .resources import Instance, Vector, Multivector, RawData
 from .data_access import write_value
 
+if TYPE_CHECKING:
+    from .resource_storage import _Resource
+    from .structure import Structure
+
 _SCHEMA_EXT = ".schema"
 
-ResourceSignature = namedtuple("ResourceSignature",
-                               ["container", "initializer", "schema", "is_optional", "doc"])
+
+class ResourceSignature(NamedTuple):
+    container: type
+    initializer: Any
+    schema: str
+    is_optional: bool
+    doc: str
+
+
+class WriteStorage(Protocol):
+    def get(self, resource_name: str, is_subarchive: bool = False) -> Any: ...
+    def close(self) -> None: ...
 
 
 class IndexWriter:
@@ -24,7 +39,7 @@ class IndexWriter:
     IndexWriter class. Only applicable when multivector is present in archive schema.
     """
 
-    def __init__(self, name: str, size: int, resource_storage: Any) -> None:
+    def __init__(self, name: str, size: int, resource_storage: WriteStorage) -> None:
         """
         Create IndexWriter class.
 
@@ -37,7 +52,7 @@ class IndexWriter:
 
         self._name = name
         self._index_size = size
-        self._fout = resource_storage.get(f'{self._name}_index', False)
+        self._fout: _Resource = resource_storage.get(f'{self._name}_index', False)
 
     def add(self, index: int) -> None:
         """
@@ -63,16 +78,16 @@ class ArchiveBuilder:
     """
     _NAME: str
     _SCHEMA: str
-    _RESOURCES: dict[str, Any]
+    _RESOURCES: dict[str, ResourceSignature]
 
-    def __init__(self, resource_storage: Any, path: str = "") -> None:
+    def __init__(self, resource_storage: WriteStorage, path: str = "") -> None:
         """
         Opens archive from a given resource writer.
         :param resource_storage: storage manager to store and write to disc
         :param path: file path where archive is created
         """
         self._path = os.path.join(path, self._NAME)
-        self._resource_storage = resource_storage
+        self._resource_storage: WriteStorage = resource_storage
         self._write_archive_signature()
         self._write_archive_schema()
         self._resources_written = [f"{self._NAME}.archive"]
@@ -129,7 +144,7 @@ class ArchiveBuilder:
         raise NotImplementedError(f"subarchive '{name}' is not implemented")
 
     @classmethod
-    def __validate_structure_fields(cls, name: str, struct: dict[str, Any], initializer: Any) -> None:
+    def __validate_structure_fields(cls, name: str, struct: dict[str, Any], initializer: type[Structure]) -> None:
         '''
         Validates whether passed object has all required fields
 
@@ -146,7 +161,7 @@ class ArchiveBuilder:
             if key not in initializer._FIELD_KEYS:
                 raise UnknownFieldError(key, name)
 
-    def __set_instance(self, storage: Any, name: str, value: dict[str, Any]) -> None:
+    def __set_instance(self, storage: _Resource, name: str, value: dict[str, Any]) -> None:
         '''
         Creates and writes instance type resource
 
@@ -164,7 +179,7 @@ class ArchiveBuilder:
 
         storage.write(bout)
 
-    def __set_vector(self, storage: Any, name: str, vector: list[dict[str, Any]]) -> None:
+    def __set_vector(self, storage: _Resource, name: str, vector: list[dict[str, Any]]) -> None:
         '''
         Creates and writes vector resource
 
@@ -183,7 +198,7 @@ class ArchiveBuilder:
                             field.is_signed, value[key])
             storage.write(bout)
 
-    def __set_multivector(self, storage: Any, name: str, value: list[list[dict[str, Any]]]) -> None:
+    def __set_multivector(self, storage: _Resource, name: str, value: list[list[dict[str, Any]]]) -> None:
         '''
         Creates and writes multivector resource
 

@@ -3,17 +3,26 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from collections import namedtuple
-from typing import Any
+from __future__ import annotations
+
+from typing import Any, NamedTuple, TYPE_CHECKING
 
 import pandas as pd
 
 from .errors import MissingResourceError, SchemaMismatchError
 
-ResourceSignature = namedtuple("ResourceSignature",
-                               ["container", "initializer", "schema", "is_optional", "doc"])
+if TYPE_CHECKING:
+    from .resources import ReadStorage, ResourceBase
 
-def _is_archive_signature(resource_signature: Any) -> bool:
+
+class ResourceSignature(NamedTuple):
+    container: type[ResourceBase] | type[Archive]
+    initializer: Any
+    schema: str
+    is_optional: bool
+    doc: str
+
+def _is_archive_signature(resource_signature: ResourceSignature) -> bool:
     return bool(resource_signature.container == Archive)
 
 _SCHEMA_EXT = ".schema"
@@ -26,16 +35,16 @@ class Archive:
     """
     _NAME: str
     _SCHEMA: str
-    _RESOURCES: dict[str, Any]
+    _RESOURCES: dict[str, ResourceSignature]
 
-    def __init__(self, resource_storage: Any) -> None:
+    def __init__(self, resource_storage: ReadStorage) -> None:
         """
         Opens archive from a given resource storage.
         :raises flatdata.errors.CorruptArchiveError
         :raises flatdata.errors.SchemaMismatchError
         :param resource_storage: Resource storage to use.
         """
-        self._resource_storage: Any = resource_storage
+        self._resource_storage: ReadStorage = resource_storage
         self._loaded_resources: dict[str, Any] = {}
 
         # Preload resources and check their schemas
@@ -78,7 +87,7 @@ class Archive:
         return str(cls._RESOURCES[resource].schema)
 
     @classmethod
-    def open(cls, storage: Any, name: str, initializer: Any, is_optional: bool = False) -> Any:
+    def open(cls, storage: ReadStorage, name: str, initializer: type[Archive], is_optional: bool = False) -> Archive | None:
         nested_storage = storage.get(name, is_optional)
         assert nested_storage is not None or is_optional
         if nested_storage is None:
@@ -93,7 +102,7 @@ class Archive:
     def __len__(self) -> int:
         return len(self._RESOURCES)
 
-    def _schema_validated_resource_signature(self, name: str) -> Any:
+    def _schema_validated_resource_signature(self, name: str) -> ResourceSignature | None:
         resource_signature = self._RESOURCES[name]
         # We check only schema for non-subarchives, since the subarchives schema is checked,
         # when it is initialized.
@@ -120,7 +129,7 @@ class Archive:
         return None
 
     @staticmethod
-    def _check_non_subarchive_schema(name: str, resource_signature: Any, storage: Any) -> None:
+    def _check_non_subarchive_schema(name: str, resource_signature: ResourceSignature, storage: Any) -> None:
         actual_schema = bytes(storage).decode()
         if actual_schema != resource_signature.schema:
             raise SchemaMismatchError(
