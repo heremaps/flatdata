@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
-from typing import Any
 
 from flatdata.generator.tree.nodes.references import TypeReference
 from flatdata.generator.tree.nodes.trivial import Namespace

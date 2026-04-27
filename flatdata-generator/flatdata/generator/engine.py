@@ -4,7 +4,7 @@
 '''
 
 import types
-from typing import Any, overload
+from typing import overload
 
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial.namespace import Namespace
@@ -66,13 +66,13 @@ class Engine:
         return str(output_content)
 
     @overload
-    def render_python_module(self, module_name: str | None, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, Any]: ...
+    def render_python_module(self, module_name: str | None, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, type]: ...
     @overload
-    def render_python_module(self, *, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, Any]: ...
+    def render_python_module(self, *, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, type]: ...
     @overload
     def render_python_module(self, module_name: str | None = None, archive_name: None = None, root_namespace: str | None = None) -> types.ModuleType: ...
 
-    def render_python_module(self, module_name: str | None = None, archive_name: str | None = None, root_namespace: str | None = None) -> types.ModuleType | tuple[types.ModuleType, Any]:
+    def render_python_module(self, module_name: str | None = None, archive_name: str | None = None, root_namespace: str | None = None) -> types.ModuleType | tuple[types.ModuleType, type]:
         """
         Render python module.
         :param module_name: Module name to use. If none, root namespace name is used.
