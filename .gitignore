@@ -4,10 +4,6 @@ build
 venv*
 **/.vscode/**
 **/.idea/**
-**/*_generated.go
-**/coverage.out
-**/flatdata-fuzz.zip
-**/corpus/**
 **/dist/**
 *.egg-info
 .DS_Store
