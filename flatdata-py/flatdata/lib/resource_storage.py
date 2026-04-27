@@ -3,9 +3,21 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from typing import Any
+from __future__ import annotations
+
+from typing import Protocol
 
 from flatdata.lib.errors import ArchivePathNotProvidedError, MissingResourceName
+
+
+class ResourceWriter(Protocol):
+    def open(self, name: str, file_path: str) -> None: ...
+    def write(self, data: bytes | bytearray) -> None: ...
+    def close(self) -> None: ...
+
+
+class ResourceWriterFactory(Protocol):
+    def create_instance(self) -> ResourceWriter: ...
 
 
 class _Resource():
@@ -15,7 +27,7 @@ class _Resource():
     This class provides the functionality of in memory storage.
     It uses provided writer object to write stored data to file.
     '''
-    def __init__(self, name: str, writer: Any = None, path: str = "", is_subarchive: bool = False) -> None:
+    def __init__(self, name: str, writer: ResourceWriterFactory | None = None, path: str = "", is_subarchive: bool = False) -> None:
         '''
         Creates in memory storage for resource.
 
@@ -36,7 +48,7 @@ class _Resource():
 
         self.data: bytearray | bytes | None = bytearray()
         self._valid: bool = True
-        self._resource_writer: Any = None
+        self._resource_writer: ResourceWriter | None = None
 
         if writer:
             self._resource_writer = writer.create_instance()
@@ -87,6 +99,7 @@ class _Resource():
         mark this resource as already written by setting resource as invalid.
         '''
         if self._resource_writer:
+            assert self.data is not None, "close() called on already-closed resource"
             self._resource_writer.write(self.data)
             self.data = None
             self._resource_writer.close()
@@ -100,7 +113,7 @@ class ResourceStorage:
     It is responsible for creating and managing all resources available in archive.
     '''
 
-    def __init__(self, writer: Any, path: str) -> None:
+    def __init__(self, writer: ResourceWriterFactory, path: str) -> None:
         '''
         Creates ResourceStorage object.
 
@@ -108,7 +121,7 @@ class ResourceStorage:
         :param path(str): file path where resource is created
         '''
         self._store: dict[str, _Resource] = {}
-        self._resource_writer: Any = writer
+        self._resource_writer: ResourceWriterFactory = writer
         self._path: str = path
 
     def get(self, resource_name: str, is_subarchive: bool = False) -> _Resource:
