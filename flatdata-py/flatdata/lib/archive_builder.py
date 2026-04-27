@@ -3,8 +3,10 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from collections import namedtuple
+from __future__ import annotations
+
 import os
+from typing import Any, NamedTuple, Protocol, TYPE_CHECKING
 
 from .errors import IndexWriterError, MissingFieldError, UnknownFieldError, \
     UnknownStructureError, UnknownResourceError, ResourceAlreadySetError
@@ -12,10 +14,24 @@ from .errors import IndexWriterError, MissingFieldError, UnknownFieldError, \
 from .resources import Instance, Vector, Multivector, RawData
 from .data_access import write_value
 
+if TYPE_CHECKING:
+    from .resource_storage import _Resource
+    from .structure import Structure
+
 _SCHEMA_EXT = ".schema"
 
-ResourceSignature = namedtuple("ResourceSignature",
-                               ["container", "initializer", "schema", "is_optional", "doc"])
+
+class ResourceSignature(NamedTuple):
+    container: type
+    initializer: Any
+    schema: str
+    is_optional: bool
+    doc: str
+
+
+class WriteStorage(Protocol):
+    def get(self, resource_name: str, is_subarchive: bool = False) -> Any: ...
+    def close(self) -> None: ...
 
 
 class IndexWriter:
@@ -23,7 +39,7 @@ class IndexWriter:
     IndexWriter class. Only applicable when multivector is present in archive schema.
     """
 
-    def __init__(self, name, size, resource_storage):
+    def __init__(self, name: str, size: int, resource_storage: WriteStorage) -> None:
         """
         Create IndexWriter class.
 
@@ -36,9 +52,9 @@ class IndexWriter:
 
         self._name = name
         self._index_size = size
-        self._fout = resource_storage.get(f'{self._name}_index', False)
+        self._fout: _Resource = resource_storage.get(f'{self._name}_index', False)
 
-    def add(self, index):
+    def add(self, index: int) -> None:
         """
         Convert index(number) to bytearray and add to in memory store
         """
@@ -46,7 +62,7 @@ class IndexWriter:
                                           byteorder="little", signed=False)
         self._fout.write(index_bytes)
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Complete index resource by adding size and padding followed by writing to file
         """
@@ -60,30 +76,33 @@ class ArchiveBuilder:
     ArchiveBuilder class. Entry point to writing Flatdata.
     Provides methods to create flatdata archives.
     """
+    _NAME: str
+    _SCHEMA: str
+    _RESOURCES: dict[str, ResourceSignature]
 
-    def __init__(self, resource_storage, path=""):
+    def __init__(self, resource_storage: WriteStorage, path: str = "") -> None:
         """
         Opens archive from a given resource writer.
         :param resource_storage: storage manager to store and write to disc
         :param path: file path where archive is created
         """
         self._path = os.path.join(path, self._NAME)
-        self._resource_storage = resource_storage
+        self._resource_storage: WriteStorage = resource_storage
         self._write_archive_signature()
         self._write_archive_schema()
         self._resources_written = [f"{self._NAME}.archive"]
 
     @classmethod
-    def name(cls):
+    def name(cls) -> str:
         '''Returns archive name'''
         return cls._NAME
 
     @classmethod
-    def schema(cls):
+    def schema(cls) -> str:
         '''Returns archive schema'''
         return cls._SCHEMA
 
-    def _write_raw_data(self, name, data):
+    def _write_raw_data(self, name: str, data: bytes | bytearray) -> None:
         '''
         Helper function to write data
 
@@ -94,7 +113,7 @@ class ArchiveBuilder:
         storage.write(data)
         storage.close()
 
-    def _write_schema(self, name):
+    def _write_schema(self, name: str) -> None:
         '''
         Writes resource schema
 
@@ -103,29 +122,29 @@ class ArchiveBuilder:
         self._write_raw_data(f"{name}.schema", bytes(
             self._RESOURCES[name].schema, 'utf-8'))
 
-    def _write_archive_signature(self):
+    def _write_archive_signature(self) -> None:
         '''Writes archive's signature'''
         self._write_raw_data(f"{self._NAME}.archive", b'\x00' * 16)
 
-    def _write_archive_schema(self):
+    def _write_archive_schema(self) -> None:
         '''Writes archive schema'''
         self._write_raw_data(
             f"{self._NAME}.archive.schema", bytes(self._SCHEMA, 'utf-8'))
 
-    def _write_index_schema(self, resource_name, schema):
+    def _write_index_schema(self, resource_name: str, schema: str) -> None:
         self._write_raw_data(
             f"{resource_name}_index.schema", bytes(schema, 'utf-8'))
 
-    def subarchive(self, name):
+    def subarchive(self, name: str) -> 'ArchiveBuilder':
         """
         Returns an archive builder for the sub-archive `name`.
         :raises $name_not_subarchive_error
         :param name: name of the sub-archive
         """
-        NotImplemented
+        raise NotImplementedError(f"subarchive '{name}' is not implemented")
 
     @classmethod
-    def __validate_structure_fields(cls, name, struct, initializer):
+    def __validate_structure_fields(cls, name: str, struct: dict[str, Any], initializer: type[Structure]) -> None:
         '''
         Validates whether passed object has all required fields
 
@@ -142,7 +161,7 @@ class ArchiveBuilder:
             if key not in initializer._FIELD_KEYS:
                 raise UnknownFieldError(key, name)
 
-    def __set_instance(self, storage, name, value):
+    def __set_instance(self, storage: _Resource, name: str, value: dict[str, Any]) -> None:
         '''
         Creates and writes instance type resource
 
@@ -160,7 +179,7 @@ class ArchiveBuilder:
 
         storage.write(bout)
 
-    def __set_vector(self, storage, name, vector):
+    def __set_vector(self, storage: _Resource, name: str, vector: list[dict[str, Any]]) -> None:
         '''
         Creates and writes vector resource
 
@@ -179,7 +198,7 @@ class ArchiveBuilder:
                             field.is_signed, value[key])
             storage.write(bout)
 
-    def __set_multivector(self, storage, name, value):
+    def __set_multivector(self, storage: _Resource, name: str, value: list[list[dict[str, Any]]]) -> None:
         '''
         Creates and writes multivector resource
 
@@ -193,10 +212,10 @@ class ArchiveBuilder:
         for index, obj_type in enumerate(initializer_list[1:]):
             initializers[obj_type._NAME] = (index, obj_type)
 
-        def valid_structure_name(_obj):
+        def valid_structure_name(_obj: dict[str, Any]) -> bool:
             return _obj['name'] in [_initializer._NAME for _initializer in initializer_list[1:]]
 
-        def validate_fields(_obj):
+        def validate_fields(_obj: dict[str, Any]) -> None:
             matched_obj_list = [
                 _initializer for _initializer in initializer_list[1:] \
                     if _initializer._NAME == _obj['name']]
@@ -248,7 +267,7 @@ class ArchiveBuilder:
         self._resources_written.append(name)
         self._resources_written.append(f'{name}_index')
 
-    def set(self, name, value):
+    def set(self, name: str, value: Any) -> None:
         """
         Write a resource for this archive at once.
         Can only be done once. `set` and `start` can't be used for the same resource.
@@ -284,7 +303,7 @@ class ArchiveBuilder:
 
         self._resources_written.append(name)
 
-    def finish(self):
+    def finish(self) -> None:
         """
         Closes the storage manager
         """

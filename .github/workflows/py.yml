@@ -21,7 +21,11 @@ jobs:
           cd flatdata-py
           uv venv
           uv pip install ../flatdata-generator
-          uv pip install ".[inspector]" pytest
+          uv pip install ".[inspector]" pytest mypy
           .venv/bin/pytest -v
           .venv/bin/flatdata-inspector --help
+      - name: Type check
+        run: |
+          cd flatdata-py
+          .venv/bin/mypy flatdata/
 

@@ -1,14 +1,19 @@
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import EnumerationReference, ConstantValueReference, InvalidValueReference
 from flatdata.generator.tree.helpers.basictype import BasicType
+from flatdata.generator.tree.helpers.enumtype import EnumType
+
+from pyparsing import ParseResults
 
 
 class Field(Node):
-    def __init__(self, name, properties=None, type=None, offset=None, width=None):
+    def __init__(self, name: str, properties: ParseResults | None = None, type: str | None = None, offset: int | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
         self._offset = offset
         self._width = width
-        self._decorations = list()
+        self._type_reference: EnumerationReference | None = None
+        self._type: BasicType | EnumType | None = None
+        self._decorations: list[ParseResults] = list()
         if properties and 'decorations' in properties:
             self._decorations = properties.decorations
 
@@ -27,7 +32,7 @@ class Field(Node):
                 self._type = BasicType(name=type, width=self._width)
 
     @staticmethod
-    def create(properties, offset=None):
+    def create(properties: ParseResults, offset: int | None = None) -> 'Field':
         width = None
         if properties.width:
             width = int(properties.width)
@@ -38,46 +43,48 @@ class Field(Node):
                      width=width)
 
     @property
-    def range(self):
+    def range(self) -> str | None:
         for d in self.decorations:
             if "range" in d:
-                return d.range.name
+                return str(d.range.name)
         return None
 
     @property
-    def const_value_refs(self):
+    def const_value_refs(self) -> list[ConstantValueReference]:
         return self.children_like(ConstantValueReference)
 
     @property
-    def invalid_value(self):
+    def invalid_value(self) -> InvalidValueReference | None:
         for x in self.children_like(InvalidValueReference):
             return x
         return None
 
     @property
-    def decorations(self):
+    def decorations(self) -> list[ParseResults]:
         return self._decorations
 
     @property
-    def type(self):
+    def type(self) -> BasicType | EnumType | None:
         return self._type
 
     @type.setter
-    def type(self, value):
+    def type(self, value: BasicType | EnumType | None) -> None:
         self._type = value
 
     @property
-    def type_reference(self):
+    def type_reference(self) -> EnumerationReference | None:
         return self._type_reference
 
     @property
-    def offset(self):
+    def offset(self) -> int | None:
         return self._offset
 
     @offset.setter
-    def offset(self, value):
+    def offset(self, value: int) -> None:
         self._offset = value
 
     @property
-    def doc(self):
-        return self._properties.doc
+    def doc(self) -> str:
+        assert self._properties is not None
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""

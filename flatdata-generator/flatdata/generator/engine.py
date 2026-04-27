@@ -4,10 +4,12 @@
 '''
 
 import types
+from typing import overload
 
 from flatdata.generator.tree.builder import build_ast
 from flatdata.generator.tree.nodes.trivial.namespace import Namespace
 from flatdata.generator.tree.nodes.node import Node
+from flatdata.generator.tree.syntax_tree import SyntaxTree
 
 from .generators.cpp import CppGenerator
 from .generators.dot import DotGenerator
@@ -15,6 +17,7 @@ from .generators.go import GoGenerator
 from .generators.python import PythonGenerator
 from .generators.rust import RustGenerator
 from .generators.flatdata import FlatdataGenerator
+from .generators import BaseGenerator
 
 
 class Engine:
@@ -23,7 +26,7 @@ class Engine:
     Implements code generation from the given flatdata schema.
     """
 
-    _GENERATORS = {
+    _GENERATORS: dict[str, type[BaseGenerator]] = {
         "cpp": CppGenerator,
         "dot": DotGenerator,
         "go": GoGenerator,
@@ -33,13 +36,13 @@ class Engine:
     }
 
     @classmethod
-    def available_generators(cls):
+    def available_generators(cls) -> list[str]:
         """
         Lists names of available code generators.
         """
         return list(cls._GENERATORS.keys())
 
-    def __init__(self, schema):
+    def __init__(self, schema: str) -> None:
         """
         Instantiates generator engine for a given schema.
         :raises FlatdataSyntaxError
@@ -47,7 +50,7 @@ class Engine:
         self.schema = schema
         self.tree = build_ast(schema)
 
-    def render(self, generator_name):
+    def render(self, generator_name: str) -> str:
         """
         Render schema with a given generator
         :param generator_name:
@@ -60,9 +63,16 @@ class Engine:
             )
 
         output_content = generator.render(self.tree)
-        return output_content
+        return str(output_content)
 
-    def render_python_module(self, module_name=None, archive_name=None, root_namespace=None):
+    @overload
+    def render_python_module(self, module_name: str | None, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, type]: ...
+    @overload
+    def render_python_module(self, *, archive_name: str, root_namespace: str | None = None) -> tuple[types.ModuleType, type]: ...
+    @overload
+    def render_python_module(self, module_name: str | None = None, archive_name: None = None, root_namespace: str | None = None) -> types.ModuleType: ...
+
+    def render_python_module(self, module_name: str | None = None, archive_name: str | None = None, root_namespace: str | None = None) -> types.ModuleType | tuple[types.ModuleType, type]:
         """
         Render python module.
         :param module_name: Module name to use. If none, root namespace name is used.
@@ -70,28 +80,28 @@ class Engine:
             if specified, archive type is returned along with the model
         :param root_namespace: Root namespace to pick in case of multiple top level namespaces.
         """
-        root_namespace = self._find_root_namespace(self.tree, archive_name, root_namespace)
+        ns = self._find_root_namespace(self.tree, archive_name, root_namespace)
         module_code = self.render("py")
-        module = types.ModuleType(module_name if module_name is not None else root_namespace.name)
+        module = types.ModuleType(module_name if module_name is not None else ns.name)
         #pylint: disable=exec-used
         exec(module_code, module.__dict__)
         if archive_name is None:
             return module
 
-        name = root_namespace.name + "_" + archive_name
-        archive_type = getattr(module, name) if archive_name else None
+        name = ns.name + "_" + archive_name
+        archive_type = getattr(module, name)
         return module, archive_type
 
     @classmethod
-    def _create_generator(cls, name):
+    def _create_generator(cls, name: str) -> BaseGenerator | None:
         generator_type = cls._GENERATORS.get(name, None)
         if generator_type is None:
             return None
 
-        return generator_type()
+        return generator_type()  # type: ignore[call-arg]  # dict values are concrete subclasses with zero-arg __init__
 
     @staticmethod
-    def _find_root_namespace(tree, archive_name, root_namespace=None):
+    def _find_root_namespace(tree: SyntaxTree, archive_name: str | None, root_namespace: str | None = None) -> Namespace:
         root_children = tree.root.children
         root_namespaces = [
             child for child in root_children

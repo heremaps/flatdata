@@ -21,7 +21,7 @@ from flatdata.generator.engine import Engine
 from flatdata.generator.tree.errors import FlatdataSyntaxError
 
 
-def _parse_command_line():
+def _parse_command_line() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generates code for a given flatdata schema file.")
     parser.add_argument("-s", "--schema", type=str, required=True,
@@ -39,7 +39,7 @@ def _parse_command_line():
     return parser.parse_args()
 
 
-def _setup_logging(args):
+def _setup_logging(args: argparse.Namespace) -> None:
     level = logging.WARNING
     if args.debug:
         level = logging.DEBUG
@@ -52,13 +52,13 @@ def _setup_logging(args):
         level=level)
 
 
-def _check_args(args):
+def _check_args(args: argparse.Namespace) -> None:
     if not os.path.isfile(args.schema):
         logging.fatal("Cannot find schema file at %s", args.schema)
         sys.exit(1)
 
 
-def _run(args):
+def _run(args: argparse.Namespace) -> None:
     _setup_logging(args)
     _check_args(args)
 
@@ -86,6 +86,6 @@ def _run(args):
         logging.info("Code for %s is written to %s", args.gen, args.output_file)
 
 
-def main():
+def main() -> None:
     """Entrypoint"""
     _run(_parse_command_line())

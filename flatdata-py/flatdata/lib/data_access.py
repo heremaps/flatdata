@@ -3,13 +3,19 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+import mmap
+from collections.abc import Callable
+
 import numpy as np
+from numpy.typing import NDArray
+
+ReadableBuffer = bytes | bytearray | memoryview | mmap.mmap
 
 # Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
 
 
-def make_field_reader(offset_bits, num_bits, is_signed):
+def make_field_reader(offset_bits: int, num_bits: int, is_signed: bool) -> Callable[[ReadableBuffer, int], int]:
     """Build a specialized closure for reading a single field from a structure.
 
     Returns a function reader(data, pos_bytes) that reads the field value
@@ -26,7 +32,7 @@ def make_field_reader(offset_bits, num_bits, is_signed):
 
     if num_bits == 1:
         bit_mask = 1 << offset_extra
-        def reader(data, pos):
+        def reader(data: ReadableBuffer, pos: int) -> int:
             return int((data[pos + offset_bytes] & bit_mask) != 0)
         return reader
 
@@ -34,21 +40,21 @@ def make_field_reader(offset_bits, num_bits, is_signed):
         sign_bit = _SIGN_BITS[num_bits]
         sign_mask = sign_bit - 1
         if needs_extra:
-            def reader(data, pos):
+            def reader(data: ReadableBuffer, pos: int) -> int:
                 result = int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte], byteorder="little")
                 result >>= offset_extra
                 result |= data[pos + end_byte] << extra_shift
                 result &= mask
-                return (result & sign_mask) - (result & sign_bit)
+                return int((result & sign_mask) - (result & sign_bit))
         elif offset_extra:
-            def reader(data, pos):
+            def reader(data: ReadableBuffer, pos: int) -> int:
                 result = (int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte],
                     byteorder="little") >> offset_extra) & mask
                 return (result & sign_mask) - (result & sign_bit)
         else:
-            def reader(data, pos):
+            def reader(data: ReadableBuffer, pos: int) -> int:
                 result = int.from_bytes(
                     data[pos + offset_bytes: pos + end_byte],
                     byteorder="little") & mask
@@ -57,26 +63,26 @@ def make_field_reader(offset_bits, num_bits, is_signed):
 
     # Unsigned paths
     if needs_extra:
-        def reader(data, pos):
+        def reader(data: ReadableBuffer, pos: int) -> int:
             result = int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte], byteorder="little")
             result >>= offset_extra
             result |= data[pos + end_byte] << extra_shift
-            return result & mask
+            return int(result & mask)
     elif offset_extra:
-        def reader(data, pos):
+        def reader(data: ReadableBuffer, pos: int) -> int:
             return (int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte],
                 byteorder="little") >> offset_extra) & mask
     else:
-        def reader(data, pos):
+        def reader(data: ReadableBuffer, pos: int) -> int:
             return int.from_bytes(
                 data[pos + offset_bytes: pos + end_byte],
                 byteorder="little") & mask
     return reader
 
 
-def read_field_vectorized(raw_bytes_2d, field_offset_bits, field_width_bits, is_signed):
+def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: int, field_width_bits: int, is_signed: bool) -> NDArray[np.uint64] | NDArray[np.int64]:
     """Read a bit-packed field from all elements at once, returning a numpy array.
 
     :param raw_bytes_2d: numpy uint8 array shaped (num_elements, struct_size_bytes)
@@ -122,7 +128,7 @@ def read_field_vectorized(raw_bytes_2d, field_offset_bits, field_width_bits, is_
     return result
 
 
-def read_value(data, offset_bits, num_bits, is_signed):
+def read_value(data: ReadableBuffer, offset_bits: int, num_bits: int, is_signed: bool) -> int:
     """Read a bit-packed value from data at the given bit offset.
 
     This is a convenience wrapper around :func:`make_field_reader` for one-off
@@ -133,7 +139,7 @@ def read_value(data, offset_bits, num_bits, is_signed):
     return reader(data, 0)
 
 
-def write_value(data, offset_bits, num_bits, is_signed, value):
+def write_value(data: bytearray, offset_bits: int, num_bits: int, is_signed: bool, value: int) -> None:
     assert num_bits <= 64, f'Number of bits to write is greater than 64'
 
     offset_bytes, offset_extra_bits = divmod(offset_bits, 8)

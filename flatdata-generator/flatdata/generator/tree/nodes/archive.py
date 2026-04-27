@@ -2,9 +2,12 @@ from flatdata.generator.tree.errors import UnexpectedResourceType
 from flatdata.generator.tree.nodes.node import Node
 import flatdata.generator.tree.nodes.resources as resources
 
+from pyparsing import ParseResults
 
-def _create_resource(properties):
+
+def _create_resource(properties: ParseResults) -> resources.ResourceBase:
     resource_type = properties.type
+    cls: type[resources.ResourceBase]
     if 'vector' in resource_type:
         cls = resources.Vector
     elif 'multivector' in resource_type:
@@ -26,12 +29,12 @@ def _create_resource(properties):
 
 
 class Archive(Node):
-    def __init__(self, name, properties=None):
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         super().__init__(name=name, properties=properties)
 
     #pylint: disable=unused-argument
     @staticmethod
-    def create(properties, definition):
+    def create(properties: ParseResults, definition: str) -> 'Archive':
         result = Archive(name=properties.name, properties=properties)
         for resource in properties.resources:
             result.insert(_create_resource(resource))
@@ -45,9 +48,11 @@ class Archive(Node):
         return result
 
     @property
-    def resources(self):
-        return self.children_like(resources.ResourceBase)
+    def resources(self) -> list[resources.ResourceBase]:
+        return self.children_like(resources.ResourceBase)  # type: ignore[type-abstract]  # isinstance() with ABC is valid
 
     @property
-    def doc(self):
-        return self._properties.doc
+    def doc(self) -> str:
+        assert self._properties is not None
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""

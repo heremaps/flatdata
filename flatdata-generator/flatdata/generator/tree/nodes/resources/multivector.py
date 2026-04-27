@@ -1,44 +1,49 @@
+from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import StructureReference, BuiltinStructureReference
 from flatdata.generator.tree.nodes.trivial import Structure
 from .base import ResourceBase
 
+from typing import Any
+
+from pyparsing import ParseResults
+
 
 class Multivector(ResourceBase):
-    def __init__(self, name, properties=None, types=None, width=None):
+    def __init__(self, name: str, properties: ParseResults | None = None, types: list[str] | None = None, width: int | None = None) -> None:
         super().__init__(name=name, properties=properties)
-        self._types = []
+        self._types: list[str] = []
         if types is not None:
             self._types = types
         self._width = width
 
     @staticmethod
-    def create(properties):
+    def create(properties: ParseResults) -> 'Multivector':
         return Multivector(name=properties.name,
                            properties=properties,
                            types=[t for t in properties.type.multivector.type],
                            width=int(properties.type.multivector.width))
 
-    def create_references(self):
+    def create_references(self) -> list[Node]:
         return [StructureReference(name=t) for t in self._types]
 
     @property
-    def types(self):
+    def types(self) -> list[str]:
         return self._types
 
     @property
-    def width(self):
+    def width(self) -> int | None:
         return self._width
 
     @property
-    def index_reference(self):
+    def index_reference(self) -> BuiltinStructureReference:
         builtin_refs = [node for node in self.children if isinstance(node, BuiltinStructureReference)]
         assert len(builtin_refs) == 1, "multivector has exactly one builtin ref which is its index"
         return builtin_refs[0]
 
     @property
-    def builtins(self):
-        class MemberDict(dict):
-            def __getattr__(self, attr):
+    def builtins(self) -> list[Structure]:
+        class MemberDict(dict[str, Any]):
+            def __getattr__(self, attr: str) -> Any:
                 return self.get(attr)
         decorations = [MemberDict({"range" : MemberDict({"name":"range"})})]
         field = MemberDict({"decorations":decorations, "name":"value", "width":self._width, "type":"u64"})
@@ -47,5 +52,5 @@ class Multivector(ResourceBase):
             "schema":"struct IndexType%s { value : u64 : %s; }" % (self._width, self._width),
             "doc":"/** Builtin type to for MultiVector index */",
             "fields":[field]})
-        index_type = Structure.create(properties=properties, definition="")
+        index_type = Structure.create(properties=properties, definition="")  # type: ignore[arg-type]  # MemberDict duck-types ParseResults
         return [index_type]

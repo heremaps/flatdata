@@ -7,9 +7,11 @@ import argparse
 import fnmatch
 import os
 import sys
+import types
 
 import pandas as pd
 
+from .archive import Archive
 from .file_resource_storage import FileResourceStorage
 from .tar_archive_resource_storage import TarArchiveResourceStorage
 from flatdata.generator.engine import Engine
@@ -29,7 +31,7 @@ DESCRIPTION = \
     """
 
 
-def open_archive(path, archive=None, module_name=None, root_namespace=None):
+def open_archive(path: str, archive: str | None = None, module_name: str | None = None, root_namespace: str | None = None) -> tuple[Archive, types.ModuleType]:
     """
     Opens archive at a given path.
     Archive schema is read and python bindings are generated on the fly.
@@ -47,7 +49,7 @@ def open_archive(path, archive=None, module_name=None, root_namespace=None):
     is_tar = path.endswith(".tar") and not os.path.isdir(path)
     archive_path = path if is_tar or os.path.isdir(path) else os.path.dirname(path)
     if is_tar:
-        storage = TarArchiveResourceStorage.create(archive_path)
+        storage: TarArchiveResourceStorage | FileResourceStorage = TarArchiveResourceStorage.create(archive_path)
     else:
         storage = FileResourceStorage(archive_path)
 
@@ -69,21 +71,24 @@ def open_archive(path, archive=None, module_name=None, root_namespace=None):
             raise RuntimeError("Specified archive not found at path.")
 
     archive_name, _ = signatures[matching].rsplit('.', 1)
-    schema = storage.get(signatures[matching] + ".schema")
+    schema_raw = storage.get(signatures[matching] + ".schema")
+    if schema_raw is None:
+        raise RuntimeError("Schema not found for archive at %s" % path)
 
     try:
         module, archive_type = \
-            Engine(schema.read().decode()).render_python_module(module_name=module_name,
+            Engine(bytes(schema_raw).decode()).render_python_module(  # type: ignore[arg-type]  # schema_raw is always bytes-like (mmap/memoryview) for .schema files
+                                                                module_name=module_name,
                                                                 archive_name=archive_name,
                                                                 root_namespace=root_namespace)
     except FlatdataSyntaxError as err:
         raise RuntimeError("Error reading schema: %s " % err)
 
-    archive = archive_type(storage)
-    return archive, module
+    result: Archive = archive_type(storage)
+    return result, module
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", type=str, dest="path", required=True,
                         help="Path to archive")

@@ -2,10 +2,18 @@
  Copyright (c) 2017 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
-from copy import copy
+from __future__ import annotations
 
 from collections import OrderedDict
+from collections.abc import Iterator
+from copy import copy
+from typing import TypeVar, overload
+
+from pyparsing import ParseResults
+
 from flatdata.generator.tree.errors import SymbolRedefinition
+
+_T = TypeVar('_T', bound='Node')
 
 
 class Node:
@@ -18,65 +26,67 @@ class Node:
     PATH_SEPARATOR = '.'
 
     @staticmethod
-    def splitpath(path):
+    def splitpath(path: str) -> list[str]:
         """
         Splits node path.
         """
         return path.split(Node.PATH_SEPARATOR)
 
     @staticmethod
-    def jointwo(path, other):
+    def jointwo(path: str, other: str) -> str:
         """
         Joins two node paths.
         """
         return Node.PATH_SEPARATOR.join([path, other])
 
-    def __init__(self, name, properties=None):
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         assert self.PATH_SEPARATOR not in name
         assert name
         self._name = name
         self._properties = properties
-        self._children = OrderedDict()
-        self._parent = None
+        self._children: OrderedDict[str, Node] = OrderedDict()
+        self._parent: Node | None = None
 
     @property
-    def name(self):
+    def name(self) -> str:
         """
         Returns the name of the node.
         """
         return self._name
 
     @property
-    def children(self):
+    def children(self) -> list[Node]:
         """
         Returns a list of children nodes.
         """
         return list(self._children.values())
 
-    def children_like(self, T):
+    def children_like(self, T: type[_T]) -> list[_T]:
         """
         Returns a list of children nodes of a given type, if any.
         """
         return [c for c in list(self._children.values()) if isinstance(c, T)]
 
     @property
-    def parent(self):
+    def parent(self) -> Node | None:
         """
         Returns node's parent.
         """
         return self._parent
 
-    def first_parent_like(self, T):
+    def first_parent_like(self, T: type[_T]) -> _T | None:
         """
         Returns first available parent of a given type or None if none found.
         """
         result = self
         while result.parent is not None and not isinstance(result.parent, T):
             result = result.parent
-        return result.parent
+        if isinstance(result.parent, T):
+            return result.parent
+        return None
 
     @property
-    def path(self):
+    def path(self) -> str:
         """
         Returns nodes' path in a tree.
         """
@@ -84,13 +94,13 @@ class Node:
             return self.name
         return Node.jointwo(self._parent.path, self.name)
 
-    def path_with(self, separator='_'):
+    def path_with(self, separator: str = '_') -> str:
         """
         Returns nodes' path in a tree with a given characters as separator.
         """
         return self.path.replace(self.PATH_SEPARATOR, separator)
 
-    def path_depth(self):
+    def path_depth(self) -> int:
         """
         Returns nodes' depths in a tree
         """
@@ -98,7 +108,7 @@ class Node:
             return 0
         return 1 + self._parent.path_depth()
 
-    def set_name(self, value):
+    def set_name(self, value: str) -> None:
         """
         Sets the new name for the node. New name should not clash with any of siblings' names.
         :raises RuntimeError in case name is already in use
@@ -107,7 +117,7 @@ class Node:
         if self.name == value:
             return
 
-        if self.parent is not None and value in self._parent._children:
+        if self.parent is not None and value in self._parent._children:  # type: ignore[union-attr]  # self.parent property returns self._parent; mypy can't narrow backing field through property
             raise RuntimeError(
                 "Cannot rename the node, name {value} is already in use".format(value=value))
 
@@ -115,7 +125,7 @@ class Node:
         if self.parent is not None:
             self.parent.reindex()
 
-    def find(self, path):
+    def find(self, path: str) -> Node:
         """
         Finds child node recursively by its path.
         :param path: Full path to the node up to the node search is started.
@@ -137,7 +147,7 @@ class Node:
                 path=path, options=tuple(self.symbols())))
         return target
 
-    def get(self, path, default=None):
+    def get(self, path: str, default: Node | None = None) -> Node | None:
         """
         Returns the node like find() does, but allows default value specification.
         """
@@ -147,13 +157,13 @@ class Node:
             return default
         return result
 
-    def find_relative(self, path):
+    def find_relative(self, path: str) -> Node:
         """
         Finds a child node recursively via its path relative to the current node.
         """
         return self.find(Node.jointwo(self.name, path))
 
-    def find_last(self, path):
+    def find_last(self, path: str) -> Node | None:
         """
         Finds a last node existing in the path. If no such node found, None is returned.
         """
@@ -172,23 +182,23 @@ class Node:
             return target
         return target
 
-    def get_relative(self, path, default=None):
+    def get_relative(self, path: str, default: Node | None = None) -> Node | None:
         """
         Finds a child node recursively via its path relative to the current node.
         """
         return self.get(Node.jointwo(self.name, path), default)
 
     @property
-    def root(self):
+    def root(self) -> Node:
         """
         Returns the root node of the tree
         """
         result = self
         while result.parent is not None:
-            result = result._parent
+            result = result._parent  # type: ignore[assignment]  # guarded by while loop; mypy can't narrow backing field through property
         return result
 
-    def extract_subtree(self):
+    def extract_subtree(self) -> Node:
         """
         Extract the subtree of node (some nodes are copied)
         Also copies the path to the root of the tree
@@ -203,7 +213,7 @@ class Node:
             new_root = parent
         return new_root
 
-    def insert(self, *nodes):
+    def insert(self, *nodes: Node) -> Node:
         """
         Inserts node into the tree.
         :raises: SymbolRedefinition in case node with the same name exists
@@ -223,23 +233,27 @@ class Node:
             node._parent = self
         return self
 
-    def erase(self, key):
+    def erase(self, key: str) -> None:
         """
         Erase node with a given name from the tree.
         """
         node = self._children.pop(key)
         node._parent = None
 
-    def reindex(self):
+    def reindex(self) -> None:
         """
         Reindex the node. Produces no side effects if called externally.
         """
-        new_children = OrderedDict()
+        new_children: OrderedDict[str, Node] = OrderedDict()
         for _key, node in self._children.items():
             new_children[node.name] = node
         self._children = new_children
 
-    def iterate(self, node_type=None):
+    @overload
+    def iterate(self, node_type: type[_T]) -> Iterator[_T]: ...
+    @overload
+    def iterate(self, node_type: None = ...) -> Iterator[Node]: ...
+    def iterate(self, node_type: type | None = None) -> Iterator[Node]:
         """
         Iterates the nodes in pre-order traversal fashion
         """
@@ -249,7 +263,7 @@ class Node:
             for node in child.iterate(node_type):
                 yield node
 
-    def parents(self):
+    def parents(self) -> Iterator[Node]:
         """
         Returns all node's parents up to the root of the tree.
         """
@@ -258,7 +272,7 @@ class Node:
             yield par._parent
             par = par._parent
 
-    def detach(self):
+    def detach(self) -> Node:
         """
         Detaches the node from its parent.
         """
@@ -268,12 +282,12 @@ class Node:
         self._parent = None
         return self
 
-    def symbols(self, include_types=False):
+    def symbols(self, include_types: bool = False) -> set[str] | dict[str, type]:
         """
         Returns paths of all nodes available in the tree, optionally with node types.
         :param include_types: return types along with paths
         """
-        result = dict()
+        result: dict[str, type] = dict()
         for node in self.iterate():
             path = node.path
             if path:
@@ -282,5 +296,5 @@ class Node:
             return set(result.keys())
         return result
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{type}{{{path}}}".format(type=type(self).__name__, path=self.path)

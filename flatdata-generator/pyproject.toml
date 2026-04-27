@@ -7,6 +7,7 @@ name = "flatdata-generator"
 version = "0.4.11"
 description = "Generate source code for C++, Rust, Go or Python from a Flatdata schema file"
 readme = "README.md"
+requires-python = ">=3.10"
 authors = [
     { name = "Flatdata Developers" },
 ]
@@ -39,3 +40,21 @@ testpaths = [ "tests" ]
 python_files = [ "test_*.py" ]
 python_classes = [ "Test*" ]
 python_functions = [ "test_*" ]
+
+[tool.mypy]
+python_version = "3.10"
+namespace_packages = true
+explicit_package_bases = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+strict_equality = true
+disallow_any_generics = true
+
+[[tool.mypy.overrides]]
+module = "Levenshtein"
+ignore_missing_imports = true

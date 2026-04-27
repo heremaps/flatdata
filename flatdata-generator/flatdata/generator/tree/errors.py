@@ -3,13 +3,23 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import TYPE_CHECKING
+
+from pyparsing import ParseBaseException
+
+if TYPE_CHECKING:
+    from .nodes.node import Node
+
 
 class FlatdataSyntaxError(RuntimeError):
     pass
 
 
 class SymbolRedefinition(FlatdataSyntaxError):
-    def __init__(self, duplicate, existing):
+    def __init__(self, duplicate: Node, existing: Node) -> None:
         super().__init__(
             "Symbol redefined: {duplicate} already exists at {existing}".format(
                 duplicate=duplicate,
@@ -17,50 +27,50 @@ class SymbolRedefinition(FlatdataSyntaxError):
 
 
 class CircularReferencing(FlatdataSyntaxError):
-    def __init__(self, node, child):
+    def __init__(self, node: Node, child: Node) -> None:
         super().__init__(
             "Circular reference in schema: {node} -> {child}".format(
                 node=node, child=child))
 
 
 class MissingSymbol(FlatdataSyntaxError):
-    def __init__(self, name, options, node):
+    def __init__(self, name: str, options: Iterable[str], node: Node) -> None:
         message = "Missing symbol \"{name}\" in {path}.".format(
             name=name, path=node.path)
         try:
             import Levenshtein
-            options = sorted(
+            ranked = sorted(
                 [(Levenshtein.distance(name, option.split('.')[-1]), option)
                  for option in options],
                 key=lambda x: x[0])
-            if options:
-                message += " Did you mean \"{options}\"?".format(
-                    options=options[0][1])
+            if ranked:
+                message += " Did you mean \"{opt}\"?".format(
+                    opt=ranked[0][1])
         except ImportError:
             pass
         super().__init__(message)
 
 
 class IncorrectReferenceType(FlatdataSyntaxError):
-    def __init__(self, name, actual, expected):
+    def __init__(self, name: str, actual: type, expected: type) -> None:
         super().__init__(
             "{name} referring to incorrect type. Expected {expected}, actual {actual}".format(
                 name=name, expected=expected, actual=actual))
 
 
 class UnexpectedResourceType(FlatdataSyntaxError):
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__(
             "Unexpected resource type: {name}".format(name=name))
 
 
 class ParsingError(FlatdataSyntaxError):
-    def __init__(self, pyparsing_error):
+    def __init__(self, pyparsing_error: ParseBaseException) -> None:
         super().__init__(
             self.create_message(pyparsing_error))
 
     @staticmethod
-    def create_message(err):
+    def create_message(err: ParseBaseException) -> str:
         return "Failed to parse the schema. Details below:\n" \
                "  {line}\n" \
                "  {pointer}\n" \
@@ -69,89 +79,89 @@ class ParsingError(FlatdataSyntaxError):
 
 
 class InvalidWidthError(FlatdataSyntaxError):
-    def __init__(self, width, flatdata_type):
+    def __init__(self, width: int, flatdata_type: str) -> None:
         super().__init__(
             "Bit field of {width}bit width cannot fit in {type}".format(width=width,
                                                                         type=flatdata_type))
 
 
 class InvalidSignError(FlatdataSyntaxError):
-    def __init__(self, value):
+    def __init__(self, value: int) -> None:
         super().__init__(
             "Value has wrong sign: {value}".format(value=value))
 
 
 class DuplicateEnumValueError(FlatdataSyntaxError):
-    def __init__(self, enumeration_name, value):
+    def __init__(self, enumeration_name: str, value: int) -> None:
         super().__init__(
             "Enumeration {enumeration_name} has duplicate entries for value {value}"
             .format(enumeration_name=enumeration_name, value=value))
 
 class SparseEnumError(FlatdataSyntaxError):
-    def __init__(self, enumeration_name, width):
+    def __init__(self, enumeration_name: str, width: int) -> None:
         super().__init__(
             "Enumeration {enumeration_name} has too many undefined values (2^{width}), please restrict bit width, or define more"
             .format(enumeration_name=enumeration_name, width=width))
 
 class InvalidEnumValueError(FlatdataSyntaxError):
-    def __init__(self, enumeration_name, value):
+    def __init__(self, enumeration_name: str, value: int) -> None:
         super().__init__(
             "Enumeration {enumeration_name} has not enough bits for value {value}"
             .format(enumeration_name=enumeration_name, value=value))
 
 
 class InvalidStructInExplicitReference(FlatdataSyntaxError):
-    def __init__(self, struct, resource):
+    def __init__(self, struct: str, resource: str) -> None:
         super().__init__(
             "Struct '{struct}' referenced, but not appearing in resource '{resource}'"
             .format(struct=struct, resource=resource))
 
 
 class InvalidEnumWidthError(FlatdataSyntaxError):
-    def __init__(self, enumeration_name, width, provided_width):
+    def __init__(self, enumeration_name: str, width: int, provided_width: int) -> None:
         super().__init__(
             "Enumeration {enumeration_name} has {width} bits, but field specified {provided_width} bits"
             .format(enumeration_name=enumeration_name, width=width, provided_width=provided_width))
 
 
 class InvalidConstantValueError(FlatdataSyntaxError):
-    def __init__(self, name, value):
+    def __init__(self, name: str, value: int) -> None:
         super().__init__(
             "Constant {name} has not enough bits for value {value}"
             .format(name=name, value=value))
 
 class InvalidConstReference(FlatdataSyntaxError):
-    def __init__(self, name, type):
+    def __init__(self, name: str, type: str) -> None:
         super().__init__(
             "Referenced constant {name} has wrong type {type}"
             .format(name=name, type=type))
 
 class InvalidConstValueReference(FlatdataSyntaxError):
-    def __init__(self, name, bits):
+    def __init__(self, name: str, bits: int) -> None:
         super().__init__(
             "Referenced constant {name} value does not fit into {bits} bits"
             .format(name=name, bits=bits))
 
 class DuplicateInvalidValueReference(FlatdataSyntaxError):
-    def __init__(self, name, constants):
+    def __init__(self, name: str, constants: list[str]) -> None:
         super().__init__(
             "Multiple optional annotations {constants} for field {name}"
         .format(name=name, constants=constants))
 
 class InvalidRangeName(FlatdataSyntaxError):
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__(
             "@range name {name} is already in use for a field"
             .format(name=name))
 
 class InvalidRangeReference(FlatdataSyntaxError):
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__(
             "Structs with @range can only be used in vectors: {name}"
             .format(name=name))
 
 class OptionalRange(FlatdataSyntaxError):
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__(
             "@range cannot be combined with @optional, store empty ranges instead: {name}"
             .format(name=name))

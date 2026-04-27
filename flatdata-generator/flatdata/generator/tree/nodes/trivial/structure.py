@@ -1,9 +1,11 @@
 from flatdata.generator.tree.nodes.node import Node
 from .field import Field
 
+from pyparsing import ParseResults
+
 
 class Structure(Node):
-    def __init__(self, name, properties=None):
+    def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         """
         Use to instantiate empty structure.
         No special properties are evaluated.
@@ -14,7 +16,7 @@ class Structure(Node):
         super().__init__(name=name, properties=properties)
 
     @staticmethod
-    def create(properties, definition):
+    def create(properties: ParseResults, definition: str) -> 'Structure':
         result = Structure(name=properties.name, properties=properties)
 
         for field in properties.fields:
@@ -22,25 +24,27 @@ class Structure(Node):
         return result
 
     @property
-    def has_range(self):
+    def has_range(self) -> bool:
         return any(f for f in self.fields if f.range)
 
     @property
-    def doc(self):
-        return self._properties.doc
+    def doc(self) -> str:
+        assert self._properties is not None
+        doc = self._properties.doc
+        return str(doc) if doc is not None else ""
 
     @property
-    def size_in_bits(self):
+    def size_in_bits(self) -> int:
         return self._size_in_bits
 
     @size_in_bits.setter
-    def size_in_bits(self, value):
+    def size_in_bits(self, value: int) -> None:
         self._size_in_bits = value
 
     @property
-    def size_in_bytes(self):
+    def size_in_bytes(self) -> int:
         return (self._size_in_bits + 7) // 8
 
     @property
-    def fields(self):
+    def fields(self) -> list[Field]:
         return self.children_like(Field)

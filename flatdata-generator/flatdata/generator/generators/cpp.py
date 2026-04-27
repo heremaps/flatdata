@@ -3,6 +3,12 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from jinja2 import Environment
+
+from flatdata.generator.tree.helpers.basictype import BasicType
+from flatdata.generator.tree.helpers.enumtype import EnumType
+from flatdata.generator.tree.nodes.node import Node
+from flatdata.generator.tree.nodes.references import BuiltinStructureReference, StructureReference
 from flatdata.generator.tree.nodes.resources import Vector, Multivector, Instance, RawData, BoundResource, \
     ResourceBase, Archive as ArchiveResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
@@ -13,21 +19,21 @@ from . import BaseGenerator
 class CppGenerator(BaseGenerator):
     """Flatdata to C++ header file generator"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "cpp/cpp.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
-    def _populate_environment(self, env):
+    def _populate_environment(self, env: Environment) -> None:
         env.filters["cpp_doc"] = lambda value: value
 
-        def _safe_cpp_string_line(value):
+        def _safe_cpp_string_line(value: str) -> str:
             return value.replace('\\', '\\\\').replace('"', r'\"')
 
         env.filters["safe_cpp_string_line"] = _safe_cpp_string_line
 
-        def _cpp_base_type(flatdata_type):
+        def _cpp_base_type(flatdata_type: BasicType | EnumType | Node) -> str:
             type_map = {
                 "bool": "bool",
                 "i8": "int8_t",
@@ -41,28 +47,28 @@ class CppGenerator(BaseGenerator):
             }
             if flatdata_type.name in type_map:
                 return type_map[flatdata_type.name]
-            return flatdata_type.name.replace("@@", "::").replace("@", "::")
+            return str(flatdata_type.name.replace("@@", "::").replace("@", "::"))
 
         env.filters["cpp_base_type"] = _cpp_base_type
 
-        def _to_type_params(refs):
+        def _to_type_params(refs: list[BuiltinStructureReference | StructureReference]) -> str:
             return ', '.join([ref.node.path_with("::") for ref in refs])
 
         env.filters["to_type_params"] = _to_type_params
 
-        def _snake_to_upper_camel_case(expr):
+        def _snake_to_upper_camel_case(expr: str) -> str:
             return ''.join(p.title() for p in expr.split('_'))
 
         env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
-        def _typedef_name(entity, extra_suffix=""):
+        def _typedef_name(entity: Field | ResourceBase, extra_suffix: str = "") -> str:
             assert isinstance(entity, (Field, ResourceBase)), "Got: %s" % entity.__class__
             return _snake_to_upper_camel_case(entity.name) + extra_suffix + "Type"
 
         env.filters["typedef_name"] = _typedef_name
 
-        def _optional_typedef_usage(resource, extra_suffix=""):
-            def _wrap_in_optional(declaration):
+        def _optional_typedef_usage(resource: ResourceBase, extra_suffix: str = "") -> str:
+            def _wrap_in_optional(declaration: str) -> str:
                 if resource.optional:
                     return "boost::optional< %s >" % declaration
                 return declaration
@@ -71,7 +77,7 @@ class CppGenerator(BaseGenerator):
 
         env.filters["archive_typedef_usage"] = _optional_typedef_usage
 
-        def _resource_provides_incremental_builder(resource):
+        def _resource_provides_incremental_builder(resource: ResourceBase) -> bool:
             assert isinstance(resource, ResourceBase)
             if isinstance(resource, Instance):
                 return False
@@ -86,7 +92,7 @@ class CppGenerator(BaseGenerator):
         env.filters[
             "resource_provides_incremental_builder"] = _resource_provides_incremental_builder
 
-        def provides_setter(resource):
+        def provides_setter(resource: ResourceBase) -> bool:
             assert isinstance(resource, ResourceBase)
             if isinstance(resource, Instance):
                 return True

@@ -10,33 +10,33 @@ class Reference(Node):
     References participate in dependency resolution.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__(name=Reference._referencify(name))
 
     @property
-    def target(self):
+    def target(self) -> str:
         return Reference._dereferencify(self.name)
 
-    def update_reference(self, new_value):
+    def update_reference(self, new_value: str) -> None:
         assert new_value.endswith(self.target), \
             "References can only be updated during resolution for the same symbol: %s -> %s" % \
             (self.target, new_value)
         self.set_name(Reference._referencify(new_value))
 
     @property
-    def node(self):
+    def node(self) -> Node:
         return self.root.find(self.target)
 
     @property
-    def is_qualified(self):
+    def is_qualified(self) -> bool:
         return self.name[:2] == "@@"
 
     @staticmethod
-    def _referencify(name):
+    def _referencify(name: str) -> str:
         return "@" + name.replace(".", "@")
 
     @staticmethod
-    def _dereferencify(name):
+    def _dereferencify(name: str) -> str:
         return name[1:].replace("@", ".")
 
 
@@ -91,10 +91,10 @@ class EnumerationReference(TypeReference):
     EnumerationReference depict:
     - Field Type -> Enumeration
     """
-    def __init__(self, name, width=None):
+    def __init__(self, name: str, width: int | None = None) -> None:
         super().__init__(name)
         self._width = width
 
     @property
-    def width(self):
+    def width(self) -> int | None:
         return self._width

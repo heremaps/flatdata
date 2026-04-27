@@ -4,9 +4,12 @@
 '''
 import re
 
+from jinja2 import Environment
+
+from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
                                             Archive as ArchiveResource)
-from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration
+from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration, Field
 from flatdata.generator.tree.helpers.enumtype import EnumType
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -23,14 +26,14 @@ class RustGenerator(BaseGenerator):
         "pure", "ref", "return", "self", "sizeof", "static", "struct", "super", "trait", "true",
         "type", "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield"]
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseGenerator.__init__(self, "rust/rust.jinja2")
 
-    def supported_nodes(self):
+    def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
     @staticmethod
-    def _format_numeric_literal(value):
+    def _format_numeric_literal(value: str) -> str:
         try:
             # only apply this to integer values
             number = int(value)
@@ -40,19 +43,19 @@ class RustGenerator(BaseGenerator):
         except ValueError:
             return value
 
-    def _populate_environment(self, env):
-        def _camel_to_snake_case(expr):
+    def _populate_environment(self, env: Environment) -> None:
+        def _camel_to_snake_case(expr: str) -> str:
             step1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', expr)
             return re.sub('([a-z0-9])(A-Z)', r'\1_\2', step1).lower()
 
         env.filters["camel_to_snake_case"] = _camel_to_snake_case
 
-        def _snake_to_upper_camel_case(expr):
+        def _snake_to_upper_camel_case(expr: str) -> str:
             return ''.join(p.title() for p in expr.split('_'))
 
         env.filters["snake_to_upper_camel_case"] = _snake_to_upper_camel_case
 
-        def _rust_doc(expr):
+        def _rust_doc(expr: str) -> str:
             lines = [
                 re.sub(r'^[ \t]*(/\*\*\s?|/\*\s?|\*/|\*\s?)(.*?)\s*(\*/)?$',
                        r"/// \2", line).strip()
@@ -68,24 +71,32 @@ class RustGenerator(BaseGenerator):
 
         env.filters["rust_doc"] = _rust_doc
 
-        def _escape_rust_keywords(expr):
+        def _escape_rust_keywords(expr: str) -> str:
             if expr in self.RESERVED_KEYWORDS:
                 return "{}_".format(expr)
             return expr
 
-        def _field_type(field):
+        def _field_type(field: Field) -> str:
+            assert field.type is not None
             if isinstance(field.type, EnumType):
+                assert field.type_reference is not None
+                assert field.parent is not None
                 return "{}".format(
                     _fully_qualified_name(field.parent, field.type_reference.node))
             return "{}".format(field.type.name)
 
-        def _primitive_type(field):
+        def _primitive_type(field: Field) -> str:
+            assert field.type is not None
             if isinstance(field.type, EnumType):
-                return "{}".format(field.type_reference.node.type.name)
+                assert field.type_reference is not None
+                enum_node = field.type_reference.node
+                assert isinstance(enum_node, Enumeration)
+                assert enum_node.type is not None
+                return "{}".format(enum_node.type.name)
             return "{}".format(field.type.name)
 
-        def _fully_qualified_name(current, node):
-            return "::".join((current.path_depth() - 1) * ["super"]) + node.path_with("::")
+        def _fully_qualified_name(current: Node, node: Node) -> str:
+            return "::".join((current.path_depth() - 1) * ["super"]) + str(node.path_with("::"))
 
         env.globals["fully_qualified_name"] = _fully_qualified_name
         env.filters["escape_rust_keywords"] = _escape_rust_keywords

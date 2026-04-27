@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 import tarfile
 
 from .errors import CorruptResourceError
@@ -15,14 +17,14 @@ class TarArchiveResourceStorage:
     Resource storage based on a memory-mapped TAR archive.
     """
 
-    def __init__(self, tar_map, file_entries, dir_entries, sub_path):
+    def __init__(self, tar_map: memoryview, file_entries: dict[str, tuple[int, int]], dir_entries: set[str], sub_path: str) -> None:
         self.tar_map = tar_map
         self.file_entries = file_entries
         self.dir_entries = dir_entries
         self.sub_path = sub_path
 
     @classmethod
-    def create(cls, tar_path, sub_path=""):
+    def create(cls, tar_path: str, sub_path: str = "") -> 'TarArchiveResourceStorage':
         tar_map = memoryview(FileResourceStorage.memory_map(tar_path))
         file_entries = dict()
         dir_entries = set()
@@ -40,7 +42,7 @@ class TarArchiveResourceStorage:
 
         return cls(tar_map, file_entries, dir_entries, sub_path)
 
-    def get(self, key, is_optional=False):
+    def get(self, key: str, is_optional: bool = False) -> memoryview | 'TarArchiveResourceStorage' | None:
         path = self._path(key)
         if path in self.file_entries:
             (offset, length) = self.file_entries[path]
@@ -54,7 +56,7 @@ class TarArchiveResourceStorage:
         else:
             return None
 
-    def ls(self):
+    def ls(self) -> list[str]:
         prefix = self._path("")
         entries = []
         for d in self.dir_entries:
@@ -65,7 +67,7 @@ class TarArchiveResourceStorage:
                 entries.append(f[len(prefix):])
         return entries
 
-    def _path(self, key):
+    def _path(self, key: str) -> str:
         if not self.sub_path:
             return key
         else:
