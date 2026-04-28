@@ -13,7 +13,7 @@ from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
     InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
     InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference,
-    InvalidStructInExplicitReference, OptionalRange)
+    InvalidStructInExplicitReference, OptionalRange, ParsingError, ImportParsingError)
 from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
@@ -23,12 +23,12 @@ from flatdata.generator.tree.nodes.references import (
     BuiltinStructureReference, ConstantReference, ConstantValueReference,
     EnumerationReference, StructureReference, InvalidValueReference)
 from flatdata.generator.tree.nodes.root import Root
-from flatdata.generator.tree.errors import ParsingError
 from flatdata.generator.tree.traversal import DfsTraversal
 from flatdata.generator.tree.helpers.basictype import BasicType
 from flatdata.generator.tree.helpers.enumtype import EnumType
 
 from .resolver import resolve_references
+from .importer import resolve_imports
 
 
 def _create_nested_namespaces(path: str) -> tuple[nodes.Namespace, nodes.Namespace]:
@@ -280,9 +280,6 @@ def build_ast(definition: str) -> SyntaxTree:
 
 def build_ast_from_file(path: str) -> SyntaxTree:
     """Build the Flatdata syntax tree from a schema file, resolving imports."""
-    from flatdata.generator.tree.importer import resolve_imports
-    from flatdata.generator.tree.errors import ImportParsingError
-
     try:
         resolved_files, import_infos = resolve_imports(path)
     except ImportParsingError as e:
