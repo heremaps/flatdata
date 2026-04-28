@@ -25,10 +25,12 @@ class SyntaxTree:
 
     def __init__(self, root: Root | Node,
                  imports: Sequence[ImportInfo] | None = None,
-                 root_schema: str | None = None) -> None:
+                 root_schema: str | None = None,
+                 source_file_map: dict[str, str] | None = None) -> None:
         self._root = root
         self._imports: Sequence[ImportInfo] = imports or []
         self._root_schema = root_schema
+        self._source_file_map: dict[str, str] = source_file_map or {}
 
     @property
     def imports(self) -> Sequence[ImportInfo]:
@@ -39,6 +41,11 @@ class SyntaxTree:
     def root_schema(self) -> str | None:
         """Returns the raw schema text of the root file, or None for string-based builds."""
         return self._root_schema
+
+    @property
+    def source_file_map(self) -> dict[str, str]:
+        """Returns mapping from absolute source file path to relative path for all imported files."""
+        return self._source_file_map
 
     def is_local_node(self, node: Node) -> bool:
         """True if node was defined in the root compilation file."""

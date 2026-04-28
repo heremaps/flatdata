@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+import posixpath
+
 from jinja2 import Environment
 
 from flatdata.generator.tree.helpers.basictype import BasicType
@@ -32,7 +34,7 @@ class CppGenerator(BaseGenerator):
         return [n for n in nodes if tree.is_local_node(n)]
 
     def get_import_directives(self, tree: SyntaxTree) -> list[str]:
-        return [imp.path.replace('.flatdata', '.h') for imp in tree.imports]
+        return [posixpath.normpath(imp.path).replace('.flatdata', '.h') for imp in tree.imports]
 
     def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         env.filters["cpp_doc"] = lambda value: value

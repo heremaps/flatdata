@@ -294,6 +294,29 @@ namespace n{
         assert "pub struct S" in output
         assert "pub use crate::" not in output
 
+    def test_rust_transitive_import_reexports(self, tmp_path):
+        """Rust re-exports work for transitively imported types."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "mid.flatdata";
+namespace n{ archive A { r : vector< .lib.S >; } }
+''',
+            "mid.flatdata": '''
+import "lib.flatdata";
+namespace n{ struct Mid { m : u8 : 8; } }
+''',
+            "lib.flatdata": '''
+namespace lib{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("rust")
+        # Transitive import gets a re-export shim
+        assert "pub mod lib" in output
+        assert "pub use crate::lib::lib::*;" in output
+        # Direct import also re-exported
+        assert "pub use crate::mid::n::*;" in output
+
 
 class TestEngineBackwardCompat:
     """Verify Engine(schema_string) still works unchanged."""

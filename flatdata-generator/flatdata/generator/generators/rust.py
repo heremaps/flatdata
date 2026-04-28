@@ -2,6 +2,7 @@
  Copyright (c) 2018 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+import posixpath
 import re
 
 from jinja2 import Environment
@@ -33,15 +34,16 @@ class RustGenerator(BaseGenerator):
         return [Structure, Archive, Constant, Enumeration]
 
     def filter_nodes(self, nodes: list[Node], tree: SyntaxTree) -> list[Node]:
-        if not tree.imports:
-            return nodes
-        return [n for n in nodes if tree.is_local_node(n)]
+        # Rust template traverses tree.root.children directly, not the nodes
+        # list. Filtering is handled in the template via tree.is_local_node().
+        return nodes
 
     @staticmethod
     def _import_reexports_for_namespace(ns: Node, tree: SyntaxTree) -> list[str]:
         """Return Rust pub use directives for imported types in a namespace."""
         if not tree.imports:
             return []
+        # Collect source files of non-local direct children
         import_sources: set[str] = set()
         for child in ns.children:
             if not isinstance(child, Namespace) and not tree.is_local_node(child):
@@ -49,6 +51,7 @@ class RustGenerator(BaseGenerator):
                     import_sources.add(child.source_file)
         if not import_sources:
             return []
+        # Build namespace path (e.g., "a::b::c")
         ns_parts: list[str] = []
         current: Node | None = ns
         while current is not None and current.parent is not None:
@@ -56,10 +59,16 @@ class RustGenerator(BaseGenerator):
             current = current.parent
         ns_parts.reverse()
         ns_path = "::".join(ns_parts)
+        # Map source files to module paths via source_file_map
         reexports: list[str] = []
-        for imp in tree.imports:
-            if imp.abs_path in import_sources:
-                module_path = imp.path.replace('.flatdata', '').replace('/', '::')
+        seen_modules: set[str] = set()
+        for source_abs in import_sources:
+            rel_path = tree.source_file_map.get(source_abs)
+            if rel_path is None:
+                continue
+            module_path = posixpath.normpath(rel_path).replace('.flatdata', '').replace('/', '::')
+            if module_path not in seen_modules:
+                seen_modules.add(module_path)
                 reexports.append(f"pub use crate::{module_path}::{ns_path}::*;")
         return reexports
 
