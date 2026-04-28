@@ -205,13 +205,6 @@ namespace n{ archive A { r : vector< S >; } }
 namespace n{ struct S { f : u8 : 8; } }
 '''
         })
-        import os
-        os.makedirs(str(tmp_path / "sub"), exist_ok=True)
-        _write_files(str(tmp_path), {
-            "sub/types.flatdata": '''
-namespace n{ struct S { f : u8 : 8; } }
-'''
-        })
         engine = Engine.from_file(str(tmp_path / "main.flatdata"))
         output = engine.render("cpp")
         assert '#include "sub/types.h"' in output
