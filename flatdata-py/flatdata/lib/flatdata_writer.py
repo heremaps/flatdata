@@ -65,15 +65,10 @@ class Writer:
         '''Shared initialization from an Engine instance.'''
         if not archive_name:
             archive_name = Writer._find_archive_name(engine)
-        # render_python_module uses archive_name for AST namespace lookup,
-        # so we pass the real archive name. The Builder class is named
-        # <namespace>_<archive_name>Builder in the generated module.
-        module, _ = engine.render_python_module(
+        module, archive_type = engine.render_python_module(
             archive_name=archive_name)
-        ns = Engine._find_root_namespace(engine.tree, archive_name)
-        builder_name = ns.name + "_" + archive_name + "Builder"
-        archive_type = getattr(module, builder_name)
-        self.builder: ArchiveBuilder = archive_type(
+        builder_type = getattr(module, archive_type.__name__ + "Builder")
+        self.builder: ArchiveBuilder = builder_type(
             ResourceStorage(FileResourceWriter(), path))
 
     def set(self, resource_name: str, resource_data: Any) -> None:
@@ -109,21 +104,3 @@ class Writer:
             raise RuntimeError(
                 "Schema contains multiple archives, please specify archive name explicitly")
         return candidates[0].name
-
-    @classmethod
-    def _get_archive_name(cls, archive_schema: str) -> str:
-        '''
-        Returns name of archive from flatdata schema string.
-        Deprecated: prefer _find_archive_name which uses the AST.
-
-        :param archive_schema(str): flatdata schema in str
-        '''
-        if not archive_schema:
-            raise RuntimeError("Archive schema is required")
-
-        archive_keyword = "archive"
-        index = archive_schema.find(archive_keyword) + len(archive_keyword)
-        if archive_schema[index:].find(archive_keyword) >= 0:
-            raise RuntimeError(
-                "Schema contains multiple archives, please specify archive name explicitly")
-        return archive_schema[index:index+archive_schema[index:].find("{")].strip()
