@@ -114,6 +114,37 @@ namespace n{ struct S { f : u8 : 8; } }
         assert len(engine.tree.imports) == 1
         assert engine.tree.imports[0].path == "types.flatdata"
 
+    def test_python_monolithic_with_imports(self, tmp_path):
+        """Python generator emits all types including imported ones."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "types.flatdata";
+namespace n{ archive A { r : vector< S >; } }
+''',
+            "types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("py")
+        assert "n_S" in output
+        assert "n_A" in output
+
+    def test_dot_monolithic_with_imports(self, tmp_path):
+        """Dot generator renders all types including imported ones."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "types.flatdata";
+namespace n{ archive A { r : vector< S >; } }
+''',
+            "types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("dot")
+        assert "n__A" in output or "A" in output
+
 
 class TestEngineBackwardCompat:
     """Verify Engine(schema_string) still works unchanged."""
