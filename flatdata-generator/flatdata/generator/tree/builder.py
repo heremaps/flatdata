@@ -13,7 +13,8 @@ from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
     InvalidEnumWidthError, InvalidRangeName, InvalidRangeReference,
     InvalidConstReference, InvalidConstValueReference, DuplicateInvalidValueReference,
-    InvalidStructInExplicitReference, OptionalRange, ParsingError, ImportParsingError)
+    InvalidStructInExplicitReference, OptionalRange, ParsingError, ImportParsingError,
+    UnresolvedImportError)
 from flatdata.generator.tree.nodes.explicit_reference import ExplicitReference
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
@@ -93,6 +94,9 @@ def _build_node_tree(definition: str) -> Root:
             definition, parseAll=True).flatdata
     except (ParseException, ParseSyntaxException) as err:
         raise ParsingError(err)
+
+    if "imports" in parsed:
+        raise UnresolvedImportError()
 
     roots = _build_namespace_roots(parsed)
     return _merge_roots(roots)

@@ -62,14 +62,12 @@ def _run(args: argparse.Namespace) -> None:
     _setup_logging(args)
     _check_args(args)
 
-    with open(args.schema, 'r') as input_file:
-        schema = input_file.read()
-        try:
-            engine = Engine(schema)
-            logging.debug("Tree: %s", engine.tree)
-        except FlatdataSyntaxError as ex:
-            logging.fatal("Error reading schema: %s ", ex)
-            sys.exit(1)
+    try:
+        engine = Engine.from_file(args.schema)
+        logging.debug("Tree: %s", engine.tree)
+    except FlatdataSyntaxError as ex:
+        logging.fatal("Error reading schema: %s ", ex)
+        sys.exit(1)
 
     try:
         logging.info("Generating %s...", args.gen)

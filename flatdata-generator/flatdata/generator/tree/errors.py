@@ -26,6 +26,13 @@ class SymbolRedefinition(FlatdataSyntaxError):
                 existing=existing))
 
 
+class UnresolvedImportError(FlatdataSyntaxError):
+    def __init__(self) -> None:
+        super().__init__(
+            "Import statements found in schema string. "
+            "Use Engine.from_file() or build_ast_from_file() to resolve imports.")
+
+
 class CircularReferencing(FlatdataSyntaxError):
     def __init__(self, node: Node, child: Node) -> None:
         super().__init__(
