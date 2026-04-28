@@ -11,7 +11,7 @@ import pytest
 from flatdata.generator.tree.importer import (
     resolve_imports, ImportInfo
 )
-from flatdata.generator.tree.errors import ImportFileNotFoundError
+from flatdata.generator.tree.errors import ImportFileNotFoundError, ImportParsingError
 from flatdata.generator.grammar import flatdata_grammar
 
 
@@ -57,6 +57,30 @@ class TestGrammarImport:
         schema = (
             '/* header comment */\n'
             'import "bar.flatdata";\n'
+            'namespace foo { struct A { x : u32 : 32; } }'
+        )
+        parsed = flatdata_grammar.parse_string(schema, parse_all=True).flatdata
+        assert len(parsed.imports) == 1
+
+    def test_comment_attached_to_import(self):
+        """A comment directly before an import should be captured as its doc (except the first, which may be consumed by free_comments)."""
+        schema = (
+            'import "a.flatdata";\n'
+            '/** docs for b */\n'
+            'import "b.flatdata";\n'
+            'namespace foo { struct A { x : u32 : 32; } }'
+        )
+        parsed = flatdata_grammar.parse_string(schema, parse_all=True).flatdata
+        assert len(parsed.imports) == 2
+        assert parsed.imports[0].path == "a.flatdata"
+        assert parsed.imports[1].path == "b.flatdata"
+        assert "docs for b" in parsed.imports[1].doc
+
+    def test_comment_between_imports_and_namespace(self):
+        """A comment after the last import (before namespace) should attach to the namespace, not break parsing."""
+        schema = (
+            'import "a.flatdata";\n'
+            '/* comment */\n'
             'namespace foo { struct A { x : u32 : 32; } }'
         )
         parsed = flatdata_grammar.parse_string(schema, parse_all=True).flatdata
@@ -194,6 +218,7 @@ class TestResolveImports:
             assert len(files) == 2
             assert root_imports[0].path == "sub/types.flatdata"
 
+    @pytest.mark.skipif(not hasattr(os, 'symlink'), reason="symlinks not supported")
     def test_symlink_dedup(self):
         """Two imports of the same file via different paths (symlink) should dedup."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -285,3 +310,29 @@ class TestResolveImports:
             main = next(f for f in files if f.abs_path.endswith("main.flatdata"))
             assert "imports" in main.parsed
             assert main.parsed["imports"][0]["path"] == "bar.flatdata"
+
+    def test_parse_error_in_imported_file(self):
+        """A syntax error in an imported file should report the file path."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = _write_temp_files(tmpdir, {
+                "main.flatdata": (
+                    'import "bad.flatdata";\n'
+                    'namespace foo { struct A { x : u32 : 32; } }'
+                ),
+                "bad.flatdata": 'this is not valid flatdata syntax'
+            })
+            with pytest.raises(ImportParsingError, match="bad.flatdata"):
+                resolve_imports(root)
+
+    def test_import_of_empty_file(self):
+        """An imported empty file should parse successfully."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = _write_temp_files(tmpdir, {
+                "main.flatdata": (
+                    'import "empty.flatdata";\n'
+                    'namespace foo { struct A { x : u32 : 32; } }'
+                ),
+                "empty.flatdata": ''
+            })
+            files, _ = resolve_imports(root)
+            assert len(files) == 2

@@ -194,9 +194,8 @@ flatdata_entry = (
     comment.setResultsName("comment", listAllMatches=True)
 )
 
-free_comments = Optional(OneOrMore(comment)("comment"))
-
 namespace = Group(
+    Optional(comment)("doc") +
     Keyword("namespace") +
     qualified_identifier("name") +
     "{" +
@@ -205,12 +204,18 @@ namespace = Group(
 )
 
 import_statement = Group(
-    Keyword("import") +
+    Optional(comment)("doc") +
+    Suppress(Keyword("import")) +
     QuotedString('"')("path") +
     Suppress(Literal(';'))
 )
 
-flatdata_grammar = Group(free_comments +
-                   ZeroOrMore(import_statement)("imports") +
-                   ZeroOrMore(namespace)("namespace")
-                   )("flatdata")
+top_level_entry = (
+    import_statement.setResultsName("imports", listAllMatches=True) |
+    namespace.setResultsName("namespace", listAllMatches=True) |
+    comment
+)
+
+flatdata_grammar = Group(
+    ZeroOrMore(top_level_entry)
+)("flatdata")

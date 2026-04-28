@@ -10,8 +10,8 @@ import os
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..grammar import flatdata_grammar
-from .errors import ImportFileNotFoundError
+from ..grammar import flatdata_grammar, ParseException
+from .errors import ImportFileNotFoundError, ImportParsingError
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,14 @@ def resolve_imports(root_path: str) -> tuple[list[ResolvedFile], list[ImportInfo
         with open(canonical, 'r') as f:
             content = f.read()
 
-        parsed = flatdata_grammar.parse_string(content, parse_all=True)[0]
+        try:
+            parsed = flatdata_grammar.parseString(content, parseAll=True)[0]
+        except ParseException as e:
+            raise ImportParsingError(
+                file_path=canonical,
+                pyparsing_error=e,
+                referenced_from=referenced_from
+            )
 
         # Extract import paths from the cached parse result
         import_paths = (
