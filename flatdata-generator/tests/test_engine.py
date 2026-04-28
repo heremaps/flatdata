@@ -143,7 +143,10 @@ namespace n{ struct S { f : u8 : 8; } }
         })
         engine = Engine.from_file(str(tmp_path / "main.flatdata"))
         output = engine.render("dot")
-        assert "n__A" in output or "A" in output
+        # Archive rendered
+        assert "cluster__n_A" in output
+        # Imported struct rendered within the archive's resource
+        assert "_n_A_r_n_S" in output
 
 
 class TestEngineBackwardCompat:
