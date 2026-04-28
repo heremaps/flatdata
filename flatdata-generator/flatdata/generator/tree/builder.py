@@ -303,7 +303,7 @@ def build_ast_from_file(path: str) -> SyntaxTree:
         if is_root:
             root_content = resolved_file.content
         else:
-            rel_path = os.path.relpath(resolved_file.abs_path, root_dir)
+            rel_path = os.path.relpath(resolved_file.abs_path, root_dir).replace(os.sep, '/')
             source_file_map[resolved_file.abs_path] = rel_path
         file_roots = _build_namespace_roots(
             resolved_file.parsed, source_file=resolved_file.abs_path,
