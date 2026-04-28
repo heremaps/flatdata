@@ -1,0 +1,6 @@
+import "child.flatdata";
+namespace m {
+    archive Parent {
+        items : vector< Item >;
+    }
+}

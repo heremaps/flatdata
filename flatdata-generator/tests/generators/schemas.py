@@ -12,7 +12,11 @@ def schemas_and_expectations(generator, extension):
     basedir = os.path.dirname(__file__)
     test_dir = os.path.normpath(os.path.join(
         basedir, '..', '..', '..', 'test_cases'))
+    imports_dir = os.path.join(test_dir, 'imports')
     for path, _subdirs, files in os.walk(test_dir):
+        # Skip multi-file import test cases (handled by test_import_generators.py)
+        if os.path.commonpath([path, imports_dir]) == imports_dir:
+            continue
         for name in files:
             if os.path.splitext(name)[1] == '.flatdata':
                 relpath = os.path.relpath(path, test_dir)

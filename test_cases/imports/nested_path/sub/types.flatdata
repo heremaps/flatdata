@@ -1,0 +1,6 @@
+namespace geo {
+    struct Coord {
+        lat : i32 : 32;
+        lon : i32 : 32;
+    }
+}

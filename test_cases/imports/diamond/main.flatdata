@@ -1,0 +1,9 @@
+import "a.flatdata";
+import "b.flatdata";
+namespace app {
+    archive Main {
+        points : vector< .common.Point >;
+        labels : vector< .ext_a.Label >;
+        tags   : vector< .ext_b.Tag >;
+    }
+}
