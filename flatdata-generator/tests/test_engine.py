@@ -171,6 +171,64 @@ namespace n{ struct S { f : u8 : 8; } }
         # Imported struct rendered within the archive's resource
         assert "_n_A_r_n_S" in output
 
+    def test_cpp_separate_compilation_with_imports(self, tmp_path):
+        """C++ generator emits only local types and #include directives."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "types.flatdata";
+namespace n{
+    struct Local { x : u8 : 8; }
+    archive A { r : vector< S >; r2 : vector< Local >; }
+}
+''',
+            "types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("cpp")
+        # Include directive for imported file
+        assert '#include "types.h"' in output
+        # Local struct definition IS emitted
+        assert "LocalTemplate" in output
+        # Imported struct S is NOT emitted as a C++ struct definition
+        assert "STemplate" not in output
+
+    def test_cpp_include_path_mapping(self, tmp_path):
+        """C++ import paths map .flatdata to .h correctly."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "sub/types.flatdata";
+namespace n{ archive A { r : vector< S >; } }
+''',
+            "sub/types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        import os
+        os.makedirs(str(tmp_path / "sub"), exist_ok=True)
+        _write_files(str(tmp_path), {
+            "sub/types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("cpp")
+        assert '#include "sub/types.h"' in output
+
+    def test_cpp_no_imports_unchanged(self):
+        """C++ generator without imports produces normal output (no empty include block)."""
+        engine = Engine('''
+namespace n{
+    struct S { f : u8 : 8; }
+    archive A { r : vector< S >; }
+}
+''')
+        output = engine.render("cpp")
+        assert "struct S" in output or "SType" in output
+        # No user includes (only system includes)
+        assert '#include "' not in output
+
 
 class TestEngineBackwardCompat:
     """Verify Engine(schema_string) still works unchanged."""

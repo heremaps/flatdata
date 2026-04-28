@@ -13,6 +13,7 @@ from flatdata.generator.tree.nodes.resources import Vector, Multivector, Instanc
     ResourceBase, Archive as ArchiveResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
 from flatdata.generator.tree.nodes.archive import Archive
+from flatdata.generator.tree.syntax_tree import SyntaxTree
 from . import BaseGenerator
 
 
@@ -24,6 +25,14 @@ class CppGenerator(BaseGenerator):
 
     def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
+
+    def filter_nodes(self, nodes: list[Node], tree: SyntaxTree) -> list[Node]:
+        if not tree.imports:
+            return nodes
+        return [n for n in nodes if tree.is_local_node(n)]
+
+    def get_import_directives(self, tree: SyntaxTree) -> list[str]:
+        return [imp.path.replace('.flatdata', '.h') for imp in tree.imports]
 
     def _populate_environment(self, env: Environment) -> None:
         env.filters["cpp_doc"] = lambda value: value
