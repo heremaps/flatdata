@@ -47,9 +47,8 @@ class Engine:
         :raises FlatdataSyntaxError
         """
         engine = cls.__new__(cls)
-        with open(path, 'r') as f:
-            engine.schema = f.read()
         engine.tree = build_ast_from_file(path)
+        engine.schema = engine.tree.root_schema or ""
         return engine
 
     def __init__(self, schema: str) -> None:

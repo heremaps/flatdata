@@ -24,14 +24,21 @@ class SyntaxTree:
     """
 
     def __init__(self, root: Root | Node,
-                 imports: Sequence[ImportInfo] | None = None) -> None:
+                 imports: Sequence[ImportInfo] | None = None,
+                 root_schema: str | None = None) -> None:
         self._root = root
         self._imports: Sequence[ImportInfo] = imports or []
+        self._root_schema = root_schema
 
     @property
     def imports(self) -> Sequence[ImportInfo]:
         """Returns the list of ImportInfo for direct imports of the root file."""
         return self._imports
+
+    @property
+    def root_schema(self) -> str | None:
+        """Returns the raw schema text of the root file, or None for string-based builds."""
+        return self._root_schema
 
     def is_local_node(self, node: Node) -> bool:
         """True if node was defined in the root compilation file."""

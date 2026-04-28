@@ -70,6 +70,11 @@ namespace n{ struct S { f : u8 : 8; } }
         with pytest.raises(ImportFileNotFoundError):
             Engine.from_file(str(tmp_path / "main.flatdata"))
 
+    def test_nonexistent_root_file_raises(self, tmp_path):
+        """Non-existent root file raises FlatdataSyntaxError, not FileNotFoundError."""
+        with pytest.raises(FlatdataSyntaxError):
+            Engine.from_file(str(tmp_path / "nonexistent.flatdata"))
+
     def test_invalid_root_file_raises_parsing_error(self, tmp_path):
         _write_files(str(tmp_path), {
             "main.flatdata": 'this is not valid flatdata'

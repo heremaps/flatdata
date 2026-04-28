@@ -293,9 +293,12 @@ def build_ast_from_file(path: str) -> SyntaxTree:
 
     all_namespace_roots: list[nodes.Namespace] = []
     root_abs_path = os.path.realpath(path)
+    root_content: str | None = None
 
     for resolved_file in resolved_files:
         is_root = resolved_file.abs_path == root_abs_path
+        if is_root:
+            root_content = resolved_file.content
         file_roots = _build_namespace_roots(
             resolved_file.parsed, source_file=resolved_file.abs_path,
             is_local=is_root)
@@ -304,4 +307,4 @@ def build_ast_from_file(path: str) -> SyntaxTree:
     root = _merge_roots(all_namespace_roots)
     _run_pipeline(root)
 
-    return SyntaxTree(root, imports=import_infos)
+    return SyntaxTree(root, imports=import_infos, root_schema=root_content)
