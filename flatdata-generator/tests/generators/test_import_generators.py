@@ -112,18 +112,38 @@ class TestImportSeparateCompilation:
         """C++ output should not define structs from imported files."""
         engine = Engine.from_file(root_path)
         tree = engine.tree
-        # Skip if no imports
         if not tree.imports:
             pytest.skip("No imports in this test case")
 
         output = engine.render("cpp")
-        # Verify imported (non-local) structs are not defined in output
         from flatdata.generator.tree.nodes.trivial import Structure
         for struct in tree.root.iterate(Structure):
             if not struct.is_local and "builtin" not in struct.path:
-                # Struct definition should not appear (class definition in C++)
-                assert f"class {struct.name}" not in output, \
+                # C++ structs are generated as union {name}Template
+                assert f"{struct.name}Template" not in output, \
                     f"Imported struct {struct.name} should not be defined in C++ output"
+
+    @pytest.mark.parametrize("case_name,root_path,root_stem",
+                             _discover_import_test_cases(),
+                             ids=[c[0] for c in _discover_import_test_cases()])
+    def test_rust_no_imported_struct_definitions(self, case_name, root_path, root_stem):
+        """Rust output should not define structs from imported files (outside schema strings)."""
+        engine = Engine.from_file(root_path)
+        tree = engine.tree
+        if not tree.imports:
+            pytest.skip("No imports in this test case")
+
+        output = engine.render("rust")
+        # Split out embedded schema strings (between r#"schema( and )schema"#)
+        # to avoid false positives from schema definitions
+        import re
+        code_only = re.sub(r'r#"schema\(.*?\)schema"#', '', output, flags=re.DOTALL)
+
+        from flatdata.generator.tree.nodes.trivial import Structure
+        for struct in tree.root.iterate(Structure):
+            if not struct.is_local and "builtin" not in struct.path:
+                assert f"pub struct {struct.name}" not in code_only, \
+                    f"Imported struct {struct.name} should not be defined in Rust output"
 
     @pytest.mark.parametrize("case_name,root_path,root_stem",
                              _discover_import_test_cases(),

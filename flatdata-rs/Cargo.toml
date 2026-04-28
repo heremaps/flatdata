@@ -4,4 +4,5 @@ members = [
     "lib",
     "tests/features",
     "tests/coappearances",
+    "tests/imports",
 ]

@@ -1,0 +1,6 @@
+import "lib.flatdata";
+namespace mid {
+    struct Wrapper {
+        kind : .lib.Kind : 8;
+    }
+}
