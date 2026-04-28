@@ -9,7 +9,7 @@ from pyparsing import (
     Word, alphas, alphanums, nums, cppStyleComment,
     Keyword, Group, Optional, Or, OneOrMore, delimitedList, ZeroOrMore,
     hexnums, Combine, FollowedBy, ParseException as pyparsingParseException,
-    ParseResults
+    ParseResults, QuotedString, Suppress, Literal
 )
 
 ParseException = pyparsingParseException
@@ -204,6 +204,13 @@ namespace = Group(
     Optional(comment)
 )
 
+import_statement = Group(
+    Keyword("import") +
+    QuotedString('"')("path") +
+    Suppress(Literal(';'))
+)
+
 flatdata_grammar = Group(free_comments +
-                   OneOrMore(namespace)("namespace")
+                   ZeroOrMore(import_statement)("imports") +
+                   ZeroOrMore(namespace)("namespace")
                    )("flatdata")

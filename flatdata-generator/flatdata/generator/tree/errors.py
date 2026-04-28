@@ -165,3 +165,10 @@ class OptionalRange(FlatdataSyntaxError):
         super().__init__(
             "@range cannot be combined with @optional, store empty ranges instead: {name}"
             .format(name=name))
+
+
+class ImportFileNotFoundError(FlatdataSyntaxError):
+    def __init__(self, path: str, referenced_from: str) -> None:
+        super().__init__(
+            "Imported file not found: \"{path}\" (referenced from {referenced_from})"
+            .format(path=path, referenced_from=referenced_from))
