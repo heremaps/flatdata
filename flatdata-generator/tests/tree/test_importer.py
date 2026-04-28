@@ -93,6 +93,17 @@ class TestGrammarImport:
         assert len(parsed.imports) == 0
         assert len(parsed.namespace) == 0
 
+    def test_import_after_namespace(self):
+        """Imports may appear after namespaces (relaxed ordering)."""
+        schema = (
+            'namespace foo { struct A { x : u32 : 32; } }\n'
+            'import "bar.flatdata";'
+        )
+        parsed = flatdata_grammar.parse_string(schema, parse_all=True).flatdata
+        assert len(parsed.namespace) == 1
+        assert len(parsed.imports) == 1
+        assert parsed.imports[0].path == "bar.flatdata"
+
 
 def _write_temp_files(tmpdir: str, files: dict[str, str]) -> str:
     """Write files to tmpdir, return path to first file."""
@@ -320,6 +331,19 @@ class TestResolveImports:
                     'namespace foo { struct A { x : u32 : 32; } }'
                 ),
                 "bad.flatdata": 'this is not valid flatdata syntax'
+            })
+            with pytest.raises(ImportParsingError, match="bad.flatdata"):
+                resolve_imports(root)
+
+    def test_parse_syntax_error_in_imported_file(self):
+        """A ParseSyntaxException (error-stop) in an imported file should be caught."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = _write_temp_files(tmpdir, {
+                "main.flatdata": (
+                    'import "bad.flatdata";\n'
+                    'namespace foo { struct A { x : u32 : 32; } }'
+                ),
+                "bad.flatdata": 'namespace bar { struct { } }'
             })
             with pytest.raises(ImportParsingError, match="bad.flatdata"):
                 resolve_imports(root)

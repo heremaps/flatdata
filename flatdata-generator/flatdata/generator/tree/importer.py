@@ -10,7 +10,9 @@ import os
 from dataclasses import dataclass, field
 from typing import Any
 
-from ..grammar import flatdata_grammar, ParseException
+from pyparsing import ParseBaseException
+
+from ..grammar import flatdata_grammar
 from .errors import ImportFileNotFoundError, ImportParsingError
 
 logger = logging.getLogger(__name__)
@@ -73,7 +75,7 @@ def resolve_imports(root_path: str) -> tuple[list[ResolvedFile], list[ImportInfo
 
         try:
             parsed = flatdata_grammar.parseString(content, parseAll=True)[0]
-        except ParseException as e:
+        except ParseBaseException as e:
             raise ImportParsingError(
                 file_path=canonical,
                 pyparsing_error=e,
