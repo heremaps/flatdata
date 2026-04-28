@@ -31,13 +31,10 @@ def main() -> None:
         raise RuntimeError(
             "Specified json file %s doesn't exists" % args.json_file)
 
-    with open(args.schema, 'r') as schema_file:
-        schema = schema_file.read()
-
     with open(args.json_file, 'r') as json_file:
         data = json.load(json_file)
 
-    archive_writer = Writer(schema, args.path, args.archive_name)
+    archive_writer = Writer.from_file(args.schema, args.path, args.archive_name or "")
     archive_writer.set(args.resource_name, data)
     archive_writer.finish()
 
