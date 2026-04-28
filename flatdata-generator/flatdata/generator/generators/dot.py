@@ -5,6 +5,7 @@
 
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.trivial import Field
+from flatdata.generator.tree.syntax_tree import SyntaxTree
 from . import BaseGenerator
 
 from jinja2 import Environment
@@ -19,7 +20,7 @@ class DotGenerator(BaseGenerator):
     def __init__(self) -> None:
         BaseGenerator.__init__(self, "dot/dot.jinja2")
 
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         env.autoescape = True
 
         def _field_value_type(field: Field) -> str:

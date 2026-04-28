@@ -9,7 +9,7 @@ from jinja2 import Environment
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
                                             Archive as ArchiveResource)
-from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration, Field
+from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration, Namespace, Field
 from flatdata.generator.tree.helpers.enumtype import EnumType
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -32,6 +32,37 @@ class RustGenerator(BaseGenerator):
     def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
+    def filter_nodes(self, nodes: list[Node], tree: SyntaxTree) -> list[Node]:
+        if not tree.imports:
+            return nodes
+        return [n for n in nodes if tree.is_local_node(n)]
+
+    @staticmethod
+    def _import_reexports_for_namespace(ns: Node, tree: SyntaxTree) -> list[str]:
+        """Return Rust pub use directives for imported types in a namespace."""
+        if not tree.imports:
+            return []
+        import_sources: set[str] = set()
+        for child in ns.children:
+            if not isinstance(child, Namespace) and not tree.is_local_node(child):
+                if child.source_file:
+                    import_sources.add(child.source_file)
+        if not import_sources:
+            return []
+        ns_parts: list[str] = []
+        current: Node | None = ns
+        while current is not None and current.parent is not None:
+            ns_parts.append(current.name)
+            current = current.parent
+        ns_parts.reverse()
+        ns_path = "::".join(ns_parts)
+        reexports: list[str] = []
+        for imp in tree.imports:
+            if imp.abs_path in import_sources:
+                module_path = imp.path.replace('.flatdata', '').replace('/', '::')
+                reexports.append(f"pub use crate::{module_path}::{ns_path}::*;")
+        return reexports
+
     @staticmethod
     def _format_numeric_literal(value: str) -> str:
         try:
@@ -43,7 +74,9 @@ class RustGenerator(BaseGenerator):
         except ValueError:
             return value
 
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
+        env.globals["import_reexports_for_namespace"] = lambda ns: self._import_reexports_for_namespace(ns, tree)
+
         def _camel_to_snake_case(expr: str) -> str:
             step1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', expr)
             return re.sub('([a-z0-9])(A-Z)', r'\1_\2', step1).lower()

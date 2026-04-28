@@ -222,6 +222,78 @@ namespace n{
         # No user includes (only system includes)
         assert '#include "' not in output
 
+    def test_rust_separate_compilation_same_namespace(self, tmp_path):
+        """Rust generator emits only local types with pub use re-exports."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "types.flatdata";
+namespace n{
+    struct Local { x : u8 : 8; }
+    archive A { r : vector< S >; r2 : vector< Local >; }
+}
+''',
+            "types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("rust")
+        # Local struct IS emitted
+        assert "pub struct Local" in output
+        # Imported struct S is NOT emitted as a definition
+        assert "pub struct S " not in output
+        # Re-export directive brings imported types into scope
+        assert "pub use crate::types::n::*;" in output
+        # Schema embedding is self-contained (includes imported S)
+        assert "struct S" in output  # appears in schema strings
+
+    def test_rust_separate_compilation_cross_namespace(self, tmp_path):
+        """Rust generates namespace shims with re-exports for imported namespaces."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "types.flatdata";
+namespace app{ archive A { r : vector< .common.S >; } }
+''',
+            "types.flatdata": '''
+namespace common{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("rust")
+        # Imported-only namespace is still emitted as a module shim
+        assert "pub mod common" in output
+        assert "pub use crate::types::common::*;" in output
+        # Local namespace has the archive
+        assert "pub mod app" in output
+        assert "struct A" in output
+
+    def test_rust_subdirectory_import(self, tmp_path):
+        """Rust re-export paths handle subdirectory imports correctly."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "sub/types.flatdata";
+namespace n{ archive A { r : vector< S >; } }
+''',
+            "sub/types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        output = engine.render("rust")
+        assert "pub use crate::sub::types::n::*;" in output
+
+    def test_rust_no_imports_unchanged(self):
+        """Rust generator without imports produces normal output."""
+        engine = Engine('''
+namespace n{
+    struct S { f : u8 : 8; }
+    archive A { r : vector< S >; }
+}
+''')
+        output = engine.render("rust")
+        assert "pub struct S" in output
+        assert "pub use crate::" not in output
+
 
 class TestEngineBackwardCompat:
     """Verify Engine(schema_string) still works unchanged."""

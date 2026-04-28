@@ -34,7 +34,7 @@ class CppGenerator(BaseGenerator):
     def get_import_directives(self, tree: SyntaxTree) -> list[str]:
         return [imp.path.replace('.flatdata', '.h') for imp in tree.imports]
 
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         env.filters["cpp_doc"] = lambda value: value
 
         def _safe_cpp_string_line(value: str) -> str:

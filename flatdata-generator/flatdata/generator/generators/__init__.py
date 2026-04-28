@@ -35,7 +35,7 @@ class BaseGenerator(metaclass=ABCMeta):
             "Derived generators must implement _supported_nodes")
 
     @abstractmethod
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         raise RuntimeError(
             "Derived generators must implement _populate_filters")
 
@@ -70,7 +70,7 @@ class BaseGenerator(metaclass=ABCMeta):
             n, Structure) and "_builtin.multivector" in SyntaxTree.namespace_path(n))
         env.filters['namespaces'] = SyntaxTree.namespaces
         env.filters['not_auto_generated'] = lambda n: [ x for x in n if not x.auto_generated]
-        self._populate_environment(env)
+        self._populate_environment(env, tree)
         template = env.get_template(self._template)
 
         flatdata_nodes = [n for n, _ in DfsTraversal(tree).dependency_order() if
