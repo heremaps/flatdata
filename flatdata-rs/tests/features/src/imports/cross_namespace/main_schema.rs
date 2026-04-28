@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-include!(concat!(env!("OUT_DIR"), "/cross_namespace/main.rs"));
+include!(concat!(env!("OUT_DIR"), "/imports/cross_namespace/main.rs"));
 
 #[test]
 fn test_cross_namespace_imported_enum() {
-    let storage = flatdata::MemoryResourceStorage::new("/my_test");
+    let storage = flatdata::MemoryResourceStorage::new("/imports_cross_ns");
 
     let mut data = flatdata::Vector::<app::Entry>::new();
     let item = data.grow();

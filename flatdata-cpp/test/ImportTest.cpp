@@ -35,12 +35,18 @@ TEST_CASE( "imported_types_are_usable_in_archive", "[Import]" )
 
 TEST_CASE( "cross_namespace_imported_enum_works", "[Import]" )
 {
-    ::app::EntryMutator::StreamType data( 5 );
-    ::app::EntryMutator entry( data );
-    entry.id = 7;
-    entry.kind = ::defs::Kind::B;
+    auto storage = flatdata::MemoryResourceStorage::create( );
+    auto builder = app::MainBuilder::open( storage );
+    REQUIRE( builder.is_open( ) );
 
-    ::app::Entry reader( data );
-    REQUIRE( reader.id == 7 );
-    REQUIRE( reader.kind == ::defs::Kind::B );
+    auto entries = builder.start_entries( );
+    auto& item = entries.grow( );
+    item.id = 7;
+    item.kind = ::defs::Kind::B;
+    entries.close( );
+
+    auto archive = app::Main::open( storage );
+    REQUIRE( archive.entries( ).size( ) == 1 );
+    REQUIRE( archive.entries( )[ 0 ].id == 7 );
+    REQUIRE( archive.entries( )[ 0 ].kind == ::defs::Kind::B );
 }

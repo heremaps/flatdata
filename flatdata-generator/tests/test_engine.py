@@ -243,7 +243,7 @@ namespace n{ struct S { f : u8 : 8; } }
         # Imported struct S is NOT emitted as a definition
         assert "pub struct S " not in output
         # Re-export directive brings imported types into scope
-        assert "pub use crate::types::n::*;" in output
+        assert "pub use super::types::n::*;" in output
         # Schema embedding is self-contained (includes imported S)
         assert "struct S" in output  # appears in schema strings
 
@@ -262,7 +262,7 @@ namespace common{ struct S { f : u8 : 8; } }
         output = engine.render("rust")
         # Imported-only namespace is still emitted as a module shim
         assert "pub mod common" in output
-        assert "pub use crate::types::common::*;" in output
+        assert "pub use super::types::common::*;" in output
         # Local namespace has the archive
         assert "pub mod app" in output
         assert "struct A" in output
@@ -280,7 +280,7 @@ namespace n{ struct S { f : u8 : 8; } }
         })
         engine = Engine.from_file(str(tmp_path / "main.flatdata"))
         output = engine.render("rust")
-        assert "pub use crate::sub::types::n::*;" in output
+        assert "pub use super::sub::types::n::*;" in output
 
     def test_rust_no_imports_unchanged(self):
         """Rust generator without imports produces normal output."""
@@ -292,7 +292,7 @@ namespace n{
 ''')
         output = engine.render("rust")
         assert "pub struct S" in output
-        assert "pub use crate::" not in output
+        assert "pub use super::" not in output
 
     def test_rust_transitive_import_reexports(self, tmp_path):
         """Rust re-exports work for transitively imported types."""
@@ -313,9 +313,25 @@ namespace lib{ struct S { f : u8 : 8; } }
         output = engine.render("rust")
         # Transitive import gets a re-export shim
         assert "pub mod lib" in output
-        assert "pub use crate::lib::lib::*;" in output
+        assert "pub use super::lib::lib::*;" in output
         # Direct import also re-exported
-        assert "pub use crate::mid::n::*;" in output
+        assert "pub use super::mid::n::*;" in output
+
+    def test_rust_parent_directory_import(self, tmp_path):
+        """Rust re-exports use multiple super:: for parent directory imports."""
+        _write_files(str(tmp_path), {
+            "sub/main.flatdata": '''
+import "../shared.flatdata";
+namespace n{ archive A { r : vector< S >; } }
+''',
+            "shared.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "sub" / "main.flatdata"))
+        output = engine.render("rust")
+        # "../shared" needs two super:: (one sibling + one for "..")
+        assert "pub use super::super::shared::n::*;" in output
 
 
 class TestEngineBackwardCompat:

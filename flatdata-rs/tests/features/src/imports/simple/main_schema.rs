@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-include!(concat!(env!("OUT_DIR"), "/simple/main.rs"));
+include!(concat!(env!("OUT_DIR"), "/imports/simple/main.rs"));
 
 #[test]
 fn test_imported_types_in_archive() {
-    let storage = flatdata::MemoryResourceStorage::new("/my_test");
+    let storage = flatdata::MemoryResourceStorage::new("/imports_simple");
 
     let mut data = flatdata::Vector::<n::S>::new();
     let item = data.grow();

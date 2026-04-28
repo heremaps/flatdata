@@ -66,10 +66,22 @@ class RustGenerator(BaseGenerator):
             rel_path = tree.source_file_map.get(source_abs)
             if rel_path is None:
                 continue
-            module_path = posixpath.normpath(rel_path).replace('.flatdata', '').replace('/', '::')
-            if module_path not in seen_modules:
-                seen_modules.add(module_path)
-                reexports.append(f"pub use crate::{module_path}::{ns_path}::*;")
+            normalized = posixpath.normpath(rel_path).replace('.flatdata', '')
+            parts = normalized.split('/')
+            # Each leading ".." requires an extra super:: to go up
+            # one more level in the module tree
+            dotdot_count = 0
+            while dotdot_count < len(parts) and parts[dotdot_count] == '..':
+                dotdot_count += 1
+            remaining = parts[dotdot_count:]
+            # 1 super:: for the current module's parent (sibling access),
+            # plus 1 per ".." to climb further up
+            super_prefix = "::".join(["super"] * (1 + dotdot_count))
+            module_path = "::".join(remaining)
+            full_path = f"{super_prefix}::{module_path}"
+            if full_path not in seen_modules:
+                seen_modules.add(full_path)
+                reexports.append(f"pub use {full_path}::{ns_path}::*;")
         return reexports
 
     @staticmethod
