@@ -17,36 +17,36 @@
 
 TEST_CASE( "imported_types_are_usable_in_archive", "[Import]" )
 {
-    auto storage = flatdata::MemoryResourceStorage::create( );
+    std::shared_ptr< flatdata::ResourceStorage > storage
+        = flatdata::MemoryResourceStorage::create( );
     auto builder = app::ABuilder::open( storage );
     REQUIRE( builder.is_open( ) );
 
     auto data = builder.start_data( );
-    auto& item = data.grow( );
-    item.x = 42;
-    item.y = 100;
+    data.grow( ).x = 42;
+    data.grow( ).y = 100;
     data.close( );
 
     auto archive = app::A::open( storage );
-    REQUIRE( archive.data( ).size( ) == 1 );
+    REQUIRE( archive.data( ).size( ) == 2 );
     REQUIRE( archive.data( )[ 0 ].x == 42 );
-    REQUIRE( archive.data( )[ 0 ].y == 100 );
+    REQUIRE( archive.data( )[ 1 ].y == 100 );
 }
 
 TEST_CASE( "cross_namespace_imported_enum_works", "[Import]" )
 {
-    auto storage = flatdata::MemoryResourceStorage::create( );
+    std::shared_ptr< flatdata::ResourceStorage > storage
+        = flatdata::MemoryResourceStorage::create( );
     auto builder = app::MainBuilder::open( storage );
     REQUIRE( builder.is_open( ) );
 
     auto entries = builder.start_entries( );
-    auto& item = entries.grow( );
-    item.id = 7;
-    item.kind = ::defs::Kind::B;
+    entries.grow( ).id = 7;
+    entries.grow( ).kind = ::defs::Kind::B;
     entries.close( );
 
     auto archive = app::Main::open( storage );
-    REQUIRE( archive.entries( ).size( ) == 1 );
+    REQUIRE( archive.entries( ).size( ) == 2 );
     REQUIRE( archive.entries( )[ 0 ].id == 7 );
-    REQUIRE( archive.entries( )[ 0 ].kind == ::defs::Kind::B );
+    REQUIRE( archive.entries( )[ 1 ].kind == ::defs::Kind::B );
 }

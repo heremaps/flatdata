@@ -74,9 +74,11 @@ class RustGenerator(BaseGenerator):
             while dotdot_count < len(parts) and parts[dotdot_count] == '..':
                 dotdot_count += 1
             remaining = parts[dotdot_count:]
-            # 1 super:: for the current module's parent (sibling access),
-            # plus 1 per ".." to climb further up
-            super_prefix = "::".join(["super"] * (1 + dotdot_count))
+            # super:: count:
+            #   len(ns_parts) to escape the namespace module nesting
+            #   + 1 to go from file-level module to its parent (sibling access)
+            #   + dotdot_count for each ".." directory traversal
+            super_prefix = "::".join(["super"] * (len(ns_parts) + 1 + dotdot_count))
             module_path = "::".join(remaining)
             full_path = f"{super_prefix}::{module_path}"
             if full_path not in seen_modules:
