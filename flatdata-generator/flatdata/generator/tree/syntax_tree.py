@@ -22,8 +22,19 @@ class SyntaxTree:
      - Schema resolution
     """
 
-    def __init__(self, root: Root | Node) -> None:
+    def __init__(self, root: Root | Node,
+                 imports: Sequence[object] | None = None) -> None:
         self._root = root
+        self._imports: Sequence[object] = imports or []
+
+    @property
+    def imports(self) -> Sequence[object]:
+        """Returns the list of ImportInfo for direct imports of the root file."""
+        return self._imports
+
+    def is_local_node(self, node: Node) -> bool:
+        """True if node was defined in the root compilation file."""
+        return node.is_local
 
     @property
     def root(self) -> Root | Node:

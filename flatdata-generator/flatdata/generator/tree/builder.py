@@ -5,6 +5,9 @@
 
 from pyparsing import ParseException, ParseSyntaxException
 
+import os
+from typing import Any
+
 import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
 from flatdata.generator.tree.errors import (
@@ -91,6 +94,20 @@ def _build_node_tree(definition: str) -> Root:
     except (ParseException, ParseSyntaxException) as err:
         raise ParsingError(err)
 
+    roots = _build_namespace_roots(parsed)
+    return _merge_roots(roots)
+
+
+def _build_namespace_roots(parsed: Any,
+                           source_file: str | None = None,
+                           is_local: bool = True) -> list[nodes.Namespace]:
+    """
+    Build per-namespace chain roots from a parsed grammar result.
+
+    Returns a list of namespace chain roots (e.g. a -> b -> c for
+    namespace a.b.c { ... }).  Each definition node and its descendants
+    are tagged with *source_file* and *is_local*.
+    """
     roots: list[nodes.Namespace] = []
 
     for namespace in parsed.namespace:
@@ -106,12 +123,26 @@ def _build_node_tree(definition: str) -> Root:
 
         for collection, cls in parsed_items:
             for item in collection:
-                target_namespace.insert(cls.create(properties=item,  # type: ignore[attr-defined]  # subclasses (Structure, Enumeration, Archive) define create()
-                                                   definition=definition))
+                node = cls.create(properties=item,  # type: ignore[attr-defined]  # subclasses define create()
+                                  definition="")
+                _tag_node_tree(node, source_file=source_file,
+                               is_local=is_local)
+                target_namespace.insert(node)
 
         roots.append(root_namespace)
 
-    return _merge_roots(roots)
+    return roots
+
+
+def _tag_node_tree(node: Node, source_file: str | None,
+                   is_local: bool) -> None:
+    """Set source_file and is_local on a node and all its descendants."""
+    node.source_file = source_file
+    node.is_local = is_local
+    for child in node.iterate():
+        child.source_file = source_file
+        child.is_local = is_local
+
 
 
 def _append_builtin_structures(root: Root) -> None:
@@ -122,6 +153,8 @@ def _append_builtin_structures(root: Root) -> None:
         for builtin in node.builtins:
             found = namespace.get_relative(builtin.name)
             if found is None:
+                _tag_node_tree(builtin, source_file=node.source_file,
+                               is_local=node.is_local)
                 namespace.insert(builtin)
             found = namespace.find_relative(builtin.name)
             node.insert(BuiltinStructureReference(name=found.path))
@@ -221,17 +254,43 @@ def _check_explicit_references(root: Root) -> None:
             if not ref.target in [x.target for x in reference.parent.children_like(StructureReference)]:
                 raise InvalidStructInExplicitReference(ref.node.name, reference.parent.name)
 
-def build_ast(definition: str) -> SyntaxTree:
-    """Build the Flatdata syntax tree from a definition"""
-    root = _build_node_tree(definition=definition)
+def _run_pipeline(root: Root) -> None:
+    """Run the post-merge AST pipeline (builtin expansion, resolution, validation)."""
     _append_builtin_structures(root)
     resolve_references(root)
     _append_constant_references(root)
     _check_ranges(root)
-    # now compute data based on resolved references
     _update_field_type_references(root)
     _compute_structure_sizes(root)
     _compute_max_resource_size(root)
     _check_const_refs(root)
     _check_explicit_references(root)
+
+
+def build_ast(definition: str) -> SyntaxTree:
+    """Build the Flatdata syntax tree from a schema string."""
+    root = _build_node_tree(definition=definition)
+    _run_pipeline(root)
     return SyntaxTree(root)
+
+
+def build_ast_from_file(path: str) -> SyntaxTree:
+    """Build the Flatdata syntax tree from a schema file, resolving imports."""
+    from flatdata.generator.tree.importer import resolve_imports
+
+    resolved_files, import_infos = resolve_imports(path)
+
+    all_namespace_roots: list[nodes.Namespace] = []
+    root_abs_path = os.path.realpath(path)
+
+    for resolved_file in resolved_files:
+        is_root = resolved_file.abs_path == root_abs_path
+        file_roots = _build_namespace_roots(
+            resolved_file.parsed, source_file=resolved_file.abs_path,
+            is_local=is_root)
+        all_namespace_roots.extend(file_roots)
+
+    root = _merge_roots(all_namespace_roots)
+    _run_pipeline(root)
+
+    return SyntaxTree(root, imports=import_infos)
