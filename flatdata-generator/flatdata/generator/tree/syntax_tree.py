@@ -13,6 +13,7 @@ from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import ResourceReference
 from flatdata.generator.tree.nodes.root import Root
+from flatdata.generator.tree.importer import ImportInfo
 
 class SyntaxTree:
     """
@@ -23,12 +24,12 @@ class SyntaxTree:
     """
 
     def __init__(self, root: Root | Node,
-                 imports: Sequence[object] | None = None) -> None:
+                 imports: Sequence[ImportInfo] | None = None) -> None:
         self._root = root
-        self._imports: Sequence[object] = imports or []
+        self._imports: Sequence[ImportInfo] = imports or []
 
     @property
-    def imports(self) -> Sequence[object]:
+    def imports(self) -> Sequence[ImportInfo]:
         """Returns the list of ImportInfo for direct imports of the root file."""
         return self._imports
 

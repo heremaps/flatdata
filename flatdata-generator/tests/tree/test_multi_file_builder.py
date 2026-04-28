@@ -4,15 +4,13 @@
 '''
 
 import os
-import sys
 import tempfile
 
 import pytest
 
-sys.path.insert(0, "..")
 from flatdata.generator.tree.builder import build_ast_from_file
 from flatdata.generator.tree.errors import (
-    ImportFileNotFoundError, ImportParsingError, SymbolRedefinition)
+    ImportFileNotFoundError, ImportParsingError, ParsingError, SymbolRedefinition)
 from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration
 from flatdata.generator.tree.nodes.archive import Archive
 
@@ -228,6 +226,14 @@ namespace n{ struct S { f : u8 : 8; } }
         with pytest.raises(ImportParsingError):
             build_ast_from_file(str(tmp_path / "main.flatdata"))
 
+    def test_root_file_parse_error_raises_parsing_error(self, tmp_path):
+        """Root file with invalid syntax raises ParsingError, not ImportParsingError."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": 'this is not valid flatdata'
+        })
+        with pytest.raises(ParsingError):
+            build_ast_from_file(str(tmp_path / "main.flatdata"))
+
     def test_symbol_redefinition_across_files(self, tmp_path):
         """Same struct name in same namespace across different files → error."""
         _write_files(str(tmp_path), {
@@ -390,3 +396,74 @@ namespace n{
         from flatdata.generator.tree.builder import build_ast
         tree = build_ast("")
         assert len(tree.imports) == 0
+
+
+class TestReferenceNodeTagging:
+    """Tests for pipeline-created reference nodes being tagged."""
+
+    def test_builtin_structure_references_tagged(self, tmp_path):
+        from flatdata.generator.tree.nodes.references import BuiltinStructureReference
+
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+namespace n{
+    struct A { f : u8 : 8; }
+    archive Ar { mv : multivector< 33, A >; }
+}
+'''
+        })
+        tree = build_ast_from_file(str(tmp_path / "main.flatdata"))
+        root_file = os.path.realpath(str(tmp_path / "main.flatdata"))
+
+        refs = list(tree.root.iterate(BuiltinStructureReference))
+        assert len(refs) > 0
+        for ref in refs:
+            assert ref.source_file == root_file
+            assert ref.is_local
+
+    def test_constant_value_references_tagged(self, tmp_path):
+        from flatdata.generator.tree.nodes.references import ConstantValueReference
+
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+namespace n{
+    const u8 C = 42;
+    struct S { f : u8 : 8; }
+    archive A { r : vector< S >; }
+}
+'''
+        })
+        tree = build_ast_from_file(str(tmp_path / "main.flatdata"))
+        root_file = os.path.realpath(str(tmp_path / "main.flatdata"))
+
+        refs = list(tree.root.iterate(ConstantValueReference))
+        assert len(refs) > 0
+        for ref in refs:
+            assert ref.source_file == root_file
+            assert ref.is_local
+
+
+class TestMultipleNamespacesAcrossFiles:
+    """Tests for files defining different namespaces."""
+
+    def test_different_namespaces_across_files(self, tmp_path):
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "other.flatdata";
+namespace a{ struct S { f : u8 : 8; } }
+''',
+            "other.flatdata": '''
+namespace b{ struct T { g : u8 : 8; } }
+'''
+        })
+        tree = build_ast_from_file(str(tmp_path / "main.flatdata"))
+
+        structs = list(tree.root.iterate(Structure))
+        names = {s.name for s in structs}
+        assert "S" in names
+        assert "T" in names
+
+        s_node = next(s for s in structs if s.name == "S")
+        t_node = next(s for s in structs if s.name == "T")
+        assert s_node.is_local
+        assert not t_node.is_local

@@ -3,10 +3,10 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
-from pyparsing import ParseException, ParseSyntaxException
-
 import os
 from typing import Any
+
+from pyparsing import ParseException, ParseSyntaxException
 
 import flatdata.generator.tree.nodes.trivial as nodes
 from flatdata.generator.grammar import flatdata_grammar
@@ -137,11 +137,9 @@ def _build_namespace_roots(parsed: Any,
 def _tag_node_tree(node: Node, source_file: str | None,
                    is_local: bool) -> None:
     """Set source_file and is_local on a node and all its descendants."""
-    node.source_file = source_file
-    node.is_local = is_local
-    for child in node.iterate():
-        child.source_file = source_file
-        child.is_local = is_local
+    for descendant in node.iterate():
+        descendant.source_file = source_file
+        descendant.is_local = is_local
 
 
 
@@ -157,7 +155,10 @@ def _append_builtin_structures(root: Root) -> None:
                                is_local=node.is_local)
                 namespace.insert(builtin)
             found = namespace.find_relative(builtin.name)
-            node.insert(BuiltinStructureReference(name=found.path))
+            ref = BuiltinStructureReference(name=found.path)
+            ref.source_file = node.source_file
+            ref.is_local = node.is_local
+            node.insert(ref)
 
 
 def _append_constant_references(root: Root) -> None:
@@ -167,7 +168,10 @@ def _append_constant_references(root: Root) -> None:
     for archive in archives:
         for constant in constants:
             if not constant.path in constant_references:
-                archive.insert(ConstantValueReference(constant.path))
+                ref = ConstantValueReference(constant.path)
+                ref.source_file = archive.source_file
+                ref.is_local = archive.is_local
+                archive.insert(ref)
 
 
 def _update_field_type_references(root: Root) -> None:
@@ -277,8 +281,14 @@ def build_ast(definition: str) -> SyntaxTree:
 def build_ast_from_file(path: str) -> SyntaxTree:
     """Build the Flatdata syntax tree from a schema file, resolving imports."""
     from flatdata.generator.tree.importer import resolve_imports
+    from flatdata.generator.tree.errors import ImportParsingError
 
-    resolved_files, import_infos = resolve_imports(path)
+    try:
+        resolved_files, import_infos = resolve_imports(path)
+    except ImportParsingError as e:
+        if e.referenced_from is None:
+            raise ParsingError(e.pyparsing_error) from e
+        raise
 
     all_namespace_roots: list[nodes.Namespace] = []
     root_abs_path = os.path.realpath(path)

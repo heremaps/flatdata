@@ -177,6 +177,8 @@ class ImportFileNotFoundError(FlatdataSyntaxError):
 class ImportParsingError(FlatdataSyntaxError):
     def __init__(self, file_path: str, pyparsing_error: ParseBaseException,
                  referenced_from: str | None = None) -> None:
+        self.referenced_from = referenced_from
+        self.pyparsing_error = pyparsing_error
         context = " (imported from {ref})".format(ref=referenced_from) if referenced_from else ""
         super().__init__(
             "Failed to parse {path}{context}. Details below:\n"
