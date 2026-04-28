@@ -83,7 +83,7 @@ namespace n{ struct S { f : u8 : 8; } }
             Engine.from_file(str(tmp_path / "main.flatdata"))
 
     def test_render_with_imports(self, tmp_path):
-        """Engine.from_file() produces a renderable tree."""
+        """Flatdata generator produces self-contained output with all types."""
         _write_files(str(tmp_path), {
             "main.flatdata": '''
 import "types.flatdata";
@@ -96,9 +96,32 @@ namespace n{ struct S { f : u8 : 8; } }
 '''
         })
         engine = Engine.from_file(str(tmp_path / "main.flatdata"))
-        # Should not raise — tree is valid and renderable
         output = engine.render("flatdata")
+        # Both local and imported types are emitted (monolithic)
         assert "struct S" in output
+        assert "archive A" in output
+        # No import directives in output — schema must be self-contained
+        assert "import" not in output
+
+    def test_schema_embedding_self_contained(self, tmp_path):
+        """Schema embedding includes all dependencies from imports."""
+        _write_files(str(tmp_path), {
+            "main.flatdata": '''
+import "types.flatdata";
+namespace n{
+    archive A { r : vector< S >; }
+}
+''',
+            "types.flatdata": '''
+namespace n{ struct S { f : u8 : 8; } }
+'''
+        })
+        engine = Engine.from_file(str(tmp_path / "main.flatdata"))
+        archive = next(engine.tree.root.iterate(Archive))
+        schema = engine.tree.schema(archive)
+        assert "struct S" in schema
+        assert "archive A" in schema
+        assert "import" not in schema
 
     def test_imports_metadata_available(self, tmp_path):
         _write_files(str(tmp_path), {
