@@ -116,6 +116,60 @@ flatdata-generator -s schema/main.flatdata -g cpp -O schema/main.h
 The generated `main.h` will contain `#include "types.h"` and only emit the
 `app::Locations` archive, referencing `n::Point` from the included header.
 
+### Rust Project Setup
+
+The generated Rust code uses `pub use super::...::module::namespace::*;`
+re-exports to connect imported types. This requires that each generated file
+lives in its own module, and that sibling schemas share a common parent module.
+
+For the same schema above (`main.flatdata` importing `types.flatdata`):
+
+```
+my_crate/
+├── build.rs
+└── src/
+    ├── lib.rs
+    └── schema/
+        ├── mod.rs
+        ├── types.rs
+        └── main_schema.rs
+```
+
+```rust
+// build.rs
+fn main() {
+    // Generate all .flatdata files into OUT_DIR/schema/
+    flatdata::generate("schema/", &std::env::var("OUT_DIR").unwrap())
+        .expect("generator failed");
+}
+```
+
+```rust
+// src/lib.rs
+pub mod schema;
+```
+
+```rust
+// src/schema/mod.rs
+pub mod types;
+pub mod main_schema;
+```
+
+```rust
+// src/schema/types.rs
+include!(concat!(env!("OUT_DIR"), "/schema/types.rs"));
+```
+
+```rust
+// src/schema/main_schema.rs
+include!(concat!(env!("OUT_DIR"), "/schema/main.rs"));
+```
+
+The key requirement is that each generated `.rs` file is wrapped in its own
+module, and all imported schemas are siblings in the same parent module. The
+`super::` re-exports navigate from the namespace module up to the parent module
+where sibling schema modules are accessible.
+
 ## Basic Types
 
 Flatdata supports the following primitive types:
