@@ -6,7 +6,7 @@ include!(concat!(env!("OUT_DIR"), "/imports/simple/main.rs"));
 fn test_imported_types_in_archive() {
     let storage = flatdata::MemoryResourceStorage::new("/imports_simple");
 
-    let mut data = flatdata::Vector::<n::S>::new();
+    let mut data = flatdata::Vector::<import_types::S>::new();
     let item = data.grow();
     item.set_x(42);
     item.set_y(100);
