@@ -17,6 +17,12 @@ function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
 
     set(DEPFILE ${OUTPUT_FILENAME}.d)
 
+    # DEPFILE support: Ninja from CMake 3.7, Makefiles from CMake 3.20
+    set(DEPFILE_ARGS)
+    if(CMAKE_GENERATOR MATCHES "Ninja" OR CMAKE_VERSION VERSION_GREATER_EQUAL "3.20")
+        set(DEPFILE_ARGS DEPFILE ${DEPFILE})
+    endif()
+
     add_custom_command(
         OUTPUT ${OUTPUT_FILENAME}
         COMMAND ${PYTHON3_EXECUTABLE} ${FLATDATA_GENERATOR_PATH}/generator.py
@@ -27,7 +33,7 @@ function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
         DEPENDS ${FLATDATA_GENERATOR_SOURCES}
         DEPENDS ${FLATDATA_GENERATOR_TEMPLATES}
         DEPENDS ${SCHEMA_FILENAME}
-        DEPFILE ${DEPFILE}
+        ${DEPFILE_ARGS}
         WORKING_DIRECTORY ${GENERATOR_PATH}
         COMMENT "Generating sources from flatdata schema"
     )
