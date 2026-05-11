@@ -127,8 +127,7 @@ def _build_namespace_roots(parsed: Any,
 
         for collection, cls in parsed_items:
             for item in collection:
-                node = cls.create(properties=item,  # type: ignore[attr-defined]  # subclasses define create()
-                                  definition="")
+                node = cls.create(properties=item)  # type: ignore[attr-defined]  # subclasses define create()
                 _tag_node_tree(node, source_file=source_file,
                                is_local=is_local)
                 target_namespace.insert(node)

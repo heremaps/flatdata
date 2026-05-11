@@ -14,7 +14,7 @@ class Constant(Node):
                 raise InvalidConstantValueError(name=name, value=self.value)
 
     @staticmethod
-    def create(properties: ParseResults, definition: str) -> 'Constant':
+    def create(properties: ParseResults) -> 'Constant':
         result = Constant(name=properties.name, properties=properties)
         return result
 

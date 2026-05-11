@@ -15,7 +15,7 @@ class Enumeration(Node):
             self._type = BasicType(name=type, width=width)
 
     @staticmethod
-    def create(properties: ParseResults, definition: str) -> 'Enumeration':
+    def create(properties: ParseResults) -> 'Enumeration':
         width = None
         if properties.width:
             width = int(properties.width)
