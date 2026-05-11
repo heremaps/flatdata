@@ -1,5 +1,121 @@
 # `flatdata` Schema Language
 
+## Imports
+
+Flatdata schemas can be split across multiple files using import statements.
+An import pulls in all definitions (structs, enums, constants, archives) from
+another schema file, making them available for use in the importing file.
+
+```cpp
+import "path/to/types.flatdata";
+```
+
+Import statements must appear at the top of the file, before any namespace or
+type definitions.
+
+### Path Resolution
+
+Import paths are resolved **relative to the file** containing the import
+statement. Both same-directory and nested-directory paths are supported:
+
+```cpp
+import "types.flatdata";          // same directory
+import "sub/geo_types.flatdata";  // subdirectory
+import "../shared/common.flatdata"; // parent directory
+```
+
+### Diamond Imports
+
+A file may be imported by multiple other files without conflict. For example,
+if both `a.flatdata` and `b.flatdata` import `common.flatdata`, and
+`main.flatdata` imports both `a.flatdata` and `b.flatdata`, all definitions
+from `common.flatdata` are deduplicated automatically.
+
+### Cyclic Imports
+
+Cyclic imports are supported. For example, a parent archive schema can import
+a child schema that imports the parent back (e.g. for reference annotations):
+
+```cpp
+// parent.flatdata
+import "child.flatdata";
+namespace m {
+    archive Parent {
+        items : vector< Item >;
+    }
+}
+
+// child.flatdata
+import "parent.flatdata";
+namespace m {
+    struct Item {
+        value : u64 : 64;
+    }
+}
+```
+
+### Generated Code Behavior
+
+The generator uses **separate compilation** for C++ and Rust:
+
+- Only types defined in the **root file** (the file passed to the generator)
+  are emitted in the generated output.
+- Imported types are expected to be generated separately from their own root
+  file.
+- The generator emits appropriate include/import directives to reference the
+  separately generated code.
+
+For **C++**, the generator emits `#include` directives for each imported file
+(with the `.flatdata` extension replaced by `.h`).
+
+For **Rust**, the generator emits `pub use super::...::module::namespace::*;`
+re-exports so that types from imported modules are accessible in the correct
+namespace.
+
+For **Python**, **Dot**, and **Flatdata** output, all types (both local and
+imported) are emitted monolithically since these generators produce
+self-contained output.
+
+### Example
+
+Given the following project structure:
+
+```
+schema/
+├── types.flatdata
+└── main.flatdata
+```
+
+```cpp
+// types.flatdata
+namespace n {
+    struct Point {
+        x : u32 : 32;
+        y : u32 : 32;
+    }
+}
+```
+
+```cpp
+// main.flatdata
+import "types.flatdata";
+namespace app {
+    archive Locations {
+        points : vector< .n.Point >;
+    }
+}
+```
+
+Generate each file separately:
+
+```sh
+flatdata-generator -s schema/types.flatdata -g cpp -O schema/types.h
+flatdata-generator -s schema/main.flatdata -g cpp -O schema/main.h
+```
+
+The generated `main.h` will contain `#include "types.h"` and only emit the
+`app::Locations` archive, referencing `n::Point` from the included header.
+
 ## Basic Types
 
 Flatdata supports the following primitive types:
