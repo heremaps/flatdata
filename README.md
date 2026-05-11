@@ -44,17 +44,6 @@ namespace loc {
 }
 ```
 
-Schemas can be split across multiple files using imports:
-
-```cpp
-import "types.flatdata";
-namespace app {
-    archive MyArchive {
-        data : vector< .loc.Point >;
-    }
-}
-```
-
 The full schema documentation can be found [here](docs/schema-language.md).
 
 ### Generating a module
