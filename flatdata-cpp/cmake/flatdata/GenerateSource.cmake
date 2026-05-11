@@ -15,15 +15,19 @@ function(flatdata_generate_source TARGET_NAME SCHEMA_FILENAME OUTPUT_FILENAME)
     file(GLOB_RECURSE FLATDATA_GENERATOR_SOURCES ${FLATDATA_GENERATOR_PATH}/**/*.py)
     file(GLOB_RECURSE FLATDATA_GENERATOR_TEMPLATES ${FLATDATA_GENERATOR_PATH}/**/*.jinja2)
 
+    set(DEPFILE ${OUTPUT_FILENAME}.d)
+
     add_custom_command(
         OUTPUT ${OUTPUT_FILENAME}
         COMMAND ${PYTHON3_EXECUTABLE} ${FLATDATA_GENERATOR_PATH}/generator.py
         --gen cpp
         --schema ${SCHEMA_FILENAME}
         --output-file ${OUTPUT_FILENAME}
+        --depfile ${DEPFILE}
         DEPENDS ${FLATDATA_GENERATOR_SOURCES}
         DEPENDS ${FLATDATA_GENERATOR_TEMPLATES}
         DEPENDS ${SCHEMA_FILENAME}
+        DEPFILE ${DEPFILE}
         WORKING_DIRECTORY ${GENERATOR_PATH}
         COMMENT "Generating sources from flatdata schema"
     )
