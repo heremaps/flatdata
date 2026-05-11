@@ -1,1 +1,1 @@
-class n_S(flatdata.structure.Structure):
+class import_types_S(flatdata.structure.Structure):

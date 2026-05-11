@@ -1,4 +1,4 @@
-namespace n {
+namespace import_types {
 struct S
 {
     x : u32 : 32;
@@ -9,6 +9,6 @@ struct S
 namespace app {
 archive A
 {
-    data : vector< .n.S >;
+    data : vector< .import_types.S >;
 }
 }
