@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import StructureReference, BuiltinStructureReference
 from flatdata.generator.tree.nodes.trivial import Structure

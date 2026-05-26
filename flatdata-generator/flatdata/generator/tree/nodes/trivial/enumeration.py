@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flatdata.generator.tree.errors import DuplicateEnumValueError, InvalidEnumValueError, SparseEnumError
 from flatdata.generator.tree.helpers.basictype import BasicType
 from flatdata.generator.tree.nodes.node import Node

@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.trivial import Field
 from flatdata.generator.tree.syntax_tree import SyntaxTree

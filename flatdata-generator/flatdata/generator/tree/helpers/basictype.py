@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flatdata.generator import grammar
 from flatdata.generator.tree.errors import InvalidWidthError
 from flatdata.generator.tree.errors import InvalidSignError

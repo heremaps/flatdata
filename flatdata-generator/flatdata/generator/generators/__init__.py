@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 from typing import NoReturn
 

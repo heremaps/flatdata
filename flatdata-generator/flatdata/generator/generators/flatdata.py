@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 from jinja2 import Environment
 
 from flatdata.generator.tree.nodes.node import Node

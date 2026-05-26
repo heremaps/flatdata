@@ -12,17 +12,22 @@ env:
 jobs:
   Build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+    name: Build (Python ${{ matrix.python-version }})
     steps:
       - uses: actions/checkout@v2
       - name: Dependencies
         uses: astral-sh/setup-uv@v6
+      - name: Install Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
       - name: Run tests
         run: |
           cd flatdata-generator
-          uv run --with pytest pytest -v
-          pip install .
-          flatdata-generator --help
+          uv run --python ${{ matrix.python-version }} --with pytest pytest -v
       - name: Type check
+        if: contains(fromJSON('["3.10", "3.11", "3.12"]'), matrix.python-version)
         run: |
           cd flatdata-generator
-          uv run --with mypy mypy flatdata/
+          uv run --python ${{ matrix.python-version }} --with mypy mypy flatdata/

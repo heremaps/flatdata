@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flatdata.generator.tree.errors import UnexpectedResourceType
 from flatdata.generator.tree.nodes.node import Node
 import flatdata.generator.tree.nodes.resources as resources
