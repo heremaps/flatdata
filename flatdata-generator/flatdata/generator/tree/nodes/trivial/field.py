@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import EnumerationReference, ConstantValueReference, InvalidValueReference
 from flatdata.generator.tree.helpers.basictype import BasicType

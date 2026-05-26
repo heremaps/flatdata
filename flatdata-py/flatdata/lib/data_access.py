@@ -3,13 +3,16 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 import mmap
 from collections.abc import Callable
+from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
 
-ReadableBuffer = bytes | bytearray | memoryview | mmap.mmap
+ReadableBuffer = Union[bytes, bytearray, memoryview, mmap.mmap]
 
 # Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
@@ -123,7 +126,7 @@ def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: in
         sign_bit = np.uint64(1 << (field_width_bits - 1))
         offset = -(1 << field_width_bits)
         signed = result.astype(np.int64) + np.int64(offset)
-        result = np.where(result & sign_bit, signed, result.astype(np.int64))
+        result = np.where(result & sign_bit, signed, result.astype(np.int64))  # type: ignore[assignment, unused-ignore]
 
     return result
 

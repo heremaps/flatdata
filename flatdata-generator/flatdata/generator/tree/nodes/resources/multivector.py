@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import StructureReference, BuiltinStructureReference
 from flatdata.generator.tree.nodes.trivial import Structure
 from .base import ResourceBase
 
-from typing import Any
+from typing import Any, Dict
 
 from pyparsing import ParseResults
 
@@ -42,7 +44,7 @@ class Multivector(ResourceBase):
 
     @property
     def builtins(self) -> list[Structure]:
-        class MemberDict(dict[str, Any]):
+        class MemberDict(Dict[str, Any]):
             def __getattr__(self, attr: str) -> Any:
                 return self.get(attr)
         decorations = [MemberDict({"range" : MemberDict({"name":"range"})})]

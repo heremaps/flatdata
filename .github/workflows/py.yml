@@ -12,19 +12,26 @@ env:
 jobs:
   Build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    name: Build (Python ${{ matrix.python-version }})
     steps:
       - uses: actions/checkout@v2
       - name: Dependencies
         uses: astral-sh/setup-uv@v6
+      - name: Install Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
       - name: Run tests
         run: |
           cd flatdata-py
-          uv venv
+          uv venv --python ${{ matrix.python-version }}
           uv pip install ../flatdata-generator
           uv pip install ".[inspector]" pytest mypy
           .venv/bin/pytest -v
           .venv/bin/flatdata-inspector --help
       - name: Type check
+        if: contains(fromJSON('["3.10", "3.11", "3.12"]'), matrix.python-version)
         run: |
           cd flatdata-py
           .venv/bin/mypy flatdata/
