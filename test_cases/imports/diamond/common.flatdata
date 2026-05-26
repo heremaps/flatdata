@@ -1,0 +1,11 @@
+namespace common {
+    struct Point {
+        x : i32 : 32;
+        y : i32 : 32;
+    }
+    enum Color : u8 {
+        Red = 0,
+        Green = 1,
+        Blue = 2
+    }
+}

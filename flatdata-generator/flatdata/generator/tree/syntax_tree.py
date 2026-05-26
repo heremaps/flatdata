@@ -13,6 +13,7 @@ from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import ResourceReference
 from flatdata.generator.tree.nodes.root import Root
+from flatdata.generator.tree.importer import ImportInfo
 
 class SyntaxTree:
     """
@@ -22,8 +23,33 @@ class SyntaxTree:
      - Schema resolution
     """
 
-    def __init__(self, root: Root | Node) -> None:
+    def __init__(self, root: Root | Node,
+                 imports: Sequence[ImportInfo] | None = None,
+                 root_schema: str | None = None,
+                 source_file_map: dict[str, str] | None = None) -> None:
         self._root = root
+        self._imports: Sequence[ImportInfo] = imports or []
+        self._root_schema = root_schema
+        self._source_file_map: dict[str, str] = source_file_map or {}
+
+    @property
+    def imports(self) -> Sequence[ImportInfo]:
+        """Returns the list of ImportInfo for direct imports of the root file."""
+        return self._imports
+
+    @property
+    def root_schema(self) -> str | None:
+        """Returns the raw schema text of the root file, or None for string-based builds."""
+        return self._root_schema
+
+    @property
+    def source_file_map(self) -> dict[str, str]:
+        """Returns mapping from absolute source file path to relative path for all imported files."""
+        return self._source_file_map
+
+    def is_local_node(self, node: Node) -> bool:
+        """True if node was defined in the root compilation file."""
+        return node.is_local
 
     @property
     def root(self) -> Root | Node:

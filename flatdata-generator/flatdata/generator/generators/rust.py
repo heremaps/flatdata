@@ -2,6 +2,7 @@
  Copyright (c) 2018 HERE Europe B.V.
  See the LICENSE file in the root of this project for license details.
 '''
+import posixpath
 import re
 
 from jinja2 import Environment
@@ -9,7 +10,7 @@ from jinja2 import Environment
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.resources import (Vector, Multivector, Instance, RawData, BoundResource,
                                             Archive as ArchiveResource)
-from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration, Field
+from flatdata.generator.tree.nodes.trivial import Structure, Constant, Enumeration, Namespace, Field
 from flatdata.generator.tree.helpers.enumtype import EnumType
 from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -32,6 +33,59 @@ class RustGenerator(BaseGenerator):
     def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
+    def filter_nodes(self, nodes: list[Node], tree: SyntaxTree) -> list[Node]:
+        # Rust template traverses tree.root.children directly, not the nodes
+        # list. Filtering is handled in the template via tree.is_local_node().
+        return nodes
+
+    @staticmethod
+    def _import_reexports_for_namespace(ns: Node, tree: SyntaxTree) -> list[str]:
+        """Return Rust pub use directives for imported types in a namespace."""
+        if not tree.imports:
+            return []
+        # Collect source files of non-local direct children
+        import_sources: set[str] = set()
+        for child in ns.children:
+            if not isinstance(child, Namespace) and not tree.is_local_node(child):
+                if child.source_file:
+                    import_sources.add(child.source_file)
+        if not import_sources:
+            return []
+        # Build namespace path (e.g., "a::b::c")
+        ns_parts: list[str] = []
+        current: Node | None = ns
+        while current is not None and current.parent is not None:
+            ns_parts.append(current.name)
+            current = current.parent
+        ns_parts.reverse()
+        ns_path = "::".join(ns_parts)
+        # Map source files to module paths via source_file_map
+        reexports: list[str] = []
+        seen_modules: set[str] = set()
+        for source_abs in import_sources:
+            rel_path = tree.source_file_map.get(source_abs)
+            if rel_path is None:
+                continue
+            normalized = posixpath.normpath(rel_path).replace('.flatdata', '')
+            parts = normalized.split('/')
+            # Each leading ".." requires an extra super:: to go up
+            # one more level in the module tree
+            dotdot_count = 0
+            while dotdot_count < len(parts) and parts[dotdot_count] == '..':
+                dotdot_count += 1
+            remaining = parts[dotdot_count:]
+            # super:: count:
+            #   len(ns_parts) to escape the namespace module nesting
+            #   + 1 to go from file-level module to its parent (sibling access)
+            #   + dotdot_count for each ".." directory traversal
+            super_prefix = "::".join(["super"] * (len(ns_parts) + 1 + dotdot_count))
+            module_path = "::".join(remaining)
+            full_path = f"{super_prefix}::{module_path}"
+            if full_path not in seen_modules:
+                seen_modules.add(full_path)
+                reexports.append(f"pub use {full_path}::{ns_path}::*;")
+        return reexports
+
     @staticmethod
     def _format_numeric_literal(value: str) -> str:
         try:
@@ -43,7 +97,9 @@ class RustGenerator(BaseGenerator):
         except ValueError:
             return value
 
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
+        env.globals["import_reexports_for_namespace"] = lambda ns: self._import_reexports_for_namespace(ns, tree)
+
         def _camel_to_snake_case(expr: str) -> str:
             step1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', expr)
             return re.sub('([a-z0-9])(A-Z)', r'\1_\2', step1).lower()

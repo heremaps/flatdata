@@ -1,0 +1,14 @@
+namespace import_types {
+struct S
+{
+    x : u32 : 32;
+    y : u32 : 32;
+}
+}
+
+namespace app {
+archive A
+{
+    data : vector< .import_types.S >;
+}
+}

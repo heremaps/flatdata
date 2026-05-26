@@ -6,7 +6,7 @@
 import types
 from typing import overload
 
-from flatdata.generator.tree.builder import build_ast
+from flatdata.generator.tree.builder import build_ast, build_ast_from_file
 from flatdata.generator.tree.nodes.trivial.namespace import Namespace
 from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -39,6 +39,17 @@ class Engine:
         Lists names of available code generators.
         """
         return list(cls._GENERATORS.keys())
+
+    @classmethod
+    def from_file(cls, path: str) -> 'Engine':
+        """
+        Create Engine from a schema file, resolving imports.
+        :raises FlatdataSyntaxError
+        """
+        engine = cls.__new__(cls)
+        engine.tree = build_ast_from_file(path)
+        engine.schema = engine.tree.root_schema or ""
+        return engine
 
     def __init__(self, schema: str) -> None:
         """

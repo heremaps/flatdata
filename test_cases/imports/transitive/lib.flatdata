@@ -1,0 +1,9 @@
+namespace lib {
+    struct Base {
+        value : u32 : 32;
+    }
+    enum Kind : u8 {
+        X = 0,
+        Y = 1
+    }
+}

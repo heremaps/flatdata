@@ -16,9 +16,13 @@
 pub mod {{ ns.name }} {
 #[allow(unused_imports)]
 use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
+{% for reexport in import_reexports_for_namespace(ns) %}
+{{ reexport }}
+{% endfor %}
 
 {{ loop(ns.children) }}
 {%- for node in ns.children %}
+    {% if not tree.imports or tree.is_local_node(node) %}
     {% if node | is_structure and not node | is_multivector_index %}
         {{- structure.declaration(node) }}
     {% elif node | is_structure and node | is_multivector_index %}
@@ -30,11 +34,12 @@ use flatdata::{flatdata_read_bytes, flatdata_write_bytes};
     {% elif node | is_constant %}
         {{- constant.declaration(node) }}
     {% endif %}
+    {% endif %}
 {% endfor %}
 
 #[doc(hidden)]
 pub mod schema {
-{% for node in ns.children if node | is_archive %}
+{% for node in ns.children if node | is_archive and (not tree.imports or tree.is_local_node(node)) %}
 {% set archive_ns = node.name | camel_to_snake_case %}
 pub mod {{ archive_ns }} {
 

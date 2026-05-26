@@ -1,0 +1,6 @@
+namespace import_types {
+    struct S {
+        x : u32 : 32;
+        y : u32 : 32;
+    }
+}

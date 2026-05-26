@@ -16,7 +16,7 @@ class Structure(Node):
         super().__init__(name=name, properties=properties)
 
     @staticmethod
-    def create(properties: ParseResults, definition: str) -> 'Structure':
+    def create(properties: ParseResults) -> 'Structure':
         result = Structure(name=properties.name, properties=properties)
 
         for field in properties.fields:

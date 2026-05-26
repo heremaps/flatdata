@@ -1,0 +1,6 @@
+import "mid.flatdata";
+namespace app {
+    archive A {
+        data : vector< .lib.Base >;
+    }
+}

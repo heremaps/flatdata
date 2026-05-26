@@ -7,6 +7,9 @@
 #pragma once
 
 #include <flatdata/flatdata.h>
+{% for include_path in imports %}
+#include "{{ include_path }}"
+{% endfor %}
 #include <cstdint>
 #include <iostream>
 #include <iomanip>

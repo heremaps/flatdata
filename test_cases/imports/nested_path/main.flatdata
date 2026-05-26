@@ -1,0 +1,6 @@
+import "sub/types.flatdata";
+namespace app {
+    archive A {
+        data : vector< .geo.Coord >;
+    }
+}

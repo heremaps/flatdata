@@ -1,0 +1,7 @@
+namespace common {
+struct Point
+{
+    x : i32 : 32;
+    y : i32 : 32;
+}
+}

@@ -13,8 +13,9 @@ from jinja2.exceptions import TemplateRuntimeError
 from jinja2.parser import Parser
 
 from flatdata.generator.tree.nodes.archive import Archive
+from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Namespace
-from flatdata.generator.tree.nodes.references import InvalidValueReference, EnumerationReference
+from flatdata.generator.tree.nodes.references import EnumerationReference
 from flatdata.generator.tree.nodes.resources import ResourceBase, BoundResource, Archive as \
     ArchiveResource, Vector, Multivector, Instance, RawData
 from flatdata.generator.tree.syntax_tree import SyntaxTree
@@ -34,9 +35,17 @@ class BaseGenerator(metaclass=ABCMeta):
             "Derived generators must implement _supported_nodes")
 
     @abstractmethod
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         raise RuntimeError(
             "Derived generators must implement _populate_filters")
+
+    def filter_nodes(self, nodes: list[Node], tree: SyntaxTree) -> list[Node]:
+        """Filter nodes for rendering. Override for separate compilation."""
+        return nodes
+
+    def get_import_directives(self, tree: SyntaxTree) -> list[str]:
+        """Return language-specific import directives. Override in subclasses."""
+        return []
 
     def render(self, tree: SyntaxTree) -> str:
         """Generate the language implementation from the AST"""
@@ -61,12 +70,14 @@ class BaseGenerator(metaclass=ABCMeta):
             n, Structure) and "_builtin.multivector" in SyntaxTree.namespace_path(n))
         env.filters['namespaces'] = SyntaxTree.namespaces
         env.filters['not_auto_generated'] = lambda n: [ x for x in n if not x.auto_generated]
-        self._populate_environment(env)
+        self._populate_environment(env, tree)
         template = env.get_template(self._template)
 
         flatdata_nodes = [n for n, _ in DfsTraversal(tree).dependency_order() if
                           any([isinstance(n, t) for t in self.supported_nodes()])]
-        return template.render(nodes=flatdata_nodes, tree=tree)
+        filtered_nodes = self.filter_nodes(flatdata_nodes, tree)
+        imports = self.get_import_directives(tree)
+        return template.render(nodes=filtered_nodes, tree=tree, imports=imports)
 
 
 class RaiseExtension(Extension):

@@ -318,3 +318,99 @@ Retrieving all edges is now as easy as this:
 ```cpp
 edges.slice(nodes[i].edges_range)
 ```
+
+## Imports
+
+Schemas can be split across multiple files using import statements.
+An import pulls in all definitions (structs, enums, constants, archives) from
+another file, making them available for use in the importing file.
+
+```cpp
+import "path/to/types.flatdata";
+```
+
+Import statements must appear at the top of the file, before any namespace or
+type definitions.
+
+### Path Resolution
+
+Import paths are resolved **relative to the file** containing the import
+statement:
+
+```cpp
+import "types.flatdata";            // same directory
+import "sub/geo_types.flatdata";    // subdirectory
+import "../shared/common.flatdata"; // parent directory
+```
+
+### Diamond and Cyclic Imports
+
+Diamond imports (the same file imported via multiple paths) are deduplicated
+automatically. Cyclic imports are also supported — a parent archive schema can
+import a child schema that imports the parent back.
+
+### Generated Code
+
+For **C++** and **Rust**, the generator uses separate compilation: only types
+from the root file are emitted, with include/import directives referencing
+the separately generated imported files. Each `.flatdata` file must be
+generated individually.
+
+For **Python**, **Dot**, and **Flatdata** output, all types are emitted
+monolithically.
+
+### Example
+
+```
+schema/
+├── types.flatdata
+└── main.flatdata
+```
+
+```cpp
+// types.flatdata
+namespace geo {
+    struct Point {
+        x : u32 : 32;
+        y : u32 : 32;
+    }
+}
+```
+
+```cpp
+// main.flatdata
+import "types.flatdata";
+namespace app {
+    archive Locations {
+        points : vector< .geo.Point >;
+    }
+}
+```
+
+Generate each file separately:
+
+```sh
+flatdata-generator -s schema/types.flatdata -g cpp -O schema/types.h
+flatdata-generator -s schema/main.flatdata -g cpp -O schema/main.h
+```
+
+The generated `main.h` will contain `#include "types.h"` and only define the
+`app::Locations` archive.
+
+### Rust Project Setup
+
+Each generated Rust file must live in its own module, with all imported schemas
+as siblings under a common parent module:
+
+```
+my_crate/
+├── build.rs
+└── src/
+    └── schema/
+        ├── mod.rs          // pub mod types; pub mod main_schema;
+        ├── types.rs        // include!(concat!(env!("OUT_DIR"), "/schema/types.rs"));
+        └── main_schema.rs  // include!(concat!(env!("OUT_DIR"), "/schema/main.rs"));
+```
+
+The generated code uses `pub use super::...::module::namespace::*;` re-exports
+to wire imported types through the module hierarchy.

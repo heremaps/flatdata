@@ -19,6 +19,7 @@ except ModuleNotFoundError as exc:
 
 from flatdata.generator.engine import Engine
 from flatdata.generator.tree.errors import FlatdataSyntaxError
+from flatdata.generator.tree.syntax_tree import SyntaxTree
 
 
 def _parse_command_line() -> argparse.Namespace:
@@ -32,6 +33,8 @@ def _parse_command_line() -> argparse.Namespace:
     parser.add_argument("-O", "--output-file", type=str, required=True,
                         default=None,
                         help="Destination file. Forces all output to be stored in one file")
+    parser.add_argument("-d", "--depfile", type=str, default=None,
+                        help="Write a Makefile-style dependency file listing all imported schemas")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Enable verbose mode")
     parser.add_argument("--debug", action="store_true",
@@ -62,14 +65,12 @@ def _run(args: argparse.Namespace) -> None:
     _setup_logging(args)
     _check_args(args)
 
-    with open(args.schema, 'r') as input_file:
-        schema = input_file.read()
-        try:
-            engine = Engine(schema)
-            logging.debug("Tree: %s", engine.tree)
-        except FlatdataSyntaxError as ex:
-            logging.fatal("Error reading schema: %s ", ex)
-            sys.exit(1)
+    try:
+        engine = Engine.from_file(args.schema)
+        logging.debug("Tree: %s", engine.tree)
+    except FlatdataSyntaxError as ex:
+        logging.fatal("Error reading schema: %s ", ex)
+        sys.exit(1)
 
     try:
         logging.info("Generating %s...", args.gen)
@@ -84,6 +85,26 @@ def _run(args: argparse.Namespace) -> None:
     with open(args.output_file, "w") as output:
         output.write(output_content)
         logging.info("Code for %s is written to %s", args.gen, args.output_file)
+
+    if args.depfile:
+        _write_depfile(args.depfile, args.output_file, args.schema, engine.tree)
+
+
+def _write_depfile(depfile_path: str, output_file: str, schema_file: str,
+                   tree: 'SyntaxTree') -> None:
+    """Write a Makefile-style depfile listing all schema dependencies."""
+    deps = [os.path.abspath(schema_file)]
+    # source_file_map keys are absolute paths of all imported files
+    deps.extend(sorted(tree.source_file_map.keys()))
+
+    # Escape spaces in paths for Make syntax
+    def escape(p: str) -> str:
+        return p.replace(" ", "\\ ")
+
+    dep_str = " ".join(escape(d) for d in deps)
+    with open(depfile_path, "w") as f:
+        f.write(f"{escape(output_file)}: {dep_str}\n")
+    logging.info("Depfile written to %s", depfile_path)
 
 
 def main() -> None:

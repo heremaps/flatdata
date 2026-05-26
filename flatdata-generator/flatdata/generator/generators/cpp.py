@@ -3,6 +3,8 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+import posixpath
+
 from jinja2 import Environment
 
 from flatdata.generator.tree.helpers.basictype import BasicType
@@ -13,6 +15,7 @@ from flatdata.generator.tree.nodes.resources import Vector, Multivector, Instanc
     ResourceBase, Archive as ArchiveResource
 from flatdata.generator.tree.nodes.trivial import Structure, Enumeration, Constant, Field
 from flatdata.generator.tree.nodes.archive import Archive
+from flatdata.generator.tree.syntax_tree import SyntaxTree
 from . import BaseGenerator
 
 
@@ -25,7 +28,15 @@ class CppGenerator(BaseGenerator):
     def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
-    def _populate_environment(self, env: Environment) -> None:
+    def filter_nodes(self, nodes: list[Node], tree: SyntaxTree) -> list[Node]:
+        if not tree.imports:
+            return nodes
+        return [n for n in nodes if tree.is_local_node(n)]
+
+    def get_import_directives(self, tree: SyntaxTree) -> list[str]:
+        return [posixpath.normpath(imp.path).replace('.flatdata', '.h') for imp in tree.imports]
+
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         env.filters["cpp_doc"] = lambda value: value
 
         def _safe_cpp_string_line(value: str) -> str:

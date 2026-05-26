@@ -1,0 +1,6 @@
+import "types.flatdata";
+namespace app {
+    archive A {
+        data : vector< .import_types.S >;
+    }
+}

@@ -1,0 +1,6 @@
+namespace m {
+struct Item
+{
+    value : u64 : 64;
+}
+}

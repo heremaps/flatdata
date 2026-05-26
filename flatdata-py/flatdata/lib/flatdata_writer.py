@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 from flatdata.generator.engine import Engine
+from flatdata.generator.tree.nodes.archive import Archive
 from flatdata.generator.tree.errors import FlatdataSyntaxError
 
 from .resource_storage import ResourceStorage
@@ -28,23 +29,46 @@ class Writer:
 
     def __init__(self, archive_schema: str, path: str, archive_name: str = "") -> None:
         '''
-        Creates instance or Writer class. Archive module is rendered by engine
-        using provided schema.
+        Creates instance of Writer class from a schema string.
+        The schema must be self-contained (no import statements).
 
         :param archive_schema(str): flatdata schema
         :param path(str): file path where flatdata files are created
+        :param archive_name(str): name of the archive (inferred if empty)
         '''
         try:
-            if not archive_name:
-                archive_name = Writer._get_archive_name(
-                    archive_schema)
-            _, archive_type = Engine(archive_schema).render_python_module(
-                archive_name=archive_name + "Builder")
+            engine = Engine(archive_schema)
+            self._init_from_engine(engine, path, archive_name)
         except FlatdataSyntaxError as err:
             raise RuntimeError(
-                "Error in generating modules from provided schema: %s " % err)
+                "Error in generating modules from provided schema: %s " % err) from err
 
-        self.builder: ArchiveBuilder = archive_type(
+    @classmethod
+    def from_file(cls, schema_path: str, path: str, archive_name: str = "") -> 'Writer':
+        '''
+        Creates instance of Writer class from a schema file, resolving imports.
+
+        :param schema_path(str): path to the flatdata schema file
+        :param path(str): file path where flatdata files are created
+        :param archive_name(str): name of the archive (inferred if empty)
+        '''
+        writer = cls.__new__(cls)
+        try:
+            engine = Engine.from_file(schema_path)
+            writer._init_from_engine(engine, path, archive_name)
+        except FlatdataSyntaxError as err:
+            raise RuntimeError(
+                "Error in generating modules from provided schema: %s " % err) from err
+        return writer
+
+    def _init_from_engine(self, engine: Engine, path: str, archive_name: str) -> None:
+        '''Shared initialization from an Engine instance.'''
+        if not archive_name:
+            archive_name = Writer._find_archive_name(engine)
+        module, archive_type = engine.render_python_module(
+            archive_name=archive_name)
+        builder_type = getattr(module, archive_type.__name__ + "Builder")
+        self.builder: ArchiveBuilder = builder_type(
             ResourceStorage(FileResourceWriter(), path))
 
     def set(self, resource_name: str, resource_data: Any) -> None:
@@ -61,19 +85,22 @@ class Writer:
         '''Completes flatdata creation'''
         self.builder.finish()
 
-    @classmethod
-    def _get_archive_name(cls, archive_schema: str) -> str:
+    @staticmethod
+    def _find_archive_name(engine: Engine) -> str:
         '''
-        Returns name of archive from flatdata schema.
+        Finds the archive name from the AST, preferring local archives.
 
-        :param archive_schema(str): flatdata schema in str
+        :raises RuntimeError: if no archive or multiple ambiguous archives found
         '''
-        if not archive_schema:
-            raise RuntimeError("Archive schema is required")
+        all_archives = list(engine.tree.root.iterate(Archive))
+        local_archives = [a for a in all_archives if a.is_local]
 
-        archive_keyword = "archive"
-        index = archive_schema.find(archive_keyword) + len(archive_keyword)
-        if archive_schema[index:].find(archive_keyword) >= 0:
+        # Prefer local archives when imports are present
+        candidates = local_archives if local_archives else all_archives
+
+        if len(candidates) == 0:
+            raise RuntimeError("No archive found in schema")
+        if len(candidates) > 1:
             raise RuntimeError(
                 "Schema contains multiple archives, please specify archive name explicitly")
-        return archive_schema[index:index+archive_schema[index:].find("{")].strip()
+        return candidates[0].name

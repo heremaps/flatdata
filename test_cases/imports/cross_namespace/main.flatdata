@@ -1,0 +1,10 @@
+import "other.flatdata";
+namespace app {
+    archive Main {
+        entries : vector< Entry >;
+    }
+    struct Entry {
+        id : u32 : 32;
+        kind : .defs.Kind : 8;
+    }
+}

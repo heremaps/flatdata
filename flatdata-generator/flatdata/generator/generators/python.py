@@ -24,7 +24,7 @@ class PythonGenerator(BaseGenerator):
     def supported_nodes(self) -> list[type]:
         return [Structure, Archive]
 
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         def _decorate_archive_type(tree: SyntaxTree, value: Node) -> str:
             assert isinstance(value, Node)
             return str(tree.namespace_path(value, "_") + "_" + value.name)

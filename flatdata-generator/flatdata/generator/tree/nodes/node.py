@@ -46,6 +46,26 @@ class Node:
         self._properties = properties
         self._children: OrderedDict[str, Node] = OrderedDict()
         self._parent: Node | None = None
+        self._source_file: str | None = None
+        self._is_local: bool = True
+
+    @property
+    def source_file(self) -> str | None:
+        """Returns the source file path this node was defined in, or None."""
+        return self._source_file
+
+    @source_file.setter
+    def source_file(self, value: str | None) -> None:
+        self._source_file = value
+
+    @property
+    def is_local(self) -> bool:
+        """True if this node was defined in the root compilation file."""
+        return self._is_local
+
+    @is_local.setter
+    def is_local(self, value: bool) -> None:
+        self._is_local = value
 
     @property
     def name(self) -> str:

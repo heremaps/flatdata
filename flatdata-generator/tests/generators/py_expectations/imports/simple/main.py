@@ -1,0 +1,1 @@
+class import_types_S(flatdata.structure.Structure):

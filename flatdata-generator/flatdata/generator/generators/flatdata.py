@@ -23,7 +23,7 @@ class FlatdataGenerator(BaseGenerator):
     def supported_nodes(self) -> list[type]:
         return [Structure, Archive, Constant, Enumeration]
 
-    def _populate_environment(self, env: Environment) -> None:
+    def _populate_environment(self, env: Environment, tree: SyntaxTree) -> None:
         def _is_builtin(node: Node) -> bool:
             for namespace in SyntaxTree.namespaces(node):
                 if namespace.name == "_builtin":

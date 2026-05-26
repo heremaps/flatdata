@@ -52,5 +52,5 @@ class Multivector(ResourceBase):
             "schema":"struct IndexType%s { value : u64 : %s; }" % (self._width, self._width),
             "doc":"/** Builtin type to for MultiVector index */",
             "fields":[field]})
-        index_type = Structure.create(properties=properties, definition="")  # type: ignore[arg-type]  # MemberDict duck-types ParseResults
+        index_type = Structure.create(properties=properties)  # type: ignore[arg-type]  # MemberDict duck-types ParseResults
         return [index_type]

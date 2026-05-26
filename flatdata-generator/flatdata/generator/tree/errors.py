@@ -26,6 +26,13 @@ class SymbolRedefinition(FlatdataSyntaxError):
                 existing=existing))
 
 
+class UnresolvedImportError(FlatdataSyntaxError):
+    def __init__(self) -> None:
+        super().__init__(
+            "Import statements found in schema string. "
+            "Use Engine.from_file() or build_ast_from_file() to resolve imports.")
+
+
 class CircularReferencing(FlatdataSyntaxError):
     def __init__(self, node: Node, child: Node) -> None:
         super().__init__(
@@ -165,3 +172,28 @@ class OptionalRange(FlatdataSyntaxError):
         super().__init__(
             "@range cannot be combined with @optional, store empty ranges instead: {name}"
             .format(name=name))
+
+
+class ImportFileNotFoundError(FlatdataSyntaxError):
+    def __init__(self, path: str, referenced_from: str) -> None:
+        super().__init__(
+            "Imported file not found: \"{path}\" (referenced from {referenced_from})"
+            .format(path=path, referenced_from=referenced_from))
+
+
+class ImportParsingError(FlatdataSyntaxError):
+    def __init__(self, file_path: str, pyparsing_error: ParseBaseException,
+                 referenced_from: str | None = None) -> None:
+        self.referenced_from = referenced_from
+        self.pyparsing_error = pyparsing_error
+        context = " (imported from {ref})".format(ref=referenced_from) if referenced_from else ""
+        super().__init__(
+            "Failed to parse {path}{context}. Details below:\n"
+            "  {line}\n"
+            "  {pointer}\n"
+            "  {message}".format(
+                path=file_path,
+                context=context,
+                line=pyparsing_error.line,
+                pointer=" " * (pyparsing_error.column - 1) + "^",
+                message=str(pyparsing_error)))

@@ -1,0 +1,6 @@
+namespace lib {
+struct Base
+{
+    value : u32 : 32;
+}
+}

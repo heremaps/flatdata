@@ -32,9 +32,8 @@ class Archive(Node):
     def __init__(self, name: str, properties: ParseResults | None = None) -> None:
         super().__init__(name=name, properties=properties)
 
-    #pylint: disable=unused-argument
     @staticmethod
-    def create(properties: ParseResults, definition: str) -> 'Archive':
+    def create(properties: ParseResults) -> 'Archive':
         result = Archive(name=properties.name, properties=properties)
         for resource in properties.resources:
             result.insert(_create_resource(resource))
