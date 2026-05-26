@@ -126,7 +126,7 @@ def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: in
         sign_bit = np.uint64(1 << (field_width_bits - 1))
         offset = -(1 << field_width_bits)
         signed = result.astype(np.int64) + np.int64(offset)
-        result = np.where(result & sign_bit, signed, result.astype(np.int64))
+        result = np.where(result & sign_bit, signed, result.astype(np.int64))  # type: ignore[assignment, unused-ignore]
 
     return result
 
