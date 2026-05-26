@@ -3,13 +3,16 @@
  See the LICENSE file in the root of this project for license details.
 '''
 
+from __future__ import annotations
+
 import mmap
 from collections.abc import Callable
+from typing import Union
 
 import numpy as np
 from numpy.typing import NDArray
 
-ReadableBuffer = bytes | bytearray | memoryview | mmap.mmap
+ReadableBuffer = Union[bytes, bytearray, memoryview, mmap.mmap]
 
 # Sign bits cache for the value reading.
 _SIGN_BITS = [0] + [(1 << (bits - 1)) for bits in range(1, 65)]
