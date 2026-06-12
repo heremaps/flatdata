@@ -9,22 +9,24 @@ from pyparsing import (
     Word, alphas, alphanums, nums, cppStyleComment,
     Keyword, Group, Optional, Or, OneOrMore, delimitedList, ZeroOrMore,
     hexnums, Combine, FollowedBy, ParseException as pyparsingParseException,
-    ParseResults, QuotedString, Suppress, Literal
+    ParseResults, QuotedString, Suppress, Literal, Regex
 )
 
 ParseException = pyparsingParseException
 
-identifier = Word(alphas + "_", alphas + alphanums + "_")
-qualified_identifier = Word(alphas + "_.", alphas + alphanums + "_.")
+identifier = Word(alphas + "_", alphas + alphanums + "_").set_name("identifier")
+
+qualified_identifier = Regex(r'\.?[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*').set_name("qualified name")
 
 BASIC_TYPES = ["bool", "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64"]
-basic_type = Or([Keyword(t) for t in BASIC_TYPES])
+basic_type = Or([Keyword(t) for t in BASIC_TYPES]).set_name(
+    "type (one of: " + ", ".join(BASIC_TYPES) + ")")
 
-bit_width = Word(nums)
+bit_width = Word(nums).set_name("bit width")
 
-dec_literal = Word(nums)
-hex_literal = Combine("0x" + Word(hexnums))
-signed_literal = Combine(Optional('-') + (dec_literal ^ hex_literal))
+dec_literal = Word(nums).set_name("decimal literal")
+hex_literal = Combine("0x" + Word(hexnums)).set_name("hex literal")
+signed_literal = Combine(Optional('-') + (dec_literal ^ hex_literal)).set_name("integer literal")
 
 comment = cppStyleComment
 
@@ -36,7 +38,7 @@ enumValue = Group(
 
 enum = Group(
     Optional(comment)("doc") +
-    Keyword("enum") +
+    Keyword("enum") -
     identifier("name") + ':' + basic_type("type") + Optional(':' + bit_width("width")) +
     '{' +
     delimitedList(enumValue, ",")("enum_values") +
@@ -179,7 +181,7 @@ archive = Group(
 
 constant = Group(
     Optional(comment)("doc") +
-    Keyword("const") +
+    Keyword("const") -
     basic_type("type") +
     identifier("name") + "=" +
     signed_literal("value") +
@@ -196,7 +198,7 @@ flatdata_entry = (
 
 namespace = Group(
     Optional(comment)("doc") +
-    Keyword("namespace") +
+    Keyword("namespace") -
     qualified_identifier("name") +
     "{" +
     ZeroOrMore(flatdata_entry) + "}" +
@@ -205,7 +207,7 @@ namespace = Group(
 
 import_statement = Group(
     Optional(comment)("doc") +
-    Suppress(Keyword("import")) +
+    Suppress(Keyword("import")) -
     QuotedString('"')("path") +
     Suppress(Literal(';'))
 )
