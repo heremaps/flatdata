@@ -16,6 +16,18 @@ from flatdata.generator.tree.errors import SymbolRedefinition
 _T = TypeVar('_T', bound='Node')
 
 
+class _NodeNotFoundError(RuntimeError):
+    """Lazy error that defers expensive symbols() computation to str()."""
+
+    def __init__(self, path: str, tree: 'Node') -> None:
+        self._path = path
+        self._tree = tree
+
+    def __str__(self) -> str:
+        return "Path '{path}' not found in tree. Options: {options}".format(
+            path=self._path, options=tuple(self._tree.symbols()))
+
+
 class Node:
     """
     Node of a Syntax Tree.
@@ -48,6 +60,7 @@ class Node:
         self._parent: Node | None = None
         self._source_file: str | None = None
         self._is_local: bool = True
+        self._cached_path: str | None = None
 
     @property
     def source_file(self) -> str | None:
@@ -110,9 +123,17 @@ class Node:
         """
         Returns nodes' path in a tree.
         """
-        if self._parent is None:
-            return self.name
-        return Node.jointwo(self._parent.path, self.name)
+        if self._cached_path is None:
+            if self._parent is None:
+                self._cached_path = self.name
+            else:
+                self._cached_path = Node.jointwo(self._parent.path, self.name)
+        return self._cached_path
+
+    def _invalidate_path_cache(self) -> None:
+        self._cached_path = None
+        for child in self._children.values():
+            child._invalidate_path_cache()
 
     def path_with(self, separator: str = '_') -> str:
         """
@@ -142,6 +163,7 @@ class Node:
                 "Cannot rename the node, name {value} is already in use".format(value=value))
 
         self._name = value
+        self._invalidate_path_cache()
         if self.parent is not None:
             self.parent.reindex()
 
@@ -157,14 +179,12 @@ class Node:
         try:
             target = self
             if target.name != keys[0]:
-                raise RuntimeError("Path {path} not found in tree. Options: {options}".format(
-                    path=path, options=tuple(self.symbols())))
+                raise _NodeNotFoundError(path, self)
 
             for key in keys[1:]:
                 target = target._children[key]
         except (KeyError, IndexError):
-            raise RuntimeError("Path '{path}' not found in tree. Options: {options}".format(
-                path=path, options=tuple(self.symbols())))
+            raise _NodeNotFoundError(path, self)
         return target
 
     def get(self, path: str, default: Node | None = None) -> Node | None:
@@ -251,6 +271,7 @@ class Node:
 
             self._children[node.name] = node
             node._parent = self
+            node._invalidate_path_cache()
         return self
 
     def erase(self, key: str) -> None:
@@ -300,6 +321,7 @@ class Node:
             return self
         del self._parent._children[self.name]
         self._parent = None
+        self._invalidate_path_cache()
         return self
 
     def symbols(self, include_types: bool = False) -> set[str] | dict[str, type]:

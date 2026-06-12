@@ -29,6 +29,7 @@ class BaseGenerator(metaclass=ABCMeta):
 
     def __init__(self, template: str) -> None:
         self._template = template
+        self._env: Environment | None = None
 
     @abstractmethod
     def supported_nodes(self) -> list[type]:
@@ -49,30 +50,36 @@ class BaseGenerator(metaclass=ABCMeta):
         """Return language-specific import directives. Override in subclasses."""
         return []
 
+    def _get_environment(self, tree: SyntaxTree) -> Environment:
+        if self._env is None:
+            env = Environment(loader=PackageLoader('flatdata.generator', 'templates'), lstrip_blocks=True,
+                              trim_blocks=True, autoescape=False, extensions=[RaiseExtension])
+            env.filters['is_archive'] = lambda n: isinstance(n, Archive)
+            env.filters['is_instance'] = lambda n: isinstance(n, Instance)
+            env.filters['is_raw_data'] = lambda n: isinstance(n, RawData)
+            env.filters['is_archive_resource'] = lambda n: isinstance(
+                n, ArchiveResource)
+            env.filters['is_structure'] = lambda n: isinstance(n, Structure)
+            env.filters['is_enumeration_reference'] = lambda n: isinstance(n, EnumerationReference)
+            env.filters['is_enumeration'] = lambda n: isinstance(n, Enumeration)
+            env.filters['is_constant'] = lambda n: isinstance(n, Constant)
+            env.filters['is_namespace'] = lambda n: isinstance(n, Namespace)
+            env.filters['is_resource'] = lambda n: isinstance(n, ResourceBase)
+            env.filters['is_bound_resource'] = lambda n: isinstance(
+                n, BoundResource)
+            env.filters['is_vector'] = lambda n: isinstance(n, Vector)
+            env.filters['is_multivector'] = lambda n: isinstance(n, Multivector)
+            env.filters['is_multivector_index'] = lambda n: (isinstance(
+                n, Structure) and "_builtin.multivector" in SyntaxTree.namespace_path(n))
+            env.filters['namespaces'] = SyntaxTree.namespaces
+            env.filters['not_auto_generated'] = lambda n: [ x for x in n if not x.auto_generated]
+            self._populate_environment(env, tree)
+            self._env = env
+        return self._env
+
     def render(self, tree: SyntaxTree) -> str:
         """Generate the language implementation from the AST"""
-        env = Environment(loader=PackageLoader('flatdata.generator', 'templates'), lstrip_blocks=True,
-                          trim_blocks=True, autoescape=False, extensions=[RaiseExtension])
-        env.filters['is_archive'] = lambda n: isinstance(n, Archive)
-        env.filters['is_instance'] = lambda n: isinstance(n, Instance)
-        env.filters['is_raw_data'] = lambda n: isinstance(n, RawData)
-        env.filters['is_archive_resource'] = lambda n: isinstance(
-            n, ArchiveResource)
-        env.filters['is_structure'] = lambda n: isinstance(n, Structure)
-        env.filters['is_enumeration_reference'] = lambda n: isinstance(n, EnumerationReference)
-        env.filters['is_enumeration'] = lambda n: isinstance(n, Enumeration)
-        env.filters['is_constant'] = lambda n: isinstance(n, Constant)
-        env.filters['is_namespace'] = lambda n: isinstance(n, Namespace)
-        env.filters['is_resource'] = lambda n: isinstance(n, ResourceBase)
-        env.filters['is_bound_resource'] = lambda n: isinstance(
-            n, BoundResource)
-        env.filters['is_vector'] = lambda n: isinstance(n, Vector)
-        env.filters['is_multivector'] = lambda n: isinstance(n, Multivector)
-        env.filters['is_multivector_index'] = lambda n: (isinstance(
-            n, Structure) and "_builtin.multivector" in SyntaxTree.namespace_path(n))
-        env.filters['namespaces'] = SyntaxTree.namespaces
-        env.filters['not_auto_generated'] = lambda n: [ x for x in n if not x.auto_generated]
-        self._populate_environment(env, tree)
+        env = self._get_environment(tree)
         template = env.get_template(self._template)
 
         flatdata_nodes = [n for n, _ in DfsTraversal(tree).dependency_order() if

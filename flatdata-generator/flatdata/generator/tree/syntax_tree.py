@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
+from typing import TYPE_CHECKING
 
 from flatdata.generator.tree.nodes.references import TypeReference
 from flatdata.generator.tree.nodes.trivial import Namespace
@@ -14,6 +15,9 @@ from flatdata.generator.tree.nodes.node import Node
 from flatdata.generator.tree.nodes.references import ResourceReference
 from flatdata.generator.tree.nodes.root import Root
 from flatdata.generator.tree.importer import ImportInfo
+
+if TYPE_CHECKING:
+    from flatdata.generator.generators import BaseGenerator
 
 class SyntaxTree:
     """
@@ -99,14 +103,16 @@ class SyntaxTree:
             nodes.extend(dependent_type)
         return _unique(nodes)
 
+    _schema_generator: 'BaseGenerator | None' = None
+
     @staticmethod
     def schema(node: Node) -> str:
         from ..generators.flatdata import FlatdataGenerator
-        generator = FlatdataGenerator()
+        if SyntaxTree._schema_generator is None:
+            SyntaxTree._schema_generator = FlatdataGenerator()
 
-        # extract subtree from syntax tree
         subtree = node.extract_subtree()
-        return str(generator.render(SyntaxTree(subtree)))
+        return str(SyntaxTree._schema_generator.render(SyntaxTree(subtree)))
 
     @staticmethod
     def namespaces(node: Node) -> Iterator[Node]:
