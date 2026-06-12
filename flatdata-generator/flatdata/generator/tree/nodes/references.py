@@ -14,6 +14,7 @@ class Reference(Node):
 
     def __init__(self, name: str) -> None:
         super().__init__(name=Reference._referencify(name))
+        self._cached_node: Node | None = None
 
     @property
     def target(self) -> str:
@@ -23,11 +24,14 @@ class Reference(Node):
         assert new_value.endswith(self.target), \
             "References can only be updated during resolution for the same symbol: %s -> %s" % \
             (self.target, new_value)
+        self._cached_node = None
         self.set_name(Reference._referencify(new_value))
 
     @property
     def node(self) -> Node:
-        return self.root.find(self.target)
+        if self._cached_node is None:
+            self._cached_node = self.root.find(self.target)
+        return self._cached_node
 
     @property
     def is_qualified(self) -> bool:
