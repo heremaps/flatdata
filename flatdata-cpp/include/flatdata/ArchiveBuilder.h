@@ -52,6 +52,7 @@ protected:
     const flatdata::ResourceStorage& storage( ) const;
     bool is_created( ) const;
     void check_created( ) const;
+    void clean_up_signature( flatdata::ResourceStorage& storage );
 
 private:
     std::shared_ptr< flatdata::ResourceStorage > m_storage;

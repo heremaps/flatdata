@@ -51,7 +51,7 @@ class {{ builder_name }} : public flatdata::ArchiveBuilder
 {
 public:
     /// Creates Archive builder
-    static {{ builder_name }} open( std::shared_ptr< flatdata::ResourceStorage > storage );
+    static {{ builder_name }} open( std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite = false );
     /// Archive schema
     static const char* schema_definition( );
 
@@ -65,18 +65,21 @@ public:  /// Resources
     using {{ r|typedef_name }} = {{ resource.writer_type(r) }};
     using {{ r|typedef_name("Reader") }} = {{ resource.reader_type(r) }};
     {% if r|resource_provides_incremental_builder %}
-    {{ r|typedef_name }} start_{{ r.name }}( );
+    {{ r|typedef_name }} start_{{ r.name }}( bool force_overwrite = false );
     {% endif %}
     {% if r|provides_setter %}
-    bool set_{{ r.name }}( {{ r|typedef_name("Reader") }} data );
+    bool set_{{ r.name }}( {{ r|typedef_name("Reader") }} data, bool force_overwrite = false );
     {% endif %}
+    void clean_up_{{ r.name }}( flatdata::ResourceStorage& storage );
 
     {% endfor %}
 
     {% for r in archive.resources|archive_resources %}
     using {{ r|typedef_name }} = {{ resource.writer_type(r) }};
-    {{ r|typedef_name }}& {{ r.name }}( );
+    {{ r|typedef_name }}& {{ r.name }}( bool force_overwrite = false );
     {% endfor %}
+
+    void clean_up( flatdata::ResourceStorage& storage );
 
 private:
     {{ builder_name }}( std::shared_ptr< flatdata::ResourceStorage > storage );
@@ -205,9 +208,13 @@ inline
 
 
 inline {{ builder_name }}
-{{ builder_name }}::open(std::shared_ptr< flatdata::ResourceStorage > storage )
+{{ builder_name }}::open(std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite )
 {
     {{ builder_name }} result( storage );
+    if ( force_overwrite )
+    {
+        result.clean_up( *storage );
+    }
     if ( !result.initialize( ) )
     {
         return {{ builder_name }}( );
@@ -217,31 +224,69 @@ inline {{ builder_name }}
 
 {% for r in archive.resources|simple_resources %}
 {%  if r|resource_provides_incremental_builder %}
-inline auto {{ builder_name }}::start_{{ r.name }}( ) -> {{ r|typedef_name }}
+inline auto {{ builder_name }}::start_{{ r.name }}( bool force_overwrite ) -> {{ r|typedef_name }}
 {
-    check_created( );
+    if ( force_overwrite )
+    {
+        clean_up_{{ r.name }}( storage( ) );
+    }
+    else
+    {
+        check_created( );
+    }
     return storage( ).{{ resource.incremental_write_call(r) }}( "{{ r.name }}", internal::{{ archive.name }}__{{ r.name }}__schema__ );
 }
 {% endif %}
 {% if r|provides_setter %}
 inline bool
-{{ builder_name }}::set_{{ r.name }}( {{ r|typedef_name("Reader") }} data )
+{{ builder_name }}::set_{{ r.name }}( {{ r|typedef_name("Reader") }} data, bool force_overwrite )
 {
-    check_created( );
+    if ( force_overwrite )
+    {
+        clean_up_{{ r.name }}( storage( ) );
+    }
+    else
+    {
+        check_created( );
+    }
     return storage( ).write< {{ r|typedef_name("Reader") }} >( "{{ r.name }}", internal::{{ archive.name }}__{{ r.name }}__schema__, data );
 }
 {% endif %}
+inline void
+{{ builder_name }}::clean_up_{{ r.name }}( flatdata::ResourceStorage& storage )
+{
+    storage.remove_resource( "{{ r.name }}", internal::{{ archive.name }}__{{ r.name }}__schema__ );
+    {% if r|is_multivector %}
+    storage.remove_multivector_index_resource( "{{ r.name }}", internal::{{ archive.name }}__{{ r.name }}__schema__ );
+    {% endif %}
+}
 {% endfor %}
 
 {% for r in archive.resources|archive_resources %}
 inline auto
-{{ builder_name }}::{{ r.name }}( ) -> {{ r|typedef_name }}&
+{{ builder_name }}::{{ r.name }}( bool force_overwrite ) -> {{ r|typedef_name }}&
 {
     if ( !m_{{ r.name }}.is_open( ) )
     {
-        m_{{ r.name }} = {{ r|typedef_name }}::open( this->storage( ).create_directory( "{{ r.name }}" ) );
+        m_{{ r.name }} = {{ r|typedef_name }}::open( this->storage( ).create_directory( "{{ r.name }}" ), force_overwrite );
     }
     return m_{{ r.name }};
 }
 {% endfor %}
+
+inline void
+{{ builder_name }}::clean_up( flatdata::ResourceStorage& storage )
+{
+{% for r in archive.resources|simple_resources %}
+    clean_up_{{ r.name }}( storage );
+{% endfor %}
+{% for r in archive.resources|archive_resources %}
+    if ( auto subarchive_storage = storage.directory( "{{ r.name }}" ) )
+    {
+        m_{{ r.name }}.clean_up( *subarchive_storage );
+    }
+{% endfor %}
+    clean_up_signature( storage );
+}
+
 {% endmacro %}
