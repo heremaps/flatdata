@@ -42,6 +42,11 @@ public:
 
     bool exists( const char* key ) override;
 
+    void remove_resource( const char* resource_name, const char* expected_schema ) override;
+
+    void remove_multivector_index_resource( const char* resource_name,
+                                            const char* expected_schema ) override;
+
 protected:
     std::shared_ptr< std::ostream > create_output_stream( const char* key ) override;
     MemoryDescriptor read_resource( const char* key ) override;
@@ -148,6 +153,78 @@ FileResourceStorage::exists( const char* key )
     boost::system::error_code ec;
     boost::filesystem::exists( get_path( key ).c_str( ), ec );
     return !ec;
+}
+
+inline void
+logger( const std::string& msg )
+{
+    static std::mutex m;
+    std::lock_guard< std::mutex > lock( m );
+    printf( "%s\n", msg.c_str( ) );
+}
+
+inline void
+FileResourceStorage::remove_resource( const char* resource_name, const char* expected_schema )
+{
+    const std::string schema_name = std::string( resource_name ) + ".schema";
+    const bool resource_exists = exists( resource_name );
+    const bool schema_exists = exists( schema_name.c_str( ) );
+
+    if ( !resource_exists && !schema_exists )
+    {
+        logger( "[INFO] resource " + std::string( resource_name ) + ": does not exist" );
+        return;
+    }
+
+    if ( resource_exists ^ schema_exists )
+    {
+        // [CJ-TODO]
+        // remove what's left or simply return?
+        // can happen when crashes during writting
+        logger( "[ERR] resource " + std::string( resource_name ) + ": no schema or resource" );
+    }
+
+    auto schema = read_resource( ( schema_name.c_str( ) ) );
+    std::string stored_schema( reinterpret_cast< const char* >( schema.data( ) ),
+                               schema.size_in_bytes( ) );
+
+    if ( stored_schema != expected_schema )
+    {
+        // [CJ-TODO]
+        // What if the schema change is intended?
+        logger( "[ERR] resource " + std::string( resource_name ) + ": unexpected schema" );
+        return;
+    }
+
+    boost::system::error_code ec_resource, ec_schema;
+    boost::filesystem::remove( get_path( resource_name ), ec_resource );
+    boost::filesystem::remove( get_path( schema_name.c_str( ) ), ec_schema );
+    if ( ec_resource.failed( ) )
+    {
+        logger( "[ERR] resource " + std::string( resource_name ) + ": failed to remove resource" );
+    }
+    else
+    {
+        logger( "[INFO] resource " + std::string( resource_name ) + ": removed resource" );
+    }
+    if ( ec_schema.failed( ) )
+    {
+        logger( "[ERR] resource " + std::string( resource_name ) + ": failed to remove schema" );
+    }
+    else
+    {
+        logger( "[INFO] resource " + std::string( resource_name ) + ": removed schema" );
+    }
+}
+
+inline void
+FileResourceStorage::remove_multivector_index_resource( const char* resource_name,
+                                                        const char* expected_schema )
+{
+    std::string index_name = std::string( resource_name ) + internal::INDEX_SUFFIX;
+    std::string index_schema = internal::multivector_index_schema( expected_schema );
+
+    remove_resource( index_name.c_str( ), index_schema.c_str( ) );
 }
 
 }  // namespace flatdata

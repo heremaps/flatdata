@@ -96,6 +96,21 @@ public:
      */
     virtual bool exists( const char* key ) = 0;
 
+    virtual void
+    remove_resource( const char* /* resource_name */, const char* /* expected_schema */ )
+    {
+        // [CJ-TODO] make it pure virtual
+        return;
+    }
+
+    virtual void
+    remove_multivector_index_resource( const char* /* resource_name */,
+                                       const char* /* expected_schema */ )
+    {
+        // [CJ-TODO] make it pure virtual
+        return;
+    }
+
 protected:
     /**
      * @brief Creates output stream for given key
