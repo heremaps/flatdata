@@ -207,4 +207,42 @@ ResourceStorage::create_multi_vector( const char* resource_name, const char* sch
                                 internal::ResourceReader( this, resource_name, schema ) ) );
 }
 
+inline bool
+ResourceStorage::remove_resource( const char* resource_name, const char* expected_schema )
+{
+    const std::string schema_name = std::string( resource_name ) + ".schema";
+    const bool resource_exists = exists( resource_name );
+    const bool schema_exists = exists( schema_name.c_str( ) );
+
+    if ( !resource_exists && !schema_exists )
+    {
+        return true;
+    }
+
+    if ( resource_exists ^ schema_exists )
+    {
+        return false;
+    }
+
+    auto schema = read_resource( ( schema_name.c_str( ) ) );
+    std::string stored_schema( reinterpret_cast< const char* >( schema.data( ) ),
+                               schema.size_in_bytes( ) );
+
+    if ( stored_schema != expected_schema )
+    {
+        return false;
+    }
+    return remove( resource_name ) && remove( schema_name.c_str( ) );
+}
+
+inline bool
+ResourceStorage::remove_multivector_index_resource( const char* resource_name,
+                                                    const char* expected_schema )
+{
+    std::string index_name = std::string( resource_name ) + internal::INDEX_SUFFIX;
+    std::string index_schema = internal::multivector_index_schema( expected_schema );
+
+    return remove_resource( index_name.c_str( ), index_schema.c_str( ) );
+}
+
 }  // namespace flatdata

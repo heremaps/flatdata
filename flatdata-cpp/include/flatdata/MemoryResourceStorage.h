@@ -32,6 +32,8 @@ class MemoryResourceStorage : public ResourceStorage
 public:
     static std::unique_ptr< MemoryResourceStorage > create( );
     bool exists( const char* key ) override;
+    bool remove( const char* key ) override;
+
     std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
 
@@ -257,6 +259,26 @@ MemoryResourceStorage::exists( const char* key )
     return m_storage->resources.count( path ) != 0 || m_storage->streams.count( path ) != 0
            || helpers::prefix_exists( m_storage->resources, path + "/" )
            || helpers::prefix_exists( m_storage->streams, path + "/" );
+}
+
+inline bool
+MemoryResourceStorage::remove( const char* key )
+{
+    const auto path = get_path( key );
+    std::lock_guard< std::mutex > lock( m_storage_mutex );
+
+    m_storage->streams.erase( path );
+    auto found_resource = m_storage->resources.find( path );
+    if ( found_resource != m_storage->resources.end( ) )
+    {
+#ifdef DEBUG_DATA_ACCESS_STATISTICS
+        auto& string = found_resource->second;
+        DebugDataAccessStatistics::deregister_mapping( MemoryDescriptor(
+            reinterpret_cast< const unsigned char* >( string->c_str( ) ), string->size( ) ) );
+#endif
+        m_storage->resources.erase( found_resource );
+    }
+    return true;
 }
 
 template < typename ResourceSerializer >
