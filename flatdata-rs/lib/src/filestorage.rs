@@ -80,21 +80,11 @@ impl ResourceStorage for FileResourceStorage {
     fn remove(&self, resource_name: &str) -> Result<(), io::Error> {
         let resource_path = self.path.join(resource_name);
         if let Err(e) = fs::remove_file(&resource_path) {
-            // cj-TODO: remove
-            println!(
-                "Failed to remove {}",
-                resource_path.to_str().unwrap_or(resource_name)
-            );
             return Err(io::Error::new(
                 e.kind(),
                 String::from(resource_path.to_str().unwrap_or(resource_name)),
             ));
         }
-        // cj-TODO: remove
-        println!(
-            "removed {}",
-            resource_path.to_str().unwrap_or(resource_name)
-        );
         Ok(())
     }
 

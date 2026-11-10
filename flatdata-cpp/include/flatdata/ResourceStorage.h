@@ -17,7 +17,6 @@
 
 #include <fstream>
 #include <memory>
-#include <mutex>  // [CJ-TODO] remove
 
 namespace flatdata
 {
