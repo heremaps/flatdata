@@ -67,11 +67,11 @@ ArchiveBuilder::initialize( )
     return static_cast< bool >( signature );
 }
 
-bool
+void
 ArchiveBuilder::clean_up_signature( flatdata::ResourceStorage& storage )
 {
     const auto signature_name = internal::signature_name( name( ) );
-    return storage.remove_resource( signature_name.c_str( ), schema( ) );
+    storage.remove_resource( signature_name.c_str( ), schema( ) );
 }
 
 }  // namespace flatdata

@@ -21,15 +21,6 @@
 
 namespace flatdata
 {
-inline void
-logger( const std::string& msg )
-{
-    // [CJ-TODO] remove
-    static std::mutex m;
-    std::lock_guard< std::mutex > lock( m );
-    printf( "%s\n", msg.c_str( ) );
-}
-
 class MemoryMappedFileStorage;
 
 /**
@@ -105,10 +96,10 @@ public:
      * @brief Check if resource exists
      */
     virtual bool exists( const char* key ) = 0;
-    virtual bool remove( const char* key ) = 0;
+    virtual void remove( const char* key ) = 0;
 
-    bool remove_resource( const char* resource_name, const char* expected_schema );
-    bool remove_multivector_index_resource( const char* resource_name,
+    void remove_resource( const char* resource_name, const char* expected_schema );
+    void remove_multivector_index_resource( const char* resource_name,
                                             const char* expected_schema );
 
 protected:
