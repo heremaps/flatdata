@@ -177,11 +177,11 @@ fn copy_coappearances_archive(
     // open for writing
     let archive_path = env::temp_dir().join(to_path);
     println!("Will create archive in: {}", archive_path.to_str().unwrap());
-    if archive_path.exists() {
-        fs::remove_dir_all(&archive_path).expect("could not remove already existing archive");
-    }
     fs::create_dir_all(&archive_path).expect("could not create archive dir");
     let storage = flatdata::FileResourceStorage::new(archive_path.clone());
+    if let Err(e) = coappearances::GraphBuilder::clean_up(storage.clone()) {
+        panic!("Cleanup failed: {}", e);
+    }
     let gb = coappearances::GraphBuilder::new(storage).expect("could not create archive");
 
     // copy data
