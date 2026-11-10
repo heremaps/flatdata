@@ -32,7 +32,7 @@ class MemoryResourceStorage : public ResourceStorage
 public:
     static std::unique_ptr< MemoryResourceStorage > create( );
     bool exists( const char* key ) override;
-    bool remove( const char* key ) override;
+    void remove( const char* key ) override;
 
     std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
@@ -261,7 +261,7 @@ MemoryResourceStorage::exists( const char* key )
            || helpers::prefix_exists( m_storage->streams, path + "/" );
 }
 
-inline bool
+inline void
 MemoryResourceStorage::remove( const char* key )
 {
     const auto path = get_path( key );
@@ -278,7 +278,6 @@ MemoryResourceStorage::remove( const char* key )
 #endif
         m_storage->resources.erase( found_resource );
     }
-    return true;
 }
 
 template < typename ResourceSerializer >

@@ -207,7 +207,7 @@ ResourceStorage::create_multi_vector( const char* resource_name, const char* sch
                                 internal::ResourceReader( this, resource_name, schema ) ) );
 }
 
-inline bool
+inline void
 ResourceStorage::remove_resource( const char* resource_name, const char* expected_schema )
 {
     const std::string schema_name = std::string( resource_name ) + ".schema";
@@ -216,12 +216,13 @@ ResourceStorage::remove_resource( const char* resource_name, const char* expecte
 
     if ( !resource_exists && !schema_exists )
     {
-        return true;
+        return;
     }
 
-    if ( resource_exists ^ schema_exists )
+    if ( resource_exists != schema_exists )
     {
-        return false;
+        throw std::runtime_error( std::string( "Resource or schema missing for " )
+                                  + resource_name );
     }
 
     auto schema = read_resource( ( schema_name.c_str( ) ) );
@@ -230,19 +231,20 @@ ResourceStorage::remove_resource( const char* resource_name, const char* expecte
 
     if ( stored_schema != expected_schema )
     {
-        return false;
+        throw std::runtime_error( std::string( "unexpected schema for " ) + resource_name );
     }
-    return remove( resource_name ) && remove( schema_name.c_str( ) );
+    remove( resource_name );
+    remove( schema_name.c_str( ) );
 }
 
-inline bool
+inline void
 ResourceStorage::remove_multivector_index_resource( const char* resource_name,
                                                     const char* expected_schema )
 {
     std::string index_name = std::string( resource_name ) + internal::INDEX_SUFFIX;
     std::string index_schema = internal::multivector_index_schema( expected_schema );
 
-    return remove_resource( index_name.c_str( ), index_schema.c_str( ) );
+    remove_resource( index_name.c_str( ), index_schema.c_str( ) );
 }
 
 }  // namespace flatdata
