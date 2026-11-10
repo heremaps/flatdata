@@ -256,7 +256,31 @@ impl {{archive.name}}Builder {
     }
 
     {% endif %}
+    #[inline]
+    pub fn clean_up_{{ r.name }}_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        {% if [r] | subarchive_resources %}
+        {% set t = fully_qualified_name(archive, r.target.node) %}
+        {{t}}Builder::clean_up(storage.subdir("{{r.name}}"))
+        {% else %}
+        {% if [r] | multivector_resources %}
+        storage.remove_multivector_index_resource("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }})?;
+        {% endif %}
+        storage.remove_resource("{{r.name}}", schema::{{ archive_ns }}::resources::{{ r.name | upper }})
+        {% endif %}
+    }
+    #[inline]
+    pub fn clean_up_{{ r.name }}(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_{{ r.name }}_storage(self.storage.clone())
+    }
     {% endfor %}
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        {% for r in archive.resources | supported_resources %}
+        Self::clean_up_{{ r.name }}_storage(storage.clone())?;
+        {% endfor %}
+        storage.remove_resource("{{archive.name}}.archive", schema::{{ archive_ns }}::{{ archive.name | camel_to_snake_case | upper }})
+    }
 }
 {% endif %}
 

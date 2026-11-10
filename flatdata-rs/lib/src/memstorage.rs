@@ -104,6 +104,17 @@ impl ResourceStorage for MemoryResourceStorage {
                 .contains_key(&resource_path)
     }
 
+    fn remove(&self, resource_name: &str) -> Result<(), io::Error> {
+        let resource_path = self.path.join(resource_name);
+        self.storage.streams.lock().unwrap().remove(&resource_path);
+        self.storage
+            .resources
+            .lock()
+            .unwrap()
+            .remove(&resource_path);
+        Ok(())
+    }
+
     fn read_resource(&self, resource_name: &str) -> Result<&[u8], io::Error> {
         let resource_path = self.path.join(resource_name);
         if !self

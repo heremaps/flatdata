@@ -112,6 +112,12 @@ impl ResourceStorage for TarArchiveResourceStorage {
             .is_some()
     }
 
+    fn remove(&self, _resource_name: &str) -> Result<(), io::Error> {
+        Err(io::Error::other(
+            "Removing from tar archives is not supported",
+        ))
+    }
+
     fn read_resource(&self, resource_name: &str) -> Result<&[u8], io::Error> {
         let resource_path = self.sub_path.join(resource_name);
         if let Some(data) = self.storage.read(&resource_path) {
