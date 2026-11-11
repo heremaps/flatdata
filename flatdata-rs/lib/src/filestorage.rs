@@ -77,6 +77,16 @@ impl ResourceStorage for FileResourceStorage {
         self.path.join(resource_name).exists()
     }
 
+    fn remove(&self, resource_name: &str) -> Result<(), io::Error> {
+        let resource_path = self.path.join(resource_name);
+        fs::remove_file(&resource_path).map_err(|e| {
+            io::Error::new(
+                e.kind(),
+                String::from(resource_path.to_str().unwrap_or(resource_name)),
+            )
+        })
+    }
+
     fn read_resource(&self, resource_name: &str) -> Result<&[u8], io::Error> {
         let resource_path = self.path.join(resource_name);
         if !resource_path.exists() {

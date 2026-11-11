@@ -50,6 +50,44 @@ pub trait ResourceStorage: std::fmt::Debug {
         write_schema(schema, &mut stream)
     }
 
+    /// remove resource and the corresponding schema
+    /// fail if resource or schema is missing or the existing schema doesn't match the expected
+    /// schema
+    #[doc(hidden)]
+    fn remove_resource(&self, resource_name: &str, expected_schema: &str) -> Result<(), io::Error> {
+        let schema_name = format!("{}.schema", resource_name);
+        let resource_exists = self.exists(resource_name);
+        let schema_exists = self.exists(&schema_name);
+        if !resource_exists && !schema_exists {
+            return Ok(());
+        } else if resource_exists != schema_exists {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("resource or schema missing for {}", resource_name),
+            ));
+        }
+        let stored_schema = self.read_resource(&schema_name)?;
+        if stored_schema != expected_schema.as_bytes() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("unexpected schema for {}", resource_name),
+            ));
+        }
+        self.remove(resource_name)?;
+        self.remove(&schema_name)
+    }
+
+    /// remove multivector index resource
+    #[doc(hidden)]
+    fn remove_multivector_index_resource(
+        &self,
+        resource_name: &str,
+        expected_schema: &str,
+    ) -> Result<(), io::Error> {
+        let index_name = format!("{}_index", resource_name);
+        let index_schema = format!("index({})", expected_schema);
+        self.remove_resource(&index_name, &index_schema)
+    }
     //
     // Virtual
     //
@@ -59,6 +97,9 @@ pub trait ResourceStorage: std::fmt::Debug {
 
     /// Returns `true` if resource exists in the storage.
     fn exists(&self, resource_name: &str) -> bool;
+
+    /// remove the resource with key `resouce_name`
+    fn remove(&self, resource_name: &str) -> Result<(), io::Error>;
 
     /// Reads a resource in storage and returns a pointer to its raw data.
     ///

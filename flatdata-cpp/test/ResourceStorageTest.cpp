@@ -81,5 +81,28 @@ TEST_CASE( "schema is checked for written vector", "[ResourceStorage]" )
         ( a->read< ArrayView< AStruct > >( resource_name, correct_schema ).is_initialized( ) ) );
 }
 
+TEST_CASE( "resource doesn't exist after removing it", "[ResourceStorage]" )
+{
+    std::unique_ptr< ResourceStorage > a = MemoryResourceStorage::create( );
+    auto create = [ & ] {
+        auto v = a->create_external_vector< AStruct >( resource_name, correct_schema );
+        v.close( );
+    };
+    REQUIRE_NOTHROW( create( ) );
+
+    REQUIRE_FALSE(
+        ( a->read< ArrayView< AStruct > >( resource_name, incorrect_schema ).is_initialized( ) ) );
+    REQUIRE(
+        ( a->read< ArrayView< AStruct > >( resource_name, correct_schema ).is_initialized( ) ) );
+
+    std::string schema_name = std::string( resource_name ) + ".schema";
+    REQUIRE( a->exists( resource_name ) );
+    REQUIRE( a->exists( schema_name.c_str( ) ) );
+
+    a->remove_resource( resource_name, correct_schema );
+    REQUIRE_FALSE( a->exists( resource_name ) );
+    REQUIRE_FALSE( a->exists( schema_name.c_str( ) ) );
+}
+
 }  // namespace test
 }  // namespace flatdata
