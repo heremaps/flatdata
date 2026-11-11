@@ -114,7 +114,7 @@ impl ResourceStorage for TarArchiveResourceStorage {
 
     fn remove(&self, _resource_name: &str) -> Result<(), io::Error> {
         Err(io::Error::other(
-            "Removing from tar archives is not supported",
+            "Removing parts of tar archives is not supported",
         ))
     }
 

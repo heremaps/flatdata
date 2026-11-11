@@ -79,13 +79,12 @@ impl ResourceStorage for FileResourceStorage {
 
     fn remove(&self, resource_name: &str) -> Result<(), io::Error> {
         let resource_path = self.path.join(resource_name);
-        if let Err(e) = fs::remove_file(&resource_path) {
-            return Err(io::Error::new(
+        fs::remove_file(&resource_path).map_err(|e| {
+            io::Error::new(
                 e.kind(),
                 String::from(resource_path.to_str().unwrap_or(resource_name)),
-            ));
-        }
-        Ok(())
+            )
+        })
     }
 
     fn read_resource(&self, resource_name: &str) -> Result<&[u8], io::Error> {
