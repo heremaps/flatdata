@@ -70,7 +70,7 @@ pub trait ResourceStorage: std::fmt::Debug {
         if stored_schema != expected_schema.as_bytes() {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("unexpedted schema for {}", resource_name),
+                format!("unexpected schema for {}", resource_name),
             ));
         }
         self.remove(resource_name)?;
