@@ -127,7 +127,7 @@ TarArchiveResourceStorage::exists( const char* key )
 inline void
 TarArchiveResourceStorage::remove( const char* /* key */ )
 {
-    // not supported since to TAR files is not supported
+    // Removing parts of TAR files is not supported
     throw std::runtime_error( "Removing from TAR files is not supported" );
 }
 

@@ -71,7 +71,6 @@ public:  /// Resources
     bool set_{{ r.name }}( {{ r|typedef_name("Reader") }} data, bool force_overwrite = false );
     {% endif %}
     static void clean_up_{{ r.name }}( flatdata::ResourceStorage& storage );
-
     {% endfor %}
 
     {% for r in archive.resources|archive_resources %}
