@@ -179,8 +179,7 @@ fn copy_coappearances_archive(
     println!("Will create archive in: {}", archive_path.to_str().unwrap());
     fs::create_dir_all(&archive_path).expect("could not create archive dir");
     let storage = flatdata::FileResourceStorage::new(archive_path.clone());
-    coappearances::GraphBuilder::clean_up(storage.clone())
-        .expect("Failed to clean up {}", archive_path.to_str());
+    coappearances::GraphBuilder::clean_up(storage.clone()).expect("Cleanup failed");
     let gb = coappearances::GraphBuilder::new(storage).expect("could not create archive");
 
     // copy data
