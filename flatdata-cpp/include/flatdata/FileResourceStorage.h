@@ -41,7 +41,7 @@ public:
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
 
     bool exists( const char* key ) override;
-    void remove( const char* key ) override;
+    bool remove( const char* key ) override;
 
 protected:
     std::shared_ptr< std::ostream > create_output_stream( const char* key ) override;
@@ -151,16 +151,13 @@ FileResourceStorage::exists( const char* key )
     return !ec;
 }
 
-inline void
+inline bool
 FileResourceStorage::remove( const char* key )
 {
     boost::system::error_code ec;
     std::string file_path = get_path( key );
     boost::filesystem::remove( file_path.c_str( ), ec );
-    if ( ec )
-    {
-        throw std::runtime_error( std::string( "Failed to remove " ) + file_path );
-    }
+    return !ec;
 }
 
 }  // namespace flatdata

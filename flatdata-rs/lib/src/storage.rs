@@ -53,7 +53,6 @@ pub trait ResourceStorage: std::fmt::Debug {
     /// remove resource and the corresponding schema
     /// fail if resource or schema is missing or the existing schema doesn't match the expected
     /// schema
-    #[doc(hidden)]
     fn remove_resource(&self, resource_name: &str, expected_schema: &str) -> Result<(), io::Error> {
         let schema_name = format!("{}.schema", resource_name);
         let resource_exists = self.exists(resource_name);
@@ -78,7 +77,6 @@ pub trait ResourceStorage: std::fmt::Debug {
     }
 
     /// remove multivector index resource
-    #[doc(hidden)]
     fn remove_multivector_index_resource(
         &self,
         resource_name: &str,

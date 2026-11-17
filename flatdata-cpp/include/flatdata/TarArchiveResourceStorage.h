@@ -32,7 +32,7 @@ public:
     std::unique_ptr< ResourceStorage > create_directory( const char* key ) override;
     std::unique_ptr< ResourceStorage > directory( const char* key ) override;
     bool exists( const char* key ) override;
-    void remove( const char* key ) override;
+    bool remove( const char* key ) override;
 
 protected:
     std::shared_ptr< std::ostream > create_output_stream( const char* key ) override;
@@ -124,11 +124,11 @@ TarArchiveResourceStorage::exists( const char* key )
     return m_storage->read( get_path( key ).c_str( ) ).data( ) != nullptr;
 }
 
-inline void
+inline bool
 TarArchiveResourceStorage::remove( const char* /* key */ )
 {
     // Removing parts of TAR files is not supported
-    throw std::runtime_error( "Removing from TAR files is not supported" );
+    return false;
 }
 
 }  // namespace flatdata
