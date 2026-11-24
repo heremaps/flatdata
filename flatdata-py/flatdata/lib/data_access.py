@@ -97,8 +97,9 @@ def read_field_vectorized(raw_bytes_2d: NDArray[np.uint8], field_offset_bits: in
     if field_width_bits == 1:
         byte_idx = field_offset_bits // 8
         bit_idx = field_offset_bits % 8
-        return ((raw_bytes_2d[:, byte_idx].astype(np.uint64) >> np.uint64(bit_idx)) &
-                np.uint64(1))
+        bit: NDArray[np.uint64] = (
+            (raw_bytes_2d[:, byte_idx].astype(np.uint64) >> np.uint64(bit_idx)) & np.uint64(1))
+        return bit
 
     byte_start = field_offset_bits // 8
     bit_shift = field_offset_bits % 8

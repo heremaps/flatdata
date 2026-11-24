@@ -33,7 +33,7 @@ macro_rules! flatdata_write_bytes {
         if <$T as $crate::helper::Int>::IS_SIGNED {
             value_to_store = flatdata_read_bytes!(@mask, value_to_store, $num_bits);
         }
-        let mut value_mask = flatdata_read_bytes!(@mask, u64::max_value(), $num_bits);
+        let mut value_mask = flatdata_read_bytes!(@mask, u64::MAX, $num_bits);
         let mut value: u64 = 0;
 
         // read previous data from destination to value
@@ -1175,7 +1175,7 @@ mod test {
         test_writer(1, 0, 3, &vec![1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         test_writer(1, 0, 2, &vec![1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         test_writer(1, 0, 1, &vec![1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-        test_writer(u64::max_value(), 7, 64, &vec![128, 255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0]);
+        test_writer(u64::MAX, 7, 64, &vec![128, 255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 0]);
     }
 
     fn test_reader_unsigned(value: i64, offset: usize, num_bits: usize, expected: &[u8]) {
