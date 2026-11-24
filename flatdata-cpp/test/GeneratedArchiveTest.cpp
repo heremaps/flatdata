@@ -616,6 +616,7 @@ FATAL: Archive signature does not match software expectations.
 -"    inner : .test_structures.AStruct;"
  "}"
  "}"
+ ""
 ...
  "namespace test_structures {"
  "archive OutermostArchive"
@@ -625,7 +626,7 @@ FATAL: Archive signature does not match software expectations.
 -"    outer : archive .test_structures.OuterArchive;"
  "}"
  "}"
-...
+ ""
 )";
     REQUIRE( description == expectation );
 }
@@ -671,6 +672,7 @@ FATAL: Archive signature does not match software expectations.
 -"    inner : .test_structures.AStruct;"
  "}"
  "}"
+ ""
 ...
 )";
     REQUIRE( description == expectation );
