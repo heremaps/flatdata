@@ -6,7 +6,7 @@ include(flatdata/GenerateSource)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(Boost COMPONENTS filesystem REQUIRED)
 find_package(Threads REQUIRED)
 
 file(GLOB FLATDATA_SOURCE

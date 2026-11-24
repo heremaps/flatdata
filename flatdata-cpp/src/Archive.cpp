@@ -99,7 +99,7 @@ create_context( const std::vector< std::string >& diff )
             lines_to_go = context_lines;
         }
 
-        result_mask[ i ] = lines_to_go >= 0;
+        result_mask[ i - 1 ] = lines_to_go >= 0;
     }
     lines_to_go = -1;
     for ( size_t i = 0; i < diff.size( ); i++, lines_to_go-- )
