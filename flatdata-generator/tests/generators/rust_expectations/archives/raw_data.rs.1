@@ -83,6 +83,14 @@ impl ABuilder {
         self.storage.write("data", schema::a::resources::DATA, data)
     }
 
+    #[inline]
+    pub fn clean_up_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("data", schema::a::resources::DATA)
+    }
+    #[inline]
+    pub fn clean_up_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(self.storage.clone())
+    }
     /// Stores [`optional_data`] in the archive.
     ///
     /// [`optional_data`]: struct.A.html#method.optional_data
@@ -91,6 +99,21 @@ impl ABuilder {
         self.storage.write("optional_data", schema::a::resources::OPTIONAL_DATA, data)
     }
 
+    #[inline]
+    pub fn clean_up_optional_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("optional_data", schema::a::resources::OPTIONAL_DATA)
+    }
+    #[inline]
+    pub fn clean_up_optional_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_optional_data_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(storage.clone())?;
+        Self::clean_up_optional_data_storage(storage.clone())?;
+        storage.remove_resource("A.archive", schema::a::A)
+    }
 }
 
 impl ABuilder {

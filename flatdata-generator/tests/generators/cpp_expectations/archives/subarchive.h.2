@@ -1,4 +1,5 @@
     using DataType = ::n::XBuilder;
-    DataType& data( );
+    DataType& data( bool force_overwrite = false );
     using OptionalDataType = ::n::XBuilder;
-    OptionalDataType& optional_data( );
+    OptionalDataType& optional_data( bool force_overwrite = false );
+    bool clean_up( flatdata::ResourceStorage& storage );

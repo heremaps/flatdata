@@ -1014,6 +1014,15 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "data", schema::a::resources::DATA)
     }
 
+    #[inline]
+    pub fn clean_up_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("data", schema::a::resources::DATA)?;
+        storage.remove_resource("data", schema::a::resources::DATA)
+    }
+    #[inline]
+    pub fn clean_up_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(self.storage.clone())
+    }
     /// Opens [`optional_data`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
@@ -1027,6 +1036,15 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "optional_data", schema::a::resources::OPTIONAL_DATA)
     }
 
+    #[inline]
+    pub fn clean_up_optional_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("optional_data", schema::a::resources::OPTIONAL_DATA)?;
+        storage.remove_resource("optional_data", schema::a::resources::OPTIONAL_DATA)
+    }
+    #[inline]
+    pub fn clean_up_optional_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_optional_data_storage(self.storage.clone())
+    }
     /// Opens [`data_u64_index`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
@@ -1040,6 +1058,23 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "data_u64_index", schema::a::resources::DATA_U64_INDEX)
     }
 
+    #[inline]
+    pub fn clean_up_data_u64_index_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("data_u64_index", schema::a::resources::DATA_U64_INDEX)?;
+        storage.remove_resource("data_u64_index", schema::a::resources::DATA_U64_INDEX)
+    }
+    #[inline]
+    pub fn clean_up_data_u64_index(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_u64_index_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(storage.clone())?;
+        Self::clean_up_optional_data_storage(storage.clone())?;
+        Self::clean_up_data_u64_index_storage(storage.clone())?;
+        storage.remove_resource("A.archive", schema::a::A)
+    }
 }
 
 impl ABuilder {

@@ -1,7 +1,9 @@
     using DataType = ::n::S;
     using DataReaderType = ::n::S;
-    bool set_data( DataReaderType data );
-
+    bool set_data( DataReaderType data, bool force_overwrite = false );
+    static bool clean_up_data( flatdata::ResourceStorage& storage );
     using OptionalDataType = ::n::S;
     using OptionalDataReaderType = ::n::S;
-    bool set_optional_data( OptionalDataReaderType data );
+    bool set_optional_data( OptionalDataReaderType data, bool force_overwrite = false );
+    static bool clean_up_optional_data( flatdata::ResourceStorage& storage );
+    bool clean_up( flatdata::ResourceStorage& storage );

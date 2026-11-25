@@ -72,6 +72,20 @@ impl FooBuilder {
         self.storage.write("bar", schema::foo::resources::BAR, data)
     }
 
+    #[inline]
+    pub fn clean_up_bar_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("bar", schema::foo::resources::BAR)
+    }
+    #[inline]
+    pub fn clean_up_bar(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_bar_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_bar_storage(storage.clone())?;
+        storage.remove_resource("Foo.archive", schema::foo::FOO)
+    }
 }
 
 impl FooBuilder {
@@ -160,6 +174,20 @@ impl BarBuilder {
         self.storage.write("foo", schema::bar::resources::FOO, data)
     }
 
+    #[inline]
+    pub fn clean_up_foo_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("foo", schema::bar::resources::FOO)
+    }
+    #[inline]
+    pub fn clean_up_foo(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_foo_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_foo_storage(storage.clone())?;
+        storage.remove_resource("Bar.archive", schema::bar::BAR)
+    }
 }
 
 impl BarBuilder {

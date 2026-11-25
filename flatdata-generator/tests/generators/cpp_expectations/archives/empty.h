@@ -34,7 +34,7 @@ class ABuilder : public flatdata::ArchiveBuilder
 {
 public:
     /// Creates Archive builder
-    static ABuilder open( std::shared_ptr< flatdata::ResourceStorage > storage );
+    static ABuilder open( std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite = false );
     /// Archive schema
     static const char* schema_definition( );
 
@@ -44,7 +44,7 @@ public:  /// Common methods
     const char* schema( ) const override;
 
 public:  /// Resources
-
+    bool clean_up( flatdata::ResourceStorage& storage );
 
 private:
     ABuilder( std::shared_ptr< flatdata::ResourceStorage > storage );
