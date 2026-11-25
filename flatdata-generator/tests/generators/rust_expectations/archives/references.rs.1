@@ -878,6 +878,14 @@ impl ABuilder {
     }
 
     #[inline]
+    pub fn clean_up_list1_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("list1", schema::a::resources::LIST1)
+    }
+    #[inline]
+    pub fn clean_up_list1(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_list1_storage(self.storage.clone())
+    }
+    #[inline]
     /// Stores [`list2`] in the archive.
     ///
     /// [`list2`]: struct.A.html#method.list2
@@ -899,6 +907,14 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "list2", schema::a::resources::LIST2)
     }
 
+    #[inline]
+    pub fn clean_up_list2_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("list2", schema::a::resources::LIST2)
+    }
+    #[inline]
+    pub fn clean_up_list2(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_list2_storage(self.storage.clone())
+    }
     /// Opens [`multilist1`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
@@ -912,6 +928,15 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "multilist1", schema::a::resources::MULTILIST1)
     }
 
+    #[inline]
+    pub fn clean_up_multilist1_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("multilist1", schema::a::resources::MULTILIST1)?;
+        storage.remove_resource("multilist1", schema::a::resources::MULTILIST1)
+    }
+    #[inline]
+    pub fn clean_up_multilist1(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_multilist1_storage(self.storage.clone())
+    }
     /// Opens [`multilist2`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
@@ -925,6 +950,15 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "multilist2", schema::a::resources::MULTILIST2)
     }
 
+    #[inline]
+    pub fn clean_up_multilist2_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("multilist2", schema::a::resources::MULTILIST2)?;
+        storage.remove_resource("multilist2", schema::a::resources::MULTILIST2)
+    }
+    #[inline]
+    pub fn clean_up_multilist2(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_multilist2_storage(self.storage.clone())
+    }
     /// Stores [`raw1`] in the archive.
     ///
     /// [`raw1`]: struct.A.html#method.raw1
@@ -933,6 +967,14 @@ impl ABuilder {
         self.storage.write("raw1", schema::a::resources::RAW1, data)
     }
 
+    #[inline]
+    pub fn clean_up_raw1_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("raw1", schema::a::resources::RAW1)
+    }
+    #[inline]
+    pub fn clean_up_raw1(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_raw1_storage(self.storage.clone())
+    }
     /// Stores [`raw2`] in the archive.
     ///
     /// [`raw2`]: struct.A.html#method.raw2
@@ -941,6 +983,14 @@ impl ABuilder {
         self.storage.write("raw2", schema::a::resources::RAW2, data)
     }
 
+    #[inline]
+    pub fn clean_up_raw2_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("raw2", schema::a::resources::RAW2)
+    }
+    #[inline]
+    pub fn clean_up_raw2(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_raw2_storage(self.storage.clone())
+    }
     #[inline]
     /// Stores [`refs`] in the archive.
     ///
@@ -963,6 +1013,14 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "refs", schema::a::resources::REFS)
     }
 
+    #[inline]
+    pub fn clean_up_refs_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("refs", schema::a::resources::REFS)
+    }
+    #[inline]
+    pub fn clean_up_refs(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_refs_storage(self.storage.clone())
+    }
     /// Opens [`multirefs`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
@@ -976,6 +1034,28 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "multirefs", schema::a::resources::MULTIREFS)
     }
 
+    #[inline]
+    pub fn clean_up_multirefs_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("multirefs", schema::a::resources::MULTIREFS)?;
+        storage.remove_resource("multirefs", schema::a::resources::MULTIREFS)
+    }
+    #[inline]
+    pub fn clean_up_multirefs(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_multirefs_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_list1_storage(storage.clone())?;
+        Self::clean_up_list2_storage(storage.clone())?;
+        Self::clean_up_multilist1_storage(storage.clone())?;
+        Self::clean_up_multilist2_storage(storage.clone())?;
+        Self::clean_up_raw1_storage(storage.clone())?;
+        Self::clean_up_raw2_storage(storage.clone())?;
+        Self::clean_up_refs_storage(storage.clone())?;
+        Self::clean_up_multirefs_storage(storage.clone())?;
+        storage.remove_resource("A.archive", schema::a::A)
+    }
 }
 
 impl ABuilder {

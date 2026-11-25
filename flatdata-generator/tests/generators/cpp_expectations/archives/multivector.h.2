@@ -1,11 +1,13 @@
     using DataType = flatdata::MultiVector< ::n::_builtin::multivector::IndexType8, ::n::S, ::n::T >;
     using DataReaderType = flatdata::MultiArrayView< ::n::_builtin::multivector::IndexType8, ::n::S, ::n::T >;
-    DataType start_data( );
-
+    DataType start_data( bool force_overwrite = false );
+    static bool clean_up_data( flatdata::ResourceStorage& storage );
     using OptionalDataType = flatdata::MultiVector< ::n::_builtin::multivector::IndexType16, ::n::S, ::n::T >;
     using OptionalDataReaderType = flatdata::MultiArrayView< ::n::_builtin::multivector::IndexType16, ::n::S, ::n::T >;
-    OptionalDataType start_optional_data( );
-
+    OptionalDataType start_optional_data( bool force_overwrite = false );
+    static bool clean_up_optional_data( flatdata::ResourceStorage& storage );
     using DataU64IndexType = flatdata::MultiVector< ::n::_builtin::multivector::IndexType64, ::n::S, ::n::T >;
     using DataU64IndexReaderType = flatdata::MultiArrayView< ::n::_builtin::multivector::IndexType64, ::n::S, ::n::T >;
-    DataU64IndexType start_data_u64_index( );
+    DataU64IndexType start_data_u64_index( bool force_overwrite = false );
+    static bool clean_up_data_u64_index( flatdata::ResourceStorage& storage );
+    bool clean_up( flatdata::ResourceStorage& storage );

@@ -80,8 +80,7 @@ def _run(args: argparse.Namespace) -> None:
         sys.exit(1)
 
     dirname = os.path.dirname(os.path.abspath(args.output_file))
-    if not os.path.exists(dirname):
-        os.makedirs(dirname)
+    os.makedirs(dirname, exist_ok=True)
     with open(args.output_file, "w") as output:
         output.write(output_content)
         logging.info("Code for %s is written to %s", args.gen, args.output_file)

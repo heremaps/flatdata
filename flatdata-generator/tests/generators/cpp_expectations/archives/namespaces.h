@@ -102,7 +102,7 @@ class XBuilder : public flatdata::ArchiveBuilder
 {
 public:
     /// Creates Archive builder
-    static XBuilder open( std::shared_ptr< flatdata::ResourceStorage > storage );
+    static XBuilder open( std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite = false );
     /// Archive schema
     static const char* schema_definition( );
 
@@ -114,9 +114,9 @@ public:  /// Common methods
 public:  /// Resources
     using PayloadType = flatdata::MemoryDescriptor;
     using PayloadReaderType = flatdata::MemoryDescriptor;
-    bool set_payload( PayloadReaderType data );
-
-
+    bool set_payload( PayloadReaderType data, bool force_overwrite = false );
+    static bool clean_up_payload( flatdata::ResourceStorage& storage );
+    bool clean_up( flatdata::ResourceStorage& storage );
 
 private:
     XBuilder( std::shared_ptr< flatdata::ResourceStorage > storage );
@@ -221,7 +221,7 @@ class XBuilder : public flatdata::ArchiveBuilder
 {
 public:
     /// Creates Archive builder
-    static XBuilder open( std::shared_ptr< flatdata::ResourceStorage > storage );
+    static XBuilder open( std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite = false );
     /// Archive schema
     static const char* schema_definition( );
 
@@ -233,9 +233,9 @@ public:  /// Common methods
 public:  /// Resources
     using PayloadType = flatdata::MemoryDescriptor;
     using PayloadReaderType = flatdata::MemoryDescriptor;
-    bool set_payload( PayloadReaderType data );
-
-
+    bool set_payload( PayloadReaderType data, bool force_overwrite = false );
+    static bool clean_up_payload( flatdata::ResourceStorage& storage );
+    bool clean_up( flatdata::ResourceStorage& storage );
 
 private:
     XBuilder( std::shared_ptr< flatdata::ResourceStorage > storage );
@@ -356,7 +356,7 @@ class ABuilder : public flatdata::ArchiveBuilder
 {
 public:
     /// Creates Archive builder
-    static ABuilder open( std::shared_ptr< flatdata::ResourceStorage > storage );
+    static ABuilder open( std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite = false );
     /// Archive schema
     static const char* schema_definition( );
 
@@ -368,20 +368,20 @@ public:  /// Common methods
 public:  /// Resources
     using SingleType = ::n::S;
     using SingleReaderType = ::n::S;
-    bool set_single( SingleReaderType data );
-
+    bool set_single( SingleReaderType data, bool force_overwrite = false );
+    static bool clean_up_single( flatdata::ResourceStorage& storage );
     using ListType = flatdata::ExternalVector< ::m::S >;
     using ListReaderType = flatdata::ArrayView< ::m::S >;
-    ListType start_list( );
-    bool set_list( ListReaderType data );
-
+    ListType start_list( bool force_overwrite = false );
+    bool set_list( ListReaderType data, bool force_overwrite = false );
+    static bool clean_up_list( flatdata::ResourceStorage& storage );
     using MultiType = flatdata::MultiVector< ::a::_builtin::multivector::IndexType32, ::n::S >;
     using MultiReaderType = flatdata::MultiArrayView< ::a::_builtin::multivector::IndexType32, ::n::S >;
-    MultiType start_multi( );
-
-
+    MultiType start_multi( bool force_overwrite = false );
+    static bool clean_up_multi( flatdata::ResourceStorage& storage );
     using InnerType = ::n::XBuilder;
-    InnerType& inner( );
+    InnerType& inner( bool force_overwrite = false );
+    bool clean_up( flatdata::ResourceStorage& storage );
 
 private:
     ABuilder( std::shared_ptr< flatdata::ResourceStorage > storage );
@@ -623,9 +623,13 @@ XBuilder::XBuilder( std::shared_ptr< flatdata::ResourceStorage > storage )
 
 
 inline XBuilder
-XBuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage )
+XBuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite )
 {
     XBuilder result( storage );
+    if ( force_overwrite && !result.clean_up( *storage ) )
+    {
+        return XBuilder( );
+    }
     if ( !result.initialize( ) )
     {
         return XBuilder( );
@@ -634,10 +638,29 @@ XBuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage )
 }
 
 inline bool
-XBuilder::set_payload( PayloadReaderType data )
+XBuilder::set_payload( PayloadReaderType data, bool force_overwrite )
 {
-    check_created( );
+    if ( !force_overwrite || !clean_up_payload( storage( ) ) )
+    {
+        check_created( );
+    }
     return storage( ).write< PayloadReaderType >( "payload", internal::X__payload__schema__, data );
+}
+inline bool
+XBuilder::clean_up_payload( flatdata::ResourceStorage& storage )
+{
+    bool res = storage.remove_resource( "payload", internal::X__payload__schema__ );
+    return res;
+}
+
+
+inline bool
+XBuilder::clean_up( flatdata::ResourceStorage& storage )
+{
+    bool res = true;
+    res = res && XBuilder::clean_up_payload( storage );
+    res = res && clean_up_signature( storage );
+    return res;
 }
 
 } // namespace n
@@ -869,9 +892,13 @@ XBuilder::XBuilder( std::shared_ptr< flatdata::ResourceStorage > storage )
 
 
 inline XBuilder
-XBuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage )
+XBuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite )
 {
     XBuilder result( storage );
+    if ( force_overwrite && !result.clean_up( *storage ) )
+    {
+        return XBuilder( );
+    }
     if ( !result.initialize( ) )
     {
         return XBuilder( );
@@ -880,10 +907,29 @@ XBuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage )
 }
 
 inline bool
-XBuilder::set_payload( PayloadReaderType data )
+XBuilder::set_payload( PayloadReaderType data, bool force_overwrite )
 {
-    check_created( );
+    if ( !force_overwrite || !clean_up_payload( storage( ) ) )
+    {
+        check_created( );
+    }
     return storage( ).write< PayloadReaderType >( "payload", internal::X__payload__schema__, data );
+}
+inline bool
+XBuilder::clean_up_payload( flatdata::ResourceStorage& storage )
+{
+    bool res = storage.remove_resource( "payload", internal::X__payload__schema__ );
+    return res;
+}
+
+
+inline bool
+XBuilder::clean_up( flatdata::ResourceStorage& storage )
+{
+    bool res = true;
+    res = res && XBuilder::clean_up_payload( storage );
+    res = res && clean_up_signature( storage );
+    return res;
 }
 
 } // namespace m
@@ -1210,9 +1256,13 @@ ABuilder::ABuilder( std::shared_ptr< flatdata::ResourceStorage > storage )
 
 
 inline ABuilder
-ABuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage )
+ABuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage, bool force_overwrite )
 {
     ABuilder result( storage );
+    if ( force_overwrite && !result.clean_up( *storage ) )
+    {
+        return ABuilder( );
+    }
     if ( !result.initialize( ) )
     {
         return ABuilder( );
@@ -1221,36 +1271,83 @@ ABuilder::open(std::shared_ptr< flatdata::ResourceStorage > storage )
 }
 
 inline bool
-ABuilder::set_single( SingleReaderType data )
+ABuilder::set_single( SingleReaderType data, bool force_overwrite )
 {
-    check_created( );
+    if ( !force_overwrite || !clean_up_single( storage( ) ) )
+    {
+        check_created( );
+    }
     return storage( ).write< SingleReaderType >( "single", internal::A__single__schema__, data );
 }
-inline auto ABuilder::start_list( ) -> ListType
+inline bool
+ABuilder::clean_up_single( flatdata::ResourceStorage& storage )
 {
-    check_created( );
+    bool res = storage.remove_resource( "single", internal::A__single__schema__ );
+    return res;
+}
+inline auto ABuilder::start_list( bool force_overwrite ) -> ListType
+{
+    if ( !force_overwrite || !clean_up_list( storage( ) ) )
+    {
+        check_created( );
+    }
     return storage( ).create_external_vector< ::m::S >( "list", internal::A__list__schema__ );
 }
 inline bool
-ABuilder::set_list( ListReaderType data )
+ABuilder::set_list( ListReaderType data, bool force_overwrite )
 {
-    check_created( );
+    if ( !force_overwrite || !clean_up_list( storage( ) ) )
+    {
+        check_created( );
+    }
     return storage( ).write< ListReaderType >( "list", internal::A__list__schema__, data );
 }
-inline auto ABuilder::start_multi( ) -> MultiType
+inline bool
+ABuilder::clean_up_list( flatdata::ResourceStorage& storage )
 {
-    check_created( );
+    bool res = storage.remove_resource( "list", internal::A__list__schema__ );
+    return res;
+}
+inline auto ABuilder::start_multi( bool force_overwrite ) -> MultiType
+{
+    if ( !force_overwrite || !clean_up_multi( storage( ) ) )
+    {
+        check_created( );
+    }
     return storage( ).create_multi_vector< ::a::_builtin::multivector::IndexType32, ::n::S >( "multi", internal::A__multi__schema__ );
+}
+inline bool
+ABuilder::clean_up_multi( flatdata::ResourceStorage& storage )
+{
+    bool res = storage.remove_resource( "multi", internal::A__multi__schema__ );
+    res = res && storage.remove_multivector_index_resource( "multi", internal::A__multi__schema__ );
+    return res;
 }
 
 inline auto
-ABuilder::inner( ) -> InnerType&
+ABuilder::inner( bool force_overwrite ) -> InnerType&
 {
     if ( !m_inner.is_open( ) )
     {
-        m_inner = InnerType::open( this->storage( ).create_directory( "inner" ) );
+        m_inner = InnerType::open( this->storage( ).create_directory( "inner" ), force_overwrite );
     }
     return m_inner;
 }
+
+inline bool
+ABuilder::clean_up( flatdata::ResourceStorage& storage )
+{
+    bool res = true;
+    res = res && ABuilder::clean_up_single( storage );
+    res = res && ABuilder::clean_up_list( storage );
+    res = res && ABuilder::clean_up_multi( storage );
+    if ( auto subarchive_storage = storage.directory( "inner" ) )
+    {
+        res = res && m_inner.clean_up( *subarchive_storage );
+    }
+    res = res && clean_up_signature( storage );
+    return res;
+}
+
 } // namespace a
 

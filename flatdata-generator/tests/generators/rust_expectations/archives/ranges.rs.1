@@ -173,6 +173,20 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "data", schema::a::resources::DATA)
     }
 
+    #[inline]
+    pub fn clean_up_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("data", schema::a::resources::DATA)
+    }
+    #[inline]
+    pub fn clean_up_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(storage.clone())?;
+        storage.remove_resource("A.archive", schema::a::A)
+    }
 }
 
 impl ABuilder {

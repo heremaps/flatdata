@@ -69,6 +69,20 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
+    #[inline]
+    pub fn clean_up_payload_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("payload", schema::x::resources::PAYLOAD)
+    }
+    #[inline]
+    pub fn clean_up_payload(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_payload_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_payload_storage(storage.clone())?;
+        storage.remove_resource("X.archive", schema::x::X)
+    }
 }
 
 impl XBuilder {
@@ -169,6 +183,14 @@ impl ABuilder {
         super::n::XBuilder::new(storage)
     }
 
+    #[inline]
+    pub fn clean_up_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        super::n::XBuilder::clean_up(storage.subdir("data"))
+    }
+    #[inline]
+    pub fn clean_up_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(self.storage.clone())
+    }
     /// Stores [`optional_data`] in the archive.
     ///
     /// [`optional_data`]: struct.A.html#method.optional_data
@@ -178,6 +200,21 @@ impl ABuilder {
         super::n::XBuilder::new(storage)
     }
 
+    #[inline]
+    pub fn clean_up_optional_data_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        super::n::XBuilder::clean_up(storage.subdir("optional_data"))
+    }
+    #[inline]
+    pub fn clean_up_optional_data(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_optional_data_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_data_storage(storage.clone())?;
+        Self::clean_up_optional_data_storage(storage.clone())?;
+        storage.remove_resource("A.archive", schema::a::A)
+    }
 }
 
 impl ABuilder {

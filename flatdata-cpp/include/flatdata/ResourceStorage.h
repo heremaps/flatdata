@@ -95,6 +95,11 @@ public:
      * @brief Check if resource exists
      */
     virtual bool exists( const char* key ) = 0;
+    virtual bool remove( const char* key ) = 0;
+
+    bool remove_resource( const char* resource_name, const char* expected_schema );
+    bool remove_multivector_index_resource( const char* resource_name,
+                                            const char* expected_schema );
 
 protected:
     /**

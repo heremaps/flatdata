@@ -1,9 +1,11 @@
     using DataType = flatdata::ExternalVector< ::n::S >;
     using DataReaderType = flatdata::ArrayView< ::n::S >;
-    DataType start_data( );
-    bool set_data( DataReaderType data );
-
+    DataType start_data( bool force_overwrite = false );
+    bool set_data( DataReaderType data, bool force_overwrite = false );
+    static bool clean_up_data( flatdata::ResourceStorage& storage );
     using OptionalDataType = flatdata::ExternalVector< ::n::S >;
     using OptionalDataReaderType = flatdata::ArrayView< ::n::S >;
-    OptionalDataType start_optional_data( );
-    bool set_optional_data( OptionalDataReaderType data );
+    OptionalDataType start_optional_data( bool force_overwrite = false );
+    bool set_optional_data( OptionalDataReaderType data, bool force_overwrite = false );
+    static bool clean_up_optional_data( flatdata::ResourceStorage& storage );
+    bool clean_up( flatdata::ResourceStorage& storage );

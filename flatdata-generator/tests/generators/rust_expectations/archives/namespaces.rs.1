@@ -190,6 +190,20 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
+    #[inline]
+    pub fn clean_up_payload_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("payload", schema::x::resources::PAYLOAD)
+    }
+    #[inline]
+    pub fn clean_up_payload(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_payload_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_payload_storage(storage.clone())?;
+        storage.remove_resource("X.archive", schema::x::X)
+    }
 }
 
 impl XBuilder {
@@ -421,6 +435,20 @@ impl XBuilder {
         self.storage.write("payload", schema::x::resources::PAYLOAD, data)
     }
 
+    #[inline]
+    pub fn clean_up_payload_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("payload", schema::x::resources::PAYLOAD)
+    }
+    #[inline]
+    pub fn clean_up_payload(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_payload_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_payload_storage(storage.clone())?;
+        storage.remove_resource("X.archive", schema::x::X)
+    }
 }
 
 impl XBuilder {
@@ -807,6 +835,14 @@ impl ABuilder {
     }
 
     #[inline]
+    pub fn clean_up_single_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("single", schema::a::resources::SINGLE)
+    }
+    #[inline]
+    pub fn clean_up_single(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_single_storage(self.storage.clone())
+    }
+    #[inline]
     /// Stores [`list`] in the archive.
     ///
     /// [`list`]: struct.A.html#method.list
@@ -828,6 +864,14 @@ impl ABuilder {
         flatdata::create_external_vector(&*self.storage, "list", schema::a::resources::LIST)
     }
 
+    #[inline]
+    pub fn clean_up_list_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_resource("list", schema::a::resources::LIST)
+    }
+    #[inline]
+    pub fn clean_up_list(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_list_storage(self.storage.clone())
+    }
     /// Opens [`multi`] in the archive for buffered writing.
     ///
     /// Elements can be added to the multivector until the [`MultiVector::close`] method
@@ -841,6 +885,15 @@ impl ABuilder {
         flatdata::create_multi_vector(&*self.storage, "multi", schema::a::resources::MULTI)
     }
 
+    #[inline]
+    pub fn clean_up_multi_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        storage.remove_multivector_index_resource("multi", schema::a::resources::MULTI)?;
+        storage.remove_resource("multi", schema::a::resources::MULTI)
+    }
+    #[inline]
+    pub fn clean_up_multi(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_multi_storage(self.storage.clone())
+    }
     /// Stores [`inner`] in the archive.
     ///
     /// [`inner`]: struct.A.html#method.inner
@@ -850,6 +903,23 @@ impl ABuilder {
         super::n::XBuilder::new(storage)
     }
 
+    #[inline]
+    pub fn clean_up_inner_storage(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        super::n::XBuilder::clean_up(storage.subdir("inner"))
+    }
+    #[inline]
+    pub fn clean_up_inner(&self) -> Result<(), ::std::io::Error> {
+        Self::clean_up_inner_storage(self.storage.clone())
+    }
+
+    #[inline]
+    pub fn clean_up(storage: flatdata::StorageHandle) -> Result<(), ::std::io::Error> {
+        Self::clean_up_single_storage(storage.clone())?;
+        Self::clean_up_list_storage(storage.clone())?;
+        Self::clean_up_multi_storage(storage.clone())?;
+        Self::clean_up_inner_storage(storage.clone())?;
+        storage.remove_resource("A.archive", schema::a::A)
+    }
 }
 
 impl ABuilder {
